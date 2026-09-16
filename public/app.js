@@ -14,7 +14,7 @@ function icon(name) { return `<svg viewBox="0 0 40 40" fill="none" stroke="curre
 function header() {
   const links = [['/leistungen','Therapien'],['/schwerpunkte','Schwerpunkte'],['/ueber-uns','Team'],['/preise','Preise'],['/ablauf-wahltherapie','Ablauf'],['/kontakt','Kontakt']].map(([url,label])=>`<a href="${url}"${location.pathname===url?' aria-current="page"':''}>${label}</a>`).join('');
   return `<div class="topline"><div class="container"><span>Mitten in Wien. Ganz bei Ihnen.</span><a href="/kontakt">Stubenbastei 12 · 1010 Wien ${arrow}</a></div></div>
-  <header class="header"><div class="container header-inner"><a href="/" class="brand" aria-label="Citypraxis Startseite"><img src="/assets/wordmark-black.png" alt="Citypraxis" width="218" height="29"><span>THERAPIE IM ZUSAMMENSPIEL</span></a><nav class="desktop-nav" aria-label="Hauptnavigation">${links}</nav><a class="button header-cta" href="/termin">Ersttermin buchen ${arrow}</a>${I18n.toggle()}<button class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Menü öffnen"><span></span><span></span></button></div><nav id="mobile-nav" class="mobile-nav" aria-label="Mobile Navigation" hidden>${links}<a href="/termin">Ersttermin buchen ↗</a></nav></header>`;
+  <header class="header"><div class="container header-inner"><a href="/" class="brand" aria-label="Citypraxis Startseite"><img src="/assets/wordmark-black.png" alt="Citypraxis" width="218" height="29"></a><nav class="desktop-nav" aria-label="Hauptnavigation">${links}</nav><a class="button header-cta" href="/termin">Ersttermin buchen ${arrow}</a>${I18n.toggle()}<button class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Menü öffnen"><span></span><span></span></button></div><nav id="mobile-nav" class="mobile-nav" aria-label="Mobile Navigation" hidden>${links}<a href="/termin">Ersttermin buchen ↗</a></nav></header>`;
 }
 function footer() {
   const s = data.settings[0];
@@ -121,9 +121,35 @@ function route() {
   return article('Seite nicht gefunden','Hier geht es zurück zu Ihrer Citypraxis.','', '<a class="button" href="/">Zur Startseite</a>');
 }
 function bind() {
+  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+  document.querySelectorAll('.faq-list details').forEach(details=>{
+    const summary=details.querySelector(':scope > summary'),content=details.querySelector(':scope > div');
+    if(!summary||!content)return;
+    summary.addEventListener('click',event=>{
+      if(reducedMotion.matches)return;
+      event.preventDefault();
+      if(details.dataset.animating==='true')return;
+      const opening=!details.open,start=details.getBoundingClientRect().height;
+      details.dataset.animating='true';
+      if(opening)details.open=true;
+      const end=opening?details.scrollHeight:summary.getBoundingClientRect().height;
+      details.style.overflow='hidden';
+      const panel=details.animate({height:[`${start}px`,`${end}px`]},{duration:420,easing:'cubic-bezier(.22,1,.36,1)'});
+      content.animate(
+        opening?{opacity:[0,1],transform:['translateY(-9px)','translateY(0)']}:{opacity:[1,0],transform:['translateY(0)','translateY(-7px)']},
+        {duration:opening?340:220,easing:'cubic-bezier(.22,1,.36,1)',fill:'both'}
+      );
+      panel.onfinish=()=>{
+        details.open=opening;
+        details.style.removeProperty('overflow');
+        details.style.removeProperty('height');
+        delete details.dataset.animating;
+        content.getAnimations().forEach(animation=>animation.cancel());
+      };
+    });
+  });
   const urgent=$('.urgent-button');
   if(urgent){
-    const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
     urgent.addEventListener('pointermove',event=>{
       if(event.pointerType==='touch'||reducedMotion.matches)return;
       const bounds=urgent.getBoundingClientRect();
@@ -134,7 +160,7 @@ function bind() {
   }
   const video=$('#hero-video'),videoToggle=$('#video-toggle');
   if(video && videoToggle) {
-    const motion=matchMedia('(prefers-reduced-motion: reduce)');
+    const motion=reducedMotion;
     let manuallyPaused=false;
     const update=()=>{const playing=!video.paused;videoToggle.textContent=playing?'Video pausieren Ⅱ':'Video abspielen ▷';videoToggle.setAttribute('aria-label',playing?'Hintergrundvideo pausieren':'Hintergrundvideo abspielen');};
     async function play(){if(!video.getAttribute('src'))video.src=video.dataset.src;video.muted=true;try{await video.play();}catch{update();}}

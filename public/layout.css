@@ -237,3 +237,36 @@ footer{background:#f6f4f1;color:var(--ink)}
 
 .contact-map{position:relative;height:490px}.contact-map img{width:100%;height:100%;display:block;object-fit:cover}.map-scale-note{position:absolute;bottom:14px;left:18px;right:18px;font-size:11px;color:#626776;background:#ffffffdf;border-radius:8px;padding:8px 12px;width:max-content;max-width:calc(100% - 36px)}
 @media(max-width:767px){.contact-map{height:360px}}
+
+/* Calm, tactile navigation and continuous FAQ motion. */
+.faq-list details{overflow:clip}
+.faq-list summary{position:relative;transition:color .32s cubic-bezier(.22,1,.36,1),padding-left .32s cubic-bezier(.22,1,.36,1)}
+.faq-list summary>span{transition:transform .42s cubic-bezier(.22,1,.36,1),color .3s ease}
+.faq-list details[open] summary{color:var(--blue)}
+.faq-list details[open] summary>span{transform:rotate(45deg)}
+
+:where(.text-link,.quick-links>a,.specialty-links a,.clinical-contents a,.related-links a,.breadcrumb,.course-link a,.footer-top a,.footer-bottom a,.desktop-nav a,.mobile-nav a:not(.button)){
+  transition:color .3s ease,transform .35s cubic-bezier(.22,1,.36,1),opacity .3s ease;
+}
+.therapy-card{transition:transform .42s cubic-bezier(.22,1,.36,1),box-shadow .42s ease}
+.therapy-card img{transition:transform .65s cubic-bezier(.22,1,.36,1),filter .45s ease}
+.quick-links>a{position:relative;border-radius:16px;transition:color .3s ease,transform .4s cubic-bezier(.22,1,.36,1),background-color .35s ease,box-shadow .4s ease}
+.quick-links>a:first-child .quick-symbol{transition:transform .5s cubic-bezier(.22,1,.36,1),color .3s ease}
+
+@media(hover:hover) and (pointer:fine){
+  .faq-list summary:hover{color:var(--blue);padding-left:7px}
+  .faq-list summary:hover>span{color:var(--pink);transform:rotate(12deg)}
+  .faq-list details[open] summary:hover>span{transform:rotate(45deg) scale(1.08)}
+  :where(.text-link,.specialty-links a,.clinical-contents a,.breadcrumb,.course-link a,.footer-top a,.footer-bottom a,.desktop-nav a,.mobile-nav a:not(.button)):hover{color:var(--blue);transform:translateY(-2px)}
+  .related-links a:hover{color:var(--blue);transform:translateX(5px);background:#e9f2f5}
+  .quick-links>a:hover{color:var(--blue);transform:translateY(-3px);background:#fff;box-shadow:0 14px 34px #2223440b}
+  .quick-links>a:first-child:hover .quick-symbol{color:var(--pink);transform:rotate(18deg) scale(1.08)}
+  .therapy-card:hover{transform:translateY(-6px);box-shadow:0 20px 48px #22234412}
+  .therapy-card:hover img{transform:scale(1.025);filter:saturate(1.04)}
+  .therapy-card:hover .text-link{color:var(--blue);transform:translateX(3px)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .faq-list summary,.faq-list summary>span,.therapy-card,.therapy-card img,.quick-links>a,.quick-links>a:first-child .quick-symbol{transition:none}
+  :where(.text-link,.quick-links>a,.specialty-links a,.clinical-contents a,.related-links a,.breadcrumb,.course-link a,.footer-top a,.footer-bottom a,.desktop-nav a,.mobile-nav a:not(.button)):hover{transform:none}
+}
