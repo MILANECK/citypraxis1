@@ -17,7 +17,7 @@ p { font-size: 18px; line-height: 1.8; }
 /* Four clear ways into the site immediately below the hero. */
 .quick-links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; padding-block: 32px; }
 .quick-links > a { display: flex; align-items: center; gap: 14px; padding-block: 12px; }
-.quick-symbol { color: var(--blue); font-size: 28px; flex-shrink: 0; }
+.quick-icon { width: 42px; height: 42px; object-fit: contain; flex: 0 0 42px; }
 .quick-links strong { display: block; font-size: 15px; line-height: 1.5; font-weight: 600; }
 .quick-links div > span { display: block; font-size: 13px; line-height: 1.6; margin-top: 3px; color: var(--muted); }
 .quick-links + .section { padding-top: 45px; }
@@ -251,7 +251,7 @@ footer{background:#f6f4f1;color:var(--ink)}
 .therapy-card{transition:transform .42s cubic-bezier(.22,1,.36,1),box-shadow .42s ease}
 .therapy-card img{transition:transform .65s cubic-bezier(.22,1,.36,1),filter .45s ease}
 .quick-links>a{position:relative;border-radius:16px;transition:color .3s ease,transform .4s cubic-bezier(.22,1,.36,1),background-color .35s ease,box-shadow .4s ease}
-.quick-links>a:nth-child(2) .quick-symbol{transition:transform .5s cubic-bezier(.22,1,.36,1),color .3s ease}
+.quick-links>a .quick-icon{transition:transform .5s cubic-bezier(.22,1,.36,1),filter .35s ease}
 
 @media(hover:hover) and (pointer:fine){
   .faq-list summary:hover{color:var(--blue);padding-left:7px}
@@ -261,13 +261,14 @@ footer{background:#f6f4f1;color:var(--ink)}
   .related-links a:hover{color:var(--blue);transform:translateX(5px);background:#e9f2f5}
   .quick-links>a:hover{color:var(--blue);transform:translateY(-3px);background:#fff;box-shadow:0 14px 34px #2223440b}
   .quick-links>a:first-child:hover{background:transparent;box-shadow:none;transform:translateY(-2px)}
-  .quick-links>a:nth-child(2):hover .quick-symbol{color:var(--pink);transform:rotate(18deg) scale(1.08)}
+  .quick-links>a:hover .quick-icon{transform:translateY(-2px) scale(1.06);filter:saturate(1.08)}
+  .quick-links>a:nth-child(2):hover .quick-icon{transform:translateY(-2px) scale(1.08)}
   .therapy-card:hover{transform:translateY(-6px);box-shadow:0 20px 48px #22234412}
   .therapy-card:hover img{transform:scale(1.025);filter:saturate(1.04)}
   .therapy-card:hover .text-link{color:var(--blue);transform:translateX(3px)}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .faq-list summary,.faq-list summary>span,.therapy-card,.therapy-card img,.quick-links>a,.quick-links>a:nth-child(2) .quick-symbol{transition:none}
+  .faq-list summary,.faq-list summary>span,.therapy-card,.therapy-card img,.quick-links>a,.quick-links>a .quick-icon{transition:none}
   :where(.text-link,.quick-links>a,.specialty-links a,.clinical-contents a,.related-links a,.breadcrumb,.course-link a,.footer-top a,.footer-bottom a,.desktop-nav a,.mobile-nav a:not(.button)):hover{transform:none}
 }

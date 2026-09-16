@@ -40,10 +40,10 @@ function home() {
   const therapies = ['physiotherapie','osteopathie','logopaedie','heilmassage'].map(id=>data.services.find(item=>item.id===id)).filter(Boolean);
   return `${heroMarkup(h,s)}
   <nav class="quick-links container" aria-label="Direkt zum Anliegen">
-    <a href="tel:${esc(s.phone.replaceAll(' ',''))}"><span class="quick-symbol" aria-hidden="true">↗</span><div><strong>${esc(s.phone)}</strong><span>Persönlich für Sie da</span></div></a>
-    <a href="/leistungen"><span class="quick-symbol" aria-hidden="true">✳</span><div><strong>Unsere Therapien</strong><span>Die passende Behandlung finden</span></div></a>
-    <a href="/preise"><span class="quick-symbol" aria-hidden="true">€</span><div><strong>Preise & Rückerstattung</strong><span>Kosten verständlich erklärt</span></div></a>
-    <a href="/kontakt"><span class="quick-symbol" aria-hidden="true">⌖</span><div><strong>1010 Wien</strong><span>${esc(s.address)}</span></div></a>
+    <a href="tel:${esc(s.phone.replaceAll(' ',''))}"><img class="quick-icon" src="/assets/icons/phone.svg" alt="" width="48" height="48"><div><strong>${esc(s.phone)}</strong><span>Persönlich für Sie da</span></div></a>
+    <a href="/leistungen"><img class="quick-icon" src="/assets/icons/lotus.svg" alt="" width="48" height="48"><div><strong>Unsere Therapien</strong><span>Die passende Behandlung finden</span></div></a>
+    <a href="/preise"><img class="quick-icon" src="/assets/icons/euro.svg" alt="" width="48" height="48"><div><strong>Preise & Rückerstattung</strong><span>Kosten verständlich erklärt</span></div></a>
+    <a href="/kontakt"><img class="quick-icon" src="/assets/icons/pin.svg" alt="" width="48" height="48"><div><strong>1010 Wien</strong><span>${esc(s.address)}</span></div></a>
   </nav>
   <section class="section container" id="therapien"><div class="section-heading"><div><span class="eyebrow">UNSERE THERAPIEN</span><h2>Vier Fachrichtungen.<br>Gemeinsam für Sie.</h2></div><a class="text-link" href="/leistungen">Alle Behandlungen ${arrow}</a></div><div class="therapy-grid">${therapies.map(therapyCard).join('')}</div></section>
   ${h.teamImage?`<section class="container team-feature" aria-labelledby="team-feature-title"><img class="team-group-photo" src="${esc(h.teamImage)}" alt="${esc(h.teamImageAlt||'Team-Gruppenfoto')}" loading="lazy" width="1299" height="870"><div class="team-feature-copy"><span class="eyebrow">DIE MENSCHEN IN DER CITYPRAXIS</span><h2 id="team-feature-title">Ihr Team. An Ihrer Seite.</h2><p>Physiotherapie, Osteopathie, Logopädie und Heilmassage. Gemeinsam für Sie.</p><a class="text-link" href="/ueber-uns">Das gesamte Team ${arrow}</a></div></section>`:''}
