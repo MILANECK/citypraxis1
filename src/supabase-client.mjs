@@ -1,7 +1,7 @@
 import { createHmac } from 'node:crypto';
 
 const required = name => {
-  const value = process.env[name];
+  const value = process.env[name]?.trim();
   if (!value) throw new Error(`${name} is required for Supabase mode`);
   return value.replace(/\/$/, '');
 };
@@ -11,7 +11,7 @@ export function hasSupabaseConfig() {
 }
 
 export function createSupabaseClient() {
-  const url = required('SUPABASE_URL');
+  const url = new URL(required('SUPABASE_URL')).origin;
   const publishable = required('SUPABASE_PUBLISHABLE_KEY');
   const secret = required('SUPABASE_SECRET_KEY');
   const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'website-media';
