@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="620" viewBox="0 0 720 620">
+  <rect width="720" height="620" fill="#f3f4f2"/>
+  <g fill="#e7e9e6" stroke="#f3f4f2" stroke-width="12">
+    <rect x="-20" y="-20" width="260" height="235" rx="22"/>
+    <rect x="260" y="-20" width="170" height="235" rx="22"/>
+    <rect x="510" y="-20" width="240" height="235" rx="22"/>
+    <rect x="-20" y="290" width="260" height="350" rx="22"/>
+    <rect x="260" y="290" width="170" height="350" rx="22"/>
+    <rect x="510" y="290" width="240" height="350" rx="22"/>
+  </g>
+  <path d="M470 -20V650M-20 250H750" fill="none" stroke="#fff" stroke-width="62"/>
+  <path d="M470 -20V650M-20 250H750" fill="none" stroke="#d6dcdb" stroke-width="1" stroke-dasharray="5 8"/>
+  <g font-family="Arial,sans-serif" font-size="18" fill="#758188" letter-spacing="1">
+    <text x="42" y="244">Liebenberggasse</text>
+    <text transform="translate(478 560) rotate(-90)">Stubenbastei</text>
+  </g>
+  <rect x="304" y="310" width="110" height="128" rx="12" fill="#dcebf0"/>
+  <circle cx="414" cy="316" r="42" fill="#0085ac" opacity=".07"/>
+  <circle cx="414" cy="316" r="28" fill="#0085ac" opacity=".1"/>
+  <path d="M414 276c-15 0-27 12-27 27 0 20 27 43 27 43s27-23 27-43c0-15-12-27-27-27Z" fill="#951b81"/>
+  <circle cx="414" cy="303" r="9" fill="white"/>
+  <g transform="translate(215 150)">
+    <rect x="0" y="4" width="257" height="82" rx="17" fill="#222344" opacity=".04"/>
+    <rect width="257" height="82" rx="17" fill="white"/>
+    <text x="23" y="34" font-family="Arial,sans-serif" font-weight="bold" font-size="21" fill="#222344">CITYPRAXIS</text>
+    <text x="23" y="59" font-family="Arial,sans-serif" font-size="15" fill="#626776">Stubenbastei 12/11</text>
+  </g>
+  <path d="M408 232 414 268" stroke="#951b81" stroke-width="1.5" stroke-dasharray="3 5" opacity=".5"/>
+</svg>

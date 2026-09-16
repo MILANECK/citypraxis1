@@ -1,0 +1,10 @@
+import { openDatabase } from '../src/database.mjs';
+import { mkdirSync, cpSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+const folder = resolve('backups', new Date().toISOString().replaceAll(':','-'));
+mkdirSync(folder, { recursive: true });
+const db = openDatabase();
+db.prepare('VACUUM INTO ?').run(resolve(folder, 'citypraxis.sqlite'));
+db.close();
+if (existsSync('public/uploads')) cpSync('public/uploads', resolve(folder, 'uploads'), { recursive: true });
+console.log(`Backup saved: ${folder}`);

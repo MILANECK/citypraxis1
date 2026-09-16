@@ -1,0 +1,239 @@
+/* Clear page hierarchy, spacious reading columns, and compact photo cards. */
+html { scroll-padding-top: 125px; }
+:root { --muted: #555d6a; }
+h1, h2, h3 { font-weight: 600; letter-spacing: -.035em; }
+p { font-size: 18px; line-height: 1.8; }
+.section { padding-block: 90px; }
+.section-heading { margin-bottom: 38px; }
+.section-heading h2 { font-size: clamp(32px, 3.2vw, 44px); }
+.section-heading p { font-size: 17px; }
+.eyebrow { font-size: 12px; letter-spacing: .11em; }
+.text-link { font-size: 16px; line-height: 1.5; }
+.desktop-nav { gap: 22px; }
+.desktop-nav a { font-size: 14px; }
+.desktop-nav a[aria-current], .mobile-nav a[aria-current] { color: var(--blue); font-weight: 600; }
+.hero-immersive h1 { font-weight: 600; }
+
+/* Four clear ways into the site immediately below the hero. */
+.quick-links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; padding-block: 32px; }
+.quick-links > a { display: flex; align-items: center; gap: 14px; padding-block: 12px; }
+.quick-symbol { color: var(--blue); font-size: 28px; flex-shrink: 0; }
+.quick-links strong { display: block; font-size: 15px; line-height: 1.5; font-weight: 600; }
+.quick-links div > span { display: block; font-size: 13px; line-height: 1.6; margin-top: 3px; color: var(--muted); }
+.quick-links + .section { padding-top: 45px; }
+.therapy-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
+.therapy-card { display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; background: white; box-shadow: 0 8px 30px #22234405; }
+.therapy-card > img { width: 100%; aspect-ratio: 5 / 4; object-fit: cover; }
+.therapy-card > div { padding: 26px 22px; flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.therapy-card h3 { font-size: 23px; }
+.therapy-card .text-link { margin-top: auto; font-size: 14px; gap: 12px; }
+.specialty-links { display: grid; grid-template-columns: 1fr 1.7fr; gap: 30px; align-items: center; margin-top: 42px; padding: 30px; background: #f0f2f3; border-radius: 22px; }
+.specialty-links h3 { font-size: 22px; }
+.specialty-links p { font-size: 15px; margin-bottom: 0; }
+.specialty-links > div:last-child { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.specialty-links a { color: var(--blue); font-size: 16px; padding-block: 10px; display: inline-flex; gap: 12px; }
+
+/* The portrait occupies the whole top of the card; only business-card details below. */
+.team-preview { background: #f0f2f3; }
+.team-thumbnails { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; }
+.team-thumbnail { display: block; overflow: hidden; border-radius: 12px; aspect-ratio: 1; background: #e0e7eb; }
+.team-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+.thumbnail-empty { display: block; width: 100%; height: 100%; background: radial-gradient(circle at 50% 34%, #bacbd4 17%, transparent 18%), radial-gradient(ellipse at 50% 105%, #bacbd4 42%, transparent 43%); }
+.reviews-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.review-card { margin: 0; padding: 30px; border-radius: 24px; background: white; display: flex; flex-direction: column; align-items: flex-start; }
+.review-quote { font: 64px/1 Georgia, serif; color: var(--blue); height: 50px; }
+.review-card blockquote { margin: 12px 0 24px; }
+.review-card blockquote p { font-size: 17px; margin-top: 0; }
+.review-card figcaption { margin-top: auto; font-size: 15px; }
+.review-card figcaption span { display: block; margin-top: 8px; color: var(--muted); font-size: 13px; }
+.review-stars { color: var(--blue); letter-spacing: 3px; }
+.review-placeholder p { font-size: 17px; color: var(--muted); }
+.reviews-section + .first-visit { padding-top: 10px; }
+.review-card { box-shadow: 0 12px 38px #22234406; padding: 32px; min-height: 280px; }
+.review-top { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.review-top .review-quote { margin-left: auto; height: 35px; font-size: 56px; color: #99cede; }
+.review-stars { font-size: 21px; color: #951b81; letter-spacing: 3px; }
+.review-stars-empty { color: #aeb7c1; }
+.review-card figcaption { display: flex; gap: 13px; align-items: center; width: 100%; padding-top: 18px; }
+.review-avatar, .review-card figcaption .review-avatar { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: #e6f3f7; color: #0085ac; font-size: 18px; font-weight: 600; margin: 0; }
+.review-card figcaption div > span { display: block; color: var(--muted); margin-top: 6px; font-size: 13px; }
+.review-placeholder-footer { display: flex; gap: 13px; align-items: center; margin-top: auto; padding-top: 22px; color: var(--muted); font-size: 13px; }
+.team-profiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
+.team-preview .team-profiles { margin-bottom: 0; }
+.team-person { padding: 0; border-radius: 12px; overflow: hidden; background: white; box-shadow: 0 8px 30px #22234404; }
+.team-portrait { position: relative; background: #e6ebee; }
+.team-person .team-photo, .team-person .team-no-photo { width: 100%; height: auto; aspect-ratio: 1; border-radius: 0; margin: 0; object-fit: cover; }
+.team-person .team-no-photo { font-size: 32px; color: #7796a7; font-weight: 300; }
+.placeholder-tag { right: 7px; top: 7px; background: #ffffffed; color: #525862; font-size: 10px; padding: 5px 7px; }
+.team-card-copy { padding: 14px; }
+.team-person h3 { font-size: 17px; line-height: 1.35; margin: 0 0 8px; letter-spacing: -.025em; overflow-wrap: anywhere; }
+.team-person .team-role { font-size: 14px; line-height: 1.5; color: var(--muted); margin: 0; white-space: pre-line; overflow-wrap: anywhere; hyphens: auto; }
+.team-contact { margin-top: 12px; }
+.team-contact a { font-size: 13px; line-height: 1.6; padding-block: 3px; }
+.team-directory { margin-block: 50px 70px; }
+.team-directory .team-profiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.team-directory .team-person { border-radius: 24px; }
+.team-directory .team-card-copy { padding: 26px; }
+.team-directory .team-person h3 { font-size: 23px; }
+.team-directory .team-role { font-size: 16px; }
+.team-directory .team-contact a { font-size: 14px; }
+.team-directory .section-heading p { font-size: 14px; }
+
+/* One step per column, followed by practical information and contact. */
+.first-visit .process-grid { margin-bottom: 0; gap: 30px; }
+.first-visit .process-grid li { background: transparent; padding: 0; }
+.first-visit .process-grid h3 { font-size: 21px; }
+.first-visit .process-grid p { font-size: 17px; }
+.first-visit .step-top > span:first-child { width: 44px; height: 44px; font-size: 15px; }
+.cost-overview { display: grid; grid-template-columns: 1fr 1.25fr; gap: 70px; padding: 48px; border-radius: 28px; background: var(--beige); align-items: start; }
+.cost-overview h2, .home-contact h2 { margin-top: 16px; }
+.cost-overview > div > p { margin-block: 22px 28px; max-width: 38ch; }
+.cost-overview h3 { font-size: 23px; margin-bottom: 24px; }
+.cost-overview .faq-list summary { font-size: 16px; line-height: 1.55; }
+.cost-overview .faq-list p { font-size: 16px; }
+.home-contact { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: center; }
+.home-contact-details { padding-left: 40px; }
+.home-contact-details > a:not(.button) { display: block; font-size: 23px; line-height: 1.6; color: var(--blue); overflow-wrap: anywhere; }
+.home-contact-details .button { background: var(--pink); margin-top: 12px; }
+
+/* Long clinical text reads as one article, with section links alongside. */
+.article-body:empty { display: none; }
+.article-intro { max-width: 70ch; }
+.article-body p, .article-body li { font-size: 18px; }
+.service-intro p { font-size: 18px; line-height: 1.8; }
+.clinical-layout { gap: 60px; }
+.clinical-text { min-width: 0; }
+.clinical-text > .clinical-card { padding: 0 0 42px; margin-bottom: 0; background: transparent; border-radius: 0; }
+.clinical-text > .clinical-card + .clinical-card { padding-top: 16px; }
+.clinical-card h2 { font-size: 30px; line-height: 1.3; text-wrap: pretty; }
+.clinical-card p, .clinical-card li { font-size: 18px; line-height: 1.85; }
+.clinical-card { scroll-margin-top: 16px; }
+.clinical-aside { position: sticky; max-height: calc(100dvh - 145px); overflow-y: auto; }
+.mobile-contents { display: none; }
+.clinical-contents { display: grid; gap: 13px; margin-bottom: 32px; }
+.clinical-contents strong { font-size: 17px; margin-bottom: 3px; }
+.clinical-contents a { font-size: 14px; line-height: 1.55; color: var(--blue); }
+.clinical-reading .clinical-card { background: transparent; padding: 12px 0 30px; }
+.listing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; }
+.listing-card { padding: 36px; display: flex; flex-direction: column; align-items: flex-start; }
+.listing-card h2 { font-size: 28px; }
+.listing-card p { font-size: 17px; line-height: 1.8; }
+.listing-card .text-link { margin-top: auto; }
+.listing-card svg { width: 44px; height: 44px; margin-bottom: 12px; }
+
+@media (max-width: 1150px) {
+  .team-thumbnails { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .team-directory .team-profiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 30px; }
+  .therapy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .team-profiles, .team-preview .team-profiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .specialty-links { grid-template-columns: 1fr 1.3fr; }
+  .cost-overview { gap: 35px; padding: 35px; }
+  .clinical-layout { gap: 32px; }
+}
+@media (max-width: 767px) {
+  .team-thumbnails { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .reviews-grid { grid-template-columns: 1fr; }
+  html { scroll-padding-top: 95px; }
+  .section { padding-block: 56px; }
+  .section-heading { margin-bottom: 28px; }
+  .section-heading h2 { font-size: 32px; }
+  .section-heading p { font-size: 16px; }
+  .quick-links { gap: 10px 20px; padding-block: 26px; }
+  .quick-links > a { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .quick-links strong { font-size: 14px; }
+  .quick-links div > span { font-size: 13px; }
+  .quick-links + .section { padding-top: 28px; }
+  .therapy-grid { gap: 18px; }
+  .therapy-card > div { padding: 20px; }
+  .therapy-card h3 { font-size: 22px; }
+  .therapy-card .text-link { font-size: 14px; }
+  .specialty-links { grid-template-columns: 1fr; gap: 18px; padding: 26px; margin-top: 28px; }
+  .specialty-links > div:last-child { gap: 5px 20px; }
+  .team-profiles, .team-preview .team-profiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .first-visit .process-grid { gap: 25px; }
+  .first-visit .process-grid li { padding: 0 0 0 65px; min-height: 0; }
+  .first-visit .step-top { left: 0; top: 0; }
+  .first-visit .process-grid h3 { padding-top: 8px; }
+  .first-visit .process-grid p { margin-top: 10px; }
+  .cost-overview, .home-contact { grid-template-columns: 1fr; gap: 38px; }
+  .cost-overview { padding: 28px 24px; }
+  .cost-overview .faq-list details { padding-inline: 18px; }
+  .home-contact-details { padding-left: 0; }
+  .home-contact-details > a:not(.button) { font-size: 22px; }
+  .clinical-layout { grid-template-columns: 1fr; }
+  .clinical-aside { position: static; max-height: none; }
+  .clinical-aside .clinical-contents { display: none; }
+  .mobile-contents { display: block; border-radius: 18px; background: #f0f2f3; padding: 20px 24px; margin-bottom: 32px; }
+  .mobile-contents summary { cursor: pointer; font-size: 17px; font-weight: 600; }
+  .mobile-contents .clinical-contents { margin: 22px 0 0; }
+  .mobile-contents .clinical-contents strong { display: none; }
+  .clinical-contents { grid-template-columns: 1fr; }
+  .clinical-contents a { font-size: 15px; }
+  .clinical-card h2 { font-size: 27px; }
+  .clinical-card p, .clinical-card li, .article-body p, .article-body li { font-size: 17px; }
+  .listing-grid { grid-template-columns: 1fr; }
+  .listing-card { padding: 28px; }
+}
+@media (max-width: 600px) {
+  .team-directory .team-profiles { grid-template-columns: 1fr; }
+  .therapy-grid { grid-template-columns: 1fr; }
+  .team-profiles, .team-preview .team-profiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .therapy-card > img { aspect-ratio: 3 / 2; }
+  .team-card-copy { padding: 12px; }
+}
+
+/* A quieter homepage: one group portrait and a single practical closing card. */
+.team-feature{display:grid;grid-template-columns:1.5fr 1fr;align-items:center;background:#f0f2f3;border-radius:28px;overflow:hidden}
+.team-group-photo{display:block;width:100%;height:auto;align-self:center}
+.team-feature-copy{padding:clamp(28px,4vw,58px)}
+.team-feature-copy h2{font-size:clamp(30px,3.3vw,46px);line-height:1.12;margin:20px 0}
+.team-feature-copy p{font-size:17px;line-height:1.75;margin:0 0 28px;color:var(--muted)}
+.team-feature-copy .text-link{gap:20px}
+.cost-overview{margin-bottom:90px}
+.hero-bottom{justify-content:flex-end}
+.hero-immersive .hero-actions{gap:18px;flex-wrap:wrap}
+.urgent-button{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:58px;padding:19px 24px;border:0;border-radius:14px;background:rgba(255,255,255,.14);color:#fff;font-size:15px;font-weight:500;line-height:1.4;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:background .2s,box-shadow .2s}
+.urgent-button::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(130px circle at var(--glow-x,50%) var(--glow-y,50%),#ffffff60,transparent 75%);opacity:0;transition:opacity .2s}
+.urgent-button .availability{flex-shrink:0}
+@media(hover:hover) and (pointer:fine){.urgent-button:hover{background:rgba(255,255,255,.2);box-shadow:0 6px 30px #ffffff12}.urgent-button:hover::before{opacity:1}}
+.urgent-button:focus-visible{background:rgba(255,255,255,.24)}
+footer{background:#f6f4f1;color:var(--ink)}
+.footer-top h3{color:var(--ink)}
+.footer-top p,.footer-bottom{color:var(--muted)}
+.footer-top a{color:var(--ink)}
+.footer-top a:hover,.footer-bottom a:hover{color:var(--blue)}
+@media(max-width:1000px){.team-feature{grid-template-columns:1.25fr 1fr}.team-feature-copy{padding:28px}.team-feature-copy h2{font-size:32px}.team-feature-copy p{font-size:16px}}
+@media(max-width:767px){.team-feature{grid-template-columns:1fr;border-radius:22px}.team-feature-copy{padding:30px}.team-feature-copy h2{max-width:15ch}.team-feature-copy p{max-width:45ch}.cost-overview{margin-bottom:56px}.urgent-button{font-size:14px;min-height:54px;padding:17px 22px}.hero-immersive .hero-actions{gap:14px}}
+@media(prefers-reduced-motion:reduce){.urgent-button,.urgent-button::before{transition:none}.urgent-button::before{background:radial-gradient(130px circle at 50% 50%,#ffffff40,transparent 75%)}}
+
+/* Smaller team portraits with enough room for names and contact details. */
+.team-directory .team-profiles{grid-template-columns:repeat(5,minmax(0,1fr));gap:26px}
+.team-directory .team-person{border-radius:18px}
+.team-directory .team-card-copy{padding:20px 18px}
+.team-directory .team-person h3{font-size:18px;line-height:1.4;margin-bottom:10px}
+.team-directory .team-role{font-size:14px;line-height:1.65}
+.team-directory .team-contact{margin-top:16px}
+.team-directory .team-contact a{font-size:12px;line-height:1.7}
+.weekly-hours{margin:20px 0 28px;font-size:15px}
+.weekly-hours>div{display:flex;justify-content:space-between;gap:24px;padding:11px 0}
+.weekly-hours>div:nth-child(even){background:#f7f8f8;border-radius:8px;margin-inline:-10px;padding-inline:10px}
+.weekly-hours dt{font-weight:500;color:var(--ink)}
+.weekly-hours dd{margin:0;text-align:right;color:var(--muted)}
+.info-card .hours-intro{font-size:14px;margin-bottom:0}
+.contact-grid{align-items:start}
+.contact-grid .map-card{display:block;padding:0;background:#f0f2f3;overflow:hidden;text-align:left;border-radius:26px}
+.contact-map{height:490px;background:#edf0ed}
+.contact-map iframe{width:100%;height:100%;display:block;border:0;filter:grayscale(.65) saturate(.65);color-scheme:light}
+.map-caption{padding:30px}
+.map-caption h2{font-size:27px;margin-top:12px}
+.map-caption p{font-size:15px;margin:10px 0 0;color:var(--muted)}
+.map-caption .button{margin-top:22px;font-size:14px}
+@media(max-width:1200px){.team-directory .team-profiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}}
+@media(max-width:900px){.team-directory .team-profiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:767px){.contact-map{height:360px}.map-caption{padding:26px}.weekly-hours{font-size:14px}}
+@media(max-width:600px){.team-directory .team-profiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.team-directory .team-card-copy{padding:18px 14px}.team-directory .team-person h3{font-size:16px}.team-directory .team-role{font-size:13px}.team-directory .team-contact a{font-size:12px}.team-directory .placeholder-tag{font-size:9px;padding:5px}}
+@media(max-width:360px){.team-directory .team-profiles{grid-template-columns:minmax(0,230px);justify-content:center}}
+
+.contact-map{position:relative;height:490px}.contact-map img{width:100%;height:100%;display:block;object-fit:cover}.map-scale-note{position:absolute;bottom:14px;left:18px;right:18px;font-size:11px;color:#626776;background:#ffffffdf;border-radius:8px;padding:8px 12px;width:max-content;max-width:calc(100% - 36px)}
+@media(max-width:767px){.contact-map{height:360px}}

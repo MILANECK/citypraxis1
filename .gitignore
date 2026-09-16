@@ -1,0 +1,8 @@
+node_modules/
+data/
+backups/
+public/uploads/
+.env
+.sites-runtime/
+test-results/
+*.log

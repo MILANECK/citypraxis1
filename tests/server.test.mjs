@@ -1,0 +1,78 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { openDatabase,passwordHash,contentSnapshot } from '../src/database.mjs';
+import { createApp } from '../src/server.mjs';
+import { mkdtempSync,rmSync,readFileSync,unlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join,resolve,sep } from 'node:path';
+
+test('staff authorization, draft isolation, revisions, request handling and sessions',async()=>{
+  const db=openDatabase(':memory:');
+  const add=db.prepare('INSERT INTO users(email,name,password,role) VALUES(?,?,?,?)');
+  for(const role of ['owner','editor','reception'])add.run(role+'@test.local',role,passwordHash('test-password-strong'),role);
+  const server=createApp(db);await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const origin=`http://127.0.0.1:${server.address().port}`;
+  const call=async(path,method='GET',body,session={},extra={})=>{const res=await fetch(origin+'/api/'+path,{method,headers:{Origin:origin,'Content-Type':'application/json',Cookie:session.cookie||'','X-CSRF-Token':session.csrf||'',...extra},...(body?{body:JSON.stringify(body)}:{})});return {status:res.status,data:await res.json(),cookie:res.headers.get('set-cookie')?.split(';')[0]};};
+  const login=async role=>{const r=await call('login','POST',{email:role+'@test.local',password:'test-password-strong'});assert.equal(r.status,200);const me=await call('me','GET',null,{cookie:r.cookie});return {cookie:r.cookie,csrf:me.data.csrf};};
+  try{
+    assert.equal((await call('admin/requests')).status,401);
+    const owner=await login('owner'),editor=await login('editor'),reception=await login('reception');
+    const review={title:'Test review',body:'Fixture text only',rating:'5',source:'Test fixture'};
+    assert.equal((await call('admin/content/reviews/example','PUT',{data:review},editor)).status,200);
+    assert.equal((await call('content')).data.reviews.length,0);
+    assert.equal((await call('admin/content/reviews/example','PUT',{data:review,publish:true},editor)).status,200);
+    assert.equal((await call('content')).data.reviews[0].body,review.body);
+    assert.equal((await call('admin/content/reviews/example','PATCH',{},editor)).status,200);
+    assert.equal((await call('content')).data.reviews.length,0);
+    assert.equal((await call('admin/requests','GET',null,editor)).status,403);
+    assert.equal((await call('admin/content','GET',null,reception)).status,403);
+    assert.equal((await call('admin/users','GET',null,editor)).status,403);
+    assert.equal((await call('admin/content/faqs/test','PUT',{data:{title:'test'}},{cookie:owner.cookie})).status,403);
+    assert.equal((await call('admin/content/faqs/test','PUT',{data:{title:'test'}},owner,{Origin:'http://evil.example'})).status,403);
+    const original=(await call('content')).data.pages.find(p=>p.id==='home');
+    const draft={...original,title:'PRIVATE DRAFT'};
+    assert.equal((await call('admin/content/pages/home','PUT',{data:draft},editor)).status,200);
+    assert.equal((await call('content')).data.pages.find(p=>p.id==='home').title,original.title);
+    assert.equal((await call('admin/content','GET',null,editor)).data.pages.find(p=>p.id==='home').title,'PRIVATE DRAFT');
+    assert.equal((await call('admin/content/pages/home','PUT',{data:draft,publish:true},editor)).status,200);
+    assert.equal((await call('content')).data.pages.find(p=>p.id==='home').title,'PRIVATE DRAFT');
+    assert.ok((await call('admin/revisions?collection=pages&id=home','GET',null,editor)).data.length>=2);
+    assert.equal((await call('admin/content/pages/home','DELETE',{},owner)).status,400);
+    assert.equal((await call('admin/content/faqs/test','PUT',{data:{title:'Example'},publish:true},owner)).status,200);
+    await call('admin/content/faqs/test','PATCH',{},owner);
+    assert.equal((await call('content')).data.faqs.some(f=>f.id==='test'),false);
+    assert.equal((await call('admin/content/faqs/test','DELETE',{},reception)).status,403);
+    assert.equal((await call('admin/content/faqs/test','DELETE',{},editor)).status,200);
+    assert.equal((await call('admin/content','GET',null,editor)).data.faqs.some(f=>f.id==='test'),false);
+    assert.equal((await call('admin/content/team/delete-test','PUT',{data:{title:'QA only',role:'Physiotherapy'},publish:true},editor)).status,200);
+    assert.equal((await call('admin/content/team/delete-test','DELETE',{},editor)).status,200);
+    assert.equal((await call('content')).data.team.some(f=>f.id==='delete-test'),false);
+    assert.equal((await call('admin/content/settings/practice','DELETE',{},owner)).status,400);
+    const practice=(await call('content')).data.settings[0];
+    assert.equal(practice.monday,'08:00–20:00');
+    assert.equal(practice.saturdayHoursEn,'8 am–2 pm');
+    assert.equal(practice.sundayEn,'Closed');
+    assert.equal((await call('requests','POST',{name:'Test',email:'invalid',consent:true})).status,400);
+    const request=await call('requests','POST',{name:'Test person',email:'patient@test.local',consent:true,preference:'Afternoon'});
+    assert.equal(request.status,201);
+    assert.equal((await call('admin/requests','PUT',{id:request.data.id,status:'confirmed'},reception)).status,200);
+    assert.equal((await call('admin/requests','GET',null,reception)).data[0].status,'confirmed');
+    assert.equal((await call('admin/requests','DELETE',{id:request.data.id},reception)).status,403);
+    assert.equal((await call('admin/media','POST',{data:'data:image/png;base64,YmFk',alt:'fake'},owner)).status,400);
+    const uploaded=await fetch(origin+'/api/admin/media-upload?name=qa-logo.png&alt=QA%20logo',{method:'POST',headers:{Origin:origin,'Content-Type':'image/png',Cookie:editor.cookie,'X-CSRF-Token':editor.csrf},body:readFileSync('public/assets/wordmark-white.png')});
+    assert.equal(uploaded.status,201);const uploadedMedia=await uploaded.json();const uploadedFile=resolve('public','.'+uploadedMedia.path);assert.ok(uploadedFile.startsWith(resolve('public/uploads')+sep));
+    try{assert.equal((await fetch(origin+uploadedMedia.path)).status,200);assert.ok((await call('admin/media','GET',null,editor)).data.some(m=>m.path===uploadedMedia.path));}finally{unlinkSync(uploadedFile);}
+    assert.equal((await call('admin/users','PUT',{id:1,active:false},owner)).status,400);
+    assert.equal((await call('logout','POST',{},owner)).status,200);
+    assert.equal((await call('me','GET',null,owner)).status,401);
+    assert.equal((await fetch(origin+'/admin')).status,200);
+    assert.equal((await fetch(origin+'/assets/wordmark-black.png')).status,200);
+    const range=await fetch(origin+'/assets/hero-film.mp4',{headers:{Range:'bytes=0-1'}});assert.equal(range.status,206);assert.equal(range.headers.get('content-type'),'video/mp4');assert.equal((await range.arrayBuffer()).byteLength,2);
+    const badRange=await fetch(origin+'/assets/hero-film.mp4',{headers:{Range:'bytes=999999999-'}});assert.equal(badRange.status,416);
+    const unauthUpload=await fetch(origin+'/api/admin/media-upload?name=test.mp4&alt=test',{method:'POST',headers:{Origin:origin,'Content-Type':'video/mp4'},body:Buffer.from('not a video')});assert.equal(unauthUpload.status,401);
+  }finally{await new Promise(resolve=>server.close(resolve));db.close();}
+});
+test('SQLite migrations are repeatable and published content survives reopen',()=>{
+  const folder=mkdtempSync(join(tmpdir(),'citypraxis-test-')),file=join(folder,'test.sqlite');
+  try{let db=openDatabase(file);const total=contentSnapshot(db).services.length;db.prepare("UPDATE content SET draft=?,published=? WHERE collection='faqs' AND id='verordnung'").run('{"id":"verordnung","title":"Persistent"}','{"id":"verordnung","title":"Persistent"}');db.close();db=openDatabase(file);assert.equal(contentSnapshot(db).services.length,total);assert.equal(contentSnapshot(db).faqs.find(f=>f.id==='verordnung').title,'Persistent');db.close();}finally{rmSync(folder,{recursive:true,force:true});}
+});
