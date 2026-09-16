@@ -259,8 +259,7 @@ footer{background:#f6f4f1;color:var(--ink)}
   .faq-list details[open] summary:hover>span{transform:rotate(45deg) scale(1.08)}
   :where(.text-link,.specialty-links a,.clinical-contents a,.breadcrumb,.course-link a,.footer-top a,.footer-bottom a,.desktop-nav a,.mobile-nav a:not(.button)):hover{color:var(--blue);transform:translateY(-2px)}
   .related-links a:hover{color:var(--blue);transform:translateX(5px);background:#e9f2f5}
-  .quick-links>a:hover{color:var(--blue);transform:translateY(-3px);background:#fff;box-shadow:0 14px 34px #2223440b}
-  .quick-links>a:first-child:hover{background:transparent;box-shadow:none;transform:translateY(-2px)}
+  .quick-links>a:hover{color:var(--blue);transform:translateY(-2px);background:transparent;box-shadow:none}
   .quick-links>a:hover .quick-icon{transform:translateY(-2px) scale(1.06);filter:saturate(1.08)}
   .quick-links>a:nth-child(2):hover .quick-icon{transform:translateY(-2px) scale(1.08)}
   .therapy-card:hover{transform:translateY(-6px);box-shadow:0 20px 48px #22234412}

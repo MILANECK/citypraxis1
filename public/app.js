@@ -122,8 +122,8 @@ function route() {
 }
 function bind() {
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
-  if((location.pathname.replace(/\/$/,'')||'/')==='/'&&!reducedMotion.matches){
-    const headlines=[...document.querySelectorAll('.hero-immersive h1, #therapien .section-heading h2, .team-feature h2, .reviews-section .section-heading h2, .cost-overview h2')];
+  if(!reducedMotion.matches){
+    const headlines=[...document.querySelectorAll('#main h1, #main h2')];
     const revealObserver=new IntersectionObserver(entries=>{
       entries.forEach(entry=>{
         if(!entry.isIntersecting)return;
