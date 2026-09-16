@@ -18,6 +18,8 @@ p { font-size: 18px; line-height: 1.8; }
 .quick-links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; padding-block: 32px; }
 .quick-links > a { display: flex; align-items: center; gap: 14px; padding-block: 12px; }
 .quick-icon { width: 42px; height: 42px; object-fit: contain; flex: 0 0 42px; }
+.quick-links > a:first-child .quick-icon { width: 36px; height: 36px; flex-basis: 36px; margin: 3px; }
+.arrow-symbol { font-family: Arial, sans-serif; font-variant-emoji: text; }
 .quick-links strong { display: block; font-size: 15px; line-height: 1.5; font-weight: 600; }
 .quick-links div > span { display: block; font-size: 13px; line-height: 1.6; margin-top: 3px; color: var(--muted); }
 .quick-links + .section { padding-top: 45px; }

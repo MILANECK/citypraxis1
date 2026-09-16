@@ -11,7 +11,7 @@
     if (language !== 'en' || !value) return value;
     const trimmed = value.trim();
     if (dictionary[trimmed]) return value.replace(trimmed, dictionary[trimmed]);
-    const core = trimmed.replace(/^[←+]\s*|\s*[↗→Ⅱ▷]$/g, '').trim();
+    const core = trimmed.replace(/^[←+]\s*|\s*(?:↗︎?|→|Ⅱ|▷)$/g, '').trim();
     if (dictionary[core]) return value.replace(core, dictionary[core]);
     return value.replace(/^Guten Tag, (.+)\.$/, 'Hello, $1.').replace(/^Vielen Dank, (.+)\.$/, 'Thank you, $1.')
       .replace(/(\d) von 5 Sternen/g, '$1 out of 5 stars').replace(/ – Team ansehen/g, ' – View team').replace(/\(Beispielprofil\)/g, '(sample profile)')
