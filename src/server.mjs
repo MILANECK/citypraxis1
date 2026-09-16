@@ -3,8 +3,11 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 import { randomBytes, createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
+import { loadEnvFile } from 'node:process';
 import { serveFile, mediaType } from './media.mjs';
 import { openDatabase, contentSnapshot, collections, passwordHash, verifyPassword } from './database.mjs';
+import { hasSupabaseConfig } from './supabase-client.mjs';
+import { createSupabaseApp } from './supabase-server.mjs';
 
 const root = resolve('public');
 const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.mp4':'video/mp4' };
@@ -184,6 +187,9 @@ export function createApp(db = openDatabase()) {
   });
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  try { loadEnvFile('.env'); } catch {}
   const port = Number(process.env.PORT || 3000);
-  createApp().listen(port,'127.0.0.1',() => console.log(`Citypraxis running at http://127.0.0.1:${port}\nAdmin: http://127.0.0.1:${port}/admin\nCreate an owner with: npm run admin:create`));
+  const usingSupabase = hasSupabaseConfig();
+  const app = usingSupabase ? createSupabaseApp() : createApp();
+  app.listen(port,'127.0.0.1',() => console.log(`Citypraxis running at http://127.0.0.1:${port}\nAdmin: http://127.0.0.1:${port}/admin\nBackend: ${usingSupabase ? 'Supabase' : 'local SQLite'}`));
 }
