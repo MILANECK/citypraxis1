@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: citypraxis-wien
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: ""
+    startCommand: node src/server.mjs
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.1
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: website-media

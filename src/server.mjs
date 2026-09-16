@@ -44,6 +44,7 @@ export function createApp(db = openDatabase()) {
         return;
       }
       if (!path.startsWith('/api/')) return json(405,{error:'Methode nicht erlaubt.'});
+      if (path === '/api/health' && req.method === 'GET') return json(200,{ok:true,backend:'sqlite'});
       const token = /(?:^|;\s*)cp_session=([a-f0-9]+)/.exec(req.headers.cookie || '')?.[1];
       const user = token && db.prepare('SELECT u.id,u.email,u.name,u.role,s.csrf FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token=? AND s.expires>? AND u.active=1').get(hash(token),Date.now());
       let body = {};
@@ -189,7 +190,8 @@ export function createApp(db = openDatabase()) {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try { loadEnvFile('.env'); } catch {}
   const port = Number(process.env.PORT || 3000);
+  const host = process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
   const usingSupabase = hasSupabaseConfig();
   const app = usingSupabase ? createSupabaseApp() : createApp();
-  app.listen(port,'127.0.0.1',() => console.log(`Citypraxis running at http://127.0.0.1:${port}\nAdmin: http://127.0.0.1:${port}/admin\nBackend: ${usingSupabase ? 'Supabase' : 'local SQLite'}`));
+  app.listen(port,host,() => console.log(`Citypraxis listening on ${host}:${port}\nAdmin: /admin\nBackend: ${usingSupabase ? 'Supabase' : 'local SQLite'}`));
 }

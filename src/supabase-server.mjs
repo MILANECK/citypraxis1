@@ -55,7 +55,7 @@ export function createSupabaseApp() {
       if(!path.startsWith('/api/'))return json(405,{error:'Methode nicht erlaubt.'});
       const user=await currentUser(req);let body={};
       if(!['GET','HEAD'].includes(req.method)){
-        const expected=process.env.APP_ORIGIN||`http://${req.headers.host}`;
+        const expected=process.env.APP_ORIGIN||process.env.RENDER_EXTERNAL_URL||`http://${req.headers.host}`;
         if(req.headers.origin!==expected||req.headers['sec-fetch-site']==='cross-site')return json(403,{error:'Ungültiger Ursprung.'});
         if(path==='/api/admin/media-upload'&&req.method==='POST'){
           if(!user)return json(401,{error:'Bitte anmelden.'});
@@ -74,6 +74,7 @@ export function createSupabaseApp() {
         try{body=JSON.parse(raw||'{}');}catch{return json(400,{error:'Ungültige Anfrage.'});}
         if(!body||Array.isArray(body)||typeof body!=='object')return json(400,{error:'Ungültige Anfrage.'});
       }
+      if(path==='/api/health'&&req.method==='GET')return json(200,{ok:true,backend:'supabase'});
       if(path==='/api/content'&&req.method==='GET')return json(200,snapshots(await supabase.rest('content','?select=collection,id,published&published=not.is.null'),false));
       if(path==='/api/requests'&&req.method==='POST'){
         limit(`request:${req.socket.remoteAddress}`,10);if(body.website)return json(400,{error:'Anfrage konnte nicht verarbeitet werden.'});
