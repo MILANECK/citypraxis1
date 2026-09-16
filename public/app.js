@@ -4,14 +4,17 @@ const externalUrl=value=>{try{const url=new URL(value);return ['https:','http:']
 const paragraph = text => String(text || '').split('\n\n').filter(t=>t.trim()).map(t => t.startsWith('### ')?`<h3>${esc(t.slice(4))}</h3>`:t.startsWith('## ')?`<h2>${esc(t.slice(3))}</h2>`:t.split('\n').every(line=>line.startsWith('- '))?`<ul>${t.split('\n').map(line=>`<li>${esc(line.slice(2))}</li>`).join('')}</ul>`:`<p>${esc(t).replaceAll('\n','<br>')}</p>`).join('');
 let data;
 const arrow = '<span aria-hidden="true">↗</span>';
-const icons = {
-  jaw: '<path d="M14 7c-5 1-7 6-6 12l3 9 9 7 8-8 2-12c0-5-4-9-10-9M11 24l7 3 8-3M18 16v5h4"/>',
-  head: '<path d="M26 34v-6c5-3 7-7 6-12-1-6-5-10-12-10S9 10 9 16l-3 7h5v6h7v5M21 11l-4 8h7l-4 7"/>',
-  ear: '<path d="M12 18c-1-8 4-13 10-12s10 5 9 11c-1 6-6 7-7 11-1 5-7 8-10 3M17 18c0-4 1-7 5-7 4 0 5 5 2 8l-5 3"/>',
-  balance: '<path d="M8 18a13 13 0 0 1 24-3M31 8l1 7-7-1M32 24A13 13 0 0 1 8 27M9 34l-1-7 7 1"/><circle cx="20" cy="21" r="4"/>',
-  movement: '<circle cx="24" cy="8" r="3"/><path d="m12 19 8-5 7 4 7-1M20 14l-3 11 8 4 2 7M17 25l-7 9M12 19l-4-1"/>'
+const healthIcons = {
+  jaw: 'jaw_pain.svg',
+  head: 'migraine_head.svg',
+  ear: 'tinnitus_ear.svg',
+  balance: 'dizzy_head.svg',
+  movement: 'knee_pain.svg'
 };
-function icon(name) { return `<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name] || icons.movement}</svg>`; }
+function icon(name) {
+  const file = healthIcons[name] || healthIcons.movement;
+  return `<img class="health-icon" src="/assets/icons/health/${file}" alt="" width="74" height="64" aria-hidden="true">`;
+}
 function header() {
   const links = [['/leistungen','Therapien'],['/schwerpunkte','Schwerpunkte'],['/ueber-uns','Team'],['/preise','Preise'],['/ablauf-wahltherapie','Ablauf'],['/kontakt','Kontakt']].map(([url,label])=>`<a href="${url}"${location.pathname===url?' aria-current="page"':''}>${label}</a>`).join('');
   return `<div class="topline"><div class="container"><span>Mitten in Wien. Ganz bei Ihnen.</span><a href="/kontakt">Stubenbastei 12 · 1010 Wien ${arrow}</a></div></div>
