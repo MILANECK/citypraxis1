@@ -251,7 +251,7 @@ footer{background:#f6f4f1;color:var(--ink)}
 .therapy-card{transition:transform .42s cubic-bezier(.22,1,.36,1),box-shadow .42s ease}
 .therapy-card img{transition:transform .65s cubic-bezier(.22,1,.36,1),filter .45s ease}
 .quick-links>a{position:relative;border-radius:16px;transition:color .3s ease,transform .4s cubic-bezier(.22,1,.36,1),background-color .35s ease,box-shadow .4s ease}
-.quick-links>a:first-child .quick-symbol{transition:transform .5s cubic-bezier(.22,1,.36,1),color .3s ease}
+.quick-links>a:nth-child(2) .quick-symbol{transition:transform .5s cubic-bezier(.22,1,.36,1),color .3s ease}
 
 @media(hover:hover) and (pointer:fine){
   .faq-list summary:hover{color:var(--blue);padding-left:7px}
@@ -260,13 +260,14 @@ footer{background:#f6f4f1;color:var(--ink)}
   :where(.text-link,.specialty-links a,.clinical-contents a,.breadcrumb,.course-link a,.footer-top a,.footer-bottom a,.desktop-nav a,.mobile-nav a:not(.button)):hover{color:var(--blue);transform:translateY(-2px)}
   .related-links a:hover{color:var(--blue);transform:translateX(5px);background:#e9f2f5}
   .quick-links>a:hover{color:var(--blue);transform:translateY(-3px);background:#fff;box-shadow:0 14px 34px #2223440b}
-  .quick-links>a:first-child:hover .quick-symbol{color:var(--pink);transform:rotate(18deg) scale(1.08)}
+  .quick-links>a:first-child:hover{background:transparent;box-shadow:none;transform:translateY(-2px)}
+  .quick-links>a:nth-child(2):hover .quick-symbol{color:var(--pink);transform:rotate(18deg) scale(1.08)}
   .therapy-card:hover{transform:translateY(-6px);box-shadow:0 20px 48px #22234412}
   .therapy-card:hover img{transform:scale(1.025);filter:saturate(1.04)}
   .therapy-card:hover .text-link{color:var(--blue);transform:translateX(3px)}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .faq-list summary,.faq-list summary>span,.therapy-card,.therapy-card img,.quick-links>a,.quick-links>a:first-child .quick-symbol{transition:none}
+  .faq-list summary,.faq-list summary>span,.therapy-card,.therapy-card img,.quick-links>a,.quick-links>a:nth-child(2) .quick-symbol{transition:none}
   :where(.text-link,.quick-links>a,.specialty-links a,.clinical-contents a,.related-links a,.breadcrumb,.course-link a,.footer-top a,.footer-bottom a,.desktop-nav a,.mobile-nav a:not(.button)):hover{transform:none}
 }
