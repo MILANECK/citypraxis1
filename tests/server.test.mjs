@@ -18,6 +18,7 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     assert.equal((await call('admin/requests')).status,401);
     const owner=await login('owner'),editor=await login('editor'),reception=await login('reception');
     const review={title:'Test review',body:'Fixture text only',rating:'5',source:'Test fixture'};
+    assert.equal((await call('admin/content/reviews/unsafe-link','PUT',{data:{...review,sourceUrl:'javascript:alert(1)'}},editor)).status,400);
     assert.equal((await call('admin/content/reviews/example','PUT',{data:review},editor)).status,200);
     assert.equal((await call('content')).data.reviews.length,0);
     assert.equal((await call('admin/content/reviews/example','PUT',{data:review,publish:true},editor)).status,200);

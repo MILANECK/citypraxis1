@@ -103,6 +103,7 @@ export function createSupabaseApp() {
           if(!body.data||typeof body.data!=='object'||Array.isArray(body.data))return json(400,{error:'Inhalt fehlt.'});const data={id};
           for(const [key,value]of Object.entries(body.data))if(/^[a-zA-Z]+$/.test(key)&&!['published','dirty','id','__proto__','constructor','prototype'].includes(key)&&['string','number','boolean'].includes(typeof value))data[key]=typeof value==='string'?value.slice(0,20000):value;
           if(!clean(data.title))return json(400,{error:'Titel erforderlich.'});
+          if(data.sourceUrl){try{const source=new URL(data.sourceUrl);if(!['https:','http:'].includes(source.protocol))throw new Error();data.sourceUrl=source.href;}catch{return json(400,{error:'Bitte einen gültigen Link zur Originalbewertung verwenden.'});}}
           const mediaOk=value=>!value||/^\/(assets|uploads)\/[a-zA-Z0-9._-]+$/.test(value)||value.startsWith(storagePrefix);if(!mediaOk(data.image)||!mediaOk(data.video))return json(400,{error:'Bitte eine Datei aus der Mediathek verwenden.'});
           if(row)await supabase.rest('revisions','',{method:'POST',body:{collection,entity_id:id,snapshot:row.draft,actor:user.id,actor_email:user.email}});
           await supabase.rest('content','?on_conflict=collection,id',{method:'POST',prefer:'resolution=merge-duplicates,return=representation',body:{collection,id,draft:data,published:body.publish?data:(row?.published||null),updated_at:new Date().toISOString()}});await audit(user,body.publish?'publish':'save draft',`${collection}/${id}`);return json(200,{ok:true});
