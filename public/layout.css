@@ -287,21 +287,20 @@ footer{background:#f6f4f1;color:var(--ink)}
 .headline-reveal.is-visible{opacity:1;filter:blur(0);transform:perspective(700px) translateY(0) rotateX(0)}
 @media(prefers-reduced-motion:reduce){.headline-reveal,.headline-reveal.is-visible{opacity:1;filter:none;transform:none;transition:none}}
 
-/* Recessed health pictograms: paired shade and highlight mimic a soft stamping die. */
+/* A shared optical box keeps differently shaped specialty symbols aligned. */
 .listing-card .health-icon{
   display:block;
-  width:74px;
+  width:64px;
   height:64px;
   margin:0 0 22px;
   object-fit:contain;
-  object-position:left center;
-  filter:drop-shadow(-1.3px -1.3px 1px rgba(21,42,68,.28)) drop-shadow(1.5px 1.5px 1px rgba(255,255,255,.98));
-  opacity:.95;
-  transition:filter .45s ease,transform .45s cubic-bezier(.22,1,.36,1);
+  object-position:center;
+  filter:none;
+  opacity:1;
+  transition:transform .45s cubic-bezier(.22,1,.36,1);
 }
 @media(hover:hover){
   .listing-card:hover .health-icon{
-    filter:drop-shadow(-1.4px -1.4px 1px rgba(0,92,125,.30)) drop-shadow(1.6px 1.6px 1px rgba(255,255,255,1));
     transform:translateY(-2px);
   }
 }
