@@ -122,6 +122,21 @@ function route() {
 }
 function bind() {
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+  if((location.pathname.replace(/\/$/,'')||'/')==='/'&&!reducedMotion.matches){
+    const headlines=[...document.querySelectorAll('.hero-immersive h1, #therapien .section-heading h2, .team-feature h2, .reviews-section .section-heading h2, .cost-overview h2')];
+    const revealObserver=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(!entry.isIntersecting)return;
+        entry.target.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      });
+    },{threshold:.18,rootMargin:'0px 0px -8% 0px'});
+    headlines.forEach((headline,index)=>{
+      headline.classList.add('headline-reveal');
+      headline.style.setProperty('--reveal-delay',`${Math.min(index,3)*45}ms`);
+      revealObserver.observe(headline);
+    });
+  }
   document.querySelectorAll('.faq-list details').forEach(details=>{
     const summary=details.querySelector(':scope > summary'),content=details.querySelector(':scope > div');
     if(!summary||!content)return;
