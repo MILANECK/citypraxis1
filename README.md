@@ -1,6 +1,6 @@
 # Citypraxis Wien
 
-Local German/English redesign using the supplied cyan/magenta logos. Responsive public website, SQLite content database, and authenticated administration. Requires **Node.js 24 or newer**; no external packages or database service are needed.
+German/English redesign using the supplied cyan/magenta logos. Responsive public website, Supabase content database, Storage, Auth, and authenticated administration. Requires **Node.js 24 or newer**. A local SQLite fallback remains available for isolated development and tests.
 
 ## Run locally
 
@@ -9,15 +9,9 @@ cd C:\Users\kovac\Documents\GitHub1\citypraxis1
 node src/server.mjs
 ```
 
-Open http://127.0.0.1:3000. For automatic server restart during development, use `node --watch src/server.mjs` instead. Standard npm aliases are also provided, but this machine currently has a broken npm launcher; the direct Node commands work without npm.
+Open http://127.0.0.1:3000. For automatic server restart during code development, use `node --watch src/server.mjs` instead. The server loads `.env` automatically. When the Supabase variables are present it uses Supabase; otherwise it falls back to local SQLite.
 
-In a second terminal, create your owner account:
-
-```powershell
-node scripts/create-admin.mjs
-```
-
-Enter your email, name and a unique password of at least 12 characters. Password input is visible in this local CLI. No default account or password is shipped. Open http://127.0.0.1:3000/admin to log in.
+Create staff accounts through Admin → Benutzer & Rollen or Supabase Auth. Open http://127.0.0.1:3000/admin to log in.
 
 ## Included
 
@@ -51,11 +45,11 @@ Migration 5 adds English clinical copy from `src/english-content.mjs` without ch
 
 ## Data
 
-`data/citypraxis.sqlite` is created and seeded on first startup. Database migration version 1 is recorded in the `migrations` table. Public endpoints return only published content. The flexible `content` table stores structured JSON per collection with published and draft snapshots; users, sessions, requests, media and audit records use separate relational tables.
+Supabase stores CMS content, revisions, appointment requests, staff roles, media metadata and audit history. Supabase Auth stores passwords; Storage bucket `website-media` stores uploaded images and videos. Public endpoints return only published content. Use the administration console for live content changes.
 
-Uploaded images are in `public/uploads/`. Both uploads and runtime data are ignored by Git. Seed content is in `src/seed.mjs`; edits to the seed file do not overwrite an existing database. Use administration to change an initialized site.
+Copy `.env.example` to `.env` and fill the Supabase variables. `.env`, local SQLite data and local uploads are ignored by Git. The schema and initial content import are in `supabase/`; see `docs/supabase-setup.md`.
 
-Optional environment variables: `PORT` (default 3000), `DB_PATH` (default `data/citypraxis.sqlite`), `APP_ORIGIN` (exact browser origin for a future HTTPS reverse proxy). The server binds to `127.0.0.1` by default.
+Optional environment variables: `PORT` (default 3000), `DB_PATH` for SQLite fallback, and `APP_ORIGIN` (the exact browser origin). The server binds to `127.0.0.1` by default.
 
 ## Verify
 

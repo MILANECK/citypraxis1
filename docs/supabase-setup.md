@@ -125,18 +125,17 @@ node src/server.mjs
 
 Do not put these values in GitHub source files. If a deployment platform reads GitHub Actions secrets, create secrets with these exact names under **GitHub repository → Settings → Secrets and variables → Actions**.
 
-## 8. Required application migration
+## 8. Application connection status
 
-The site will not use Supabase merely because the schema and keys exist. The code still needs these changes:
+When all three Supabase variables are present, `src/server.mjs` now switches automatically to Supabase. The connected backend provides:
 
-1. Replace `src/database.mjs` SQLite calls with Supabase/Postgres queries.
-2. Replace `/api/login`, `/api/logout`, `/api/me`, account creation and password changes with Supabase Auth.
-3. Preserve HttpOnly server-managed auth cookies and role checks using `staff_profiles`.
-4. Replace filesystem uploads in `public/uploads` with the `website-media` bucket.
-5. Import current SQLite content and media records with `supabase/seed.sql`.
-6. Keep the existing validation, rate limiting, draft/publish rules and protected core records.
-7. Update backup instructions for Postgres and Storage.
-8. Run the complete server and browser test suite before production use.
+1. Supabase Auth for login, logout, staff creation, access control and password changes;
+2. Postgres storage for published content, drafts, revisions, appointment requests and audit history;
+3. role checks through `staff_profiles` with HttpOnly authentication cookies;
+4. uploads to the `website-media` Storage bucket;
+5. the existing validation, rate limiting, draft/publish rules and protected core records.
+
+Without those variables, the local SQLite backend remains available for isolated development and regression tests.
 
 Do not send medical reports, diagnoses or other clinical records through the appointment form. This database is for website content and appointment-contact requests, not patient records.
 
