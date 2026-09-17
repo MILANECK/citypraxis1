@@ -4,7 +4,7 @@ const externalUrl=value=>{try{const url=new URL(value);return ['https:','http:']
 const paragraph = text => String(text || '').split('\n\n').filter(t=>t.trim()).map(t => t.startsWith('### ')?`<h3>${esc(t.slice(4))}</h3>`:t.startsWith('## ')?`<h2>${esc(t.slice(3))}</h2>`:t.split('\n').every(line=>line.startsWith('- '))?`<ul>${t.split('\n').map(line=>`<li>${esc(line.slice(2))}</li>`).join('')}</ul>`:`<p>${esc(t).replaceAll('\n','<br>')}</p>`).join('');
 const optimizedImage=value=>value==='/assets/team-group.png'?'/assets/team-group.webp':/^\/assets\/[a-zA-Z0-9._-]+\.jpg$/.test(value||'')?value.replace(/\.jpg$/,'.webp'):value;
 let data;
-const arrow = '<span class="arrow-symbol" aria-hidden="true">↗︎</span>';
+const arrow = '<span class="arrow-symbol" aria-hidden="true"></span>';
 const healthIcons = {
   jaw: 'jaw_pain.svg',
   head: 'migraine_head.svg',
@@ -19,7 +19,7 @@ function icon(name) {
 function header() {
   const links = [['/leistungen','Therapien'],['/schwerpunkte','Schwerpunkte'],['/ueber-uns','Team'],['/preise','Preise'],['/ablauf-wahltherapie','Ablauf'],['/kontakt','Kontakt']].map(([url,label])=>`<a href="${url}"${location.pathname===url?' aria-current="page"':''}>${label}</a>`).join('');
   return `<div class="topline"><div class="container"><span>Mitten in Wien. Ganz bei Ihnen.</span><a href="/kontakt">Stubenbastei 12 · 1010 Wien ${arrow}</a></div></div>
-  <header class="header"><div class="container header-inner"><a href="/" class="brand" aria-label="Citypraxis Startseite"><img class="brand-symbol" src="/assets/logo-symbol.png" alt="" width="31" height="40"><img class="brand-wordmark" src="/assets/wordmark-black.png" alt="Citypraxis" width="218" height="29"></a><nav class="desktop-nav" aria-label="Hauptnavigation">${links}</nav><a class="button header-cta" href="/termin">Ersttermin buchen ${arrow}</a>${I18n.toggle()}<button class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Menü öffnen"><span></span><span></span></button></div><nav id="mobile-nav" class="mobile-nav" aria-label="Mobile Navigation" aria-hidden="true" inert><div class="mobile-nav-inner">${links}<a href="/termin">Ersttermin buchen ↗︎</a></div></nav></header>`;
+  <header class="header"><div class="container header-inner"><a href="/" class="brand" aria-label="Citypraxis Startseite"><img class="brand-symbol" src="/assets/logo-symbol.png" alt="" width="31" height="40"><img class="brand-wordmark" src="/assets/wordmark-black.png" alt="Citypraxis" width="218" height="29"></a><nav class="desktop-nav" aria-label="Hauptnavigation">${links}</nav><a class="button header-cta" href="/termin">Ersttermin buchen ${arrow}</a>${I18n.toggle()}<button class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Menü öffnen"><span></span><span></span></button></div><nav id="mobile-nav" class="mobile-nav" aria-label="Mobile Navigation" aria-hidden="true" inert><div class="mobile-nav-inner">${links}<a href="/termin">Ersttermin buchen ${arrow}</a></div></nav></header>`;
 }
 function footer() {
   const s = data.settings[0];
