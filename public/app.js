@@ -38,7 +38,7 @@ function heroMarkup(h,s) {
   </section>`;
 }
 function therapyCard(s) {
-  return `<a class="therapy-card" href="/leistungen/${esc(s.id)}">${s.image?`<img src="${esc(optimizedImage(s.image))}" alt="" loading="lazy" decoding="async">`:''}<div><h3>${esc(s.title)}</h3><span class="text-link">Behandlung kennenlernen ${arrow}</span></div></a>`;
+  return `<a class="therapy-card" href="/leistungen/${esc(s.id)}">${s.image?`<div class="therapy-card-media"><img src="${esc(optimizedImage(s.image))}" alt="" loading="lazy" decoding="async"></div>`:''}<div class="therapy-card-copy"><h3>${esc(s.title)}</h3><span class="text-link">Behandlung kennenlernen ${arrow}</span></div></a>`;
 }
 function home() {
   const h = data.pages.find(p=>p.id==='home'), s = data.settings[0];
