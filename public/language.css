@@ -4,5 +4,5 @@
 .language-toggle a:focus-visible{outline:2px solid #0085ac;outline-offset:2px}
 .header-inner{gap:18px}.admin-header .language-toggle{margin-left:auto}.login-layout main{position:relative}.login-layout main>.language-toggle{position:absolute;top:24px;right:24px}
 .translation-fields{margin:20px 0;padding:20px;background:#f6f8f9;border-radius:16px}.translation-fields h3{margin:0 0 10px}.translation-fields p{font-size:13px;color:#626976}.translation-fields label{display:block;margin-top:14px}
-@media(max-width:1250px) and (min-width:901px){.header-inner{gap:12px}.desktop-nav{gap:14px}.header-cta{padding:12px;font-size:12px}.brand img{width:175px}}
-@media(max-width:600px){.header-inner{gap:10px}.header-inner .brand{margin-right:auto}.header-inner .brand img{width:150px}.language-toggle a{padding:6px 7px}.admin-header{flex-wrap:wrap}.admin-header .local-badge{display:none}}
+@media(max-width:1250px) and (min-width:901px){.header-inner{gap:12px}.desktop-nav{gap:14px}.header-cta{padding:12px;font-size:12px}.brand .brand-wordmark{width:175px}}
+@media(max-width:600px){.header-inner{gap:10px}.header-inner .brand{margin-right:auto}.header-inner .brand .brand-wordmark{width:140px}.header-inner .brand .brand-symbol{width:26px}.language-toggle a{padding:6px 7px}.admin-header{flex-wrap:wrap}.admin-header .local-badge{display:none}}

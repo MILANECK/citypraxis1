@@ -305,3 +305,29 @@ footer{background:#f6f4f1;color:var(--ink)}
   }
 }
 @media(prefers-reduced-motion:reduce){.listing-card .health-icon{transition:none}.listing-card:hover .health-icon{transform:none}}
+
+/* Compact brand lockups in the navigation and footer. */
+.header-inner .brand{display:flex;align-items:center;gap:10px}
+.header-inner .brand .brand-symbol{width:31px;height:40px;object-fit:contain;flex:0 0 auto}
+.header-inner .brand .brand-wordmark{width:204px;height:auto;flex:0 0 auto}
+.footer-symbol{width:38px;height:auto;margin-top:18px}
+
+/* The header underline does not move the link, avoiding hover/cursor oscillation. */
+.desktop-nav a{position:relative;transform:none!important}
+.desktop-nav a::after{content:"";position:absolute;left:0;right:100%;bottom:-7px;height:1px;background:var(--blue);transition:right .3s cubic-bezier(.22,1,.36,1)}
+@media(hover:hover) and (pointer:fine){.desktop-nav a:hover::after,.desktop-nav a[aria-current]::after{right:0}}
+
+/* Smooth mobile/tablet navigation drawer with a softly rounded lower edge. */
+@media(max-width:1150px){
+  .header .mobile-nav{display:grid;grid-template-rows:0fr;opacity:0;transform:translateY(-8px);pointer-events:none;padding:0 24px;border:0;border-radius:0 0 24px 24px;box-shadow:0 20px 42px transparent;overflow:hidden;transition:grid-template-rows .46s cubic-bezier(.22,1,.36,1),opacity .28s ease,transform .46s cubic-bezier(.22,1,.36,1),box-shadow .4s ease}
+  .mobile-nav-inner{min-height:0;overflow:hidden;padding:0;transition:padding .46s cubic-bezier(.22,1,.36,1)}
+  .header .mobile-nav.is-open{grid-template-rows:1fr;opacity:1;transform:translateY(0);pointer-events:auto;box-shadow:0 20px 42px #22234412}
+  .mobile-nav.is-open .mobile-nav-inner{padding:10px 0 24px}
+  .mobile-nav-inner>a{display:block;padding:13px 0}
+}
+@media(max-width:600px){
+  .header-inner .brand{gap:8px}
+  .header-inner .brand .brand-symbol{width:26px;height:34px}
+  .header-inner .brand .brand-wordmark{width:140px}
+}
+@media(prefers-reduced-motion:reduce){.header .mobile-nav,.mobile-nav-inner,.desktop-nav a::after{transition:none}}
