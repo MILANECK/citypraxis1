@@ -4,6 +4,7 @@ import { resolve, extname, sep } from 'node:path';
 import { randomBytes, createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { loadEnvFile } from 'node:process';
+import { gzipSync } from 'node:zlib';
 import { serveFile, mediaType } from './media.mjs';
 import { openDatabase, contentSnapshot, collections, passwordHash, verifyPassword } from './database.mjs';
 import { hasSupabaseConfig } from './supabase-client.mjs';
@@ -31,7 +32,7 @@ export function createApp(db = openDatabase()) {
     res.setHeader('X-Frame-Options','DENY');
     if(process.env.NODE_ENV==='production')res.setHeader('Strict-Transport-Security','max-age=31536000; includeSubDomains');
     res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; frame-src https://www.google.com https://maps.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'");
-    const json = (status, data) => { res.writeHead(status, { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' }); res.end(JSON.stringify(data)); };
+    const json = (status, data) => { let payload=Buffer.from(JSON.stringify(data));const headers={ 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' };if(payload.length>1024&&/\bgzip\b/.test(req.headers['accept-encoding']||'')){payload=gzipSync(payload);headers['Content-Encoding']='gzip';headers.Vary='Accept-Encoding';}headers['Content-Length']=payload.length;res.writeHead(status,headers);res.end(payload); };
     try {
       const url = new URL(req.url, 'http://localhost');
       const path = decodeURIComponent(url.pathname);

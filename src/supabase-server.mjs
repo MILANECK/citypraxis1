@@ -2,6 +2,7 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 import { randomBytes } from 'node:crypto';
+import { gzipSync } from 'node:zlib';
 import { serveFile, mediaType } from './media.mjs';
 import { collections } from './database.mjs';
 import { createSupabaseClient } from './supabase-client.mjs';
@@ -26,6 +27,7 @@ function snapshots(rows, admin = false) {
 export function createSupabaseApp() {
   const supabase = createSupabaseClient();
   const attempts = new Map();
+  let publicContentCache;
   const storagePrefix = `${supabase.url}/storage/v1/object/public/${encodeURIComponent(supabase.bucket)}/`;
   function limit(key,max){const now=Date.now();let state=attempts.get(key);if(!state||state.until<now)state={count:0,until:now+900000};state.count++;attempts.set(key,state);if(state.count>max)throw Object.assign(new Error('Zu viele Versuche. Bitte später erneut versuchen.'),{status:429});}
   const audit = (user,action,entity)=>supabase.rest('audit_log','',{method:'POST',body:{actor:user?.id||null,actor_email:user?.email||'public',action,entity}});
@@ -45,7 +47,7 @@ export function createSupabaseApp() {
     res.setHeader('X-Frame-Options','DENY');
     if(process.env.NODE_ENV==='production')res.setHeader('Strict-Transport-Security','max-age=31536000; includeSubDomains');
     res.setHeader('Content-Security-Policy',`default-src 'self'; img-src 'self' data: blob: ${supabase.url}; media-src 'self' blob: ${supabase.url}; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; frame-src https://www.google.com https://maps.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'`);
-    const json=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));};
+    const json=(status,data)=>{let payload=Buffer.from(JSON.stringify(data));const headers={'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'};if(payload.length>1024&&/\bgzip\b/.test(req.headers['accept-encoding']||'')){payload=gzipSync(payload);headers['Content-Encoding']='gzip';headers.Vary='Accept-Encoding';}headers['Content-Length']=payload.length;res.writeHead(status,headers);res.end(payload);};
     try {
       const url=new URL(req.url,'http://localhost'),path=decodeURIComponent(url.pathname);
       if(['GET','HEAD'].includes(req.method)&&!path.startsWith('/api/')){
@@ -76,7 +78,10 @@ export function createSupabaseApp() {
         if(!body||Array.isArray(body)||typeof body!=='object')return json(400,{error:'Ungültige Anfrage.'});
       }
       if(path==='/api/health'&&req.method==='GET')return json(200,{ok:true,backend:'supabase'});
-      if(path==='/api/content'&&req.method==='GET')return json(200,snapshots(await supabase.rest('content','?select=collection,id,published&published=not.is.null'),false));
+      if(path==='/api/content'&&req.method==='GET'){
+        if(!publicContentCache||Date.now()-publicContentCache.savedAt>30000)publicContentCache={savedAt:Date.now(),content:snapshots(await supabase.rest('content','?select=collection,id,published&published=not.is.null'),false)};
+        return json(200,publicContentCache.content);
+      }
       if(path==='/api/requests'&&req.method==='POST'){
         limit(`request:${req.socket.remoteAddress}`,10);if(body.website)return json(400,{error:'Anfrage konnte nicht verarbeitet werden.'});
         const name=clean(body.name,100),email=clean(body.email,200),phone=clean(body.phone,40),preference=clean(body.preference,300);if(!name||!emailValid(email)||body.consent!==true)return json(400,{error:'Bitte Name, E-Mail und Einverständnis prüfen.'});
@@ -98,7 +103,7 @@ export function createSupabaseApp() {
       if(match&&editor){
         const [,collection,id]=match;if(!collections.includes(collection))return json(400,{error:'Unbekannter Bereich.'});
         const rows=await supabase.rest('content',`?collection=${filter(collection)}&id=${filter(id)}&select=*`),row=rows[0];
-        if(req.method==='PATCH'){if(collection==='settings'||(collection==='pages'&&['home','about'].includes(id)))return json(400,{error:'Dieser Basisinhalt muss veröffentlicht bleiben.'});await supabase.rest('content',`?collection=${filter(collection)}&id=${filter(id)}`,{method:'PATCH',body:{published:null}});await audit(user,'unpublish',`${collection}/${id}`);return json(200,{ok:true});}
+        if(req.method==='PATCH'){if(collection==='settings'||(collection==='pages'&&['home','about'].includes(id)))return json(400,{error:'Dieser Basisinhalt muss veröffentlicht bleiben.'});await supabase.rest('content',`?collection=${filter(collection)}&id=${filter(id)}`,{method:'PATCH',body:{published:null}});publicContentCache=null;await audit(user,'unpublish',`${collection}/${id}`);return json(200,{ok:true});}
         if(req.method==='PUT'){
           if(!body.data||typeof body.data!=='object'||Array.isArray(body.data))return json(400,{error:'Inhalt fehlt.'});const data={id};
           for(const [key,value]of Object.entries(body.data))if(/^[a-zA-Z]+$/.test(key)&&!['published','dirty','id','__proto__','constructor','prototype'].includes(key)&&['string','number','boolean'].includes(typeof value))data[key]=typeof value==='string'?value.slice(0,20000):value;
@@ -106,9 +111,9 @@ export function createSupabaseApp() {
           if(data.sourceUrl){try{const source=new URL(data.sourceUrl);if(!['https:','http:'].includes(source.protocol))throw new Error();data.sourceUrl=source.href;}catch{return json(400,{error:'Bitte einen gültigen Link zur Originalbewertung verwenden.'});}}
           const mediaOk=value=>!value||/^\/(assets|uploads)\/[a-zA-Z0-9._-]+$/.test(value)||value.startsWith(storagePrefix);if(!mediaOk(data.image)||!mediaOk(data.video))return json(400,{error:'Bitte eine Datei aus der Mediathek verwenden.'});
           if(row)await supabase.rest('revisions','',{method:'POST',body:{collection,entity_id:id,snapshot:row.draft,actor:user.id,actor_email:user.email}});
-          await supabase.rest('content','?on_conflict=collection,id',{method:'POST',prefer:'resolution=merge-duplicates,return=representation',body:{collection,id,draft:data,published:body.publish?data:(row?.published||null),updated_at:new Date().toISOString()}});await audit(user,body.publish?'publish':'save draft',`${collection}/${id}`);return json(200,{ok:true});
+          await supabase.rest('content','?on_conflict=collection,id',{method:'POST',prefer:'resolution=merge-duplicates,return=representation',body:{collection,id,draft:data,published:body.publish?data:(row?.published||null),updated_at:new Date().toISOString()}});if(body.publish)publicContentCache=null;await audit(user,body.publish?'publish':'save draft',`${collection}/${id}`);return json(200,{ok:true});
         }
-        if(req.method==='DELETE'){if(collection==='settings'||(collection==='pages'&&['home','about'].includes(id)))return json(400,{error:'Dieser Basisinhalt kann nicht gelöscht werden.'});if(row)await supabase.rest('revisions','',{method:'POST',body:{collection,entity_id:id,snapshot:row.draft,actor:user.id,actor_email:user.email}});await supabase.rest('content',`?collection=${filter(collection)}&id=${filter(id)}`,{method:'DELETE'});await audit(user,'delete',`${collection}/${id}`);return json(200,{ok:true});}
+        if(req.method==='DELETE'){if(collection==='settings'||(collection==='pages'&&['home','about'].includes(id)))return json(400,{error:'Dieser Basisinhalt kann nicht gelöscht werden.'});if(row)await supabase.rest('revisions','',{method:'POST',body:{collection,entity_id:id,snapshot:row.draft,actor:user.id,actor_email:user.email}});await supabase.rest('content',`?collection=${filter(collection)}&id=${filter(id)}`,{method:'DELETE'});publicContentCache=null;await audit(user,'delete',`${collection}/${id}`);return json(200,{ok:true});}
       }
       if(path==='/api/admin/revisions'&&req.method==='GET'&&editor){const rows=await supabase.rest('revisions',`?collection=${filter(url.searchParams.get('collection'))}&entity_id=${filter(url.searchParams.get('id'))}&select=*&order=id.desc&limit=30`);return json(200,rows.map(r=>({...r,actor:r.actor_email||r.actor})));}
       if(path==='/api/admin/requests'&&req.method==='GET'&&reception)return json(200,await supabase.rest('appointment_requests','?select=*&order=id.desc'));

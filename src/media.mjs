@@ -1,6 +1,7 @@
 import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { pipeline } from 'node:stream/promises';
+import { createGzip } from 'node:zlib';
 
 export function parseRange(header, size) {
   const match = /^bytes=(\d*)-(\d*)$/.exec(header || '');
@@ -12,17 +13,20 @@ export function parseRange(header, size) {
 export async function serveFile(req,res,file,type) {
   const info = await stat(file);
   if (!info.isFile()) throw new Error('Not a file');
-  const headers = {'Content-Type':type,'Cache-Control':'no-cache','Accept-Ranges':'bytes'};
+  const normalized=file.replaceAll('\\','/'),asset=normalized.includes('/assets/'),code=/\.(?:css|js)$/.test(normalized);
+  const headers = {'Content-Type':type,'Cache-Control':asset?'public, max-age=86400, stale-while-revalidate=604800':code?'public, max-age=300, must-revalidate':'no-cache','Accept-Ranges':'bytes'};
   let range;
   if (req.headers.range) {
     range = parseRange(req.headers.range,info.size);
     if (!range) {res.writeHead(416,{...headers,'Content-Range':`bytes */${info.size}`});res.end();return;}
     headers['Content-Range']=`bytes ${range.start}-${range.end}/${info.size}`;
   }
-  headers['Content-Length']=range ? range.end-range.start+1 : info.size;
+  const compressible=!range&&/^(?:text\/|application\/(?:javascript|json)|image\/svg\+xml)/.test(type)&&/\bgzip\b/.test(req.headers['accept-encoding']||'');
+  if(compressible){headers['Content-Encoding']='gzip';headers.Vary='Accept-Encoding';}else headers['Content-Length']=range ? range.end-range.start+1 : info.size;
   res.writeHead(range ? 206 : 200,headers);
   if(req.method==='HEAD'){res.end();return;}
-  await pipeline(createReadStream(file,range || {}),res);
+  if(compressible)await pipeline(createReadStream(file),createGzip({level:6}),res);
+  else await pipeline(createReadStream(file,range || {}),res);
 }
 export function mediaType(bytes,type) {
   if(type==='video/mp4' && bytes.length>=16 && bytes.toString('ascii',4,8)==='ftyp')return 'mp4';

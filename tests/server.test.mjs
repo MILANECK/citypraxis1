@@ -12,7 +12,7 @@ test('staff authorization, draft isolation, revisions, request handling and sess
   for(const role of ['owner','editor','reception'])add.run(role+'@test.local',role,passwordHash('test-password-strong'),role);
   const server=createApp(db);await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const origin=`http://127.0.0.1:${server.address().port}`;
-  const call=async(path,method='GET',body,session={},extra={})=>{const res=await fetch(origin+'/api/'+path,{method,headers:{Origin:origin,'Content-Type':'application/json',Cookie:session.cookie||'','X-CSRF-Token':session.csrf||'',...extra},...(body?{body:JSON.stringify(body)}:{})});return {status:res.status,data:await res.json(),cookie:res.headers.get('set-cookie')?.split(';')[0]};};
+  const call=async(path,method='GET',body,session={},extra={})=>{const res=await fetch(origin+'/api/'+path,{method,headers:{Origin:origin,'Content-Type':'application/json',Cookie:session.cookie||'','X-CSRF-Token':session.csrf||'',...extra},...(body?{body:JSON.stringify(body)}:{})});return {status:res.status,data:await res.json(),cookie:res.headers.get('set-cookie')?.split(';')[0],headers:res.headers};};
   const login=async role=>{const r=await call('login','POST',{email:role+'@test.local',password:'test-password-strong'});assert.equal(r.status,200);const me=await call('me','GET',null,{cookie:r.cookie});return {cookie:r.cookie,csrf:me.data.csrf};};
   try{
     assert.equal((await call('admin/requests')).status,401);
@@ -68,6 +68,9 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     assert.equal((await call('me','GET',null,owner)).status,401);
     assert.equal((await fetch(origin+'/admin')).status,200);
     assert.equal((await fetch(origin+'/assets/wordmark-black.png')).status,200);
+    const compressedCss=await fetch(origin+'/layout.css',{headers:{'Accept-Encoding':'gzip'}});assert.equal(compressedCss.headers.get('content-encoding'),'gzip');assert.match(compressedCss.headers.get('cache-control'),/max-age=300/);
+    const cachedAsset=await fetch(origin+'/assets/wordmark-black.png');assert.match(cachedAsset.headers.get('cache-control'),/max-age=86400/);
+    const compressedContent=await call('content','GET',null,{}, {'Accept-Encoding':'gzip'});assert.equal(compressedContent.headers.get('content-encoding'),'gzip');
     const range=await fetch(origin+'/assets/hero-film.mp4',{headers:{Range:'bytes=0-1'}});assert.equal(range.status,206);assert.equal(range.headers.get('content-type'),'video/mp4');assert.equal((await range.arrayBuffer()).byteLength,2);
     const badRange=await fetch(origin+'/assets/hero-film.mp4',{headers:{Range:'bytes=999999999-'}});assert.equal(badRange.status,416);
     const unauthUpload=await fetch(origin+'/api/admin/media-upload?name=test.mp4&alt=test',{method:'POST',headers:{Origin:origin,'Content-Type':'video/mp4'},body:Buffer.from('not a video')});assert.equal(unauthUpload.status,401);
