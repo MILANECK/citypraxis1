@@ -141,6 +141,16 @@ function bind() {
       headline.style.setProperty('--reveal-delay',`${Math.min(index,3)*45}ms`);
       revealObserver.observe(headline);
     });
+    document.querySelectorAll('.process-grid').forEach(grid=>{
+      grid.classList.add('process-sequence-ready');
+      grid.querySelectorAll(':scope > li').forEach((step,index)=>step.style.setProperty('--step-delay',`${index*130}ms`));
+      const processObserver=new IntersectionObserver(entries=>{
+        if(!entries[0].isIntersecting)return;
+        grid.classList.add('is-visible');
+        processObserver.disconnect();
+      },{threshold:.2,rootMargin:'0px 0px -6% 0px'});
+      processObserver.observe(grid);
+    });
   }
   document.querySelectorAll('.faq-list details').forEach(details=>{
     const summary=details.querySelector(':scope > summary'),content=details.querySelector(':scope > div');

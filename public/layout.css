@@ -288,6 +288,15 @@ footer{background:#f6f4f1;color:var(--ink)}
 .headline-reveal.is-visible{opacity:1;filter:blur(0);transform:perspective(700px) translateY(0) rotateX(0)}
 @media(prefers-reduced-motion:reduce){.headline-reveal,.headline-reveal.is-visible{opacity:1;filter:none;transform:none;transition:none}}
 
+/* Process steps enter as one calm left-to-right sequence. */
+.process-grid.process-sequence-ready>li{opacity:0;transform:translate3d(-14px,10px,0);transition:opacity .58s ease var(--step-delay),transform .72s cubic-bezier(.16,1,.3,1) var(--step-delay);will-change:opacity,transform}
+.process-grid.process-sequence-ready.is-visible>li{opacity:1;transform:translate3d(0,0,0)}
+.process-grid.process-sequence-ready.is-visible .step-top>span:first-child{animation:process-number-pop .58s cubic-bezier(.16,1,.3,1) calc(var(--step-delay) + 180ms) both}
+.process-grid.process-sequence-ready.is-visible .step-arrow{animation:process-arrow-flow .62s cubic-bezier(.16,1,.3,1) calc(var(--step-delay) + 260ms) both}
+@keyframes process-number-pop{0%{transform:scale(.9);background:transparent}55%{transform:scale(1.07);background:#e5f3f5}100%{transform:scale(1);background:var(--pale)}}
+@keyframes process-arrow-flow{0%{opacity:.25;transform:translateX(-7px)}65%{opacity:1;transform:translateX(3px)}100%{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){.process-grid.process-sequence-ready>li{opacity:1;transform:none;transition:none}.process-grid.process-sequence-ready.is-visible .step-top>span:first-child,.process-grid.process-sequence-ready.is-visible .step-arrow{animation:none}}
+
 /* A shared optical box keeps differently shaped specialty symbols aligned. */
 .listing-card .health-icon{
   display:block;
