@@ -9,16 +9,13 @@ import { serveFile, mediaType } from './media.mjs';
 import { openDatabase, contentSnapshot, collections, passwordHash, verifyPassword } from './database.mjs';
 import { hasSupabaseConfig } from './supabase-client.mjs';
 import { createSupabaseApp } from './supabase-server.mjs';
+import { requestPreference, validTherapistId } from './appointment-preference.mjs';
 
 const root = resolve('public');
 const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.mp4':'video/mp4' };
 const hash = value => createHash('sha256').update(value).digest('hex');
 const clean = (value, max = 200) => typeof value === 'string' ? value.trim().slice(0,max) : '';
 const emailValid = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-const requestPreference = body => {
-  const concern=clean(body.concern,100),symptoms=clean(body.symptoms,220),preference=clean(body.preference,300);
-  return [concern?`Anliegen: ${concern}${symptoms?` – ${symptoms}`:''}`:'',preference].filter(Boolean).join('\n').slice(0,300);
-};
 export function createApp(db = openDatabase()) {
   const attempts = new Map();
   function limit(key, max) {
@@ -85,8 +82,16 @@ export function createApp(db = openDatabase()) {
       if (path === '/api/requests' && req.method === 'POST') {
         limit(`request:${req.socket.remoteAddress}`,10);
         if (body.website) return json(400,{error:'Anfrage konnte nicht verarbeitet werden.'});
-        const name = clean(body.name,100), email = clean(body.email,200), phone = clean(body.phone,40), preference = requestPreference(body);
+        const name = clean(body.name,100), email = clean(body.email,200), phone = clean(body.phone,40);
         if (!name || !emailValid(email) || body.consent !== true) return json(400,{error:'Bitte Name, E-Mail und Einverständnis prüfen.'});
+        let therapist;
+        if(body.therapistId){
+          const row=validTherapistId(body.therapistId)&&db.prepare("SELECT published FROM content WHERE collection='team' AND id=? AND published IS NOT NULL").get(body.therapistId);
+          if(!row)return json(400,{error:'Die gewählte Person ist nicht mehr verfügbar. Bitte wählen Sie erneut.'});
+          therapist=JSON.parse(row.published);
+        }
+        const notes=requestPreference(body,therapist);if(notes.error)return json(400,{error:notes.error});
+        const preference=notes.value;
         const result = db.prepare('INSERT INTO requests(name,email,phone,preference,acute) VALUES(?,?,?,?,?)').run(name,email,phone,preference,body.acute === true ? 1 : 0);
         return json(201,{id:Number(result.lastInsertRowid),message:'Ihre Anfrage wurde gespeichert. Der Termin ist noch nicht bestätigt.'});
       }

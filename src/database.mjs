@@ -5,6 +5,7 @@ import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { seed } from './seed.mjs';
 import originalContent from './original-content.json' with {type:'json'};
 import { englishContent } from './english-content.mjs';
+import { importTherapistsSqlite } from './therapist-import.mjs';
 
 export const collections = Object.keys(seed);
 export function passwordHash(password) {
@@ -152,6 +153,11 @@ export function openDatabase(file = process.env.DB_PATH || resolve('data/citypra
       for(const item of seed.prices){const value=JSON.stringify(item);db.prepare("INSERT INTO content(collection,id,draft,published) VALUES('prices',?,?,?)").run(item.id,value,value);}
       db.prepare('INSERT INTO migrations(version) VALUES(8)').run();db.exec('COMMIT');
     }catch(error){db.exec('ROLLBACK');throw error;}
+  }
+  if(!db.prepare('SELECT version FROM migrations WHERE version=9').get()){
+    db.exec('BEGIN');
+    try{importTherapistsSqlite(db);db.prepare('INSERT INTO migrations(version) VALUES(9)').run();db.exec('COMMIT');}
+    catch(error){db.exec('ROLLBACK');throw error;}
   }
   return db;
 }
