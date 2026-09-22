@@ -3,6 +3,18 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;',
 const externalUrl=value=>{try{const url=new URL(value);return ['https:','http:'].includes(url.protocol)?url.href:'';}catch{return '';}};
 const paragraph = text => String(text || '').split('\n\n').filter(t=>t.trim()).map(t => t.startsWith('### ')?`<h3>${esc(t.slice(4))}</h3>`:t.startsWith('## ')?`<h2>${esc(t.slice(3))}</h2>`:t.split('\n').every(line=>line.startsWith('- '))?`<ul>${t.split('\n').map(line=>`<li>${esc(line.slice(2))}</li>`).join('')}</ul>`:`<p>${esc(t).replaceAll('\n','<br>')}</p>`).join('');
 const optimizedImage=value=>value==='/assets/team-group.png'?'/assets/team-group.webp':/^\/assets\/[a-zA-Z0-9._-]+\.jpg$/.test(value||'')?value.replace(/\.jpg$/,'.webp'):value;
+const privacyPreferenceKey='citypraxis-privacy-v1';
+const mapEmbedUrl='https://www.google.com/maps?q=Citypraxis%20Stubenbastei%2012%2F11%2C%201010%20Wien&output=embed';
+const privacyPreference=()=>{try{return JSON.parse(localStorage.getItem(privacyPreferenceKey)||'null');}catch{return null;}};
+const externalMediaAllowed=()=>privacyPreference()?.externalMedia===true;
+const privacyCopy=()=>I18n.language==='en'?{
+  label:'YOUR PRIVACY',title:'A clear choice.',body:'Essential functions keep the website secure. Google Maps is loaded only when you allow external media.',essential:'Essential',essentialNote:'Always active · website and secure admin login',external:'External media',externalNote:'Loads Google Maps on the directions page',necessary:'Essential only',save:'Save selection',all:'Allow all',settings:'Cookie settings',mapTitle:'Google Maps is currently blocked',mapBody:'Allow external media to display the interactive map.',mapButton:'Allow Google Maps'
+}:{
+  label:'IHRE PRIVATSPHÄRE',title:'Eine klare Entscheidung.',body:'Notwendige Funktionen halten die Website sicher. Google Maps wird erst geladen, wenn Sie externe Medien erlauben.',essential:'Notwendig',essentialNote:'Immer aktiv · Website und sicherer Praxis-Login',external:'Externe Medien',externalNote:'Lädt Google Maps auf der Anfahrtsseite',necessary:'Nur notwendige',save:'Auswahl speichern',all:'Alle erlauben',settings:'Cookie-Einstellungen',mapTitle:'Google Maps ist derzeit blockiert',mapBody:'Erlauben Sie externe Medien, um die interaktive Karte anzuzeigen.',mapButton:'Google Maps erlauben'
+};
+function mapFrame(){return `<iframe title="${I18n.translate('Google Maps: Citypraxis, Stubenbastei 12/11, 1010 Wien')}" src="${mapEmbedUrl.replaceAll('&','&amp;')}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>`;}
+function mapConsentPlaceholder(){const c=privacyCopy();return `<div class="map-consent"><span class="map-consent-mark" aria-hidden="true">+</span><h3>${c.mapTitle}</h3><p>${c.mapBody}</p><button class="text-link map-consent-allow" type="button">${c.mapButton} ${arrow}</button></div>`;}
+function cookiePanel(){const c=privacyCopy(),saved=privacyPreference();return `<aside class="cookie-panel" role="dialog" aria-labelledby="cookie-title" aria-describedby="cookie-description"${saved?' hidden':''}><button class="cookie-close" type="button" aria-label="${I18n.language==='en'?'Close cookie settings':'Cookie-Einstellungen schließen'}">×</button><span class="eyebrow">${c.label}</span><h2 id="cookie-title">${c.title}</h2><p id="cookie-description">${c.body}</p><div class="cookie-options"><div><span class="cookie-option-icon" aria-hidden="true">✓</span><span><strong>${c.essential}</strong><small>${c.essentialNote}</small></span></div><label><input id="external-media-consent" type="checkbox"${saved?.externalMedia?' checked':''}><span><strong>${c.external}</strong><small>${c.externalNote}</small></span></label></div><div class="cookie-actions"><button class="cookie-necessary" type="button">${c.necessary}</button><button class="cookie-save" type="button">${c.save}</button><button class="button cookie-all" type="button">${c.all}</button></div></aside>`;}
 let data;
 const arrow = '<span class="arrow-symbol" aria-hidden="true"></span>';
 const healthIcons = {
@@ -23,7 +35,8 @@ function header() {
 }
 function footer() {
   const s = data.settings[0];
-  return `<footer><div class="container footer-top"><div><img class="footer-logo" src="/assets/wordmark-black.png" alt="Citypraxis" width="250" height="34"><img class="footer-symbol" src="/assets/logo-symbol.png" alt="" width="38" height="49"><p>Gemeinsam weiterkommen.<br>Mitten in Wien.</p></div><div><h3>Besuchen Sie uns</h3><p>${esc(s.address)}<br>${esc(s.city)}</p><a href="https://www.google.com/maps/search/?api=1&query=Stubenbastei+12+1010+Wien" target="_blank" rel="noopener">Route planen ↗︎</a></div><div><h3>Wir sind für Sie da</h3><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><p>${esc(s.hours)}<br>${esc(s.saturdayHours?I18n.translate('Samstag')+' '+s.saturdayHours:s.saturday)}</p></div><div><h3>Gut zu wissen</h3><a href="/ablauf-wahltherapie">Ablauf & Wahltherapie</a><a href="/leistungen">Unsere Leistungen</a><p>${esc(s.payment)}</p></div></div><div class="container footer-bottom"><span>© ${new Date().getFullYear()} Citypraxis Wien</span><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><a href="/admin">Praxis-Login ↗︎</a></div></div></footer><div class="mobile-booking"><a href="tel:${esc(s.phone.replaceAll(' ',''))}">Anrufen</a><a class="button" href="/termin">Ersttermin buchen ${arrow}</a></div>`;
+  const c=privacyCopy();
+  return `<footer><div class="container footer-top"><div><img class="footer-logo" src="/assets/wordmark-black.png" alt="Citypraxis" width="250" height="34"><img class="footer-symbol" src="/assets/logo-symbol.png" alt="" width="38" height="49"><p>Gemeinsam weiterkommen.<br>Mitten in Wien.</p></div><div><h3>Besuchen Sie uns</h3><p>${esc(s.address)}<br>${esc(s.city)}</p><a href="https://www.google.com/maps/search/?api=1&query=Stubenbastei+12+1010+Wien" target="_blank" rel="noopener">Route planen ↗︎</a></div><div><h3>Wir sind für Sie da</h3><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><p>${esc(s.hours)}<br>${esc(s.saturdayHours?I18n.translate('Samstag')+' '+s.saturdayHours:s.saturday)}</p></div><div><h3>Gut zu wissen</h3><a href="/ablauf-wahltherapie">Ablauf & Wahltherapie</a><a href="/leistungen">Unsere Leistungen</a><p>${esc(s.payment)}</p></div></div><div class="container footer-bottom"><span>© ${new Date().getFullYear()} Citypraxis Wien</span><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><button class="cookie-settings-link" type="button">${c.settings}</button><a href="/admin">Praxis-Login ↗︎</a></div></div></footer><div class="mobile-booking"><a href="tel:${esc(s.phone.replaceAll(' ',''))}">Anrufen</a><a class="button" href="/termin">Ersttermin buchen ${arrow}</a></div>`;
 }
 function processBlock() {
   const steps = [['Verordnung','Klären Sie die ärztliche Verordnung vor Ihrem ersten Termin.'],['Behandlung','Wir hören zu, untersuchen und planen gemeinsam Ihre Therapie.'],['Bezahlung','Sie bezahlen vor Ort und erhalten Ihre Rechnung.'],['Rückerstattung','Reichen Sie die Unterlagen bei Ihrer Versicherung ein.']];
@@ -98,7 +111,7 @@ function contact() {
   const s=data.settings[0];
   const query=encodeURIComponent(s.address+', '+s.city+', Austria');
   const directions='https://www.google.com/maps/search/?api=1&query='+query;
-  return article('Mitten in Wien. Ganz bei Ihnen.','Wir freuen uns darauf, Sie kennenzulernen.','',`<div class="contact-grid"><div class="info-card"><span class="eyebrow">SO ERREICHEN SIE UNS</span><h2>${esc(s.address)}</h2><p>${esc(s.city)}</p><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><h3>Termine & Öffnungszeiten</h3><p class="hours-intro">${esc(s.hours)}</p>${weeklyHours(s)}<a class="button" href="/termin">Ersttermin anfragen ↗︎</a></div><section class="map-card" aria-label="${I18n.translate('Anfahrt zur Citypraxis')}"><div class="contact-map"><iframe title="${I18n.translate('Google Maps: Citypraxis, Stubenbastei 12/11, 1010 Wien')}" src="https://www.google.com/maps?q=Citypraxis%20Stubenbastei%2012%2F11%2C%201010%20Wien&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div><div class="map-caption"><div><span class="eyebrow">MITTEN IN WIEN</span><h2>Citypraxis</h2><p>${esc(s.address)} · ${esc(s.city)}</p></div><a class="button button-outline" href="${esc(directions)}" target="_blank" rel="noopener">Route planen ↗︎</a></div></section></div>`);
+  return article('Mitten in Wien. Ganz bei Ihnen.','Wir freuen uns darauf, Sie kennenzulernen.','',`<div class="contact-grid"><div class="info-card"><span class="eyebrow">SO ERREICHEN SIE UNS</span><h2>${esc(s.address)}</h2><p>${esc(s.city)}</p><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><h3>Termine & Öffnungszeiten</h3><p class="hours-intro">${esc(s.hours)}</p>${weeklyHours(s)}<a class="button" href="/termin">Ersttermin anfragen ↗︎</a></div><section class="map-card" aria-label="${I18n.translate('Anfahrt zur Citypraxis')}"><div class="contact-map" data-map-src="${esc(mapEmbedUrl)}">${externalMediaAllowed()?mapFrame():mapConsentPlaceholder()}</div><div class="map-caption"><div><span class="eyebrow">MITTEN IN WIEN</span><h2>Citypraxis</h2><p>${esc(s.address)} · ${esc(s.city)}</p></div><a class="button button-outline" href="${esc(directions)}" target="_blank" rel="noopener">Route planen ↗︎</a></div></section></div>`);
 }
 function route() {
   const path=location.pathname.replace(/\/$/,'')||'/';
@@ -127,6 +140,25 @@ function route() {
 }
 function bind() {
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+  const panel=$('.cookie-panel'),externalToggle=$('#external-media-consent');
+  const updateMap=enabled=>{
+    const map=$('.contact-map[data-map-src]');
+    if(!map)return;
+    map.innerHTML=enabled?mapFrame():mapConsentPlaceholder();
+    $('.map-consent-allow',map)?.addEventListener('click',()=>savePrivacy(true));
+  };
+  const savePrivacy=externalMedia=>{
+    try{localStorage.setItem(privacyPreferenceKey,JSON.stringify({externalMedia,updatedAt:new Date().toISOString()}));}catch{}
+    if(externalToggle)externalToggle.checked=externalMedia;
+    updateMap(externalMedia);
+    panel.hidden=true;
+  };
+  $('.cookie-settings-link')?.addEventListener('click',()=>{if(externalToggle)externalToggle.checked=externalMediaAllowed();panel.hidden=false;panel.focus?.();});
+  $('.cookie-close',panel)?.addEventListener('click',()=>privacyPreference()?panel.hidden=true:savePrivacy(false));
+  $('.cookie-necessary',panel)?.addEventListener('click',()=>savePrivacy(false));
+  $('.cookie-save',panel)?.addEventListener('click',()=>savePrivacy(Boolean(externalToggle?.checked)));
+  $('.cookie-all',panel)?.addEventListener('click',()=>savePrivacy(true));
+  $('.map-consent-allow')?.addEventListener('click',()=>savePrivacy(true));
   if(!reducedMotion.matches){
     const headlines=[...document.querySelectorAll('#main h1, #main h2')];
     const revealObserver=new IntersectionObserver(entries=>{
@@ -212,7 +244,7 @@ function bind() {
 const contentCacheKey='citypraxis-public-content-v1',contentCacheLifetime=5*60*1000;
 function renderApp(content,preview){
   data=I18n.localizeContent(content);
-  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+`<main id="main">${route()}</main>`+footer();
+  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+`<main id="main">${route()}</main>`+footer()+cookiePanel();
   I18n.apply();const title=$('h1')?.textContent;document.title=(title?`${title} · `:'')+'Citypraxis Wien';bind();
 }
 async function loadContent(preview){
