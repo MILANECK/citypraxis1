@@ -10,8 +10,9 @@ const fields={
   faqs:[['title','Frage'],['body','Antwort','textarea']],
   prices:[['title','Behandlung'],['duration','Dauer in Minuten','number'],['amount','Preis in Euro','number'],['details','Leistungsumfang']],
   reimbursements:[['title','Leistung'],['oegkk','ÖGKK (€)'],['bvaeb','BVAEB (€)'],['kfa','KFA (€)'],['svs','SVS (€)'],['asOf','Tabellenstand (MM/JJJJ)']],
-  settings:[['title','Bezeichnung'],['reviewsTitle','Bewertungen: Abschnittsüberschrift'],['reviewsIntro','Bewertungen: Einleitung','textarea'],['email','E-Mail','email'],['phone','Telefon'],['address','Adresse'],['city','PLZ & Ort'],['hours','Terminzeiten'],...['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map((day,i)=>[['monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday'][i],day]),['payment','Zahlungshinweis','textarea'],['acute','Akuttermin-Hinweis'],['acuteAvailable','Aktuelle Akutverfügbarkeit bestätigt','checkbox']]
+  settings:[['title','Bezeichnung'],['appointmentConcerns','Terminformular: Auswahlkategorien','concern-list'],['reviewsTitle','Bewertungen: Abschnittsüberschrift'],['reviewsIntro','Bewertungen: Einleitung','textarea'],['email','E-Mail','email'],['phone','Telefon'],['address','Adresse'],['city','PLZ & Ort'],['hours','Terminzeiten'],...['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map((day,i)=>[['monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday'][i],day]),['payment','Zahlungshinweis','textarea'],['acute','Akuttermin-Hinweis'],['acuteAvailable','Aktuelle Akutverfügbarkeit bestätigt','checkbox']]
 };
+const defaultAppointmentConcerns=[{title:'Kiefer',titleEn:'Jaw'},{title:'Kopf & Migräne',titleEn:'Headaches & migraine'},{title:'Tinnitus',titleEn:'Tinnitus'},{title:'Schwindel',titleEn:'Dizziness'},{title:'Unfall & OP',titleEn:'Injury & surgery'},{title:'Andere Beschwerden',titleEn:'Other concern',custom:true}];
 let user,content={},view='overview',requests=[],staff=[];
 const heroFields=[['heroMedia','Hintergrund','select',[['video','Video'],['image','Foto']]],['image','Foto / Video-Standbild','media-image'],['video','Hintergrundvideo','media-video'],['heroAlt','Medienbeschreibung'],['heroHeight','Höhe','select',[['fullscreen','Bildschirmfüllend'],['large','Groß (kompakter)']]],['heroPosition','Bildausschnitt Desktop','select',[['left','Links'],['center','Mitte'],['right','Rechts']]],['heroMobilePosition','Bildausschnitt Mobil','select',[['left','Links'],['center','Mitte'],['right','Rechts']]],['heroOverlay','Abdunklung für lesbaren Text','select',[['soft','Leicht'],['balanced','Ausgewogen'],['strong','Stark']]]];
 function recordFields(collection,record){return collection==='pages'&&record.id==='home'?[...fields.pages.filter(f=>f[0]!=='image'),...heroFields,['teamImage','Gruppenfoto auf der Startseite','media-image'],['teamImageAlt','Beschreibung des Gruppenfotos']]:fields[collection];}
@@ -78,6 +79,11 @@ async function render(){
   }
 }
 function fieldHtml([name,label,type='text',options],record){
+  if(type==='concern-list'){
+    const items=Array.isArray(record[name])&&record[name].length?record[name]:defaultAppointmentConcerns;
+    const rows=items.map((item,index)=>concernRow(item,index)).join('');
+    return `<fieldset class="concern-list-field" data-concern-editor><legend>${label}</legend><p>Jede Zeile erscheint als Auswahlknopf im Terminanfrageformular. Deutsch und Englisch werden gemeinsam gepflegt.</p><input type="hidden" name="${name}" value="${esc(JSON.stringify(items))}"><div class="concern-editor-rows">${rows}</div><button type="button" class="button button-outline add-concern">+ Kategorie hinzufügen</button></fieldset>`;
+  }
   if(type==='checkbox')return `<label class="check-label"><input type="checkbox" name="${name}" ${record[name]?'checked':''}>${label}</label>`;
   if(type==='rating'){
     const value=Math.max(0,Math.min(5,Number(record[name])||0));
@@ -87,6 +93,7 @@ function fieldHtml([name,label,type='text',options],record){
   const input=type==='textarea'?`<textarea lang="${name.endsWith('En')?'en':'de'}" name="${name}" rows="${name==='body'||name==='bodyEn'?7:3}">${esc(record[name])}</textarea>`:type==='select'?`<select name="${name}">${options.map(o=>{const [value,label]=Array.isArray(o)?o:[o,o];return `<option value="${value}" ${record[name]===value?'selected':''}>${label}</option>`;}).join('')}</select>`:`<input name="${name}" type="${type}" value="${esc(record[name])}" ${name==='title'?'required':''} ${type==='number'?'min="0" step="0.01"':''}>`;
   return `<label>${label}${input}</label>`;
 }
+function concernRow(item={},index=0){return `<div class="concern-editor-row" data-concern-row><span class="concern-order" aria-hidden="true">${String(index+1).padStart(2,'0')}</span><label>Deutsch<input data-concern-title value="${esc(item.title||'')}" maxlength="60" required></label><label>Englisch<input data-concern-title-en value="${esc(item.titleEn||'')}" maxlength="60" required></label><label class="check-label concern-custom"><input type="checkbox" data-concern-custom ${item.custom?'checked':''}> Freitext öffnen</label><button type="button" class="delete-entry remove-concern">Entfernen</button></div>`;}
 const protectedContent=(collection,id)=>collection==='settings'||(collection==='pages'&&['home','about'].includes(id));
 async function removeContent(collection,record){
   const name=I18n.language==='en'&&record.titleEn?record.titleEn:record.title;
@@ -114,12 +121,26 @@ function editContent(collection,record={}){
   const editableFields=[...baseFields,...englishFields];
   dialog.innerHTML=`<div class="editor-heading"><div><span class="eyebrow">${labels[collection]}</span><h2 id="editor-title">${record.id?'Eintrag bearbeiten':'Neuer Eintrag'}</h2></div><div class="editor-heading-actions">${record.id&&!protectedContent(collection,record.id)?'<button class="delete-entry" id="delete-content">Eintrag löschen</button>':''}<button class="close-dialog" aria-label="Schließen">×</button></div></div><form id="content-form"><label>URL-Kürzel<input name="id" pattern="[a-z0-9-]+" value="${esc(record.id)}" ${record.id?'readonly':''} required placeholder="zum-beispiel-kiefer"></label><h3>Deutsch · Originaltext</h3>${baseFields.map(f=>fieldHtml(f,record)).join('')}<section class="translation-fields"><h3>Englische Übersetzung</h3><p>Leere englische Felder verwenden den deutschen Originaltext. Namen, Preise und Medien gelten für beide Sprachen.</p>${englishFields.map(f=>fieldHtml(f,record)).join('')}</section>${fieldHtml(['order','Reihenfolge','number'],record)}<div class="editor-actions"><button type="submit" class="button button-outline" name="action" value="draft">Entwurf speichern</button><button type="submit" class="button" name="action" value="publish">Veröffentlichen ↗</button></div><p class="editor-message" role="alert"></p></form>${record.id?`<details id="revisions"><summary>Vorherige Versionen</summary><div id="revision-list">Versionen werden geladen …</div></details>`:''}`;
   const close=()=>dialog.close();$('.close-dialog',dialog).onclick=close;dialog.showModal();
+  dialog.querySelectorAll('[data-concern-editor]').forEach(editor=>{
+    const rows=$('.concern-editor-rows',editor),hidden=$('input[type=hidden]',editor);
+    const sync=()=>{
+      const values=[...rows.querySelectorAll('[data-concern-row]')].map(row=>({title:$('[data-concern-title]',row).value.trim(),titleEn:$('[data-concern-title-en]',row).value.trim(),...($('[data-concern-custom]',row).checked?{custom:true}:{})})).filter(item=>item.title||item.titleEn);
+      hidden.value=JSON.stringify(values);
+      rows.querySelectorAll('.concern-order').forEach((number,index)=>number.textContent=String(index+1).padStart(2,'0'));
+    };
+    const wire=row=>{
+      row.querySelectorAll('input').forEach(input=>input.addEventListener('input',sync));
+      $('.remove-concern',row).onclick=()=>{row.remove();sync();};
+    };
+    rows.querySelectorAll('[data-concern-row]').forEach(wire);
+    $('.add-concern',editor).onclick=()=>{const wrapper=document.createElement('div');wrapper.innerHTML=concernRow({},rows.children.length);const row=wrapper.firstElementChild;rows.append(row);wire(row);sync();$('[data-concern-title]',row).focus();};
+  });
   dialog.querySelectorAll('[data-rating-picker]').forEach(picker=>{
     const input=$('input[type=hidden]',picker),buttons=[...picker.querySelectorAll('.rating-buttons button')];
     const update=value=>{input.value=value||'';buttons.forEach(button=>{const active=Number(button.dataset.rating)<=value;button.textContent=active?'★':'☆';button.setAttribute('aria-pressed',String(active));});};
     picker.querySelectorAll('[data-rating]').forEach(button=>button.onclick=()=>update(Number(button.dataset.rating)));
   });
-  $('#content-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,values={...record,...Object.fromEntries(new FormData(form))};for(const f of editableFields)if(f[2]==='checkbox')values[f[0]]=form.elements[f[0]].checked;values.order=Number(values.order||0);try{await api(`admin/content/${collection}/${values.id}`,'PUT',{data:values,publish:e.submitter?.value==='publish'});dialog.close();await refresh();await render();toast(e.submitter?.value==='publish'?'Inhalt veröffentlicht.':'Entwurf gespeichert.');}catch(error){$('.editor-message').textContent=error.message;}};
+  $('#content-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,values={...record,...Object.fromEntries(new FormData(form))};for(const f of editableFields)if(f[2]==='checkbox')values[f[0]]=form.elements[f[0]].checked;for(const f of editableFields)if(f[2]==='concern-list'){try{values[f[0]]=JSON.parse(values[f[0]]||'[]');}catch{values[f[0]]=[];}}values.order=Number(values.order||0);try{await api(`admin/content/${collection}/${values.id}`,'PUT',{data:values,publish:e.submitter?.value==='publish'});dialog.close();await refresh();await render();toast(e.submitter?.value==='publish'?'Inhalt veröffentlicht.':'Entwurf gespeichert.');}catch(error){$('.editor-message').textContent=error.message;}};
   if(dialog.querySelector('[data-media-select]')){
     api('admin/media').then(media=>{
       if(!dialog.open)return;

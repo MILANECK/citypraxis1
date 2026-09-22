@@ -111,6 +111,7 @@ export function createSupabaseApp() {
         if(req.method==='PUT'){
           if(!body.data||typeof body.data!=='object'||Array.isArray(body.data))return json(400,{error:'Inhalt fehlt.'});const data={id};
           for(const [key,value]of Object.entries(body.data))if(/^[a-zA-Z]+$/.test(key)&&!['published','dirty','id','__proto__','constructor','prototype'].includes(key)&&['string','number','boolean'].includes(typeof value))data[key]=typeof value==='string'?value.slice(0,20000):value;
+          if(collection==='settings'&&Array.isArray(body.data.appointmentConcerns))data.appointmentConcerns=body.data.appointmentConcerns.slice(0,20).map(item=>({title:clean(item?.title,60),titleEn:clean(item?.titleEn,60),...(item?.custom?{custom:true}:{})})).filter(item=>item.title&&item.titleEn);
           if(!clean(data.title))return json(400,{error:'Titel erforderlich.'});
           if(data.sourceUrl){try{const source=new URL(data.sourceUrl);if(!['https:','http:'].includes(source.protocol))throw new Error();data.sourceUrl=source.href;}catch{return json(400,{error:'Bitte einen gültigen Link zur Originalbewertung verwenden.'});}}
           const mediaOk=value=>!value||/^\/(assets|uploads)\/[a-zA-Z0-9._-]+$/.test(value)||value.startsWith(storagePrefix);if(!mediaOk(data.image)||!mediaOk(data.video))return json(400,{error:'Bitte eine Datei aus der Mediathek verwenden.'});

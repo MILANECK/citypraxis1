@@ -364,6 +364,9 @@ footer{background:#f6f4f1;color:var(--ink)}
 .cookie-options input:checked{background:var(--pink)}
 .cookie-options input:checked:before{transform:translateX(16px)}
 .cookie-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.cookie-details{margin-right:auto;color:var(--blue);font-size:13px;font-weight:600;text-decoration:none}
+.cookie-details:hover{text-decoration:underline;text-underline-offset:4px}
+.cookie-acknowledge.button{min-height:42px;padding:10px 18px;background:var(--pink);border-color:var(--pink)}
 .cookie-actions button{min-height:42px;padding:10px 15px;border-radius:8px;font-size:12px;font-weight:600}
 .cookie-necessary{margin-right:auto;border:0;background:transparent;color:var(--muted)}
 .cookie-save{border:1px solid #a9bcba;background:transparent;color:var(--ink)}

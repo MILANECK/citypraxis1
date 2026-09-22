@@ -22,6 +22,7 @@ Ablauf & Wahltherapie|Your visit & private therapy
 Unsere Leistungen|Our therapies
 Impressum|Legal notice
 Datenschutz|Privacy
+Cookie-Information|Cookie information
 Praxis-Login|Practice login
 Anrufen|Call us
 Verordnung|Referral
@@ -330,6 +331,13 @@ Praxisverwaltung wird geladen …|Loading practice admin …
 Sprache wechseln und ungespeicherte Änderungen verwerfen?|Switch language and discard unsaved changes?
 Deutsch · Originaltext|German · original text
 Englische Übersetzung|English translation
+Terminformular: Auswahlkategorien|Appointment form: choice categories
+Jede Zeile erscheint als Auswahlknopf im Terminanfrageformular. Deutsch und Englisch werden gemeinsam gepflegt.|Each row appears as a choice button in the appointment form. German and English are maintained together.
+Deutsch|German
+Englisch|English
+Freitext öffnen|Open free-text field
+Entfernen|Remove
+Kategorie hinzufügen|Add category
 Leere englische Felder verwenden den deutschen Originaltext. Namen, Preise und Medien gelten für beide Sprachen.|Empty English fields use the German original. Names, prices and media are shared between languages.
 `;
 for (const line of entries.trim().split('\n')) {
