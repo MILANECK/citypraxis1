@@ -54,10 +54,12 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     assert.equal(practice.saturdayHoursEn,'8 am–2 pm');
     assert.equal(practice.sundayEn,'Closed');
     assert.equal((await call('requests','POST',{name:'Test',email:'invalid',consent:true})).status,400);
-    const request=await call('requests','POST',{name:'Test person',email:'patient@test.local',consent:true,preference:'Afternoon'});
+    const request=await call('requests','POST',{name:'Test person',email:'patient@test.local',consent:true,concern:'Andere Beschwerden',symptoms:'Kurze Beschreibung',preference:'Afternoon'});
     assert.equal(request.status,201);
     assert.equal((await call('admin/requests','PUT',{id:request.data.id,status:'confirmed'},reception)).status,200);
-    assert.equal((await call('admin/requests','GET',null,reception)).data[0].status,'confirmed');
+    const savedRequest=(await call('admin/requests','GET',null,reception)).data[0];
+    assert.equal(savedRequest.status,'confirmed');
+    assert.match(savedRequest.preference,/Anliegen: Andere Beschwerden – Kurze Beschreibung\nAfternoon/);
     assert.equal((await call('admin/requests','DELETE',{id:request.data.id},reception)).status,403);
     assert.equal((await call('admin/media','POST',{data:'data:image/png;base64,YmFk',alt:'fake'},owner)).status,400);
     const uploaded=await fetch(origin+'/api/admin/media-upload?name=qa-logo.png&alt=QA%20logo',{method:'POST',headers:{Origin:origin,'Content-Type':'image/png',Cookie:editor.cookie,'X-CSRF-Token':editor.csrf},body:readFileSync('public/assets/wordmark-white.png')});

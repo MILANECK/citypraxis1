@@ -11,6 +11,10 @@ const root = resolve('public');
 const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.mp4':'video/mp4' };
 const clean = (value, max = 200) => typeof value === 'string' ? value.trim().slice(0,max) : '';
 const emailValid = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+const requestPreference = body => {
+  const concern=clean(body.concern,100),symptoms=clean(body.symptoms,220),preference=clean(body.preference,300);
+  return [concern?`Anliegen: ${concern}${symptoms?` – ${symptoms}`:''}`:'',preference].filter(Boolean).join('\n').slice(0,300);
+};
 const filter = value => encodeURIComponent(`eq.${value}`);
 const cookie = (req, name) => new RegExp(`(?:^|;\\s*)${name}=([^;]+)`).exec(req.headers.cookie || '')?.[1];
 
@@ -84,7 +88,7 @@ export function createSupabaseApp() {
       }
       if(path==='/api/requests'&&req.method==='POST'){
         limit(`request:${req.socket.remoteAddress}`,10);if(body.website)return json(400,{error:'Anfrage konnte nicht verarbeitet werden.'});
-        const name=clean(body.name,100),email=clean(body.email,200),phone=clean(body.phone,40),preference=clean(body.preference,300);if(!name||!emailValid(email)||body.consent!==true)return json(400,{error:'Bitte Name, E-Mail und Einverständnis prüfen.'});
+        const name=clean(body.name,100),email=clean(body.email,200),phone=clean(body.phone,40),preference=requestPreference(body);if(!name||!emailValid(email)||body.consent!==true)return json(400,{error:'Bitte Name, E-Mail und Einverständnis prüfen.'});
         const rows=await supabase.rest('appointment_requests','',{method:'POST',body:{name,email,phone,preference,acute:body.acute===true}});return json(201,{id:rows[0].id,message:'Ihre Anfrage wurde gespeichert. Der Termin ist noch nicht bestätigt.'});
       }
       if(path==='/api/login'&&req.method==='POST'){
