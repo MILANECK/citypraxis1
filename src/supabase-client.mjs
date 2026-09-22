@@ -61,6 +61,12 @@ export function createSupabaseClient() {
     updatePassword(accessToken, password) {
       return request('/auth/v1/user', { method: 'PUT', body: { password }, key: publishable, bearer: accessToken });
     },
+    requestPasswordRecovery(email, redirectTo) {
+      return request(`/auth/v1/recover?redirect_to=${encodeURIComponent(redirectTo)}`, { method: 'POST', body: { email }, key: publishable, bearer: publishable });
+    },
+    verifyRecoveryToken(tokenHash) {
+      return request('/auth/v1/verify', { method: 'POST', body: { token_hash: tokenHash, type: 'recovery' }, key: publishable, bearer: publishable });
+    },
     logout(accessToken) {
       return request('/auth/v1/logout', { method: 'POST', key: publishable, bearer: accessToken });
     },

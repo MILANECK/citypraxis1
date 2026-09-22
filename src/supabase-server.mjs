@@ -82,6 +82,34 @@ export function createSupabaseApp() {
         if(!body||Array.isArray(body)||typeof body!=='object')return json(400,{error:'Ungültige Anfrage.'});
       }
       if(path==='/api/health'&&req.method==='GET')return json(200,{ok:true,backend:'supabase'});
+      if(path==='/api/recovery/request'&&req.method==='POST'){
+        limit(`recovery:${req.socket.remoteAddress}`,6);
+        const email=clean(body.email,200).toLowerCase();
+        if(!emailValid(email))return json(400,{error:'Bitte eine gültige E-Mail-Adresse eingeben.'});
+        const origin=(process.env.APP_ORIGIN||process.env.RENDER_EXTERNAL_URL||`http://${req.headers.host}`).replace(/\/$/,'');
+        try{await supabase.requestPasswordRecovery(email,`${origin}/admin`);}catch(error){if(error.status===429)return json(429,{error:'Bitte später erneut versuchen.'});throw error;}
+        return json(200,{ok:true});
+      }
+      if(path==='/api/recovery/verify'&&req.method==='POST'){
+        limit(`verify-recovery:${req.socket.remoteAddress}`,12);
+        const tokenHash=clean(body.tokenHash,512);
+        if(!/^[a-zA-Z0-9_-]{20,512}$/.test(tokenHash))return json(400,{error:'Der Wiederherstellungslink ist ungültig.'});
+        try{const session=await supabase.verifyRecoveryToken(tokenHash);return json(200,{accessToken:session.access_token});}
+        catch{return json(400,{error:'Der Wiederherstellungslink ist ungültig oder abgelaufen.'});}
+      }
+      if(path==='/api/recovery/password'&&req.method==='POST'){
+        limit(`reset-password:${req.socket.remoteAddress}`,12);
+        const accessToken=clean(body.accessToken,4096),password=body.password;
+        if(!accessToken||typeof password!=='string'||password.length<12||password.length>512)return json(400,{error:'Ein neues Passwort mit mindestens 12 Zeichen ist erforderlich.'});
+        let auth;
+        try{auth=await supabase.getAuthUser(accessToken);}catch{return json(400,{error:'Der Wiederherstellungslink ist ungültig oder abgelaufen.'});}
+        const profiles=await supabase.rest('staff_profiles',`?id=${filter(auth.id)}&select=id,email,name,role,active`);
+        if(!profiles[0]?.active)return json(403,{error:'Dieses Konto hat keinen aktiven Praxiszugang.'});
+        await supabase.updatePassword(accessToken,password);
+        await audit(profiles[0],'reset password','account');
+        try{await supabase.logout(accessToken);}catch{}
+        return json(200,{ok:true});
+      }
       if(path==='/api/content'&&req.method==='GET'){
         if(!publicContentCache||Date.now()-publicContentCache.savedAt>30000)publicContentCache={savedAt:Date.now(),content:snapshots(await supabase.rest('content','?select=collection,id,published&published=not.is.null'),false)};
         return json(200,publicContentCache.content);

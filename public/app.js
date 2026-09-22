@@ -280,6 +280,8 @@ async function loadContent(preview){
   return response.json();
 }
 async function boot(){
+  const fragment=new URLSearchParams(location.hash.slice(1)),query=new URLSearchParams(location.search);
+  if(fragment.get('type')==='recovery'||query.get('type')==='recovery'||fragment.has('error')||query.has('error')||query.has('token_hash')){location.replace(`/admin${location.search}${location.hash}`);return;}
   const preview=new URLSearchParams(location.search).has('preview');
   try{
     let cached;
