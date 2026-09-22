@@ -82,6 +82,12 @@ WIR SIND FÜR SIE DA|WE ARE HERE FOR YOU
 Ihr nächster Schritt.|Your next step.
 Vereinbaren Sie Ihren Ersttermin in der Citypraxis.|Arrange your first appointment at Citypraxis.
 Praxispreise|Practice fees
+Kategorie|Category
+Behandlung / Preisposition|Treatment / price item
+Terminart oder Dauer|Appointment type or duration
+Zusatzinformation|Additional information
+Preiskategorien|Price categories
+PREISLISTE 2026|PRICE LIST 2026
 Preise für einzelne Therapiesitzungen erhalten Sie direkt bei der Praxis.|Please contact the practice for individual treatment fees.
 RÜCKERSTATTUNG DURCH DIE KRANKENKASSE|HEALTH INSURANCE REIMBURSEMENT
 Rückerstattungstarife|Reimbursement rates

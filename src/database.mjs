@@ -144,6 +144,15 @@ export function openDatabase(file = process.env.DB_PATH || resolve('data/citypra
       db.prepare('INSERT INTO migrations(version) VALUES(7)').run();db.exec('COMMIT');
     }catch(error){db.exec('ROLLBACK');throw error;}
   }
+  if(!db.prepare('SELECT version FROM migrations WHERE version=8').get()){
+    db.exec('BEGIN');
+    try{
+      for(const row of db.prepare("SELECT * FROM content WHERE collection='prices'").all())db.prepare('INSERT INTO revisions(collection,entity_id,snapshot,actor) VALUES(?,?,?,?)').run('prices',row.id,row.draft,'2026 price list migration');
+      db.prepare("DELETE FROM content WHERE collection='prices'").run();
+      for(const item of seed.prices){const value=JSON.stringify(item);db.prepare("INSERT INTO content(collection,id,draft,published) VALUES('prices',?,?,?)").run(item.id,value,value);}
+      db.prepare('INSERT INTO migrations(version) VALUES(8)').run();db.exec('COMMIT');
+    }catch(error){db.exec('ROLLBACK');throw error;}
+  }
   return db;
 }
 export function contentSnapshot(db, admin = false) {
