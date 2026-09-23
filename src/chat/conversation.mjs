@@ -3,7 +3,7 @@ import {ChatError,text,name,phone,emailValid} from './validation.mjs';
 import {verify,clientAddress,makeLimiter} from './security.mjs';
 import {safetySignal} from './interpret.mjs';
 import {emailConfigured,notifyRequest} from './notify.mjs';
-import {requestRows} from '../../public/request-summary.js';
+import {summaryRows} from '../../public/chat-model.js';
 
 export const CONVERSATION_LIMIT=16;
 export const CONVERSATION_PROMPT=`You are the CityPraxis digital receptionist in Vienna.
@@ -113,7 +113,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const message=[answer,ready?localized(lang,'Bitte prüfen Sie Ihre Angaben und senden Sie die Anfrage ab. Das Sekretariat meldet sich zur Terminvereinbarung.','Please review your details and send the request. Our secretary will contact you to arrange an appointment.'):question(slot,lang)].filter(Boolean).join(' ');
       s.messages.push({role:'visitor',text:raw},{role:'assistant',text:message});
       const intake=ready?makeIntake(s,lang):null;
-      const response={message,ready,summary:ready?requestRows({name:`${s.draft.first_name} ${s.draft.last_name}`,email:s.draft.email,phone:s.draft.phone,intake},lang):null,turnsRemaining:CONVERSATION_LIMIT-s.turns,limitReached:s.turns>=CONVERSATION_LIMIT&&!ready};
+      const response={message,ready,summary:ready?summaryRows(intake,lang):null,turnsRemaining:CONVERSATION_LIMIT-s.turns,limitReached:s.turns>=CONVERSATION_LIMIT&&!ready};
       s.lastTurn={key:body.turnKey,raw,response};json(200,response);
       return true;
     }catch(error){const expected=error instanceof ChatError;json(expected?error.status:503,{code:expected?error.code:'unavailable'});return true;}finally{if(locked)locked.busy=false;}

@@ -21,7 +21,7 @@ test('conversational reception validates, reviews, edits and submits exactly onc
     assert.equal((await call('finish',{confirmed:true})).code,'invalid_request');assert.equal(saved.length,0);
     assert.match((await turn('test@example.test')).message,/phone number/);
     assert.match((await turn('+43 699 12682157')).message,/days or times/);
-    value=answer({availability:'Afternoons'});const review=await turn('Afternoons');assert.equal(review.ready,true);assert.ok(review.summary.some(([,v])=>v==='test@example.test'));
+    value=answer({availability:'Afternoons'});const review=await turn('Afternoons');assert.equal(review.ready,true);assert.ok(!review.summary.some(([key])=>['Source','Herkunft'].includes(key)));assert.ok(review.summary.some(([,v])=>v==='test@example.test'));
     assert.equal((await call('finish')).code,'consent_required');
     assert.match((await call('edit',{field:'email'})).message,/email address/);
     assert.equal((await turn('corrected@example.test')).ready,true);
