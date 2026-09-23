@@ -1,10 +1,23 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {createConversationService,conversationFacts} from '../src/chat/conversation.mjs';
+import {createConversationService,conversationFacts,composeReply} from '../src/chat/conversation.mjs';
 import {newSession} from '../src/chat/security.mjs';
 
-const answer=(changes={})=>({kind:'appointment',answer:'',reason:null,availability:null,first_name:null,last_name:null,patient_status:null,...changes});
+const answer=(changes={})=>({kind:'appointment',answer:'',booking_intent:'request',reason:null,availability:null,first_name:null,last_name:null,patient_status:null,...changes});
+test('mixed questions retain concerns, ask before intake, respect a decline and preserve complete answers',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const facts=conversationFacts({team:[{title:'Published Person',role:'Physiotherapist',specialties:'Jaw',fictional:false},{title:'Fictional Person',fictional:true}],symptoms:[{title:'Jaw',body:'Published jaw information'}],pages:[{id:'datenschutz',title:'Privacy',body:'Published privacy information'}]});
+  let value=answer({kind:'practice_question',booking_intent:'unspecified',reason:'Jaw concern',answer:'Thank you for telling us. '+('Published pricing information. '.repeat(18))});
+  const service=createConversationService({store:{save(){assert.fail('No submission expected');}},getFacts:async()=>facts,fetcher:async(_,options)=>{const payload=JSON.parse(options.body),input=JSON.parse(payload.input);assert.equal(input.publishedFacts.team.length,1);assert.equal(input.publishedFacts.specialisms[0].title,'Jaw');assert.equal(input.publishedFacts.informationPages[0].id,'datenschutz');return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};}});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const invitation=await turn('My jaw hurts, what are the prices?');assert.ok(invitation.message.includes(value.answer.trim()));assert.match(invitation.message,/Would you like us to prepare/);assert.doesNotMatch(invitation.message,/first and last name/);assert.ok(invitation.message.length<=700);assert.ok(composeReply('A long sentence. '.repeat(100),'May I have your name?').length<=700);
+    value=answer({booking_intent:'defer',answer:'Of course. We are happy to answer your questions.'});const declined=await turn('Not yet, just information');assert.equal(declined.message,value.answer);
+    value=answer({kind:'practice_question',booking_intent:'unspecified',answer:'We are in Vienna.'});assert.equal((await turn('Where are you?')).message,value.answer);
+    value=answer({booking_intent:'request',answer:'We would be happy to help.'});assert.match((await turn('Yes, I want to request an appointment now')).message,/first and last name/);
+  }finally{process.env=old;}
+});
 test('conversational reception validates, reviews, edits and submits exactly once',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';delete process.env.RESEND_API_KEY;
   let value=answer({reason:'Shoulder concern',first_name:'Test',last_name:'Visitor'}),calls=0,saved=[];
@@ -45,6 +58,6 @@ test('AI errors, malformed output, boundaries, limits and concurrent requests ar
     value=answer({kind:'off_topic'});waiting=true;const pending=call(token,'A question');await new Promise(r=>setImmediate(r));assert.equal((await call(token,'Another')).code,'busy');waiting=false;release();await pending;
     const limited=newSession();for(let i=0;i<16;i++){const result=await call(limited,'Unrelated question');assert.equal(result.status,200);if(i===15)assert.equal(result.limitReached,true);}
     assert.equal((await call(limited,'One more')).code,'conversation_limit');
-    assert.deepEqual(conversationFacts({prices:[{amount:null},{amount:''},{amount:'90',title:'Therapy'}]}).samplePrices,[{category:undefined,service:'Therapy',duration:undefined,euro:90}]);
+    assert.deepEqual(conversationFacts({prices:[{amount:null},{amount:''},{amount:'90',title:'Therapy'}]}).samplePrices,[{category:undefined,service:'Therapy',duration:undefined,euro:90,details:undefined}]);
   }finally{process.env=old;}
 });

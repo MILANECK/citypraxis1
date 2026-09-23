@@ -35,6 +35,29 @@ at the limit, with the ordinary form available as fallback. Corrections consume
 remaining turns. Requests cannot be submitted until all required fields exist.
 Session locks and idempotent submission protect against duplicate sends.
 
+### Conversational tone and published knowledge
+
+Replies acknowledge new concerns and thank visitors for information. They answer
+mixed administrative questions before asking for the next missing detail. The
+model receives published service descriptions, specialties, team profiles,
+prices, FAQs, information/privacy pages and practice settings, using the chosen
+language. Only published content is supplied; Admin edits become available after
+publication and the existing content cache refresh. Missing facts are not invented.
+
+Mentioning a symptom does not authorize intake: the assistant invites a first
+appointment request, records an explicit yes and respects a no/not yet. It refers
+to a specialist from **our team** in a published focus area, without recommending
+or selecting a named person for the visitor. A dedicated therapist is assigned
+**after the first appointment**. Individual profiles can be described when asked.
+No diagnosis, treatment recommendations, calendar availability or booking promises.
+
+The whole reply, including the follow-up question, is capped at 700 characters.
+A generous output token bound is separate from this visible character cap. The
+client reveals only new replies word by word, finishing within 2.2 seconds;
+reduced-motion preferences show the complete reply immediately. Screen readers
+receive a complete response rather than announcements for every word. Emergency
+messages appear immediately. This is a display effect, not model token streaming.
+
 ## Data lifecycle
 
 A consented draft is stored in tab sessionStorage and server process memory for

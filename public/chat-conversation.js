@@ -1,7 +1,7 @@
 const en=window.I18n?.language==='en',lang=en?'en':'de',t=(de,english)=>en?english:de;
 const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const storageKey='citypraxis-conversation-v2';
-const welcome=t('Hallo, ich bin der digitale Empfang der Citypraxis. Wie können wir Ihnen helfen?','Hello, I’m the CityPraxis digital receptionist. How can we help you?');
+const welcome=t('Herzlich willkommen in der Citypraxis! Ich bin unser digitaler Empfang und helfe Ihnen gerne bei Fragen zur Praxis oder einer Terminanfrage. Wie dürfen wir Sie unterstützen?','Hello and welcome to CityPraxis! I’m our digital receptionist. I’ll gladly help with questions about our practice or prepare an appointment request with you. How can we help?');
 const errors={session_expired:t('Die Sitzung ist abgelaufen. Bitte beginnen Sie neu.','This session has expired. Please start again.'),rate_limit:t('Bitte versuchen Sie es später erneut oder nutzen Sie das Terminformular.','Please try later or use the appointment form.'),conversation_limit:t('Das Gesprächslimit ist erreicht. Sie können das Terminformular verwenden.','The conversation limit has been reached. You can use the appointment form.'),ai_unavailable:t('Der digitale Empfang ist gerade nicht verfügbar. Bitte nutzen Sie das Terminformular.','The digital receptionist is temporarily unavailable. Please use the appointment form.')};
 const blank=()=>({token:null,expires:0,started:false,messages:[],summary:null,ready:false,sent:null,turnsRemaining:16,turnKey:null,pendingMessage:null,turnNumber:0,limitReached:false,emergency:false});
 let state=blank(),opened=false,busy=false;
@@ -19,6 +19,33 @@ async function api(route,body){
   const result=await response.json();if(!response.ok){const error=new Error(errors[result.code]||t('Das hat nicht geklappt. Bitte versuchen Sie es erneut.','That did not work. Please try again.'));error.code=result.code;throw error;}return result;
 }
 async function run(task){if(busy)return;busy=true;root.setAttribute('aria-busy','true');status.textContent=t('Einen Moment …','One moment…');root.querySelectorAll('.chat-content button').forEach(button=>button.disabled=true);try{await task();status.textContent='';}catch(error){status.textContent=error.message||errors.ai_unavailable;if(['session_expired','ai_unavailable','conversation_limit'].includes(error.code))status.innerHTML=`${esc(status.textContent)} <a href="/termin?lang=${lang}">${t('Terminformular','Appointment form')}</a>`;}finally{busy=false;root.removeAttribute('aria-busy');root.querySelectorAll('.chat-content button').forEach(button=>button.disabled=false);}}
+async function revealReply(){
+  if(state.emergency||!opened||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const paragraph=content.querySelector('.conversation-message:last-child.from-assistant p');
+  if(!paragraph)return;
+  const full=paragraph.textContent,words=full.match(/\S+\s*/g)||[full];
+  const accessible=document.createElement('span');accessible.className='sr-only';accessible.textContent=full;
+  const visual=document.createElement('span');visual.setAttribute('aria-hidden','true');
+  paragraph.replaceChildren(accessible,visual);
+  const controls=[...content.querySelectorAll('button')];controls.forEach(button=>button.disabled=true);
+  const review=content.querySelector('.conversation-review');if(review)review.hidden=true;
+  status.textContent='';paragraph.classList.add('is-typing');
+  const scroll=$('.chat-scroll');scroll.scrollTop=scroll.scrollHeight;
+  await new Promise(resolve=>{
+    let start;const duration=Math.min(2200,words.length*32);
+    function frame(now){
+      start??=now;
+      const follow=scroll.scrollHeight-scroll.scrollTop-scroll.clientHeight<70;
+      const count=!opened||!paragraph.isConnected||document.hidden?words.length:Math.min(words.length,Math.max(1,Math.ceil((now-start)/duration*words.length)));
+      visual.textContent=words.slice(0,count).join('');
+      if(follow)scroll.scrollTop=scroll.scrollHeight;
+      if(count<words.length)requestAnimationFrame(frame);else resolve();
+    }
+    requestAnimationFrame(frame);
+  });
+  paragraph.classList.remove('is-typing');controls.forEach(button=>button.disabled=false);
+  if(review){review.hidden=false;scrollEnd();}
+}
 function summary(){return `<dl class="chat-summary">${(state.summary||[]).filter(([key])=>!['Source','Herkunft'].includes(key)).map(([key,value])=>`<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>`;}
 function render(){
   if(state.sent){content.innerHTML=`<div class="chat-success" aria-hidden="true">✓</div><h3>${t('Ihre Anfrage ist eingegangen.','Your request has been received.')}</h3><p>${t('Unser Sekretariat meldet sich telefonisch oder per E-Mail, um einen Termin zu vereinbaren.','Our secretary will contact you by phone or email to arrange an appointment.')}</p><p class="chat-note">${t('Anfragenummer','Request number')} #${esc(state.sent)}</p>`;return;}
@@ -30,7 +57,7 @@ function render(){
 }
 function bind(){
   content.querySelector('.conversation-start')?.addEventListener('submit',event=>{event.preventDefault();run(async()=>{const session=await api('session');if(!session.aiAvailable)throw Object.assign(new Error(errors.ai_unavailable),{code:'ai_unavailable'});state={...blank(),token:session.token,expires:session.expires,started:true,messages:[{role:'assistant',text:welcome}]};persist();render();});});
-  content.querySelector('.conversation-compose')?.addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget,message=form.elements.message.value.trim();if(!message)return;run(async()=>{if(state.pendingMessage!==message){state.turnKey=crypto.randomUUID();state.pendingMessage=message;}const result=await api('turn',{message,turnKey:state.turnKey,consent:true,turnNumber:state.turnNumber});state.turnNumber++;state.turnKey=null;state.messages.push({role:'visitor',text:message},{role:'assistant',text:result.message});state.ready=result.ready;state.summary=result.summary;state.turnsRemaining=result.turnsRemaining;state.limitReached=result.limitReached;state.emergency=result.emergency===true;persist();render();});});
+  content.querySelector('.conversation-compose')?.addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget,message=form.elements.message.value.trim();if(!message)return;run(async()=>{if(state.pendingMessage!==message){state.turnKey=crypto.randomUUID();state.pendingMessage=message;}const result=await api('turn',{message,turnKey:state.turnKey,consent:true,turnNumber:state.turnNumber});state.turnNumber++;state.turnKey=null;state.messages.push({role:'visitor',text:message},{role:'assistant',text:result.message});state.ready=result.ready;state.summary=result.summary;state.turnsRemaining=result.turnsRemaining;state.limitReached=result.limitReached;state.emergency=result.emergency===true;persist();render();await revealReply();});});
   content.querySelector('.conversation-confirm')?.addEventListener('submit',event=>{event.preventDefault();run(async()=>{const result=await api('finish',{confirmed:true});state.sent=result.id;clear();render();});});
   content.querySelectorAll('[data-edit]').forEach(button=>button.addEventListener('click',()=>run(async()=>{const result=await api('edit',{field:button.dataset.edit});state.messages.push({role:'assistant',text:result.message});state.ready=false;state.summary=null;persist();render();})));
   content.querySelector('#conversation-input')?.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();event.currentTarget.form.requestSubmit();}});

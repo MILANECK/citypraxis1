@@ -60,3 +60,5 @@
 .conversation-edit button{border:1px solid #d4e3e7;border-radius:20px;background:white;color:var(--chat-blue);font-size:11px!important;padding:6px 10px}
 .conversation-edit button:hover{background:#eaf5f8}
 @keyframes conversation-arrive{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+#cp-chat .is-typing [aria-hidden]::after{content:"";display:inline-block;width:2px;height:.95em;background:var(--chat-blue);margin-left:3px;vertical-align:-.1em;opacity:.6}

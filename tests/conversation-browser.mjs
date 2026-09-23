@@ -7,7 +7,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true});
 await mkdir('test-results',{recursive:true});
 try{
   for(const lang of ['en','de'])for(const mobile of [false,true]){
-    const page=await browser.newPage({viewport:mobile?{width:390,height:844}:{width:1440,height:1000},reducedMotion:'reduce'});
+    const page=await browser.newPage({viewport:mobile?{width:390,height:844}:{width:1440,height:1000},reducedMotion:mobile?'reduce':'no-preference'});
     const errors=[];page.on('pageerror',e=>errors.push(e.message));let submitted=0;
     await page.route('**/api/chat/session',route=>route.fulfill({json:{token:'fixture',expires:Date.now()+1800000,aiAvailable:true}}));
     await page.route('**/api/chat/turn',async route=>{
@@ -23,7 +23,7 @@ try{
     await page.screenshot({path:`test-results/conversation-${lang}-${mobile?'mobile':'desktop'}-welcome.png`});
     await page.locator('.conversation-start input').check();await page.locator('.conversation-start button').click();
     await page.locator('#conversation-input').fill('Synthetic test only, Test Visitor, test@example.test, +43 699 12682157, flexible');
-    await page.locator('.conversation-compose button').click();await page.locator('.conversation-review').waitFor();
+    await page.locator('.conversation-compose button').click();if(!mobile){await page.locator('.is-typing').waitFor();assert.ok(await page.locator('.is-typing [aria-hidden]').innerText());}await page.locator('.conversation-review').waitFor();
     assert.equal(submitted,0);await page.locator('[data-edit=email]').click();await page.locator('#conversation-input').fill('test@example.test');await page.locator('.conversation-compose button').click();await page.locator('.conversation-review').waitFor();
     const bounds=await page.locator('.chat-window').boundingBox();assert.ok(bounds.x>=0&&bounds.x+bounds.width<=(mobile?390:1440));assert.ok(bounds.y>=0);
     assert.equal(await page.locator('.chat-scroll').evaluate(el=>el.scrollWidth<=el.clientWidth),true);
