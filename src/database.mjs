@@ -159,6 +159,13 @@ export function openDatabase(file = process.env.DB_PATH || resolve('data/citypra
     try{importTherapistsSqlite(db);db.prepare('INSERT INTO migrations(version) VALUES(9)').run();db.exec('COMMIT');}
     catch(error){db.exec('ROLLBACK');throw error;}
   }
+  if(!db.prepare('SELECT version FROM migrations WHERE version=10').get()){
+    db.exec('BEGIN');
+    try{
+      db.exec("ALTER TABLE requests ADD COLUMN intake TEXT; ALTER TABLE requests ADD COLUMN submission_key TEXT; ALTER TABLE requests ADD COLUMN notification_status TEXT NOT NULL DEFAULT 'not_configured'; CREATE UNIQUE INDEX requests_submission_key_idx ON requests(submission_key); INSERT INTO migrations(version) VALUES(10);");
+      db.exec('COMMIT');
+    }catch(error){db.exec('ROLLBACK');throw error;}
+  }
   return db;
 }
 export function contentSnapshot(db, admin = false) {

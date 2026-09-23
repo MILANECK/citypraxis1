@@ -7,6 +7,8 @@ import { serveFile, mediaType } from './media.mjs';
 import { collections } from './database.mjs';
 import { createSupabaseClient } from './supabase-client.mjs';
 import { requestPreference, validTherapistId } from './appointment-preference.mjs';
+import {createChatService} from './chat/service.mjs';
+import {supabaseChatStore} from './chat/store.mjs';
 
 const root = resolve('public');
 const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.mp4':'video/mp4' };
@@ -27,6 +29,9 @@ function snapshots(rows, admin = false) {
 
 export function createSupabaseApp() {
   const supabase = createSupabaseClient();
+  const chat=createChatService({store:supabaseChatStore(supabase),getSettings:async()=>{
+    const rows=await supabase.rest('content','?collection=eq.settings&select=published');return rows.find(r=>r.published)?.published||{};
+  }});
   const attempts = new Map();
   let publicContentCache;
   const storagePrefix = `${supabase.url}/storage/v1/object/public/${encodeURIComponent(supabase.bucket)}/`;
@@ -51,6 +56,7 @@ export function createSupabaseApp() {
     const json=(status,data)=>{let payload=Buffer.from(JSON.stringify(data));const headers={'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'};if(payload.length>1024&&/\bgzip\b/.test(req.headers['accept-encoding']||'')){payload=gzipSync(payload);headers['Content-Encoding']='gzip';headers.Vary='Accept-Encoding';}headers['Content-Length']=payload.length;res.writeHead(status,headers);res.end(payload);};
     try {
       const url=new URL(req.url,'http://localhost'),path=decodeURIComponent(url.pathname);
+      if(path.split('/').some(part=>part.startsWith('.')))return json(404,{error:'Nicht gefunden.'});
       if(['GET','HEAD'].includes(req.method)&&!path.startsWith('/api/')){
         let file=resolve(root,`.${path}`);if(!file.startsWith(root+sep)&&file!==root)return json(404,{error:'Nicht gefunden.'});
         if(!extname(path))file=resolve(root,path.startsWith('/admin')?'admin.html':'index.html');
@@ -74,10 +80,11 @@ export function createSupabaseApp() {
           return json(201,{path:mediaPath,name,alt});
         }
         if(!req.headers['content-type']?.startsWith('application/json'))return json(415,{error:'JSON erforderlich.'});
-        let raw='',size=0;for await(const chunk of req){size+=chunk.length;if(size>4_000_000)throw Object.assign(new Error('Datei oder Anfrage zu groß.'),{status:413});raw+=chunk;}
+        let raw='',size=0;for await(const chunk of req){size+=chunk.length;if(size>(path.startsWith('/api/chat/')?64_000:4_000_000))throw Object.assign(new Error('Datei oder Anfrage zu groß.'),{status:413});raw+=chunk;}
         try{body=JSON.parse(raw||'{}');}catch{return json(400,{error:'Ungültige Anfrage.'});}
         if(!body||Array.isArray(body)||typeof body!=='object')return json(400,{error:'Ungültige Anfrage.'});
       }
+      if(await chat.handle(req,path,body,json))return;
       if(path==='/api/health'&&req.method==='GET')return json(200,{ok:true,backend:'supabase'});
       if(path==='/api/recovery/request'&&req.method==='POST'){
         limit(`recovery:${req.socket.remoteAddress}`,6);
@@ -136,6 +143,7 @@ export function createSupabaseApp() {
       if(path==='/api/me'&&req.method==='GET')return json(200,{id:user.id,email:user.email,name:user.name,role:user.role,csrf:user.csrf});
       if(path==='/api/logout'&&req.method==='POST'){try{await supabase.logout(user.accessToken);}catch{}res.setHeader('Set-Cookie','cp_access=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');return json(200,{ok:true});}
       const owner=user.role==='owner',editor=owner||user.role==='editor',reception=owner||user.role==='reception';
+      if(path==='/api/admin/requests/notify'&&req.method==='POST'&&reception)return json(200,await chat.retryNotification(body.id));
       if(path==='/api/admin/content'&&req.method==='GET'&&editor)return json(200,snapshots(await supabase.rest('content','?select=collection,id,draft,published'),true));
       const match=/^\/api\/admin\/content\/([a-z]+)\/([a-z0-9-]+)$/.exec(path);
       if(match&&editor){

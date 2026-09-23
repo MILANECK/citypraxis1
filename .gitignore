@@ -3,6 +3,8 @@ data/
 backups/
 public/uploads/
 .env
+.env.*
+!.env.example
 .sites-runtime/
 test-results/
 *.log

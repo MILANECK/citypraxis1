@@ -10,6 +10,8 @@ import { openDatabase, contentSnapshot, collections, passwordHash, verifyPasswor
 import { hasSupabaseConfig } from './supabase-client.mjs';
 import { createSupabaseApp } from './supabase-server.mjs';
 import { requestPreference, validTherapistId } from './appointment-preference.mjs';
+import {createChatService} from './chat/service.mjs';
+import {sqliteChatStore} from './chat/store.mjs';
 
 const root = resolve('public');
 const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.mp4':'video/mp4' };
@@ -17,6 +19,7 @@ const hash = value => createHash('sha256').update(value).digest('hex');
 const clean = (value, max = 200) => typeof value === 'string' ? value.trim().slice(0,max) : '';
 const emailValid = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 export function createApp(db = openDatabase()) {
+  const chat=createChatService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{}});
   const attempts = new Map();
   function limit(key, max) {
     const now = Date.now();
@@ -37,6 +40,7 @@ export function createApp(db = openDatabase()) {
     try {
       const url = new URL(req.url, 'http://localhost');
       const path = decodeURIComponent(url.pathname);
+      if(path.split('/').some(part=>part.startsWith('.')))return json(404,{error:'Nicht gefunden.'});
       if (['GET','HEAD'].includes(req.method) && !path.startsWith('/api/')) {
         let file = resolve(root, `.${path}`);
         if (!file.startsWith(root + sep) && file !== root) return json(404,{ error:'Nicht gefunden.' });
@@ -74,10 +78,11 @@ export function createApp(db = openDatabase()) {
         }
         if (!req.headers['content-type']?.startsWith('application/json')) return json(415,{error:'JSON erforderlich.'});
         let raw = ''; let size = 0;
-        for await (const chunk of req) { size += chunk.length; if (size > 4_000_000) throw Object.assign(new Error('Datei oder Anfrage zu groß.'),{status:413}); raw += chunk; }
+        for await (const chunk of req) { size += chunk.length; if (size > (path.startsWith('/api/chat/')?64_000:4_000_000)) throw Object.assign(new Error('Datei oder Anfrage zu groß.'),{status:413}); raw += chunk; }
         try { body = JSON.parse(raw || '{}'); } catch { return json(400,{error:'Ungültige Anfrage.'}); }
         if (!body || Array.isArray(body) || typeof body !== 'object') return json(400,{error:'Ungültige Anfrage.'});
       }
+      if(await chat.handle(req,path,body,json))return;
       if (path === '/api/content' && req.method === 'GET') return json(200,contentSnapshot(db));
       if (path === '/api/requests' && req.method === 'POST') {
         limit(`request:${req.socket.remoteAddress}`,10);
@@ -110,6 +115,7 @@ export function createApp(db = openDatabase()) {
       if (path === '/api/me' && req.method === 'GET') return json(200,user);
       if (path === '/api/logout' && req.method === 'POST') { db.prepare('DELETE FROM sessions WHERE token=?').run(hash(token)); res.setHeader('Set-Cookie','cp_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0'); return json(200,{ok:true}); }
       const owner = user.role === 'owner', editor = owner || user.role === 'editor', reception = owner || user.role === 'reception';
+      if(path==='/api/admin/requests/notify'&&req.method==='POST'&&reception)return json(200,await chat.retryNotification(body.id));
       if (path === '/api/admin/content' && req.method === 'GET' && editor) return json(200,contentSnapshot(db,true));
       const contentMatch = /^\/api\/admin\/content\/([a-z]+)\/([a-z0-9-]+)$/.exec(path);
       if (contentMatch && editor) {
