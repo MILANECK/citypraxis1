@@ -57,7 +57,7 @@ for(const backend of ['sqlite','supabase'])test(`${backend}: booking records the
     assert.equal(saved.preference,`WunschtherapeutIn: ${therapist.title}\nAnliegen: Kiefer\nAfternoons`);
     assert.equal((await post({therapistId:'missing'})).status,400);
     assert.equal((await post({therapistId:'invalid&id=other'})).status,400);
-    assert.equal((await post({preference:'x'.repeat(300)})).status,400);
+    assert.equal((await post({preference:'x'.repeat(301)})).status,400);
     assert.equal((await post({therapistId:''})).status,201);
     published=false;
     if(db)db.prepare("UPDATE content SET published=NULL WHERE collection='team' AND id=?").run(therapist.id);

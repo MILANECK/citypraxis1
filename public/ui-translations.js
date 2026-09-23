@@ -400,6 +400,7 @@ Object.assign(I18n.dictionary, {
 Object.assign(I18n.dictionary, {'Abbrechen':'Cancel','Der Eintrag wird aus der Verwaltung und der Website entfernt.':'The entry will be removed from both the admin and the website.'});
 
 Object.assign(I18n.dictionary, {'Lageskizze · nicht maßstabsgetreu':'Location sketch · not to scale','Lageskizze: Citypraxis an der Stubenbastei bei der Liebenberggasse':'Location sketch: Citypraxis on Stubenbastei near Liebenberggasse'});
+Object.assign(I18n.dictionary, {'Teamprofile, aktuelle Tarife, vollständiges Impressum und Datenschutz ergänzen. Öffnungszeiten und Zahlungsinformationen prüfen. Terminanfragen werden in der Praxisdatenbank gespeichert. Den E-Mail-Versandstatus finden Sie bei jeder neuen Anfrage.':'Complete team profiles, current fees, legal notice and privacy information. Check opening hours and payment details. Appointment requests are stored in the practice database. Each new request shows its email delivery status.'});
 
 Object.assign(I18n.dictionary, {'Ich bin mit der Verarbeitung meiner Kontakt- und freiwillig angegebenen Beschwerdedaten zur Bearbeitung dieser Anfrage einverstanden.':'I agree to the processing of my contact details and any voluntarily provided information about my concern for the purpose of handling this request.'});
 

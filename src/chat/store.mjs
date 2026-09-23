@@ -2,7 +2,7 @@ export function sqliteChatStore(db){
   const decode=r=>r&&({...r,intake:JSON.parse(r.intake||'null')});
   return {
     async save(row){
-      const result=db.prepare('INSERT INTO requests(name,email,phone,preference,intake,submission_key,notification_status) VALUES(?,?,?,?,?,?,?) ON CONFLICT(submission_key) DO NOTHING').run(row.name,row.email,row.phone,row.preference,JSON.stringify(row.intake),row.submission_key,row.notification_status);
+      const result=db.prepare('INSERT INTO requests(name,email,phone,preference,acute,intake,submission_key,notification_status) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(submission_key) DO NOTHING').run(row.name,row.email,row.phone,row.preference,row.acute?1:0,JSON.stringify(row.intake),row.submission_key,row.notification_status);
       return {created:Boolean(result.changes),row:decode(db.prepare('SELECT * FROM requests WHERE submission_key=?').get(row.submission_key))};
     },
     async get(id){return decode(db.prepare('SELECT * FROM requests WHERE id=?').get(id));},

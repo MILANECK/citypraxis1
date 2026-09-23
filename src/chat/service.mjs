@@ -67,7 +67,7 @@ export function createChatService({store,getSettings=async()=>({}),fetcher=fetch
   async function retryNotification(id){
     if(!/^\d+$/.test(String(id)))throw new ChatError('invalid_request');
     limit('email-retry',30);
-    const row=await store.get(id);if(!row?.intake||row.intake.kind!=='digital_reception')throw new ChatError('not_found',404);
+    const row=await store.get(id);if(!['digital_reception','appointment_form'].includes(row?.intake?.kind))throw new ChatError('not_found',404);
     return {status:await notifyRequest(row,store,fetcher)};
   }
   return {handle,retryNotification};

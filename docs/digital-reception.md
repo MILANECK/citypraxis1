@@ -15,7 +15,7 @@ The existing Admin request inbox shows the reviewed fields, original free text, 
 - `src/chat/security.mjs`: signed 30-minute session and interpretation receipts; bounded rate limits.
 - `src/chat/interpret.mjs`: deterministic extraction, safety redirects, optional OpenAI Responses integration. **The GPT system prompt is `GPT_SYSTEM_PROMPT` here.**
 - `src/chat/store.mjs`: SQLite and Supabase adapters.
-- `src/chat/notify.mjs`: optional Resend notification. Email contains a request number and Admin link, not health details.
+- `src/chat/notify.mjs`: optional Resend delivery for all request sources, with the submitted details, source label and Admin link.
 - `public/admin-chat.js`, existing Admin HTML/JS/CSS: structured handoff, consent/provenance, email retry.
 - `src/server.mjs`, `src/supabase-server.mjs`, `src/database.mjs`: route integration and local migration.
 - `public/index.html`, `public/app.js`: public widget and factual privacy information.
@@ -50,9 +50,11 @@ GPT is optional and used only after visitor opt-in, for free text that the rules
 
 The API configuration follows [OpenAI's quickstart](https://developers.openai.com/api/docs/quickstart) and [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
 
-## Optional email
+## Request emails (forms and chatbot)
 
-The Admin inbox works without email. To enable notification emails, configure a verified Resend sender and staff destination:
+First-appointment forms, requests from therapist profiles and the chatbot use the same email delivery. The subject and email body identify the source. Emails contain the submitted contact information, all selected concerns, the optional Other concern text, availability and, for profile requests, the published therapist's name. The patient email becomes Reply-To. Both HTML and plain-text versions are sent.
+
+The Admin inbox works without email. Configure these private environment variables locally in `.env` and in Render → citypraxis-wien → Environment:
 
 ```dotenv
 RESEND_API_KEY=private-key
@@ -60,7 +62,22 @@ CHAT_NOTIFY_FROM=Citypraxis <verified-sender@your-domain>
 CHAT_NOTIFY_TO=staff@your-domain
 ```
 
-Email is attempted only **after** persistence. Failure does not undo the request. Staff can retry pending/failed notifications. Provider idempotency keys reduce duplicate sends; provider deduplication has a bounded retention period, so a much later retry after an uncertain delivery can still duplicate an email. No automatic background queue is introduced. Delivery has not been tested against a real mailbox because no sender/service is configured.
+Despite their legacy `CHAT_` names, both sender and recipient settings apply to **all three** sources. To change the inbox later, change `CHAT_NOTIFY_TO` and redeploy; no code or database change is required. Never put the API key in Admin content or a public JavaScript file.
+
+For this testing phase, use:
+
+```dotenv
+CHAT_NOTIFY_FROM=Citypraxis <onboarding@resend.dev>
+CHAT_NOTIFY_TO=kovac.design@gmail.com
+```
+
+Resend's default testing sender only delivers to the email address used for the Resend account. Register with the test recipient above, or verify a sending domain and use an address on that domain. See [Resend's testing-domain restriction](https://resend.com/docs/knowledge-base/403-error-resend-dev-domain). After adding the API key and both variables to Render, use **Save, rebuild, and deploy**. Check one synthetic request from each source and its Admin delivery status. `sent` means the provider accepted the message; inbox/spam placement still needs checking.
+
+Email is attempted only **after** persistence. Failure does not undo the request. Staff can send requests originally saved without email configuration and retry pending/failed notifications in Admin. Provider idempotency keys reduce duplicate sends; provider deduplication has a bounded retention period, so a much later retry after an uncertain delivery can still duplicate an email. No automatic background queue is introduced. The provider request timeout is six seconds.
+
+The general appointment form does not select a therapist. An explicit request from a therapist profile shows that person's photo/name as a fixed preference. The secretary arranges dates and assignment by phone or email; the site does not reserve calendar slots. Multiple concerns are checked independently, including Admin-added categories. Full answers are stored in the existing `intake` column, while the old `preference` column holds a short preview for compatibility. The existing digital reception migration is sufficient; no additional SQL or reseeding is needed.
+
+Consent and the privacy supplement describe forwarding the submitted details, including voluntarily supplied health information, through Resend to the reception inbox.
 
 ## Security and operations
 
@@ -82,7 +99,9 @@ Email is attempted only **after** persistence. Failure does not undo the request
 
 `node tests/browser-fixture.mjs` starts disposable in-memory SQLite on port 3001. `node tests/chat-browser.mjs` runs desktop/mobile Chromium flows: extraction confirmation, invalid phone correction, review, refresh, submission, Admin inbox, close/reopen and reduced motion. `PLAYWRIGHT_PATH` can point to a local Playwright install. No production requests are created by these tests.
 
-To interactively test real GPT against disposable storage: `node --env-file=.env tests/browser-fixture.mjs` (stop an existing fixture first). This reads only the configured AI key; the fixture explicitly uses in-memory SQLite and sets its own local origin. API interpretation calls are billed to that key. Synthetic examples only.
+`tests/appointment-mail.test.mjs` verifies multiselect storage, Admin-edited options, escaping, all three email sources, duplicates, failed delivery and manual retries with a mocked provider. `QA_PORT=3005 node tests/browser-fixture.mjs` and `node tests/appointment-browser.mjs` cover the form in German/English, static profile selection, mobile layout, the Other field and reduced motion. Use the PowerShell equivalent `$env:QA_PORT='3005'` when starting the fixture on Windows. These test scripts do not load `.env`; do not supply real email credentials to disposable fixtures unless intentionally sending test mail.
+
+To interactively test real GPT against disposable storage: `node --env-file=.env tests/browser-fixture.mjs` (stop an existing fixture first). The fixture explicitly uses in-memory SQLite and sets its own local origin. This loads all configured provider keys: AI interpretation calls are billed to that key and submitted requests can send real notification emails when Resend is configured. Synthetic examples only.
 
 ## Release verification — 23 September 2026
 
@@ -93,4 +112,10 @@ To interactively test real GPT against disposable storage: `node --env-file=.env
 - The hosted privacy supplement is present. No production appointment request or email was created by the release smoke test.
 - Both `.env` and the accidentally named `.env.txt` are ignored by Git; no real credentials are committed.
 
-Remaining operational setup: configure optional email if desired; have the practice approve retention/privacy text and replace the test key with the client's key before handover. Patient-database verification and calendar booking are intentionally future integrations.
+## Email update verification — 23 September 2026
+
+- All 21 native test groups pass. Desktop/mobile form and chat checks pass in German and English, including the form source, multiple concerns and the Admin handoff.
+- Real Resend delivery was exercised with three synthetic requests in disposable local storage, one per source. Resend accepted all three messages for `kovac.design@gmail.com`.
+- Live Render delivery additionally requires the three email environment variables above. Local `.env` changes do not update Render.
+
+Before handover, replace test provider keys and the testing mailbox with the client's configuration. Patient-database verification and calendar booking are future integrations.

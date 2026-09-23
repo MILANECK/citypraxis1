@@ -1,0 +1,66 @@
+// Run only against a disposable tests/browser-fixture.mjs instance.
+import {createRequire} from 'node:module';
+import {mkdir,writeFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {requestEmail} from '../src/chat/notify.mjs';
+import {requestPreference} from '../src/appointment-preference.mjs';
+const require=createRequire(import.meta.url);
+const {chromium}=require(process.env.PLAYWRIGHT_PATH||'C:/Users/kovac/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const origin=process.env.QA_ORIGIN||'http://127.0.0.1:3005';
+assert.ok(['127.0.0.1','localhost'].includes(new URL(origin).hostname),'Use the disposable local server.');
+const browser=await chromium.launch({channel:'chrome',headless:true}),failures=[];
+await mkdir('test-results',{recursive:true});
+try{
+  const page=await browser.newPage({viewport:{width:1440,height:1050}});
+  page.on('pageerror',e=>failures.push(e.message));
+  await page.goto(origin+'/termin?lang=en');await page.locator('.cookie-acknowledge').click();
+  assert.equal(await page.locator('#booking-form select,#booking-form [name=therapistId]').count(),0);
+  assert.match(await page.locator('.article-intro').innerText(),/secretary.*phone or email/);
+  const choose=async(value,p=page)=>p.locator(`.concern-chip:has(input[value="${value}"])`).click();
+  await choose('Kiefer');await choose('Tinnitus');await choose('Andere Beschwerden');
+  const custom=page.locator('.custom-symptoms');await custom.locator('textarea').fill('This is a synthetic browser test.');
+  // Changing another category must not close or erase the Other concern field.
+  await choose('Tinnitus');assert.equal(await custom.getAttribute('aria-hidden'),'false');await choose('Tinnitus');
+  assert.equal(await page.locator('[name=concern]:checked').count(),3);
+  const style=await custom.evaluate(el=>({padding:getComputedStyle(el).padding,background:getComputedStyle(el).backgroundColor}));
+  assert.deepEqual(style,{padding:'0px',background:'rgba(0, 0, 0, 0)'});
+  await custom.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(a=>a.finished));});
+  await page.screenshot({path:'test-results/appointment-desktop.png',fullPage:true});
+  await page.locator('#booking-form [name=name]').fill('Browser Form Test');
+  await page.locator('#booking-form [name=email]').fill('browser-form@example.test');
+  await page.locator('#booking-form [name=preference]').fill('Afternoons, by email');
+  await page.locator('#booking-form [name=consent]').check();
+  const requestPromise=page.waitForRequest(r=>r.url().endsWith('/api/requests')&&r.method()==='POST');
+  await page.locator('#booking-form button[type=submit]').click();
+  const payload=(await requestPromise).postDataJSON();assert.deepEqual(payload.concerns,['Kiefer','Tinnitus','Andere Beschwerden']);assert.equal(payload.therapistId,undefined);
+  await page.getByRole('heading',{name:'Thank you, Browser Form Test.'}).waitFor();
+  assert.match(await page.locator('#booking-form').innerText(),/secretary.*phone or email/);
+  const content=await (await page.request.get(origin+'/api/content')).json(),profile=content.team[0];
+  await page.goto(origin+`/termin?therapist=${encodeURIComponent(profile.id)}&lang=en`);
+  await page.locator('.therapist-choice strong').waitFor();
+  assert.equal(await page.locator('[name=therapistId]').inputValue(),profile.id);assert.equal(await page.locator('#booking-form select').count(),0);
+  assert.equal(await page.locator('.therapist-choice strong').innerText(),profile.title);
+  assert.equal(await page.locator('.therapist-choice img').evaluate(el=>el.complete&&el.naturalWidth>0),true);
+  for(const href of await page.locator('.header-cta,.mobile-booking .button,.mobile-nav a[href*="/termin"]').evaluateAll(links=>links.map(a=>a.href)))assert.ok(!href.includes('therapist='));
+  await choose('Kopf & Migräne');await page.locator('#booking-form [name=name]').fill('Browser Profile Test');await page.locator('#booking-form [name=email]').fill('browser-profile@example.test');await page.locator('#booking-form [name=consent]').check();await page.locator('#booking-form button[type=submit]').click();
+  await page.getByRole('heading',{name:'Thank you, Browser Profile Test.'}).waitFor();
+  await page.goto(origin+'/admin?lang=en');await page.locator('#login-form [name=email]').fill('preview@example.test');await page.locator('#login-form [name=password]').fill('local-preview-only-2026');await page.locator('#login-form .button').click();await page.locator('[data-view=requests]').click();
+  const formCard=page.locator('.request-card').filter({has:page.getByRole('heading',{name:'Browser Form Test',exact:true})}).first();
+  assert.match(await formCard.innerText(),/First-appointment form/);assert.match(await formCard.innerText(),/Jaw, Tinnitus, Other concern/);assert.match(await formCard.innerText(),/This is a synthetic browser test/);
+  const profileCard=page.locator('.request-card').filter({has:page.getByRole('heading',{name:'Browser Profile Test',exact:true})}).first();assert.match(await profileCard.innerText(),/Therapist profile/);assert.ok((await profileCard.innerText()).includes(profile.title));
+  assert.equal(await profileCard.locator('[name=status] option[value=confirmed]').count(),1);
+  await page.screenshot({path:'test-results/appointment-admin.png',fullPage:true});
+  const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});mobile.on('pageerror',e=>failures.push(e.message));
+  await mobile.goto(origin+'/termin?lang=de');await mobile.locator('.cookie-acknowledge').click();await choose('Kiefer',mobile);await choose('Andere Beschwerden',mobile);await mobile.locator('[name=symptoms]').fill('Kurze Testbeschreibung.');
+  await mobile.locator('.custom-symptoms').evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(a=>a.finished));});
+  await mobile.locator('.concern-fieldset').scrollIntoViewIfNeeded();await mobile.screenshot({path:'test-results/appointment-mobile.png'});
+  await choose('Andere Beschwerden',mobile);await mobile.locator('.custom-symptoms').waitFor({state:'hidden'});assert.equal(await mobile.locator('[name=symptoms]').isDisabled(),true);
+  assert.equal(await mobile.locator('[name=concern]:checked').count(),1);
+  await mobile.emulateMedia({reducedMotion:'reduce'});await choose('Andere Beschwerden',mobile);assert.equal(await mobile.locator('.custom-symptoms').isVisible(),true);await choose('Andere Beschwerden',mobile);assert.equal(await mobile.locator('.custom-symptoms').isVisible(),false);
+  assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  // Inspect the HTML email layout with synthetic data only.
+  const {intake}=requestPreference({concerns:['Kiefer','Tinnitus','Andere Beschwerden'],symptoms:'Eine kurze Beschreibung des Anliegens.',preference:'Nachmittags ab 14 Uhr'},null);
+  const mail=requestEmail({id:'TEST',name:'Test Person',email:'test@example.test',intake});await writeFile('test-results/appointment-email.html',mail.html);
+  const emailPage=await browser.newPage({viewport:{width:800,height:1100}});await emailPage.setContent(mail.html);await emailPage.screenshot({path:'test-results/appointment-email.png',fullPage:true});
+  assert.deepEqual(failures,[]);console.log('Appointment browser QA passed: English/German, multiple selections, smooth Other field, general vs profile routes, stored full Admin details, mobile and reduced motion.');
+}finally{await browser.close();}

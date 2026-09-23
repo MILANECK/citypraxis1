@@ -43,6 +43,8 @@
 .therapist-choice-portrait{flex:0 0 64px;width:64px;height:76px;border-radius:12px;overflow:hidden;display:grid;place-items:center;background:#edf2f3;color:var(--blue)}
 .therapist-choice-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 20%}
 .therapist-choice-control{flex:1;min-width:0}
+.therapist-choice-label{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
+.therapist-choice-control strong{display:block;font-size:16px;line-height:1.4}
 .form-card .therapist-choice-control label{font-size:12px;font-weight:400;margin-bottom:6px;color:var(--muted)}
 .therapist-choice-control select{width:100%;max-width:100%;font-size:14px;min-height:44px;background:white;border:1px solid var(--line);border-radius:8px;padding:10px 28px 10px 10px;color:var(--ink)}
 .therapist-choice-role{font-size:12px;line-height:1.5;margin:6px 0 0}

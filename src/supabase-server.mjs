@@ -6,7 +6,7 @@ import { gzipSync } from 'node:zlib';
 import { serveFile, mediaType } from './media.mjs';
 import { collections } from './database.mjs';
 import { createSupabaseClient } from './supabase-client.mjs';
-import { requestPreference, validTherapistId } from './appointment-preference.mjs';
+import {createAppointmentService} from './appointment-service.mjs';
 import {createChatService} from './chat/service.mjs';
 import {supabaseChatStore} from './chat/store.mjs';
 
@@ -29,6 +29,9 @@ function snapshots(rows, admin = false) {
 
 export function createSupabaseApp() {
   const supabase = createSupabaseClient();
+  const appointment=createAppointmentService({store:supabaseChatStore(supabase),getSettings:async()=>{
+    const rows=await supabase.rest('content','?collection=eq.settings&select=published');return rows.find(r=>r.published)?.published||{};
+  },getTherapist:async id=>(await supabase.rest('content',`?collection=eq.team&id=${filter(id)}&published=not.is.null&select=published`))[0]?.published});
   const chat=createChatService({store:supabaseChatStore(supabase),getSettings:async()=>{
     const rows=await supabase.rest('content','?collection=eq.settings&select=published');return rows.find(r=>r.published)?.published||{};
   }});
@@ -80,7 +83,7 @@ export function createSupabaseApp() {
           return json(201,{path:mediaPath,name,alt});
         }
         if(!req.headers['content-type']?.startsWith('application/json'))return json(415,{error:'JSON erforderlich.'});
-        let raw='',size=0;for await(const chunk of req){size+=chunk.length;if(size>(path.startsWith('/api/chat/')?64_000:4_000_000))throw Object.assign(new Error('Datei oder Anfrage zu groß.'),{status:413});raw+=chunk;}
+        let raw='',size=0;for await(const chunk of req){size+=chunk.length;if(size>((path.startsWith('/api/chat/')||path==='/api/requests')?64_000:4_000_000))throw Object.assign(new Error('Datei oder Anfrage zu groß.'),{status:413});raw+=chunk;}
         try{body=JSON.parse(raw||'{}');}catch{return json(400,{error:'Ungültige Anfrage.'});}
         if(!body||Array.isArray(body)||typeof body!=='object')return json(400,{error:'Ungültige Anfrage.'});
       }
@@ -118,20 +121,7 @@ export function createSupabaseApp() {
         if(!publicContentCache||Date.now()-publicContentCache.savedAt>30000)publicContentCache={savedAt:Date.now(),content:snapshots(await supabase.rest('content','?select=collection,id,published&published=not.is.null'),false)};
         return json(200,publicContentCache.content);
       }
-      if(path==='/api/requests'&&req.method==='POST'){
-        limit(`request:${req.socket.remoteAddress}`,10);if(body.website)return json(400,{error:'Anfrage konnte nicht verarbeitet werden.'});
-        const name=clean(body.name,100),email=clean(body.email,200),phone=clean(body.phone,40);if(!name||!emailValid(email)||body.consent!==true)return json(400,{error:'Bitte Name, E-Mail und Einverständnis prüfen.'});
-        let therapist;
-        if(body.therapistId){
-          if(!validTherapistId(body.therapistId))return json(400,{error:'Die gewählte Person ist nicht mehr verfügbar. Bitte wählen Sie erneut.'});
-          const rows=await supabase.rest('content',`?collection=eq.team&id=${filter(body.therapistId)}&published=not.is.null&select=published`);
-          therapist=rows[0]?.published;
-          if(!therapist)return json(400,{error:'Die gewählte Person ist nicht mehr verfügbar. Bitte wählen Sie erneut.'});
-        }
-        const notes=requestPreference(body,therapist);if(notes.error)return json(400,{error:notes.error});
-        const preference=notes.value;
-        const rows=await supabase.rest('appointment_requests','',{method:'POST',body:{name,email,phone,preference,acute:body.acute===true}});return json(201,{id:rows[0].id,message:'Ihre Anfrage wurde gespeichert. Der Termin ist noch nicht bestätigt.'});
-      }
+      if(await appointment(req,path,body,json))return;
       if(path==='/api/login'&&req.method==='POST'){
         limit(`login:${req.socket.remoteAddress}`,12);let session;
         try{session=await supabase.signIn(clean(body.email).toLowerCase(),body.password);}catch{return json(401,{error:'E-Mail oder Passwort nicht korrekt.'});}

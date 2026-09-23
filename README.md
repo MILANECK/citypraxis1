@@ -74,7 +74,7 @@ To restore: stop the server; preserve the existing data folder; replace the data
 
 ## Before public launch
 
-This deliverable runs locally and has not been deployed. Use test contact data during review. Requests are persisted but **no emails are sent** and time slots are not reserved. Staff must review and confirm requests. Configure actual notification delivery before relying on the inbox operationally.
+The site is deployed on Render. Use test contact data during review. All request sources are saved in the Admin inbox and support Resend email delivery when the private sender/key/recipient environment variables are configured. See [request email setup](docs/digital-reception.md#request-emails-forms-and-chatbot). Time slots are not reserved automatically; the secretary arranges appointments by phone or email.
 
 The final real team roster, current tariffs, legal documents and a practice-approved retention policy remain outstanding. Team sample identities and portraits are clearly labelled. Anna Katharina Plank's information is from the user-supplied card; its email differs from the printed name and should be confirmed. Impressum and Datenschutz remain drafts. Original clinical descriptions and training claims have been restored; insurance information is labelled as carried over from the earlier website. The reimbursement table retains its original April 2023 date; it is not presented as current 2026 pricing. No review ratings are fabricated.
 

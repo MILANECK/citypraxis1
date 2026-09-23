@@ -9,7 +9,7 @@ import { serveFile, mediaType } from './media.mjs';
 import { openDatabase, contentSnapshot, collections, passwordHash, verifyPassword } from './database.mjs';
 import { hasSupabaseConfig } from './supabase-client.mjs';
 import { createSupabaseApp } from './supabase-server.mjs';
-import { requestPreference, validTherapistId } from './appointment-preference.mjs';
+import {createAppointmentService} from './appointment-service.mjs';
 import {createChatService} from './chat/service.mjs';
 import {sqliteChatStore} from './chat/store.mjs';
 
@@ -20,6 +20,9 @@ const clean = (value, max = 200) => typeof value === 'string' ? value.trim().sli
 const emailValid = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 export function createApp(db = openDatabase()) {
   const chat=createChatService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{}});
+  const appointment=createAppointmentService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{},getTherapist:async id=>{
+    const row=db.prepare("SELECT published FROM content WHERE collection='team' AND id=? AND published IS NOT NULL").get(id);return row?JSON.parse(row.published):null;
+  }});
   const attempts = new Map();
   function limit(key, max) {
     const now = Date.now();
@@ -78,28 +81,13 @@ export function createApp(db = openDatabase()) {
         }
         if (!req.headers['content-type']?.startsWith('application/json')) return json(415,{error:'JSON erforderlich.'});
         let raw = ''; let size = 0;
-        for await (const chunk of req) { size += chunk.length; if (size > (path.startsWith('/api/chat/')?64_000:4_000_000)) throw Object.assign(new Error('Datei oder Anfrage zu groß.'),{status:413}); raw += chunk; }
+        for await (const chunk of req) { size += chunk.length; if (size > ((path.startsWith('/api/chat/')||path==='/api/requests')?64_000:4_000_000)) throw Object.assign(new Error('Datei oder Anfrage zu groß.'),{status:413}); raw += chunk; }
         try { body = JSON.parse(raw || '{}'); } catch { return json(400,{error:'Ungültige Anfrage.'}); }
         if (!body || Array.isArray(body) || typeof body !== 'object') return json(400,{error:'Ungültige Anfrage.'});
       }
       if(await chat.handle(req,path,body,json))return;
       if (path === '/api/content' && req.method === 'GET') return json(200,contentSnapshot(db));
-      if (path === '/api/requests' && req.method === 'POST') {
-        limit(`request:${req.socket.remoteAddress}`,10);
-        if (body.website) return json(400,{error:'Anfrage konnte nicht verarbeitet werden.'});
-        const name = clean(body.name,100), email = clean(body.email,200), phone = clean(body.phone,40);
-        if (!name || !emailValid(email) || body.consent !== true) return json(400,{error:'Bitte Name, E-Mail und Einverständnis prüfen.'});
-        let therapist;
-        if(body.therapistId){
-          const row=validTherapistId(body.therapistId)&&db.prepare("SELECT published FROM content WHERE collection='team' AND id=? AND published IS NOT NULL").get(body.therapistId);
-          if(!row)return json(400,{error:'Die gewählte Person ist nicht mehr verfügbar. Bitte wählen Sie erneut.'});
-          therapist=JSON.parse(row.published);
-        }
-        const notes=requestPreference(body,therapist);if(notes.error)return json(400,{error:notes.error});
-        const preference=notes.value;
-        const result = db.prepare('INSERT INTO requests(name,email,phone,preference,acute) VALUES(?,?,?,?,?)').run(name,email,phone,preference,body.acute === true ? 1 : 0);
-        return json(201,{id:Number(result.lastInsertRowid),message:'Ihre Anfrage wurde gespeichert. Der Termin ist noch nicht bestätigt.'});
-      }
+      if(await appointment(req,path,body,json))return;
       if (path === '/api/login' && req.method === 'POST') {
         limit(`login:${req.socket.remoteAddress}`,12);
         const user = db.prepare('SELECT * FROM users WHERE email = ? AND active = 1').get(clean(body.email).toLowerCase());
