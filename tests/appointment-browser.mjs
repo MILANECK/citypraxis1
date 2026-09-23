@@ -28,7 +28,8 @@ try{
   await page.screenshot({path:'test-results/appointment-desktop.png',fullPage:true});
   await page.locator('#booking-form [name=name]').fill('Browser Form Test');
   await page.locator('#booking-form [name=email]').fill('browser-form@example.test');
-  await page.locator('#booking-form [name=preference]').fill('Afternoons, by email');
+  assert.equal(await page.locator('#booking-form [name=preference]').count(),0);
+  await page.locator('#booking-form [name=phone]').fill('+4369912682157');
   await page.locator('#booking-form [name=consent]').check();
   const requestPromise=page.waitForRequest(r=>r.url().endsWith('/api/requests')&&r.method()==='POST');
   await page.locator('#booking-form button[type=submit]').click();
@@ -42,7 +43,7 @@ try{
   assert.equal(await page.locator('.therapist-choice strong').innerText(),profile.title);
   assert.equal(await page.locator('.therapist-choice img').evaluate(el=>el.complete&&el.naturalWidth>0),true);
   for(const href of await page.locator('.header-cta,.mobile-booking .button,.mobile-nav a[href*="/termin"]').evaluateAll(links=>links.map(a=>a.href)))assert.ok(!href.includes('therapist='));
-  await choose('Kopf & Migräne');await page.locator('#booking-form [name=name]').fill('Browser Profile Test');await page.locator('#booking-form [name=email]').fill('browser-profile@example.test');await page.locator('#booking-form [name=consent]').check();await page.locator('#booking-form button[type=submit]').click();
+  await choose('Kopf & Migräne');await page.locator('#booking-form [name=name]').fill('Browser Profile Test');await page.locator('#booking-form [name=email]').fill('browser-profile@example.test');await page.locator('#booking-form [name=phone]').fill('+4369912682157');await page.locator('#booking-form [name=consent]').check();await page.locator('#booking-form button[type=submit]').click();
   await page.getByRole('heading',{name:'Thank you, Browser Profile Test.'}).waitFor();
   await page.goto(origin+'/admin?lang=en');await page.locator('#login-form [name=email]').fill('preview@example.test');await page.locator('#login-form [name=password]').fill('local-preview-only-2026');await page.locator('#login-form .button').click();await page.locator('[data-view=requests]').click();
   const formCard=page.locator('.request-card').filter({has:page.getByRole('heading',{name:'Browser Form Test',exact:true})}).first();

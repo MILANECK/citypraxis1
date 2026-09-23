@@ -64,7 +64,7 @@ test('first appointment, therapist and chatbot notify once after storage; failur
   const server=createApp(db);
   await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
   const call=async(route,body)=>{const r=await originalFetch(origin+'/api/'+route,{method:body?'POST':'GET',headers:{Origin:origin,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return {status:r.status,data:await r.json()};};
-  const body={name:'Notification Test',email:'qa@example.test',consent:true,language:'en',concerns:['Kiefer','Tinnitus','Andere Beschwerden'],symptoms:'Brief other concern',preference:'Afternoons',submissionKey:randomUUID()};
+  const body={name:'Notification Test',email:'qa@example.test',phone:'+4369912682157',consent:true,language:'en',concerns:['Kiefer','Tinnitus','Andere Beschwerden'],symptoms:'Brief other concern',preference:'Afternoons',submissionKey:randomUUID()};
   const store=sqliteChatStore(db);
   try{
     const first=await call('requests',body);assert.equal(first.status,201);assert.match(first.data.message,/secretary.*phone or email/);

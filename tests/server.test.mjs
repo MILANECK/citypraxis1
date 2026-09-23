@@ -54,7 +54,8 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     assert.equal(practice.saturdayHoursEn,'8 am–2 pm');
     assert.equal(practice.sundayEn,'Closed');
     assert.equal((await call('requests','POST',{name:'Test',email:'invalid',consent:true})).status,400);
-    const request=await call('requests','POST',{name:'Test person',email:'patient@test.local',consent:true,concern:'Andere Beschwerden',symptoms:'Kurze Beschreibung',preference:'Afternoon'});
+    assert.equal((await call('requests','POST',{name:'Test person',email:'patient@test.local',consent:true})).status,400);
+    const request=await call('requests','POST',{name:'Test person',email:'patient@test.local',phone:'+4369912682157',consent:true,concern:'Andere Beschwerden',symptoms:'Kurze Beschreibung',preference:'Afternoon'});
     assert.equal(request.status,201);
     assert.equal((await call('admin/requests','PUT',{id:request.data.id,status:'confirmed'},reception)).status,200);
     const savedRequest=(await call('admin/requests','GET',null,reception)).data[0];

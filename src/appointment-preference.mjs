@@ -24,5 +24,5 @@ export function validateFormContact(body){
   if(body.consent!==true||body.website)throw new ChatError('consent_required');
   const name=text(body.name,100,{required:true}),email=text(body.email,200,{required:true}).toLowerCase();
   if(!emailValid(email))throw new ChatError('invalid_email');
-  return {name,email,phone:body.phone?phone(body.phone):'',acute:body.acute===true};
+  return {name,email,phone:phone(body.phone),acute:body.acute===true};
 }

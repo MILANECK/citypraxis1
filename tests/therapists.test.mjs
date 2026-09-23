@@ -50,7 +50,7 @@ for(const backend of ['sqlite','supabase'])test(`${backend}: booking records the
   }
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   const origin=`http://127.0.0.1:${server.address().port}`;
-  const post=async changes=>{const res=await originalFetch(origin+'/api/requests',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({name:'Profile booking test',email:'test@example.test',consent:true,therapistId:therapist.id,therapistName:'FORGED',preference:'Afternoons',concern:'Kiefer',...changes})});return {status:res.status,data:await res.json()};};
+  const post=async changes=>{const res=await originalFetch(origin+'/api/requests',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({name:'Profile booking test',email:'test@example.test',phone:'+4369912682157',consent:true,therapistId:therapist.id,therapistName:'FORGED',preference:'Afternoons',concern:'Kiefer',...changes})});return {status:res.status,data:await res.json()};};
   try{
     assert.equal((await post({})).status,201);
     if(db)saved=db.prepare('SELECT * FROM requests ORDER BY id DESC').get();
