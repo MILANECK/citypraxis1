@@ -57,7 +57,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const ip=clientAddress(req);limit(`conversation-ip:${ip}`,80);
       const token=verify(body.token,'session');prune();
       let s=sessions.get(token.id);
-      if(!s){if(path!=='/api/chat/turn'||body.turnNumber>0)throw new ChatError('session_expired',401);if(body.consent!==true)throw new ChatError('consent_required');if(sessions.size>=1000)throw new ChatError('rate_limit',429);s={expires:token.expires,messages:[],draft:{},turns:0,submitted:null,lastTurn:null};sessions.set(token.id,s);}
+      if(!s){if(path!=='/api/chat/turn'||body.turnNumber>0)throw new ChatError('session_expired',401);if(body.consent!==true)throw new ChatError('consent_required');if(sessions.size>=1000)throw new ChatError('rate_limit',429);s={expires:token.expires,messages:[],draft:{},turns:0,submitted:null,lastTurn:null};sessions.set(token.id,s);setTimeout(()=>sessions.delete(token.id),Math.max(0,token.expires-Date.now())).unref();}
       if(s.busy)throw new ChatError('busy',409);s.busy=true;locked=s;
       const lang=body.language==='en'?'en':'de';
       if(path==='/api/chat/edit'){
