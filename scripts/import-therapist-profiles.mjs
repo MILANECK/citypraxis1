@@ -32,7 +32,7 @@ if(about){
   if(JSON.stringify(draft)!==JSON.stringify(about.draft)||JSON.stringify(published)!==JSON.stringify(about.published)){
     await writeFile(`backups/about-before-pdf-import-${Date.now()}.json`,JSON.stringify(about,null,2));
     await client.rest('revisions','',{method:'POST',body:{collection:'pages',entity_id:'about',snapshot:about.draft,actor_email:'PDF therapist profile import'}});
-    await client.rest('content',`?collection=eq.pages&id=eq.about&draft=eq.${encodeURIComponent(JSON.stringify(about.draft))}`,{method:'PATCH',body:{draft,published}});
+    await client.rest('content',`?collection=eq.pages&id=eq.about&updated_at=eq.${encodeURIComponent(about.updated_at)}&published=${about.published?'not.is.null':'is.null'}`,{method:'PATCH',body:{draft,published,updated_at:new Date().toISOString()}});
   }
 }
 await client.rest('audit_log','',{method:'POST',body:{actor_email:'PDF therapist profile import',action:'import',entity:marker}});
