@@ -7,6 +7,7 @@ import { serveFile, mediaType } from './media.mjs';
 import { collections } from './database.mjs';
 import { createSupabaseClient } from './supabase-client.mjs';
 import {createAppointmentService} from './appointment-service.mjs';
+import {createConversationService,conversationFacts} from './chat/conversation.mjs';
 import {createChatService} from './chat/service.mjs';
 import {supabaseChatStore} from './chat/store.mjs';
 
@@ -37,6 +38,10 @@ export function createSupabaseApp() {
   }});
   const attempts = new Map();
   let publicContentCache;
+  const conversation=createConversationService({store:supabaseChatStore(supabase),getFacts:async()=>{
+    if(!publicContentCache||Date.now()-publicContentCache.savedAt>30000)publicContentCache={savedAt:Date.now(),content:snapshots(await supabase.rest('content','?select=collection,id,published&published=not.is.null'),false)};
+    return conversationFacts(publicContentCache.content);
+  }});
   const storagePrefix = `${supabase.url}/storage/v1/object/public/${encodeURIComponent(supabase.bucket)}/`;
   function limit(key,max){const now=Date.now();let state=attempts.get(key);if(!state||state.until<now)state={count:0,until:now+900000};state.count++;attempts.set(key,state);if(state.count>max)throw Object.assign(new Error('Zu viele Versuche. Bitte später erneut versuchen.'),{status:429});}
   const audit = (user,action,entity)=>supabase.rest('audit_log','',{method:'POST',body:{actor:user?.id||null,actor_email:user?.email||'public',action,entity}});
@@ -87,6 +92,7 @@ export function createSupabaseApp() {
         try{body=JSON.parse(raw||'{}');}catch{return json(400,{error:'Ungültige Anfrage.'});}
         if(!body||Array.isArray(body)||typeof body!=='object')return json(400,{error:'Ungültige Anfrage.'});
       }
+      if(await conversation.handle(req,path,body,json))return;
       if(await chat.handle(req,path,body,json))return;
       if(path==='/api/health'&&req.method==='GET')return json(200,{ok:true,backend:'supabase'});
       if(path==='/api/recovery/request'&&req.method==='POST'){

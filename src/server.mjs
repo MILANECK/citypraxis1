@@ -10,6 +10,7 @@ import { openDatabase, contentSnapshot, collections, passwordHash, verifyPasswor
 import { hasSupabaseConfig } from './supabase-client.mjs';
 import { createSupabaseApp } from './supabase-server.mjs';
 import {createAppointmentService} from './appointment-service.mjs';
+import {createConversationService,conversationFacts} from './chat/conversation.mjs';
 import {createChatService} from './chat/service.mjs';
 import {sqliteChatStore} from './chat/store.mjs';
 
@@ -19,6 +20,7 @@ const hash = value => createHash('sha256').update(value).digest('hex');
 const clean = (value, max = 200) => typeof value === 'string' ? value.trim().slice(0,max) : '';
 const emailValid = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 export function createApp(db = openDatabase()) {
+  const conversation=createConversationService({store:sqliteChatStore(db),getFacts:async()=>conversationFacts(contentSnapshot(db))});
   const chat=createChatService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{}});
   const appointment=createAppointmentService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{},getTherapist:async id=>{
     const row=db.prepare("SELECT published FROM content WHERE collection='team' AND id=? AND published IS NOT NULL").get(id);return row?JSON.parse(row.published):null;
@@ -85,6 +87,7 @@ export function createApp(db = openDatabase()) {
         try { body = JSON.parse(raw || '{}'); } catch { return json(400,{error:'Ungültige Anfrage.'}); }
         if (!body || Array.isArray(body) || typeof body !== 'object') return json(400,{error:'Ungültige Anfrage.'});
       }
+      if(await conversation.handle(req,path,body,json))return;
       if(await chat.handle(req,path,body,json))return;
       if (path === '/api/content' && req.method === 'GET') return json(200,contentSnapshot(db));
       if(await appointment(req,path,body,json))return;

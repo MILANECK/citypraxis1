@@ -43,3 +43,20 @@
 @media(max-width:767px){.chat-launch{right:16px;bottom:calc(88px + env(safe-area-inset-bottom));padding:11px 14px}.chat-window{right:12px;bottom:calc(148px + env(safe-area-inset-bottom));width:400px;max-width:calc(100vw - 24px);height:min(610px,calc(100dvh - 168px - env(safe-area-inset-bottom)));border-radius:20px}.chat-scroll{padding:20px}.chat-heading{padding:15px 18px}.chat-footer{padding:10px 16px}}
 @media(max-height:600px){.chat-window{bottom:12px;right:12px;height:calc(100dvh - 24px);z-index:1}.is-open .chat-launch{visibility:hidden}}
 @media(prefers-reduced-motion:reduce){#cp-chat *,#cp-chat *::before{transition:none!important;animation:none!important}}
+
+/* Conversational reception: quiet bubbles, a single composer and a clear review. */
+.conversation-thread{display:flex;flex-direction:column;gap:16px;margin-bottom:20px}
+.conversation-message{max-width:94%;padding:13px 16px;background:#f6f4f1;border-radius:16px 16px 16px 4px;overflow-wrap:anywhere;animation:conversation-arrive .28s ease-out}
+.conversation-message.from-visitor{align-self:flex-end;background:#eaf5f8;border-radius:16px 16px 4px 16px}
+.conversation-speaker{display:block;font-size:10px;letter-spacing:.04em;color:var(--chat-muted);margin-bottom:5px}
+#cp-chat .conversation-message p{margin:0;white-space:pre-wrap;font-size:13px}
+.conversation-compose{display:flex;align-items:flex-end;gap:9px}
+#cp-chat .conversation-compose textarea{margin:0;min-height:74px;background:#fff;border-radius:14px}
+.conversation-compose button{display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;border:0;border-radius:50%;background:var(--chat-blue);color:white;margin-bottom:3px;transition:background .2s}
+.conversation-compose button:hover{background:#006d8d}
+#cp-chat .conversation-meta{font-size:10px;color:var(--chat-muted);margin:9px 0 0}
+.conversation-review{border-top:1px solid #e3e9ec;padding-top:20px}
+.conversation-edit{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 20px}.conversation-edit[hidden]{display:none}
+.conversation-edit button{border:1px solid #d4e3e7;border-radius:20px;background:white;color:var(--chat-blue);font-size:11px!important;padding:6px 10px}
+.conversation-edit button:hover{background:#eaf5f8}
+@keyframes conversation-arrive{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}

@@ -13,7 +13,7 @@
     "supabase:seed": "node scripts/export-supabase-seed.mjs",
     "backup": "node scripts/backup.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check src/server.mjs && node --check src/database.mjs && node --check public/app.js && node --check public/admin.js && node --check public/i18n.js && node --check public/ui-translations.js && node --check src/english-content.mjs && node --check public/chat-widget.js && node --check src/chat/service.mjs && node --check src/chat/interpret.mjs"
+    "check": "node --check src/server.mjs && node --check src/database.mjs && node --check public/app.js && node --check public/admin.js && node --check public/i18n.js && node --check public/ui-translations.js && node --check src/english-content.mjs && node --check public/chat-widget.js && node --check src/chat/service.mjs && node --check src/chat/interpret.mjs && node --check src/chat/conversation.mjs && node --check public/chat-conversation.js"
   },
   "dependencies": {
     "libphonenumber-js": "1.13.13"

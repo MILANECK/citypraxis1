@@ -1,4 +1,4 @@
-import {renderChatIntake,chatIntake} from './admin-chat.js?v=request-mail-1';
+import {renderChatIntake,chatIntake} from './admin-chat.js?v=conversation-2';
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={pages:'Seiten',symptoms:'Schwerpunkte',services:'Leistungen',team:'Team',reviews:'Bewertungen',faqs:'Häufige Fragen',prices:'Praxispreise',reimbursements:'Rückerstattung',settings:'Praxisdaten'};

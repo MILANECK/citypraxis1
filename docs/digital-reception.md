@@ -1,3 +1,65 @@
+# Conversational receptionist — current deployment
+
+The public widget now uses `public/chat-conversation.js` and the server-side
+`src/chat/conversation.mjs` service. The guided widget and routes below remain
+for compatibility; their optional-AI controls do not describe the new interface.
+
+## Render configuration
+
+- `CHAT_AI_ENABLED=true`
+- `OPENAI_API_KEY`: the active OpenAI API project key, server-only.
+- `CHAT_CONVERSATION_MODEL=gpt-6-luna` (also the default when omitted).
+- `CHAT_AI_DAILY_LIMIT=200` (default, per running process; resets on restart).
+- Existing Resend settings apply to forms and the new chat without changes.
+
+Changing `OPENAI_MODEL` only affects the legacy interpreter. To move billing to
+the client later, replace `OPENAI_API_KEY` with a key from the client's API project
+and redeploy. Configure spending alerts in that project; application rate limits
+are not a billing cap.
+
+## Visitor flow and boundaries
+
+The visitor starts with one general processing consent, then chats in German or
+English. There is no separate optional OpenAI switch. The introduction names
+OpenAI and links to privacy information and the ordinary appointment form.
+Luna answers administrative questions using published practice information and
+extracts explicitly supplied details. Server validation controls contact fields,
+missing questions, review and submission. No live appointment calendar is connected.
+The visitor reviews and can correct the concern, name, email, phone and preferences.
+Only an explicit final send stores the request and emails the secretary. An email
+failure keeps the request available in Admin for retry. Email identifies Chatbot
+as its source; Admin also shows the submitted conversation.
+
+The limit is 16 attempted messages per 30-minute session. Review remains sendable
+at the limit, with the ordinary form available as fallback. Corrections consume
+remaining turns. Requests cannot be submitted until all required fields exist.
+Session locks and idempotent submission protect against duplicate sends.
+
+## Data lifecycle
+
+A consented draft is stored in tab sessionStorage and server process memory for
+up to 30 minutes. Restarting the server may end an unfinished session. The client
+clears expired drafts when active and will not restore an expired session. Only
+a confirmed summary and transcript are persisted in Supabase. Email contains the
+reviewed details, not the full transcript. No new SQL migration is required.
+
+The current message and up to six recent messages are supplied to OpenAI with
+published practice facts. Recognized email addresses and phone numbers are masked
+before transmission, but names and voluntary health text can remain. This is not
+anonymization. Responses API uses `store:false`; provider retention rules still
+apply. The site's digital reception privacy section describes this processing.
+
+## Verification
+
+Run `npm test`, `npm run check` and `node tests/conversation-browser.mjs` against
+the disposable browser fixture. The browser test mocks AI and submission so it
+does not create patient records or send emails. Real API smoke tests use clearly
+synthetic data only. Never log keys or real visitor messages.
+
+---
+
+## Earlier guided reception implementation and email setup
+
 # Citypraxis digital reception
 
 ## What is implemented
