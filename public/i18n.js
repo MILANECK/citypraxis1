@@ -32,6 +32,23 @@
       return `<a href="${url.pathname + url.search + url.hash}" lang="${lang}" data-language="${lang}" ${language === lang ? 'aria-current="true"' : ''} aria-label="${lang === 'de' ? 'Deutsch' : 'English'}">${lang.toUpperCase()}</a>`;
     }).join('')}</nav>`;
   }
+  // Normalize legacy arrow glyphs with the same vector used by the chat composer.
+  // Run after translation and reuse the existing DOM observer for dynamic views.
+  function normalizeArrows(root){
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),nodes=[];
+    while(walker.nextNode())nodes.push(walker.currentNode);
+    for(const node of nodes){
+      const parent=node.parentElement;
+      if(!parent?.closest('a,button,.step-arrow')||parent.closest('script,style,textarea,code,svg,.arrow-symbol,[data-no-translate]')||!/[↗→←]/u.test(node.nodeValue))continue;
+      const fragment=document.createDocumentFragment();
+      for(const part of node.nodeValue.split(/([↗→←][\uFE0E\uFE0F]?)/u)){
+        if(/^[↗→←]/u.test(part)){
+          const icon=document.createElement('span');icon.className='arrow-symbol'+(part[0]==='→'?' arrow-right':part[0]==='←'?' arrow-left':'');icon.setAttribute('aria-hidden','true');fragment.append(icon);
+        }else if(part)fragment.append(document.createTextNode(part));
+      }
+      node.replaceWith(fragment);
+    }
+  }
   function apply(root = document.body) {
     if (!root) return;
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -54,6 +71,7 @@
         if (href !== next) el.setAttribute('href', next);
       }
     }
+    normalizeArrows(root);
   }
   window.I18n = {language, translate, localizeContent, toggle, apply, dictionary};
   document.addEventListener('click', e => {

@@ -11,7 +11,7 @@
 .is-open .chat-window{transform:translateY(0) scale(1);opacity:1;visibility:visible}
 .chat-heading{display:flex;align-items:center;gap:12px;padding:20px;background:#f6f4f1;border-bottom:1px solid #e7e4df;flex-shrink:0}
 .chat-heading img{object-fit:contain}.chat-heading strong{font-size:15px;display:block}.chat-heading small{font-size:11px;color:var(--chat-muted)}
-.chat-close{margin-left:auto;background:transparent;color:var(--chat-ink);border:0;border-radius:50%;width:34px;height:34px;font-size:25px!important;line-height:1}.chat-close:hover{background:#e7e4df}
+.chat-close{display:grid;place-items:center;padding:0;flex-shrink:0;margin-left:auto;background:transparent;color:var(--chat-ink);border:0;border-radius:50%;width:34px;height:34px;font-size:25px!important;line-height:1}.chat-close:hover{background:#e7e4df}
 .chat-scroll{overflow:auto;overscroll-behavior:contain;flex:1;scrollbar-width:thin;padding:24px;scroll-padding:24px}
 #cp-chat h3{font-size:23px;line-height:1.25;letter-spacing:-.025em;margin:9px 0 18px;font-weight:600}
 #cp-chat p{font-size:14px;line-height:1.65;margin:0 0 18px}
@@ -62,3 +62,5 @@
 @keyframes conversation-arrive{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
 #cp-chat .is-typing [aria-hidden]::after{content:"";display:inline-block;width:2px;height:.95em;background:var(--chat-blue);margin-left:3px;vertical-align:-.1em;opacity:.6}
+
+.chat-close svg{display:block;width:18px;height:18px;pointer-events:none}
