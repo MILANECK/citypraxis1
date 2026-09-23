@@ -84,4 +84,13 @@ Email is attempted only **after** persistence. Failure does not undo the request
 
 To interactively test real GPT against disposable storage: `node --env-file=.env tests/browser-fixture.mjs` (stop an existing fixture first). This reads only the configured AI key; the fixture explicitly uses in-memory SQLite and sets its own local origin. API interpretation calls are billed to that key. Synthetic examples only.
 
-Remaining operational setup: add the testing/client key to Render separately from local `.env`; configure optional email if desired; have the practice approve retention/privacy text and replace the test key before client handover. Patient-database verification and calendar booking are intentionally future integrations.
+## Release verification — 23 September 2026
+
+- All 18 native Node test groups pass, including the existing site tests, SQLite submission and a mocked Supabase route integration.
+- Desktop/mobile Chromium flows pass, including expiration of an old draft. Real iOS Safari has not been exercised by these automated checks.
+- Existing Supabase accepts read-only schema checks for all three new columns; the public key is denied request-table access.
+- The owner saved the API configuration in Render and confirmed deployment. The hosted session endpoint reports AI enabled. A live mobile test returned `source: ai`, interpreted a fictional joint description as `knee`, showed the visitor confirmation step, fit the viewport, and had no page errors.
+- The hosted privacy supplement is present. No production appointment request or email was created by the release smoke test.
+- Both `.env` and the accidentally named `.env.txt` are ignored by Git; no real credentials are committed.
+
+Remaining operational setup: configure optional email if desired; have the practice approve retention/privacy text and replace the test key with the client's key before handover. Patient-database verification and calendar booking are intentionally future integrations.
