@@ -47,7 +47,8 @@ test('an affirmative appointment answer moves directly to the name',async()=>{
 test('a refused contact detail is respected while supplied names and later details receive distinct acknowledgements',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   let calls=0;
-  const service=createConversationService({getFacts:async()=>conversationFacts({}),fetcher:async(_,options)=>{
+  const facts=conversationFacts({settings:[{address:'Stubenbastei 12/11',city:'1010 Wien',phone:'+43 699 12682157',email:'info@citypraxis.wien'}]});
+  const service=createConversationService({getFacts:async()=>facts,fetcher:async(_,options)=>{
     calls++;const input=JSON.parse(JSON.parse(options.body).input),raw=input.visitorMessage;
     const value=raw.includes('shoulder')?answer({reason:'Shoulder concern',answer:'I see.'}):raw.includes('Michael Black')?answer({first_name:'Michael',last_name:'Black',answer:'Perfect, thank you.'}):raw.includes('price')?answer({kind:'practice_question',booking_intent:'unspecified',answer:'Our reception team can explain current prices.'}):raw==='Afternoons'?answer({availability:'Afternoons'}):answer({answer:'Perfect, thank you.'});
     return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
@@ -59,14 +60,16 @@ test('a refused contact detail is respected while supplied names and later detai
     const named=await turn('Michael Black');assert.match(named.message,/Great, thank you, Michael Black\./);assert.match(named.message,/email address/);
     const emailed=await turn('michael@example.test');assert.match(emailed.message,/Thank you, I have your email\./);assert.match(emailed.message,/phone number/);
     const beforeRefusal=calls;
-    const refused=await turn('no I want to be notified via email thanx');assert.equal(calls,beforeRefusal);assert.match(refused.message,/need your full name, email address and phone number/);assert.doesNotMatch(refused.message,/phone number, including|contact you by email instead/i);
+    const refused=await turn('no I want to be notified via email thanx');assert.equal(calls,beforeRefusal);assert.match(refused.message,/does need your full name, email address and phone number/);assert.match(refused.message,/unable to complete it here/);assert.match(refused.message,/Stubenbastei 12\/11, 1010 Wien/);assert.match(refused.message,/\+43 699 12682157/);assert.match(refused.message,/info@citypraxis.wien/);assert.doesNotMatch(refused.message,/phone number, including|contact you by email instead/i);
     const price=await turn('What is the price?');assert.match(price.message,/explain current prices/);assert.doesNotMatch(price.message,/phone number, including/);
     const accepted=await turn('My number is +43 699 12682157');assert.match(accepted.message,/Got it, thank you\./);assert.match(accepted.message,/days or times/);
     assert.doesNotMatch(`${named.message}\n${emailed.message}\n${accepted.message}`,/Perfect, thank you/);
     const another=newSession();await turn('I want an appointment',another);await turn('My shoulder hurts',another);await turn('Michael Black',another);
-    const noEmail=await turn("I don't want to share my email",another);assert.match(noEmail.message,/need your full name, email address and phone number/);assert.doesNotMatch(noEmail.message,/Which email address/);
+    const noEmail=await turn("I don't want to share my email",another);assert.match(noEmail.message,/does need your full name, email address and phone number/);assert.match(noEmail.message,/unable to complete it here/);assert.doesNotMatch(noEmail.message,/Which email address/);
+    const allDetails=newSession();await turn('I want an appointment',allDetails);await turn('My shoulder hurts',allDetails);
+    const noDetails=await turn("I don't want to share my contact details",allDetails);assert.match(noDetails.message,/unable to complete it here/);assert.doesNotMatch(noDetails.message,/first and last name, please/);
     const phonePreference=newSession();await turn('I want an appointment',phonePreference);await turn('My shoulder hurts',phonePreference);await turn('Michael Black',phonePreference);await turn('michael@example.test',phonePreference);
-    const noEmailContact=await turn("I don't want notifications by email",phonePreference);assert.match(noEmailContact.message,/prefer a phone call/);assert.doesNotMatch(noEmailContact.message,/need your full name, email address and phone number|won't ask you to provide an email/);assert.match(noEmailContact.message,/phone number, including/);
+    const noEmailContact=await turn("I don't want notifications by email",phonePreference);assert.match(noEmailContact.message,/does need your full name, email address and phone number/);assert.match(noEmailContact.message,/unable to complete it here/);assert.doesNotMatch(noEmailContact.message,/phone number, including|won't ask you to provide an email/);
     await turn('+43 699 12682157',phonePreference);const review=await turn('Afternoons',phonePreference);assert.equal(review.ready,true);assert.deepEqual(review.summary.find(([key])=>key==='Preferred contact'),['Preferred contact','Phone']);
   }finally{process.env=old;}
 });
