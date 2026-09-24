@@ -16,7 +16,9 @@ test('staff authorization, draft isolation, revisions, request handling and sess
   const login=async role=>{const r=await call('login','POST',{email:role+'@test.local',password:'test-password-strong'});assert.equal(r.status,200);const me=await call('me','GET',null,{cookie:r.cookie});return {cookie:r.cookie,csrf:me.data.csrf};};
   try{
     assert.equal((await call('admin/requests')).status,401);
+    assert.equal((await call('admin/capacity')).status,401);
     const owner=await login('owner'),editor=await login('editor'),reception=await login('reception');
+    assert.deepEqual((await call('admin/capacity','GET',null,owner)).data,{available:false});
     const review={title:'Test review',body:'Fixture text only',rating:'5',source:'Test fixture'};
     assert.equal((await call('admin/content/reviews/unsafe-link','PUT',{data:{...review,sourceUrl:'javascript:alert(1)'}},editor)).status,400);
     assert.equal((await call('admin/content/reviews/example','PUT',{data:review},editor)).status,200);

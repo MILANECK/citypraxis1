@@ -11,15 +11,15 @@
       stroke-linejoin: round;
       stroke-linecap: round;
       stroke-dasharray: 100;
-      stroke-dashoffset: 100;
-      opacity: 0;
-      animation: drawBubble 2.2s cubic-bezier(.65,0,.35,1) infinite;
+      stroke-dashoffset: 0;
+      opacity: 1;
+      animation: drawBubble 8s cubic-bezier(.65,0,.35,1) infinite;
     }
 
     .dot {
       fill: #fff;
-      opacity: 0;
-      animation-duration: 2.2s;
+      opacity: 1;
+      animation-duration: 8s;
       animation-timing-function: cubic-bezier(.34,1.56,.64,1);
       animation-iteration-count: infinite;
       transform-box: fill-box;
@@ -31,49 +31,30 @@
     .d3 { animation-name: dot3; }
 
     @keyframes drawBubble {
-      0%, 6% {
-        stroke-dashoffset: 100;
-        opacity: 0;
-      }
-      10% {
-        stroke-dashoffset: 96;
-        opacity: 1;
-      }
-      44% {
-        stroke-dashoffset: 0;
-        opacity: 1;
-      }
-      82% {
-        stroke-dashoffset: 0;
-        opacity: 1;
-      }
-      96% {
-        stroke-dashoffset: -100;
-        opacity: 1;
-      }
-      100% {
-        stroke-dashoffset: -100;
-        opacity: 0;
-      }
+      0%, 70% { stroke-dashoffset: 0; opacity: 1; }
+      73% { stroke-dashoffset: 0; opacity: 0; }
+      74% { stroke-dashoffset: 100; opacity: 0; }
+      77% { stroke-dashoffset: 96; opacity: 1; }
+      94%, 100% { stroke-dashoffset: 0; opacity: 1; }
     }
 
     @keyframes dot1 {
-      0%, 32% { opacity: 0; transform: scale(0); }
-      41%     { opacity: 1; transform: scale(1.12); }
-      46%,82% { opacity: 1; transform: scale(1); }
-      92%,100%{ opacity: 0; transform: scale(0); }
+      0%,70% { opacity: 1; transform: scale(1); }
+      73%,88% { opacity: 0; transform: scale(0); }
+      94% { opacity: 1; transform: scale(1.12); }
+      97%,100% { opacity: 1; transform: scale(1); }
     }
     @keyframes dot2 {
-      0%, 38% { opacity: 0; transform: scale(0); }
-      47%     { opacity: 1; transform: scale(1.12); }
-      52%,82% { opacity: 1; transform: scale(1); }
-      92%,100%{ opacity: 0; transform: scale(0); }
+      0%,70% { opacity: 1; transform: scale(1); }
+      73%,90% { opacity: 0; transform: scale(0); }
+      96% { opacity: 1; transform: scale(1.12); }
+      99%,100% { opacity: 1; transform: scale(1); }
     }
     @keyframes dot3 {
-      0%, 44% { opacity: 0; transform: scale(0); }
-      53%     { opacity: 1; transform: scale(1.12); }
-      58%,82% { opacity: 1; transform: scale(1); }
-      92%,100%{ opacity: 0; transform: scale(0); }
+      0%,70% { opacity: 1; transform: scale(1); }
+      73%,92% { opacity: 0; transform: scale(0); }
+      98% { opacity: 1; transform: scale(1.12); }
+      100% { opacity: 1; transform: scale(1); }
     }
 
     @media (prefers-reduced-motion: reduce) {

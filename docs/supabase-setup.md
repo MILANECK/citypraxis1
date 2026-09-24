@@ -137,6 +137,10 @@ When all three Supabase variables are present, `src/server.mjs` now switches aut
 
 Without those variables, the local SQLite backend remains available for isolated development and regression tests.
 
+### Admin Overview capacity meter
+
+Run `supabase/migrations/202609240001_capacity_metrics.sql` once in the project's Supabase **SQL Editor**. It adds a read-only, service-role-only function that reports the current database size and the sum of uploaded file sizes. Admin → Overview then shows separate bars against the Free plan's 500 MB database and 1 GB Storage allowances. The local SQLite preview and any Supabase project without this migration show “Live usage unavailable” instead of an estimated value.
+
 Do not send medical reports, diagnoses or other clinical records through the appointment form. This database is for website content and appointment-contact requests, not patient records.
 
 ## 9. Safe handoff information

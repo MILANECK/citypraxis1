@@ -21,6 +21,9 @@ try{
   await page.locator('#login-form [name=email]').fill('preview@example.test');
   await page.locator('#login-form [name=password]').fill('local-preview-only-2026');
   await page.locator('#login-form button').first().click();
+  await page.locator('#capacity-panel').waitFor();
+  await page.waitForFunction(()=>document.querySelector('.capacity-content')?.textContent.includes('Migration'));
+  assert.equal(await page.locator('#capacity-panel .capacity-track').count(),0);
   await page.locator('[data-view=social]').click();
   if(await page.locator('[data-social-url]').count()===0)await page.locator('.add-social').click();
   await page.locator('[data-social-url]').first().fill('https://www.instagram.com/citypraxis.test/');
@@ -33,10 +36,11 @@ try{
   assert.match(serviceList,/Massage/);
   assert.doesNotMatch(serviceList,/Rückenfit/);
   await page.locator('[data-view=requests]').click();
+  assert.equal(await page.locator('.request-count a').count(),0);
   const request=page.locator('.request-disclosure').first();
   await request.waitFor();
   assert.equal(await request.evaluate(el=>el.open),false);
-  assert.match(await request.locator('summary').textContent(),/#1.*Browser Prüfer.*Formular/s);
+  assert.match(await request.locator('summary').textContent(),/#\d+.*Browser Prüfer.*Formular/s);
   await page.locator('#request-list').screenshot({path:'test-results/admin-requests-compact.png'});
   await request.locator('summary').click();
   await page.waitForTimeout(470);
@@ -72,6 +76,11 @@ try{
   const team=page.locator('.team-directory .team-person').first();
   await team.scrollIntoViewIfNeeded();
   await team.waitFor({state:'visible'});
+  const teamStagger=await page.locator('.team-directory .team-person').evaluateAll(cards=>{
+    const columns=getComputedStyle(cards[0].parentElement).gridTemplateColumns.split(' ').filter(Boolean).length;
+    return cards.filter((_,index)=>(index+1)%columns===0).map(card=>card.style.getPropertyValue('--team-delay'));
+  });
+  assert.ok(teamStagger.length>0&&teamStagger.every(delay=>parseInt(delay,10)>0));
   await page.waitForTimeout(850);
   assert.equal(await team.evaluate(el=>el.classList.contains('is-visible')),true);
   await team.hover();
@@ -104,6 +113,14 @@ try{
   await mobileRequest.locator('summary').click();
   await page.waitForTimeout(470);
   assert.equal(await mobileRequest.evaluate(el=>el.open),true);
+  await page.goto(origin+'/?lang=de');
+  await page.locator('.chat-launch').waitFor();
+  assert.equal(await page.locator('.chat-launch span').isVisible(),false);
+  assert.equal(await page.locator('.mobile-booking a').count(),2);
+  const actions=await page.evaluate(()=>({chat:document.querySelector('.chat-launch').getBoundingClientRect().toJSON(),booking:document.querySelector('.mobile-booking').getBoundingClientRect().toJSON(),call:document.querySelector('.mobile-call').getBoundingClientRect().toJSON()}));
+  assert.ok(actions.chat.bottom<actions.booking.top);
+  assert.ok(actions.call.width===actions.call.height);
+  await page.screenshot({path:'test-results/mobile-floating-actions.png'});
   assert.deepEqual(errors,[]);
   console.log('admin requests, media, team, and footer passed');
 }finally{await browser.close();}

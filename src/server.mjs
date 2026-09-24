@@ -108,6 +108,7 @@ export function createApp(db = openDatabase()) {
       if (path === '/api/me' && req.method === 'GET') return json(200,user);
       if (path === '/api/logout' && req.method === 'POST') { db.prepare('DELETE FROM sessions WHERE token=?').run(hash(token)); res.setHeader('Set-Cookie','cp_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0'); return json(200,{ok:true}); }
       const owner = user.role === 'owner', editor = owner || user.role === 'editor', reception = owner || user.role === 'reception';
+      if(path==='/api/admin/capacity'&&req.method==='GET')return json(200,{available:false});
       if(path==='/api/admin/requests/notify'&&req.method==='POST'&&reception)return json(200,await chat.retryNotification(body.id));
       if(path==='/api/admin/social-links'&&req.method==='PUT'&&editor){
         let socialLinks;try{socialLinks=normalizeSocialLinks(body.socialLinks);}catch{return json(400,{error:'Bitte gültige Instagram- oder Facebook-Profillinks verwenden (https://).'});}

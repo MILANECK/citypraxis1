@@ -85,3 +85,12 @@
 #cp-chat .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 @media(max-width:767px){.chat-window:has(.conversation-preview){height:min(610px,calc(100dvh - 168px - env(safe-area-inset-bottom)))}}
 @media(max-height:600px){.chat-window:has(.conversation-preview){height:calc(100dvh - 24px)}}
+
+@media(max-width:767px){
+  .chat-launch{right:16px;bottom:calc(86px + env(safe-area-inset-bottom));display:grid;place-items:center;width:60px;height:60px;padding:0;border-radius:50%;gap:0}
+  .chat-launch span{display:none}
+  .chat-launch .chat-launch-icon{margin:0}
+  .chat-window{bottom:calc(160px + env(safe-area-inset-bottom));height:min(610px,calc(100dvh - 176px - env(safe-area-inset-bottom)))}
+  .chat-window:has(.conversation-preview){height:min(610px,calc(100dvh - 176px - env(safe-area-inset-bottom)))}
+}
+@media(max-width:767px) and (max-height:600px){.chat-window,.chat-window:has(.conversation-preview){bottom:12px;height:calc(100dvh - 24px)}}

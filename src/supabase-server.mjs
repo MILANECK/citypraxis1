@@ -141,6 +141,14 @@ export function createSupabaseApp() {
       if(path==='/api/me'&&req.method==='GET')return json(200,{id:user.id,email:user.email,name:user.name,role:user.role,csrf:user.csrf});
       if(path==='/api/logout'&&req.method==='POST'){try{await supabase.logout(user.accessToken);}catch{}res.setHeader('Set-Cookie','cp_access=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');return json(200,{ok:true});}
       const owner=user.role==='owner',editor=owner||user.role==='editor',reception=owner||user.role==='reception';
+      if(path==='/api/admin/capacity'&&req.method==='GET'){
+        try{
+          const usage=await supabase.rest('rpc/citypraxis_capacity','',{method:'POST',body:{}});
+          const databaseBytes=Number(usage?.database_bytes),storageBytes=Number(usage?.storage_bytes);
+          if(!Number.isFinite(databaseBytes)||!Number.isFinite(storageBytes)||databaseBytes<0||storageBytes<0)throw new Error('Invalid capacity response');
+          return json(200,{available:true,databaseBytes,storageBytes,databaseLimitBytes:500_000_000,storageLimitBytes:1_000_000_000,measuredAt:usage.measured_at});
+        }catch{return json(200,{available:false});}
+      }
       if(path==='/api/admin/requests/notify'&&req.method==='POST'&&reception)return json(200,await chat.retryNotification(body.id));
       if(path==='/api/admin/social-links'&&req.method==='PUT'&&editor){
         let socialLinks;try{socialLinks=normalizeSocialLinks(body.socialLinks);}catch{return json(400,{error:'Bitte gültige Instagram- oder Facebook-Profillinks verwenden (https://).'});}

@@ -432,3 +432,16 @@ footer{background:#f6f4f1;color:var(--ink)}
 @media(hover:hover){.concern-chip:hover>span{border-color:#79aeb4;transform:translateY(-1px)}}
 @media(max-width:480px){.concern-options{display:grid;grid-template-columns:1fr 1fr}.concern-chip>span{height:100%;justify-content:center;text-align:center;padding-inline:10px}.concern-chip:last-child{grid-column:1/-1}}
 @media(prefers-reduced-motion:reduce){.concern-chip>span{transition:none}.concern-chip:hover>span{transform:none}}
+
+/* Compact mobile contact actions float below the chat launcher. */
+@media(max-width:767px){
+  .mobile-booking{left:auto;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:auto;display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:0;background:transparent;border:0;box-shadow:none;z-index:54}
+  .mobile-booking>a,.mobile-booking>a:first-child{display:grid;place-items:center;flex:none;width:54px;height:54px;min-height:54px;max-width:none;padding:0;border:0;border-radius:50%;box-shadow:0 6px 24px #22234425;transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s ease}
+  .mobile-booking .mobile-call{background:#fff;color:var(--blue)}
+  .mobile-booking .mobile-call img{display:block;width:25px;height:25px}
+  .mobile-booking .mobile-appointment{background:var(--pink);color:#fff}
+  .mobile-booking .mobile-appointment svg{display:block}
+  .mobile-booking>a:hover{transform:translateY(-2px);box-shadow:0 9px 28px #22234432}
+  .mobile-booking>a:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+}
+@media(prefers-reduced-motion:reduce){.mobile-booking>a{transition:none}.mobile-booking>a:hover{transform:none}}
