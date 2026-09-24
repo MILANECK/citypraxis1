@@ -142,7 +142,10 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const draft={...s.draft};
       absorbContact(raw,draft);
       let ai=null,answer='',kind='appointment';
-      if(!((stage==='email'&&emailValid(raw))||(stage==='phone'&&/^[+\d ()-]+$/.test(raw)&&draft.phone))){
+      if(stage==='proceed'&&/^(?:yes|yes please|sure|okay|ok|let'?s (?:do it|make an appointment)|ja|ja bitte|gerne|bitte|einverstanden)[.!\s]*$/iu.test(raw)){
+        draft.bookingApproved=true;draft.bookingDeclined=false;
+        answer=localized(lang,'Perfekt, danke.','Perfect, thank you.');
+      }else if(!((stage==='email'&&emailValid(raw))||(stage==='phone'&&/^[+\d ()-]+$/.test(raw)&&draft.phone))){
         limit('conversation-ai-day',Math.max(1,Math.min(2000,Number(process.env.CHAT_AI_DAILY_LIMIT)||200)),86400000);
         try{ai=await aiTurn(raw,lang,{...draft,_stage:stage},await getFacts(),fetcher,s.messages);}catch(error){if(error instanceof ChatError)throw error;throw new ChatError('ai_unavailable',503);}
         kind=ai.kind;answer=ai.answer.trim();

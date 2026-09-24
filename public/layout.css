@@ -220,6 +220,9 @@ footer{background:#f6f4f1;color:var(--ink)}
 .footer-top p,.footer-bottom{color:var(--muted)}
 .footer-top a{color:var(--ink)}
 .footer-top a:hover,.footer-bottom a:hover{color:var(--blue)}
+.footer-bottom>div{align-items:center;flex-wrap:nowrap;gap:24px}
+.footer-bottom>div>a,.footer-bottom>div>button{display:inline-flex;align-items:center;white-space:nowrap;line-height:1.4}
+@media(max-width:767px){.footer-bottom>div{flex-wrap:wrap;gap:12px 20px}}
 @media(max-width:1000px){.team-feature{grid-template-columns:1.25fr 1fr}.team-feature-copy{padding:28px}.team-feature-copy h2{font-size:32px}.team-feature-copy p{font-size:16px}}
 @media(max-width:767px){.team-feature{grid-template-columns:1fr;border-radius:22px}.team-feature-copy{padding:30px}.team-feature-copy h2{max-width:15ch}.team-feature-copy p{max-width:45ch}.cost-overview{margin-bottom:56px}.urgent-button{font-size:14px;min-height:54px;padding:17px 22px}.hero-immersive .hero-actions{gap:14px}}
 @media(prefers-reduced-motion:reduce){.urgent-button,.urgent-button::before{transition:none}.urgent-button::before{background:radial-gradient(130px circle at 50% 50%,#ffffff40,transparent 75%)}}

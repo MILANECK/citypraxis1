@@ -12,6 +12,12 @@ test('published Vienna hours distinguish open, closed and unknown periods',()=>{
   assert.equal(practiceHoursStatus(hours,new Date('2026-09-27T10:00:00Z')).open,false);
   assert.equal(practiceHoursStatus({},new Date('2026-09-23T10:00:00Z')).open,null);
 });
+test('an affirmative appointment answer moves directly to the name',async()=>{
+  const previous={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let calls=0;const service=createConversationService({getFacts:async()=>conversationFacts({}),fetcher:async()=>{calls++;return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({booking_intent:'unspecified',reason:'Shoulder concern',answer:'Thank you. Our team can clarify the next step.'}))}]}]})};}});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{assert.match((await turn('Shoulder concern')).message,/Would you like us to prepare/);const accepted=await turn('yes please');assert.equal(calls,1);assert.equal(accepted.message,'Perfect, thank you.\n\nMay I have your first and last name, please?');}finally{process.env=previous;}
+});
 test('mixed questions retain concerns, ask before intake, respect a decline and preserve complete answers',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   const facts=conversationFacts({team:[{title:'Published Person',role:'Physiotherapist',specialties:'Jaw',fictional:false},{title:'Fictional Person',fictional:true}],symptoms:[{title:'Jaw',body:'Published jaw information'}],pages:[{id:'datenschutz',title:'Privacy',body:'Published privacy information'}]});

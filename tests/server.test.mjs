@@ -20,6 +20,13 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     const review={title:'Test review',body:'Fixture text only',rating:'5',source:'Test fixture'};
     assert.equal((await call('admin/content/reviews/unsafe-link','PUT',{data:{...review,sourceUrl:'javascript:alert(1)'}},editor)).status,400);
     assert.equal((await call('admin/content/reviews/example','PUT',{data:review},editor)).status,200);
+    assert.equal((await call('admin/content/reviews/example','PUT',{data:{...review,title:'Should not replace'},createOnly:true},editor)).status,409);
+    assert.equal((await call('admin/content','GET',null,editor)).data.reviews.find(r=>r.id==='example').title,review.title);
+    for(const id of ['second','third'])assert.equal((await call(`admin/content/reviews/${id}`,'PUT',{data:{...review,title:id},createOnly:true,publish:true},editor)).status,200);
+    assert.equal((await call('admin/content/reviews/fourth','PUT',{data:review,createOnly:true},editor)).status,409);
+    assert.equal((await call('admin/content/reviews/second','PUT',{data:{...review,title:'Edited second'},publish:true},editor)).status,200);
+    assert.equal((await call('admin/content','GET',null,editor)).data.reviews.find(r=>r.id==='example').title,review.title);
+    for(const id of ['second','third'])assert.equal((await call(`admin/content/reviews/${id}`,'DELETE',{},editor)).status,200);
     assert.equal((await call('content')).data.reviews.length,0);
     assert.equal((await call('admin/content/reviews/example','PUT',{data:review,publish:true},editor)).status,200);
     assert.equal((await call('content')).data.reviews[0].body,review.body);
