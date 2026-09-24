@@ -378,7 +378,7 @@ footer{background:#f6f4f1;color:var(--ink)}
 .map-consent p{max-width:360px;margin:10px auto 16px;font-size:13px;line-height:1.65}
 .map-consent .text-link{border:0;background:transparent;color:var(--blue);cursor:pointer}
 @keyframes cookie-enter{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
-@media(max-width:767px){.cookie-panel{left:14px;bottom:86px;width:calc(100vw - 28px);max-height:calc(100vh - 110px);overflow:auto;padding:23px;border-radius:20px}.cookie-panel h2{font-size:25px}.cookie-options{grid-template-columns:1fr}.cookie-actions{display:grid;grid-template-columns:1fr 1fr}.cookie-actions button{width:100%}.cookie-necessary{grid-column:1/-1;grid-row:2}.cookie-all.button{min-width:0}.map-consent{padding:28px 22px}}
+@media(max-width:767px){.cookie-panel{left:14px;bottom:calc(150px + env(safe-area-inset-bottom));width:calc(100vw - 28px);max-height:calc(100dvh - 174px - env(safe-area-inset-bottom));overflow:auto;padding:23px;border-radius:20px}.cookie-panel h2{font-size:25px}.cookie-options{grid-template-columns:1fr}.cookie-actions{display:grid;grid-template-columns:1fr 1fr}.cookie-actions button{width:100%}.cookie-necessary{grid-column:1/-1;grid-row:2}.cookie-all.button{min-width:0}.map-consent{padding:28px 22px}}
 @media(prefers-reduced-motion:reduce){.cookie-panel{animation:none}.cookie-close,.cookie-options input,.cookie-options input:before{transition:none}}
 
 /* Clear, low-pressure concern choices in the appointment form. */

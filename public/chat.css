@@ -1,4 +1,5 @@
 #cp-chat{--chat-blue:#0085ac;--chat-ink:#222344;--chat-muted:#606679;font-family:inherit;color:var(--chat-ink);font-size:14px;line-height:1.55;position:relative;z-index:55}
+#cp-chat.is-open{z-index:65}
 #cp-chat *{box-sizing:border-box}
 #cp-chat button,#cp-chat input,#cp-chat textarea{font:inherit}
 #cp-chat button{cursor:pointer}

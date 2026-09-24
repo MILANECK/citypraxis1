@@ -17,6 +17,10 @@ try{
     await page.route('**/api/chat/edit',route=>route.fulfill({json:{message:'What email address can our secretary use?',ready:false,turnsRemaining:15}}));
     await page.route('**/api/chat/finish',route=>{assert.equal(route.request().postDataJSON().confirmed,true);submitted++;return route.fulfill({status:201,json:{id:999,received:true}});});
     await page.goto((process.env.QA_ORIGIN||'http://127.0.0.1:3006')+'/?lang='+lang);
+    await page.locator('.chat-launch').click();
+    await page.locator('.conversation-start').waitFor();
+    assert.equal(await page.locator('.cookie-panel').isVisible(),true);
+    await page.locator('.chat-close').click();
     await page.locator('.cookie-acknowledge').click();
     await page.locator('.chat-launch').click();await page.locator('.conversation-start').waitFor();
     assert.equal(await page.locator('.conversation-start input[type=checkbox]').count(),1);assert.equal(await page.locator('#conversation-input').isDisabled(),true);assert.equal(await page.locator('.conversation-locked button').isDisabled(),true);assert.equal(sessions,0);
