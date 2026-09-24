@@ -8,6 +8,7 @@ await mkdir('test-results',{recursive:true});
 try{
   for(const lang of ['en','de'])for(const mobile of [false,true]){
     const page=await browser.newPage({viewport:mobile?{width:390,height:844}:{width:1440,height:1000},reducedMotion:mobile?'reduce':'no-preference'});
+    await page.addInitScript(()=>sessionStorage.setItem('citypraxis-conversation-v2',JSON.stringify({token:'old-session',expires:Date.now()+1800000,started:true,messages:[{role:'assistant',text:'Old draft'}]})));
     const errors=[];page.on('pageerror',e=>errors.push(e.message));let submitted=0,sessions=0;
     await page.route('**/api/chat/session',route=>{sessions++;return route.fulfill({json:{token:'fixture',expires:Date.now()+1800000,aiAvailable:true}});});
     await page.route('**/api/chat/turn',async route=>{
@@ -25,6 +26,10 @@ try{
     await page.locator('.cookie-acknowledge').click();
     await page.locator('.chat-launch').click();await page.locator('.conversation-start').waitFor();
     assert.equal(await page.locator('.conversation-start input[type=checkbox]').count(),1);assert.equal(await page.locator('#conversation-input').isDisabled(),true);assert.equal(await page.locator('.conversation-locked button').isDisabled(),true);assert.equal(sessions,0);
+    assert.equal(await page.locator('.conversation-unlock').evaluate(el=>getComputedStyle(el).borderTopColor),'rgb(183, 61, 104)');
+    assert.equal(await page.locator('.conversation-unlock a[href*="datenschutz"]').count(),1);
+    assert.doesNotMatch(await page.locator('.conversation-preview').innerText(),/This chat uses OpenAI|Dieser Chat nutzt OpenAI/);
+    assert.match(await page.locator('.conversation-preview').innerText(),lang==='en'?/Welcome!/:/Herzlich willkommen!/);
     await page.screenshot({path:`test-results/conversation-${lang}-${mobile?'mobile':'desktop'}-welcome.png`});
     await page.locator('.conversation-start button').click();assert.equal(sessions,0);
     await page.locator('.conversation-start input').check();await page.locator('.conversation-start button').click();

@@ -72,8 +72,7 @@
 .chat-content:has(.conversation-preview){min-height:100%;display:flex}
 .conversation-preview{display:flex;flex-direction:column;flex:1;min-width:0}
 .conversation-preview .conversation-thread{margin-bottom:20px}
-.conversation-unlock{margin:2px 0 16px;padding:14px 15px 12px;border:1px solid #c65eaa;border-radius:17px;background:#fdf9fc}
-#cp-chat .conversation-disclosure{font-size:11px;line-height:1.5;color:var(--chat-muted);margin:0 0 12px}
+.conversation-unlock{margin:2px 0 16px;padding:14px 15px 12px;border:1.5px solid #b73d68;border-radius:17px;background:#fff9fc}
 #cp-chat .conversation-start .chat-check{font-size:11px;line-height:1.5;margin:0 0 12px}
 .conversation-start-actions{display:flex;align-items:center;gap:16px;margin-bottom:0}
 #cp-chat .conversation-start-actions .chat-primary{width:auto;min-height:36px;padding:8px 14px;margin:0;font-size:12px!important;flex-shrink:0}
