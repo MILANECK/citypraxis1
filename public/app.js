@@ -46,11 +46,11 @@ function processBlock() {
   return `<ol class="process-grid">${steps.map(([title,text],i)=>`<li><div class="step-top"><span>0${i+1}</span>${i<3 ? '<span class="step-arrow" aria-hidden="true">→</span>':''}</div><h3>${title}</h3><p>${text}</p></li>`).join('')}</ol>`;
 }
 function faqs() { return `<div class="faq-list">${data.faqs.map(f=>`<details><summary>${esc(f.title)}<span aria-hidden="true">+</span></summary><div>${paragraph(f.body)}</div></details>`).join('')}</div>`; }
-function heroMarkup(h,s) {
+function heroMarkup(h,s,quickLinks='') {
   const video=h.heroMedia==='video' && h.video;
   return `<section class="hero hero-immersive hero-${esc(h.heroHeight||'fullscreen')} overlay-${esc(h.heroOverlay||'balanced')} focus-${esc(h.heroPosition||'center')} mobile-focus-${esc(h.heroMobilePosition||'center')}" aria-label="Willkommen in der Citypraxis">
     <div class="hero-media"><img class="hero-backdrop" src="${esc(optimizedImage(h.image))}" alt="${esc(h.heroAlt||'Einblicke in die Citypraxis Wien')}" fetchpriority="high" decoding="async">${video?`<video id="hero-video" class="hero-background-video" data-src="${esc(h.video)}" poster="${esc(optimizedImage(h.image))}" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>`:''}</div>
-    <div class="hero-shade"></div><div class="container hero-stage"><div class="hero-copy"><span class="eyebrow"><span class="tiny-line"></span>${esc(h.eyebrow)}</span><h1>${esc(h.title)}<br><span>${esc(h.subtitle)}</span></h1><p>${esc(h.intro)}</p><div class="hero-actions"><a class="button" href="/termin">Ersttermin buchen ${arrow}</a><a class="urgent-button" href="/termin?akut=1"><span class="availability ${s.acuteAvailable?'is-available':''}"></span>Akuttermin anfragen ${arrow}</a></div></div><div class="hero-bottom">${video?'<button class="video-toggle" id="video-toggle" aria-label="Hintergrundvideo abspielen">Video abspielen ▷</button>':''}</div></div>
+    <div class="hero-shade"></div><div class="container hero-stage"><div class="hero-copy"><span class="eyebrow"><span class="tiny-line"></span>${esc(h.eyebrow)}</span><h1>${esc(h.title)}<br><span>${esc(h.subtitle)}</span></h1><p>${esc(h.intro)}</p><div class="hero-actions"><a class="button" href="/termin">Ersttermin buchen ${arrow}</a><a class="urgent-button" href="/termin?akut=1"><span class="availability ${s.acuteAvailable?'is-available':''}"></span>Akuttermin anfragen ${arrow}</a></div></div></div>${quickLinks}
   </section>`;
 }
 function therapyCard(s) {
@@ -59,13 +59,13 @@ function therapyCard(s) {
 function home() {
   const h = data.pages.find(p=>p.id==='home'), s = data.settings[0];
   const therapies = ['physiotherapie','osteopathie','logopaedie','heilmassage'].map(id=>data.services.find(item=>item.id===id)).filter(Boolean);
-  return `${heroMarkup(h,s)}
-  <nav class="quick-links container" aria-label="Direkt zum Anliegen">
+  const quickLinks=`<div class="hero-quick-strip"><nav class="quick-links container" aria-label="Direkt zum Anliegen">
     <a href="tel:${esc(s.phone.replaceAll(' ',''))}"><img class="quick-icon" src="/assets/icons/phone.svg" alt="" width="48" height="48"><div><strong>${esc(s.phone)}</strong><span>Persönlich für Sie da</span></div></a>
     <a href="/leistungen"><img class="quick-icon" src="/assets/icons/lotus.svg" alt="" width="48" height="48"><div><strong>Unsere Therapien</strong><span>Die passende Behandlung finden</span></div></a>
     <a href="/preise"><img class="quick-icon" src="/assets/icons/euro.svg" alt="" width="48" height="48"><div><strong>Preise & Rückerstattung</strong><span>Kosten verständlich erklärt</span></div></a>
     <a href="/kontakt"><img class="quick-icon" src="/assets/icons/pin.svg" alt="" width="48" height="48"><div><strong>1010 Wien</strong><span>${esc(s.address)}</span></div></a>
-  </nav>
+  </nav></div>`;
+  return `${heroMarkup(h,s,quickLinks)}
   <section class="section container" id="therapien"><div class="section-heading"><div><span class="eyebrow">UNSERE THERAPIEN</span><h2>Vier Fachrichtungen.<br>Gemeinsam für Sie.</h2></div><a class="text-link" href="/leistungen">Alle Behandlungen ${arrow}</a></div><div class="therapy-grid">${therapies.map(therapyCard).join('')}</div></section>
   ${h.teamImage?`<section class="container team-feature" aria-labelledby="team-feature-title"><img class="team-group-photo" src="${esc(optimizedImage(h.teamImage))}" alt="${esc(h.teamImageAlt||'Team-Gruppenfoto')}" loading="lazy" decoding="async" width="1299" height="870"><div class="team-feature-copy"><span class="eyebrow">DIE MENSCHEN IN DER CITYPRAXIS</span><h2 id="team-feature-title">Ihr Team. An Ihrer Seite.</h2><p>Physiotherapie, Osteopathie, Logopädie und Heilmassage. Gemeinsam für Sie.</p><a class="text-link" href="/ueber-uns">Das gesamte Team ${arrow}</a></div></section>`:''}
   ${reviewsSection()}
@@ -247,17 +247,14 @@ function bind() {
     });
     urgent.addEventListener('pointerleave',()=>{urgent.style.removeProperty('--glow-x');urgent.style.removeProperty('--glow-y');});
   }
-  const video=$('#hero-video'),videoToggle=$('#video-toggle');
-  if(video && videoToggle) {
+  const video=$('#hero-video');
+  if(video) {
     const motion=reducedMotion;
-    let manuallyPaused=false;
-    const update=()=>{const playing=!video.paused;videoToggle.textContent=playing?'Video pausieren Ⅱ':'Video abspielen ▷';videoToggle.setAttribute('aria-label',playing?'Hintergrundvideo pausieren':'Hintergrundvideo abspielen');};
-    async function play(){if(!video.getAttribute('src'))video.src=video.dataset.src;video.muted=true;try{await video.play();}catch{update();}}
-    video.addEventListener('playing',()=>{video.classList.add('is-playing');update();});video.addEventListener('pause',update);
-    video.addEventListener('error',()=>{video.classList.remove('is-playing');videoToggle.hidden=true;});
-    videoToggle.addEventListener('click',()=>{if(video.paused){manuallyPaused=false;play();}else{manuallyPaused=true;video.pause();}});
-    motion.addEventListener('change',()=>{if(motion.matches)video.pause();else if(!manuallyPaused)play();});
-    new IntersectionObserver(entries=>{if(!entries[0].isIntersecting)video.pause();else if(!motion.matches&&!manuallyPaused&&!navigator.connection?.saveData)play();},{threshold:.1}).observe(video);
+    async function play(){if(!video.getAttribute('src'))video.src=video.dataset.src;video.muted=true;try{await video.play();}catch{}}
+    video.addEventListener('playing',()=>video.classList.add('is-playing'));
+    video.addEventListener('error',()=>video.classList.remove('is-playing'));
+    motion.addEventListener('change',()=>{if(motion.matches)video.pause();else if(!navigator.connection?.saveData)play();});
+    new IntersectionObserver(entries=>{if(!entries[0].isIntersecting)video.pause();else if(!motion.matches&&!navigator.connection?.saveData)play();},{threshold:.1}).observe(video);
   }
   const toggle=$('.menu-toggle'), nav=$('#mobile-nav');
   const setMenu=open=>{nav.classList.toggle('is-open',open);nav.inert=!open;nav.setAttribute('aria-hidden',String(!open));toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Menü schließen':'Menü öffnen');};

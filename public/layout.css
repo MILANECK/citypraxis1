@@ -23,6 +23,19 @@ p { font-size: 18px; line-height: 1.8; }
 .quick-links strong { display: block; font-size: 15px; line-height: 1.5; font-weight: 600; }
 .quick-links div > span { display: block; font-size: 13px; line-height: 1.6; margin-top: 3px; color: var(--muted); }
 .quick-links + .section { padding-top: 45px; }
+/* Trial: edge-to-edge matte glass navigation over the hero media. */
+.hero-quick-strip{position:relative;z-index:2;background:#344453;border-block:1px solid #ffffff30;box-shadow:inset 0 1px 0 #ffffff0d}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.hero-quick-strip{background:#f6f4f126;-webkit-backdrop-filter:blur(22px) saturate(.65);backdrop-filter:blur(22px) saturate(.65)}}
+.hero-quick-strip .quick-links{padding-block:22px;gap:22px}
+.hero-quick-strip .quick-links>a{color:#fff;border-radius:0}
+.hero-quick-strip .quick-links strong{font-weight:600}
+.hero-quick-strip .quick-links div>span{color:#f0f4f7}
+.hero-quick-strip .quick-icon{filter:brightness(0) invert(1);opacity:.92}
+.hero-quick-strip .quick-links>a:hover{color:#fff}
+.hero-quick-strip .quick-links>a:hover .quick-icon{filter:brightness(0) invert(1);opacity:1}
+.hero-quick-strip .quick-links>a:focus-visible{outline:2px solid #fff;outline-offset:5px;border-radius:8px}
+.hero-immersive:has(.hero-quick-strip) .hero-stage{min-height:max(560px,calc(100svh - 245px));padding-bottom:70px}
+@media(max-width:767px){.hero-quick-strip .quick-links{padding-block:22px;gap:18px 20px}.hero-quick-strip .quick-links>a{padding-block:5px}.hero-immersive:has(.hero-quick-strip) .hero-stage{min-height:620px;padding-bottom:48px}}
 .therapy-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
 .therapy-card { display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; background: white; box-shadow: 0 8px 30px #22234405; }
 .therapy-card-media { width: 100%; aspect-ratio: 5 / 4; overflow: hidden; isolation: isolate; }
