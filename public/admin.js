@@ -11,7 +11,7 @@ const fields={
   faqs:[['title','Frage'],['body','Antwort','textarea']],
   prices:[['category','Kategorie'],['title','Behandlung / Preisposition'],['duration','Terminart oder Dauer'],['amount','Preis in Euro','number'],['details','Zusatzinformation','textarea']],
   reimbursements:[['title','Leistung'],['oegkk','ÖGKK (€)'],['bvaeb','BVAEB (€)'],['kfa','KFA (€)'],['svs','SVS (€)'],['asOf','Tabellenstand (MM/JJJJ)']],
-  settings:[['title','Bezeichnung'],['appointmentConcerns','Terminformular: Auswahlkategorien','concern-list'],['reviewsTitle','Bewertungen: Abschnittsüberschrift'],['reviewsIntro','Bewertungen: Einleitung','textarea'],['email','E-Mail','email'],['phone','Telefon'],['address','Adresse'],['city','PLZ & Ort'],['hours','Terminzeiten'],...['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map((day,i)=>[['monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday'][i],day]),['payment','Zahlungshinweis','textarea'],['acute','Akuttermin-Hinweis'],['acuteAvailable','Aktuelle Akutverfügbarkeit bestätigt','checkbox']]
+  settings:[['title','Bezeichnung'],['appointmentConcerns','Terminformular: Auswahlkategorien','concern-list'],['socialLinks','Social Media: Plattform und Link','social-list'],['reviewsTitle','Bewertungen: Abschnittsüberschrift'],['reviewsIntro','Bewertungen: Einleitung','textarea'],['email','E-Mail','email'],['phone','Telefon'],['address','Adresse'],['city','PLZ & Ort'],['hours','Terminzeiten'],...['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map((day,i)=>[['monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday'][i],day]),['payment','Zahlungshinweis','textarea'],['acute','Akuttermin-Hinweis'],['acuteAvailable','Aktuelle Akutverfügbarkeit bestätigt','checkbox']]
 };
 const defaultAppointmentConcerns=[{title:'Kiefer',titleEn:'Jaw'},{title:'Kopf & Migräne',titleEn:'Headaches & migraine'},{title:'Tinnitus',titleEn:'Tinnitus'},{title:'Schwindel',titleEn:'Dizziness'},{title:'Unfall & OP',titleEn:'Injury & surgery'},{title:'Andere Beschwerden',titleEn:'Other concern',custom:true}];
 fields.settings.push(['chatEmergency','Chat: Notfallhinweis','textarea']);
@@ -115,6 +115,10 @@ async function render(){
   }
 }
 function fieldHtml([name,label,type='text',options],record){
+  if(type==='social-list'){
+    const items=Array.isArray(record[name])?record[name]:[];
+    return `<fieldset class="social-list-field" data-social-editor><legend>${label}</legend><p>Instagram oder Facebook auswählen und den vollständigen Profil-Link eintragen. Veröffentlichen, damit das Symbol im Footer erscheint.</p><input type="hidden" name="${name}" value="${esc(JSON.stringify(items))}"><div class="social-editor-rows">${items.map(socialRow).join('')}</div><button type="button" class="button button-outline add-social">+ Plattform hinzufügen</button></fieldset>`;
+  }
   if(type==='concern-list'){
     const items=Array.isArray(record[name])&&record[name].length?record[name]:defaultAppointmentConcerns;
     const rows=items.map((item,index)=>concernRow(item,index)).join('');
@@ -130,6 +134,7 @@ function fieldHtml([name,label,type='text',options],record){
   return `<label>${label}${input}</label>`;
 }
 function concernRow(item={},index=0){return `<div class="concern-editor-row" data-concern-row><span class="concern-order" aria-hidden="true">${String(index+1).padStart(2,'0')}</span><label>Deutsch<input data-concern-title value="${esc(item.title||'')}" maxlength="60" required></label><label>Englisch<input data-concern-title-en value="${esc(item.titleEn||'')}" maxlength="60" required></label><label class="check-label concern-custom"><input type="checkbox" data-concern-custom ${item.custom?'checked':''}> Freitext öffnen</label><button type="button" class="delete-entry remove-concern">Entfernen</button></div>`;}
+function socialRow(item={}){return `<div class="social-editor-row" data-social-row><label>Plattform<select data-social-platform><option value="instagram" ${item.platform==='instagram'?'selected':''}>Instagram</option><option value="facebook" ${item.platform==='facebook'?'selected':''}>Facebook</option></select></label><label>Profil-Link<input data-social-url type="url" value="${esc(item.url||'')}" placeholder="https://www.instagram.com/..." required></label><button type="button" class="delete-entry remove-social">Entfernen</button></div>`;}
 const protectedContent=(collection,id)=>collection==='settings'||(collection==='pages'&&['home','about'].includes(id));
 async function removeContent(collection,record){
   const name=I18n.language==='en'&&record.titleEn?record.titleEn:record.title;
@@ -179,12 +184,21 @@ function editContent(collection,record={}){
     rows.querySelectorAll('[data-concern-row]').forEach(wire);
     $('.add-concern',editor).onclick=()=>{const wrapper=document.createElement('div');wrapper.innerHTML=concernRow({},rows.children.length);const row=wrapper.firstElementChild;rows.append(row);wire(row);sync();$('[data-concern-title]',row).focus();};
   });
+  dialog.querySelectorAll('[data-social-editor]').forEach(editor=>{
+    const rows=$('.social-editor-rows',editor),hidden=$('input[type=hidden]',editor);
+    const add=$('.add-social',editor);
+    const sync=()=>{hidden.value=JSON.stringify([...rows.querySelectorAll('[data-social-row]')].map(row=>({platform:$('[data-social-platform]',row).value,url:$('[data-social-url]',row).value.trim()})));add.disabled=rows.children.length>=2;};
+    const wire=row=>{row.querySelectorAll('input,select').forEach(input=>input.addEventListener('input',sync));$('.remove-social',row).onclick=()=>{row.remove();sync();};};
+    rows.querySelectorAll('[data-social-row]').forEach(wire);
+    add.onclick=()=>{if(rows.children.length>=2)return;const wrapper=document.createElement('div');wrapper.innerHTML=socialRow();const row=wrapper.firstElementChild;rows.append(row);wire(row);sync();$('[data-social-url]',row).focus();};
+    sync();
+  });
   dialog.querySelectorAll('[data-rating-picker]').forEach(picker=>{
     const input=$('input[type=hidden]',picker),buttons=[...picker.querySelectorAll('.rating-buttons button')];
     const update=value=>{input.value=value||'';buttons.forEach(button=>{const active=Number(button.dataset.rating)<=value;button.textContent=active?'★':'☆';button.setAttribute('aria-pressed',String(active));});};
     picker.querySelectorAll('[data-rating]').forEach(button=>button.onclick=()=>update(Number(button.dataset.rating)));
   });
-  $('#content-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,values={...record,...Object.fromEntries(new FormData(form))};for(const f of editableFields)if(f[2]==='checkbox')values[f[0]]=form.elements[f[0]].checked;for(const f of editableFields)if(f[2]==='concern-list'){try{values[f[0]]=JSON.parse(values[f[0]]||'[]');}catch{values[f[0]]=[];}}values.order=Number(values.order||0);try{await api(`admin/content/${collection}/${values.id}`,'PUT',{data:values,createOnly:isNew,publish:e.submitter?.value==='publish'});dialog.close();await refresh();await render();toast(e.submitter?.value==='publish'?'Inhalt veröffentlicht.':'Entwurf gespeichert.');}catch(error){$('.editor-message').textContent=error.message;}};
+  $('#content-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,values={...record,...Object.fromEntries(new FormData(form))};for(const f of editableFields)if(f[2]==='checkbox')values[f[0]]=form.elements[f[0]].checked;for(const f of editableFields)if(['concern-list','social-list'].includes(f[2])){try{values[f[0]]=JSON.parse(values[f[0]]||'[]');}catch{values[f[0]]=[];}}values.order=Number(values.order||0);try{await api(`admin/content/${collection}/${values.id}`,'PUT',{data:values,createOnly:isNew,publish:e.submitter?.value==='publish'});dialog.close();await refresh();await render();toast(e.submitter?.value==='publish'?'Inhalt veröffentlicht.':'Entwurf gespeichert.');}catch(error){$('.editor-message').textContent=error.message;}};
   if(dialog.querySelector('[data-media-select]')){
     api('admin/media').then(media=>{
       if(!dialog.open)return;

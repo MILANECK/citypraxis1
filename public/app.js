@@ -36,10 +36,21 @@ function header() {
   return `<div class="topline"><div class="container"><span>Mitten in Wien. Ganz bei Ihnen.</span><a href="/kontakt">Stubenbastei 12 · 1010 Wien ${arrow}</a></div></div>
   <header class="header"><div class="container header-inner"><a href="/" class="brand" aria-label="Citypraxis Startseite"><img class="brand-symbol" src="/assets/logo-symbol.png" alt="" width="31" height="40"><img class="brand-wordmark" src="/assets/wordmark-black.png" alt="Citypraxis" width="218" height="29"></a><nav class="desktop-nav" aria-label="Hauptnavigation">${links}</nav><a class="button header-cta" href="/termin">Ersttermin buchen ${arrow}</a>${I18n.toggle()}<button class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Menü öffnen"><span></span><span></span></button></div><nav id="mobile-nav" class="mobile-nav" aria-label="Mobile Navigation" aria-hidden="true" inert><div class="mobile-nav-inner">${links}<a href="/termin">Ersttermin buchen ${arrow}</a></div></nav></header>`;
 }
+function socialLinksMarkup(settings){
+  const icons={
+    instagram:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>',
+    facebook:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.9 21v-8.2h2.8l.4-3.2h-3.2V7.5c0-.9.3-1.5 1.6-1.5h1.7V3.1a23 23 0 0 0-2.5-.1c-2.5 0-4.2 1.5-4.2 4.3v2.3H7.7v3.2h2.8V21z"/></svg>'
+  };
+  const links=(Array.isArray(settings.socialLinks)?settings.socialLinks:[]).flatMap(item=>{
+    const platform=String(item?.platform||'').toLowerCase(),url=externalUrl(item?.url);
+    return icons[platform]&&url?[`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer" aria-label="Citypraxis auf ${platform==='instagram'?'Instagram':'Facebook'}">${icons[platform]}</a>`]:[];
+  });
+  return links.length?`<nav class="footer-social" aria-label="Social Media">${links.join('')}</nav>`:'';
+}
 function footer() {
   const s = data.settings[0];
   const c=privacyCopy();
-  return `<footer><div class="container footer-top"><div><img class="footer-logo" src="/assets/wordmark-black.png" alt="Citypraxis" width="250" height="34"><img class="footer-symbol" src="/assets/logo-symbol.png" alt="" width="38" height="49"><p>Gemeinsam weiterkommen.<br>Mitten in Wien.</p></div><div><h3>Besuchen Sie uns</h3><p>${esc(s.address)}<br>${esc(s.city)}</p><a href="https://www.google.com/maps/search/?api=1&query=Stubenbastei+12+1010+Wien" target="_blank" rel="noopener">Route planen ↗︎</a></div><div><h3>Wir sind für Sie da</h3><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><p>${esc(s.hours)}<br>${esc(s.saturdayHours?I18n.translate('Samstag')+' '+s.saturdayHours:s.saturday)}</p></div><div><h3>Gut zu wissen</h3><a href="/ablauf-wahltherapie">Ablauf & Wahltherapie</a><a href="/leistungen">Unsere Leistungen</a><p>${esc(s.payment)}</p></div></div><div class="container footer-bottom"><span>© ${new Date().getFullYear()} Citypraxis Wien</span><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><button class="cookie-settings-link" type="button">${c.settings}</button><a href="/admin">Praxis-Login ↗︎</a></div></div></footer><div class="mobile-booking"><a href="tel:${esc(s.phone.replaceAll(' ',''))}">Anrufen</a><a class="button" href="/termin">Ersttermin buchen ${arrow}</a></div>`;
+  return `<footer><div class="container footer-top"><div><img class="footer-logo" src="/assets/wordmark-black.png" alt="Citypraxis" width="250" height="34"><img class="footer-symbol" src="/assets/logo-symbol.png" alt="" width="38" height="49"><p>Gemeinsam weiterkommen.<br>Mitten in Wien.</p>${socialLinksMarkup(s)}</div><div><h3>Besuchen Sie uns</h3><p>${esc(s.address)}<br>${esc(s.city)}</p><a href="https://www.google.com/maps/search/?api=1&query=Stubenbastei+12+1010+Wien" target="_blank" rel="noopener">Route planen ↗︎</a></div><div><h3>Wir sind für Sie da</h3><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><p>${esc(s.hours)}<br>${esc(s.saturdayHours?I18n.translate('Samstag')+' '+s.saturdayHours:s.saturday)}</p></div><div><h3>Gut zu wissen</h3><a href="/ablauf-wahltherapie">Ablauf & Wahltherapie</a><a href="/leistungen">Unsere Leistungen</a><p>${esc(s.payment)}</p></div></div><div class="container footer-bottom"><span>© ${new Date().getFullYear()} Citypraxis Wien</span><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><button class="cookie-settings-link" type="button">${c.settings}</button><a href="/admin">Praxis-Login ↗︎</a></div></div></footer><div class="mobile-booking"><a href="tel:${esc(s.phone.replaceAll(' ',''))}">Anrufen</a><a class="button" href="/termin">Ersttermin buchen ${arrow}</a></div>`;
 }
 function processBlock() {
   const steps = [['Verordnung','Klären Sie die ärztliche Verordnung vor Ihrem ersten Termin.'],['Behandlung','Wir hören zu, untersuchen und planen gemeinsam Ihre Therapie.'],['Bezahlung','Sie bezahlen vor Ort und erhalten Ihre Rechnung.'],['Rückerstattung','Reichen Sie die Unterlagen bei Ihrer Versicherung ein.']];
@@ -200,6 +211,13 @@ function bind() {
       headline.style.setProperty('--reveal-delay',`${Math.min(index,3)*45}ms`);
       revealObserver.observe(headline);
     });
+    const reviewCards=[...document.querySelectorAll('.reviews-grid .review-card')];
+    if(reviewCards.length){
+      const reviewObserver=new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');reviewObserver.unobserve(entry.target);}});
+      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
+      reviewCards.forEach((card,index)=>{card.classList.add('review-reveal');card.style.setProperty('--review-delay',`${index*135}ms`);reviewObserver.observe(card);});
+    }
     document.querySelectorAll('.process-grid').forEach(grid=>{
       grid.classList.add('process-sequence-ready');
       grid.querySelectorAll(':scope > li').forEach((step,index)=>step.style.setProperty('--step-delay',`${index*130}ms`));
@@ -286,7 +304,7 @@ function bind() {
   }
   $('#booking-form')?.addEventListener('submit',async e=>{
     e.preventDefault();const form=e.currentTarget,button=$('button[type=submit]',form),message=$('.form-message',form),fields=new FormData(form);form.dataset.submissionKey||=crypto.randomUUID();button.disabled=true;message.textContent=I18n.language==='en'?'Saving your request…':'Anfrage wird gespeichert …';
-    try{const response=await fetch('/api/requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...Object.fromEntries(fields),concerns:fields.getAll('concern'),language:I18n.language,submissionKey:form.dataset.submissionKey,acute:fields.has('acute'),consent:fields.has('consent')})});const result=await response.json();if(!response.ok)throw new Error(result.error);form.innerHTML=`<div class="success-mark">✓</div><h2>${I18n.language==='en'?'Thank you':'Vielen Dank'}, ${esc(fields.get('name'))}.</h2><p>${esc(result.message)}</p><p>${I18n.language==='en'?'Your request number:':'Ihre Anfragenummer:'} <strong>#${result.id}</strong></p><a class="button" href="/">${I18n.language==='en'?'Back to home':'Zur Startseite'} ↗︎</a>`;import('/confirmation.js').then(({enhanceConfirmation})=>enhanceConfirmation(form)).catch(()=>{});}catch(error){message.textContent=error.message;button.disabled=false;}
+    try{const response=await fetch('/api/requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...Object.fromEntries(fields),concerns:fields.getAll('concern'),language:I18n.language,submissionKey:form.dataset.submissionKey,acute:fields.has('acute'),consent:fields.has('consent')})});const result=await response.json();if(!response.ok)throw new Error(result.error);form.innerHTML=`<div class="success-mark">✓</div><h2>${I18n.language==='en'?'Thank you':'Vielen Dank'}, ${esc(fields.get('name'))}.</h2><p>${esc(result.message)}</p><a class="button" href="/">${I18n.language==='en'?'Back to home':'Zur Startseite'} ↗︎</a>`;import('/confirmation.js').then(({enhanceConfirmation})=>enhanceConfirmation(form)).catch(()=>{});}catch(error){message.textContent=error.message;button.disabled=false;}
   });
 }
 const contentCacheKey='citypraxis-public-content-v2',contentCacheLifetime=5*60*1000;

@@ -60,6 +60,12 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     assert.equal(practice.monday,'08:00–20:00');
     assert.equal(practice.saturdayHoursEn,'8 am–2 pm');
     assert.equal(practice.sundayEn,'Closed');
+    const socialLinks=[{platform:'instagram',url:'https://www.instagram.com/citypraxis.test/'},{platform:'facebook',url:'https://www.facebook.com/citypraxis.test/'}];
+    assert.equal((await call('admin/content/settings/practice','PUT',{data:{...practice,socialLinks},publish:true},editor)).status,200);
+    assert.deepEqual((await call('content')).data.settings[0].socialLinks,socialLinks);
+    assert.equal((await call('admin/content/settings/practice','PUT',{data:{...practice,socialLinks:[{platform:'instagram',url:'https://evil.example/fake'}]},publish:true},editor)).status,400);
+    assert.equal((await call('admin/content/settings/practice','PUT',{data:{...practice,socialLinks:[socialLinks[0],socialLinks[0]]},publish:true},editor)).status,400);
+    assert.deepEqual((await call('content')).data.settings[0].socialLinks,socialLinks);
     assert.equal((await call('requests','POST',{name:'Test',email:'invalid',consent:true})).status,400);
     assert.equal((await call('requests','POST',{name:'Test person',email:'patient@test.local',consent:true})).status,400);
     const request=await call('requests','POST',{name:'Test person',email:'patient@test.local',phone:'+4369912682157',consent:true,concern:'Andere Beschwerden',symptoms:'Kurze Beschreibung',preference:'Afternoon'});

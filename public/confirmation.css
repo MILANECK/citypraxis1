@@ -1,4 +1,5 @@
 .request-confirmation{padding-block:16px 28px;outline:none}
+.request-confirmation h2,.request-confirmation h3,.request-confirmation p{text-align:center}
 .confirmation-logo{display:block;width:min(100%,320px);margin:0 auto 22px;animation:confirmation-logo-enter .9s cubic-bezier(.45,0,.2,1) both}
 .confirmation-logo img{display:block;width:100%;height:auto}
 .request-confirmation h2,.request-confirmation h3{font-size:clamp(27px,3vw,36px);line-height:1.2;text-wrap:balance;margin:0 0 22px;letter-spacing:-.035em}

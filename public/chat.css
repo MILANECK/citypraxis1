@@ -5,7 +5,7 @@
 #cp-chat button{cursor:pointer}
 #cp-chat button:disabled{cursor:wait;opacity:.6}
 #cp-chat :focus-visible{outline:2px solid var(--chat-blue);outline-offset:3px}
-.chat-launch{position:fixed;right:24px;bottom:24px;display:flex;align-items:center;gap:10px;border:1px solid #ffffff66;border-radius:40px;background:#222344;color:#fff;padding:13px 18px;box-shadow:0 6px 26px #22234424;transition:background .25s,box-shadow .25s}
+.chat-launch{position:fixed;right:24px;bottom:24px;display:flex;align-items:center;gap:10px;border:0;border-radius:40px;background:#222344;color:#fff;padding:14px 19px;box-shadow:0 6px 26px #22234424;transition:background .25s,box-shadow .25s}
 .chat-launch:hover{background:#36365a;box-shadow:0 10px 32px #22234430}
 .chat-launch svg{width:24px;height:24px}.chat-launch span{font-size:13px;font-weight:600}
 .chat-launch .chat-launch-icon{width:32px;height:30px;object-fit:contain;margin:-3px -4px}
@@ -72,17 +72,17 @@
 .chat-content:has(.conversation-preview){min-height:100%;display:flex}
 .conversation-preview{display:flex;flex-direction:column;flex:1;min-width:0}
 .conversation-preview .conversation-thread{margin-bottom:20px}
-.conversation-unlock{margin-top:auto;padding-top:10px}
+.conversation-unlock{margin:2px 0 16px;padding:14px 15px 12px;border:1px solid #c65eaa;border-radius:17px;background:#fdf9fc}
 #cp-chat .conversation-disclosure{font-size:11px;line-height:1.5;color:var(--chat-muted);margin:0 0 12px}
 #cp-chat .conversation-start .chat-check{font-size:11px;line-height:1.5;margin:0 0 12px}
-.conversation-start-actions{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.conversation-start-actions{display:flex;align-items:center;gap:16px;margin-bottom:0}
 #cp-chat .conversation-start-actions .chat-primary{width:auto;min-height:36px;padding:8px 14px;margin:0;font-size:12px!important;flex-shrink:0}
 .conversation-start-actions a{font-size:11px}
 #cp-chat .conversation-locked textarea{background:#f6f7f8;border-color:#e6e8eb;cursor:not-allowed}
 #cp-chat .conversation-locked button:disabled{background:#a7c3cc;opacity:1;cursor:not-allowed}
-@media(max-height:740px){.conversation-preview .conversation-thread{margin-bottom:12px}.conversation-unlock{padding-top:0}}
+@media(max-height:740px){.conversation-preview .conversation-thread{margin-bottom:12px}.conversation-unlock{padding:11px 13px}}
 
-.chat-window:has(.conversation-preview){height:min(470px,calc(100dvh - 115px));transition:height .38s cubic-bezier(.22,1,.36,1),transform .38s cubic-bezier(.22,1,.36,1),opacity .28s ease,visibility .38s}
+.chat-window:has(.conversation-preview){height:min(600px,calc(100dvh - 115px));transition:height .38s cubic-bezier(.22,1,.36,1),transform .38s cubic-bezier(.22,1,.36,1),opacity .28s ease,visibility .38s}
 #cp-chat .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
-@media(max-width:767px){.chat-window:has(.conversation-preview){height:min(480px,calc(100dvh - 168px - env(safe-area-inset-bottom)))}}
+@media(max-width:767px){.chat-window:has(.conversation-preview){height:min(610px,calc(100dvh - 168px - env(safe-area-inset-bottom)))}}
 @media(max-height:600px){.chat-window:has(.conversation-preview){height:calc(100dvh - 24px)}}
