@@ -59,9 +59,14 @@ export function practiceHoursStatus(settings={},date=new Date()){
 }
 function declinesContact(raw,stage){
   if(!['name','email','phone'].includes(stage))return false;
-  const refusal=/(?:^(?:no|nein)(?:[.!?,]|\s+(?!problem\b))|\b(?:don't|do not|won't|will not|can't|cannot|prefer not|rather not|not comfortable|refuse)\b|\b(?:möchte|will|kann)\b.{0,35}\bnicht\b|\b(?:lieber nicht|keine telefonnummer|keine e-?mail)\b)/iu.test(raw);
-  const alternative=stage==='phone'?/\b(?:email|e-?mail)\s+only\b|\b(?:only|just)\s+(?:by|via|through)\s+(?:email|e-?mail)\b|\b(?:nur|lieber)\s+(?:per\s+)?e-?mail\b/iu.test(raw):stage==='email'?/\b(?:phone|telephone|call)\s+only\b|\b(?:only|just)\s+(?:by|via)\s+(?:phone|telephone|call)\b|\b(?:nur|lieber)\s+(?:per\s+)?telefon(?:isch)?\b/iu.test(raw):false;
-  return refusal||alternative;
+  const bareNo=/^(?:no|nein|rather not|lieber nicht)[.!?\s]*$/iu.test(raw);
+  const target=stage==='phone'?/(?:phone|telephone|number|anruf|telefonnummer|handynummer)/iu:stage==='email'?/(?:email|e-?mail|mailadresse)/iu:/(?:name|identity|identität)/iu;
+  const refusal=/\b(?:don't|do not|won't|will not|can't|cannot|prefer not|rather not|not comfortable|refuse|möchte nicht|will nicht|kann nicht|lieber nicht|keine)\b/iu.test(raw);
+  const pronoun=/(?:\b(?:give|share|provide|send|tell|angeben|geben|nennen)\b.{0,15}\b(?:that|it|this|details|information|das|diese)\b|\b(?:that|it|this|das|diese)\b.{0,15}\b(?:share|provide|angeben|geben)\b)/iu.test(raw);
+  const other=stage==='phone'?/(?:email|e-?mail)/iu:stage==='email'?/(?:phone|telephone|call|telefon)/iu:null;
+  if(other&&!target.test(raw)&&/\b(?:don't|do not|won't|will not|not|keine|nicht)\b.{0,40}/iu.test(raw)&&other.test(raw))return false;
+  const alternative=stage==='phone'?/\b(?:email|e-?mail)\s+only\b|\b(?:only|just|prefer|rather|want(?: to be notified)?)\b.{0,35}\b(?:by|via|through|per)?\s*(?:email|e-?mail)\b|\b(?:nur|lieber)\s+(?:per\s+)?e-?mail\b/iu.test(raw):stage==='email'?/\b(?:phone|telephone|call)\s+only\b|\b(?:only|just|prefer|rather|want)\b.{0,35}\b(?:by|via|per)?\s*(?:phone|telephone|call)\b|\b(?:nur|lieber)\s+(?:per\s+)?telefon(?:isch)?\b/iu.test(raw):false;
+  return bareNo||(refusal&&(target.test(raw)||pronoun))||alternative;
 }
 const briefAcknowledgement=answer=>/^(?:(?:perfect|great|okay|ok|got it|sure|of course|perfekt|gut|verstanden)[,.!\s]*)?(?:(?:thank you|thanks|danke|vielen dank)[,.!\s]*)?$/iu.test(answer.trim());
 function contactAcknowledgement(stage,lang){

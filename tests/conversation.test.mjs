@@ -52,7 +52,7 @@ test('a refused contact detail is respected while supplied names and later detai
     const value=raw.includes('shoulder')?answer({reason:'Shoulder concern',answer:'I see.'}):raw.includes('Michael Black')?answer({first_name:'Michael',last_name:'Black',answer:'Perfect, thank you.'}):raw.includes('price')?answer({kind:'practice_question',booking_intent:'unspecified',answer:'Our reception team can explain current prices.'}):answer({answer:'Perfect, thank you.'});
     return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
   }});
-  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  const token=newSession();const turn=async(message,session=token)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:session,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{
     await turn('I want an appointment');
     assert.match((await turn('My shoulder hurts')).message,/first and last name/);
@@ -63,6 +63,10 @@ test('a refused contact detail is respected while supplied names and later detai
     const price=await turn('What is the price?');assert.match(price.message,/explain current prices/);assert.doesNotMatch(price.message,/phone number, including/);
     const accepted=await turn('My number is +43 699 12682157');assert.match(accepted.message,/Got it, thank you\./);assert.match(accepted.message,/days or times/);
     assert.doesNotMatch(`${named.message}\n${emailed.message}\n${accepted.message}`,/Perfect, thank you/);
+    const another=newSession();await turn('I want an appointment',another);await turn('My shoulder hurts',another);await turn('Michael Black',another);
+    const noEmail=await turn("I don't want to share my email",another);assert.match(noEmail.message,/need your full name, email address and phone number/);assert.doesNotMatch(noEmail.message,/Which email address/);
+    const phonePreference=newSession();await turn('I want an appointment',phonePreference);await turn('My shoulder hurts',phonePreference);await turn('Michael Black',phonePreference);await turn('michael@example.test',phonePreference);
+    const noEmailContact=await turn("I don't want notifications by email",phonePreference);assert.doesNotMatch(noEmailContact.message,/need your full name, email address and phone number/);assert.match(noEmailContact.message,/phone number, including/);
   }finally{process.env=old;}
 });
 test('mixed questions retain concerns, ask before intake, respect a decline and preserve complete answers',async()=>{
