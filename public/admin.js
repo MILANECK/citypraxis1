@@ -2,7 +2,7 @@ import {renderChatIntake,chatIntake} from './admin-chat.js?v=conversation-2';
 import {requestSource} from './request-summary.js';
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const labels={pages:'Seiten',symptoms:'Schwerpunkte',services:'Leistungen',team:'Team',reviews:'Bewertungen',faqs:'Häufige Fragen',prices:'Praxispreise',reimbursements:'Rückerstattung',settings:'Praxisdaten'};
+const labels={pages:'Seiten',symptoms:'Schwerpunkte',services:'Therapien',team:'Team',reviews:'Bewertungen',faqs:'Häufige Fragen',prices:'Praxispreise',reimbursements:'Rückerstattung',settings:'Praxisdaten'};
 const fields={
   pages:[['title','Überschrift'],['subtitle','Zweite Zeile'],['eyebrow','Dachzeile'],['intro','Einleitung','textarea'],['body','Inhalt','textarea'],['image','Bildpfad']],
   symptoms:[['title','Name'],['subtitle','Kurzzeile'],['intro','Einleitung','textarea'],['body','Beschreibung','textarea'],['service','Leistung (URL-Kürzel)'],['icon','Symbol','select',['jaw','head','ear','balance','movement']]],
@@ -12,7 +12,7 @@ const fields={
   faqs:[['title','Frage'],['body','Antwort','textarea']],
   prices:[['category','Kategorie'],['title','Behandlung / Preisposition'],['duration','Terminart oder Dauer'],['amount','Preis in Euro','number'],['details','Zusatzinformation','textarea']],
   reimbursements:[['title','Leistung'],['oegkk','ÖGKK (€)'],['bvaeb','BVAEB (€)'],['kfa','KFA (€)'],['svs','SVS (€)'],['asOf','Tabellenstand (MM/JJJJ)']],
-  settings:[['title','Bezeichnung'],['appointmentConcerns','Terminformular: Auswahlkategorien','concern-list'],['socialLinks','Social Media: Plattform und Link','social-list'],['reviewsTitle','Bewertungen: Abschnittsüberschrift'],['reviewsIntro','Bewertungen: Einleitung','textarea'],['email','E-Mail','email'],['phone','Telefon'],['address','Adresse'],['city','PLZ & Ort'],['hours','Terminzeiten'],...['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map((day,i)=>[['monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday'][i],day]),['payment','Zahlungshinweis','textarea'],['acute','Akuttermin-Hinweis'],['acuteAvailable','Aktuelle Akutverfügbarkeit bestätigt','checkbox']]
+  settings:[['title','Bezeichnung'],['appointmentConcerns','Terminformular: Auswahlkategorien','concern-list'],['reviewsTitle','Bewertungen: Abschnittsüberschrift'],['reviewsIntro','Bewertungen: Einleitung','textarea'],['email','E-Mail','email'],['phone','Telefon'],['address','Adresse'],['city','PLZ & Ort'],['hours','Terminzeiten'],...['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map((day,i)=>[['monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday'][i],day]),['payment','Zahlungshinweis','textarea'],['acute','Akuttermin-Hinweis'],['acuteAvailable','Aktuelle Akutverfügbarkeit bestätigt','checkbox']]
 };
 const defaultAppointmentConcerns=[{title:'Kiefer',titleEn:'Jaw'},{title:'Kopf & Migräne',titleEn:'Headaches & migraine'},{title:'Tinnitus',titleEn:'Tinnitus'},{title:'Schwindel',titleEn:'Dizziness'},{title:'Unfall & OP',titleEn:'Injury & surgery'},{title:'Andere Beschwerden',titleEn:'Other concern',custom:true}];
 fields.settings.push(['chatEmergency','Chat: Notfallhinweis','textarea']);
@@ -89,13 +89,13 @@ function mediaCard(media){
   return `<article class="admin-panel media-card"><div class="media-thumb">${preview}</div><h3 title="${esc(media.name)}">${esc(media.name)}</h3><p>${esc(media.alt)}</p><div class="media-card-actions"><a class="button button-outline" href="/api/admin/media/${encodeURIComponent(media.id)}/download" download>Herunterladen</a><button type="button" class="delete-entry" data-delete-media="${esc(media.id)}">Löschen</button></div></article>`;
 }
 function shell(){
-  const links=[['overview','Übersicht','◫'],...(canEdit()?[['hero','Startbild & Video','▷']]:[]),...(canRequests()?[['requests','Terminanfragen','↗']]:[]),...(canEdit()?Object.entries(labels).map(([k,v])=>[k,v,'○']):[]),...(canEdit()?[['media','Mediathek','▧']]:[]),...(user.role==='owner'?[['users','Benutzer & Rollen','◎'],['audit','Aktivitäten','↺']]:[]),['account','Mein Konto','◇']];
+  const links=[['overview','Übersicht','◫'],...(canEdit()?[['hero','Startbild & Video','▷']]:[]),...(canRequests()?[['requests','Terminanfragen','↗']]:[]),...(canEdit()?Object.entries(labels).map(([k,v])=>[k,v,'○']):[]),...(canEdit()?[['social','Social Media','◎'],['media','Mediathek','▧']]:[]),...(user.role==='owner'?[['users','Benutzer & Rollen','◎'],['audit','Aktivitäten','↺']]:[]),['account','Mein Konto','◇']];
   $('#admin-app').innerHTML=`<div class="admin-layout"><aside class="sidebar"><a href="/" class="admin-brand"><img src="/assets/wordmark-white.png" alt="Citypraxis"><span>PRAXISVERWALTUNG</span></a><nav aria-label="Verwaltung">${links.map(([key,label,symbol])=>`<button data-view="${key}" class="${key===view?'active':''}"><span aria-hidden="true">${symbol}</span>${label}${key==='requests'&&requests.filter(r=>r.status==='new').length?`<b>${requests.filter(r=>r.status==='new').length}</b>`:''}</button>`).join('')}</nav><a class="sidebar-site" href="/" target="_blank" rel="noopener">Website ansehen ↗</a><div class="admin-user"><span class="avatar">${esc(user.name.charAt(0))}</span><div><strong>${esc(user.name)}</strong><small>${esc(user.role)}</small></div><button id="logout" aria-label="Abmelden">↪</button></div></aside><main class="admin-main"><header class="admin-header"><div><span class="eyebrow">CITYPRAXIS · WIEN</span><h1 id="view-title"></h1></div>${I18n.toggle()}<span class="local-badge">Sichere Verwaltung</span></header><div id="workspace"></div></main></div>`;
   document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{view=b.dataset.view;shell();render().catch(e=>toast(e.message));});
   $('#logout').onclick=async()=>{try{await api('logout','POST',{});user=null;login();}catch(e){toast(e.message);}};
 }
 async function render(){
-  const title=labels[view]||{overview:'Guten Tag, '+user.name.split(' ')[0]+'.',hero:'Startbild & Video',requests:'Terminanfragen',media:'Mediathek',users:'Benutzer & Rollen',audit:'Aktivitäten',account:'Mein Konto'}[view];$('#view-title').textContent=title;
+  const title=labels[view]||{overview:'Guten Tag, '+user.name.split(' ')[0]+'.',hero:'Startbild & Video',requests:'Terminanfragen',social:'Social Media',media:'Mediathek',users:'Benutzer & Rollen',audit:'Aktivitäten',account:'Mein Konto'}[view];$('#view-title').textContent=title;
   const w=$('#workspace');
   if(view==='hero'){
     const h=content.pages.find(p=>p.id==='home');
@@ -113,6 +113,11 @@ async function render(){
       $('.toolbar p').textContent=I18n.language==='en'?`${records.length} / 3 reviews. Edit each review separately, or delete one to replace it. Drafts stay private until published.`:`${records.length} / 3 Bewertungen. Jede Bewertung ist einzeln bearbeitbar. Zum Ersetzen können Sie eine löschen. Entwürfe bleiben bis zur Veröffentlichung privat.`;
     }
     $('#new-content')?.addEventListener('click',()=>editContent(view));document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editContent(view,records.find(r=>r.id===b.dataset.edit)));
+  } else if(view==='social') {
+    const practice=(content.settings||[]).find(item=>item.id==='practice')||{};
+    w.innerHTML=`<div class="admin-panel social-page"><span class="eyebrow">SOCIAL MEDIA</span><h2>Instagram & Facebook</h2><p>Fügen Sie Ihre Profil-Links hinzu. Nach dem Speichern erscheinen die Symbole im Footer der Website.</p><form id="social-form">${fieldHtml(['socialLinks','Plattform und Profil-Link','social-list'],practice)}<div class="editor-actions"><button class="button" type="submit">Links speichern ↗</button></div><p class="editor-message" role="alert"></p></form></div>`;
+    wireSocialEditor(w.querySelector('[data-social-editor]'));
+    $('#social-form').onsubmit=async event=>{event.preventDefault();const form=event.currentTarget,button=$('button[type=submit]',form);button.disabled=true;try{const socialLinks=JSON.parse(form.elements.socialLinks.value||'[]');await api('admin/social-links','PUT',{socialLinks});await refresh();await render();toast('Social-Media-Links veröffentlicht.');}catch(error){$('.editor-message',form).textContent=error.message;button.disabled=false;}};
   } else if(view==='requests') {
     w.innerHTML=`<div class="toolbar"><p>Gespeicherte Anfragen sind noch keine bestätigten Termine.</p><label class="filter-label">Status<select id="request-filter"><option value="all">Alle Anfragen</option><option value="new">Neu</option><option value="contacted">Kontaktiert</option><option value="confirmed">Bestätigt</option><option value="closed">Abgeschlossen</option></select></label></div><div id="request-list"></div>`;
     const exportButton=document.createElement('button');exportButton.className='button button-outline';exportButton.type='button';exportButton.textContent=I18n.language==='en'?'Download CSV':'CSV herunterladen';exportButton.onclick=()=>exportRequestsCsv(requests);$('.toolbar',w).append(exportButton);
@@ -166,6 +171,14 @@ function fieldHtml([name,label,type='text',options],record){
 }
 function concernRow(item={},index=0){return `<div class="concern-editor-row" data-concern-row><span class="concern-order" aria-hidden="true">${String(index+1).padStart(2,'0')}</span><label>Deutsch<input data-concern-title value="${esc(item.title||'')}" maxlength="60" required></label><label>Englisch<input data-concern-title-en value="${esc(item.titleEn||'')}" maxlength="60" required></label><label class="check-label concern-custom"><input type="checkbox" data-concern-custom ${item.custom?'checked':''}> Freitext öffnen</label><button type="button" class="delete-entry remove-concern">Entfernen</button></div>`;}
 function socialRow(item={}){return `<div class="social-editor-row" data-social-row><label>Plattform<select data-social-platform><option value="instagram" ${item.platform==='instagram'?'selected':''}>Instagram</option><option value="facebook" ${item.platform==='facebook'?'selected':''}>Facebook</option></select></label><label>Profil-Link<input data-social-url type="url" value="${esc(item.url||'')}" placeholder="https://www.instagram.com/..." required></label><button type="button" class="delete-entry remove-social">Entfernen</button></div>`;}
+function wireSocialEditor(editor){
+  const rows=$('.social-editor-rows',editor),hidden=$('input[type=hidden]',editor),add=$('.add-social',editor);
+  const sync=()=>{hidden.value=JSON.stringify([...rows.querySelectorAll('[data-social-row]')].map(row=>({platform:$('[data-social-platform]',row).value,url:$('[data-social-url]',row).value.trim()})));add.disabled=rows.children.length>=2;};
+  const wire=row=>{row.querySelectorAll('input,select').forEach(input=>input.addEventListener('input',sync));$('.remove-social',row).onclick=()=>{row.remove();sync();};};
+  rows.querySelectorAll('[data-social-row]').forEach(wire);
+  add.onclick=()=>{if(rows.children.length>=2)return;const wrapper=document.createElement('div');wrapper.innerHTML=socialRow();const row=wrapper.firstElementChild;rows.append(row);wire(row);sync();$('[data-social-url]',row).focus();};
+  sync();
+}
 const protectedContent=(collection,id)=>collection==='settings'||(collection==='pages'&&['home','about'].includes(id));
 async function removeContent(collection,record){
   const name=I18n.language==='en'&&record.titleEn?record.titleEn:record.title;
@@ -215,15 +228,7 @@ function editContent(collection,record={}){
     rows.querySelectorAll('[data-concern-row]').forEach(wire);
     $('.add-concern',editor).onclick=()=>{const wrapper=document.createElement('div');wrapper.innerHTML=concernRow({},rows.children.length);const row=wrapper.firstElementChild;rows.append(row);wire(row);sync();$('[data-concern-title]',row).focus();};
   });
-  dialog.querySelectorAll('[data-social-editor]').forEach(editor=>{
-    const rows=$('.social-editor-rows',editor),hidden=$('input[type=hidden]',editor);
-    const add=$('.add-social',editor);
-    const sync=()=>{hidden.value=JSON.stringify([...rows.querySelectorAll('[data-social-row]')].map(row=>({platform:$('[data-social-platform]',row).value,url:$('[data-social-url]',row).value.trim()})));add.disabled=rows.children.length>=2;};
-    const wire=row=>{row.querySelectorAll('input,select').forEach(input=>input.addEventListener('input',sync));$('.remove-social',row).onclick=()=>{row.remove();sync();};};
-    rows.querySelectorAll('[data-social-row]').forEach(wire);
-    add.onclick=()=>{if(rows.children.length>=2)return;const wrapper=document.createElement('div');wrapper.innerHTML=socialRow();const row=wrapper.firstElementChild;rows.append(row);wire(row);sync();$('[data-social-url]',row).focus();};
-    sync();
-  });
+  dialog.querySelectorAll('[data-social-editor]').forEach(wireSocialEditor);
   dialog.querySelectorAll('[data-rating-picker]').forEach(picker=>{
     const input=$('input[type=hidden]',picker),buttons=[...picker.querySelectorAll('.rating-buttons button')];
     const update=value=>{input.value=value||'';buttons.forEach(button=>{const active=Number(button.dataset.rating)<=value;button.textContent=active?'★':'☆';button.setAttribute('aria-pressed',String(active));});};

@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {createConversationService,conversationFacts,composeReply,practiceHoursStatus} from '../src/chat/conversation.mjs';
+import {childrenService} from '../src/therapy-catalog.mjs';
 import {newSession} from '../src/chat/security.mjs';
 
 const answer=(changes={})=>({kind:'appointment',answer:'',booking_intent:'request',reason:null,availability:null,first_name:null,last_name:null,patient_status:null,...changes});
@@ -43,11 +44,32 @@ test('an affirmative appointment answer moves directly to the name',async()=>{
   const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{assert.match((await turn('Shoulder concern')).message,/Would you like us to prepare/);const accepted=await turn('yes please');assert.equal(calls,1);assert.equal(accepted.message,'Perfect, thank you.\n\nMay I have your first and last name, please?');}finally{process.env=previous;}
 });
+test('a refused contact detail is respected while supplied names and later details receive distinct acknowledgements',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let calls=0;
+  const service=createConversationService({getFacts:async()=>conversationFacts({}),fetcher:async(_,options)=>{
+    calls++;const input=JSON.parse(JSON.parse(options.body).input),raw=input.visitorMessage;
+    const value=raw.includes('shoulder')?answer({reason:'Shoulder concern',answer:'I see.'}):raw.includes('Michael Black')?answer({first_name:'Michael',last_name:'Black',answer:'Perfect, thank you.'}):raw.includes('price')?answer({kind:'practice_question',booking_intent:'unspecified',answer:'Our reception team can explain current prices.'}):answer({answer:'Perfect, thank you.'});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    await turn('I want an appointment');
+    assert.match((await turn('My shoulder hurts')).message,/first and last name/);
+    const named=await turn('Michael Black');assert.match(named.message,/Great, thank you, Michael Black\./);assert.match(named.message,/email address/);
+    const emailed=await turn('michael@example.test');assert.match(emailed.message,/Thank you, I have your email\./);assert.match(emailed.message,/phone number/);
+    const beforeRefusal=calls;
+    const refused=await turn('no I want to be notified via email thanx');assert.equal(calls,beforeRefusal);assert.match(refused.message,/need your full name, email address and phone number/);assert.doesNotMatch(refused.message,/phone number, including|contact you by email instead/i);
+    const price=await turn('What is the price?');assert.match(price.message,/explain current prices/);assert.doesNotMatch(price.message,/phone number, including/);
+    const accepted=await turn('My number is +43 699 12682157');assert.match(accepted.message,/Got it, thank you\./);assert.match(accepted.message,/days or times/);
+    assert.doesNotMatch(`${named.message}\n${emailed.message}\n${accepted.message}`,/Perfect, thank you/);
+  }finally{process.env=old;}
+});
 test('mixed questions retain concerns, ask before intake, respect a decline and preserve complete answers',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
-  const facts=conversationFacts({team:[{title:'Published Person',role:'Physiotherapist',specialties:'Jaw',fictional:false},{title:'Fictional Person',fictional:true}],symptoms:[{title:'Jaw',body:'Published jaw information'}],pages:[{id:'datenschutz',title:'Privacy',body:'Published privacy information'}]});
+  const facts=conversationFacts({services:[childrenService],team:[{title:'Published Person',role:'Physiotherapist',specialties:'Jaw',fictional:false},{title:'Fictional Person',fictional:true}],symptoms:[{title:'Jaw',body:'Published jaw information'}],pages:[{id:'datenschutz',title:'Privacy',body:'Published privacy information'}]});
   let value=answer({kind:'practice_question',booking_intent:'unspecified',reason:'Jaw concern',answer:'Thank you for telling us. '+('Published pricing information. '.repeat(18))});
-  const service=createConversationService({store:{save(){assert.fail('No submission expected');}},getFacts:async()=>facts,fetcher:async(_,options)=>{const payload=JSON.parse(options.body),input=JSON.parse(payload.input);assert.equal(input.publishedFacts.team.length,1);assert.equal(input.publishedFacts.specialisms[0].title,'Jaw');assert.equal(input.publishedFacts.informationPages[0].id,'datenschutz');return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};}});
+  const service=createConversationService({store:{save(){assert.fail('No submission expected');}},getFacts:async()=>facts,fetcher:async(_,options)=>{const payload=JSON.parse(options.body),input=JSON.parse(payload.input);assert.equal(input.publishedFacts.team.length,1);assert.equal(input.publishedFacts.services[0].title,"Children's health");assert.equal(input.publishedFacts.specialisms[0].title,'Jaw');assert.equal(input.publishedFacts.informationPages[0].id,'datenschutz');return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};}});
   const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{
     const invitation=await turn('My jaw hurts, what are the prices?');assert.ok(invitation.message.includes("Published pricing information."));assert.equal((invitation.message.match(/Published pricing information/g)||[]).length,1);assert.match(invitation.message,/Would you like us to prepare/);assert.doesNotMatch(invitation.message,/first and last name/);assert.ok(invitation.message.length<=700);assert.ok(composeReply('A long sentence. '.repeat(100),'May I have your name?').length<=700);assert.equal(composeReply('Perfect, thank you. Perfect, thank you. May I have your name?','May I have your name?'),'Perfect, thank you.\n\nMay I have your name?');

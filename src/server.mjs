@@ -109,6 +109,19 @@ export function createApp(db = openDatabase()) {
       if (path === '/api/logout' && req.method === 'POST') { db.prepare('DELETE FROM sessions WHERE token=?').run(hash(token)); res.setHeader('Set-Cookie','cp_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0'); return json(200,{ok:true}); }
       const owner = user.role === 'owner', editor = owner || user.role === 'editor', reception = owner || user.role === 'reception';
       if(path==='/api/admin/requests/notify'&&req.method==='POST'&&reception)return json(200,await chat.retryNotification(body.id));
+      if(path==='/api/admin/social-links'&&req.method==='PUT'&&editor){
+        let socialLinks;try{socialLinks=normalizeSocialLinks(body.socialLinks);}catch{return json(400,{error:'Bitte gültige Instagram- oder Facebook-Profillinks verwenden (https://).'});}
+        const row=db.prepare("SELECT draft,published FROM content WHERE collection='settings' AND id='practice'").get();
+        if(!row)return json(404,{error:'Praxisdaten fehlen.'});
+        const draft={...JSON.parse(row.draft),socialLinks},published={...JSON.parse(row.published||row.draft),socialLinks};
+        db.exec('BEGIN');
+        try{
+          db.prepare('INSERT INTO revisions(collection,entity_id,snapshot,actor) VALUES(?,?,?,?)').run('settings','practice',row.draft,user.email);
+          db.prepare("UPDATE content SET draft=?,published=?,updated_at=CURRENT_TIMESTAMP WHERE collection='settings' AND id='practice'").run(JSON.stringify(draft),JSON.stringify(published));
+          audit(user,'publish social links','settings/practice');db.exec('COMMIT');
+        }catch(error){db.exec('ROLLBACK');throw error;}
+        return json(200,{ok:true,socialLinks});
+      }
       if (path === '/api/admin/content' && req.method === 'GET' && editor) return json(200,contentSnapshot(db,true));
       const contentMatch = /^\/api\/admin\/content\/([a-z]+)\/([a-z0-9-]+)$/.exec(path);
       if (contentMatch && editor) {

@@ -36,10 +36,12 @@ p { font-size: 18px; line-height: 1.8; }
 .hero-quick-strip .quick-links>a:focus-visible{outline:2px solid #fff;outline-offset:5px;border-radius:8px}
 .hero-immersive:has(.hero-quick-strip) .hero-stage{min-height:max(560px,calc(100svh - 245px));padding-bottom:70px}
 @media(max-width:767px){.hero-quick-strip .quick-links{padding-block:22px;gap:18px 20px}.hero-quick-strip .quick-links>a{padding-block:5px}.hero-immersive:has(.hero-quick-strip) .hero-stage{min-height:620px;padding-bottom:48px}}
-.therapy-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
+.therapy-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 22px; }
 .therapy-card { display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; background: white; box-shadow: 0 8px 30px #22234405; }
 .therapy-card-media { width: 100%; aspect-ratio: 5 / 4; overflow: hidden; isolation: isolate; }
 .therapy-card-media > img { width: 100%; height: 100%; object-fit: cover; transform: translate3d(0,0,0) scale(1.001); transform-origin: 50% 50%; backface-visibility: hidden; will-change: transform; }
+.therapy-card-media--symbol{display:grid;place-items:center;background:linear-gradient(145deg,#e9f4f8,#f7f8fb)}
+.therapy-card-media--symbol > img{width:84px;height:84px;object-fit:contain}
 .therapy-card > .therapy-card-copy { padding: 26px 22px; flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .therapy-card h3 { font-size: 23px; }
 .therapy-card .text-link { margin-top: auto; font-size: 14px; gap: 12px; }

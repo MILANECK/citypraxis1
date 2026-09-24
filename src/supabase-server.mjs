@@ -142,6 +142,15 @@ export function createSupabaseApp() {
       if(path==='/api/logout'&&req.method==='POST'){try{await supabase.logout(user.accessToken);}catch{}res.setHeader('Set-Cookie','cp_access=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');return json(200,{ok:true});}
       const owner=user.role==='owner',editor=owner||user.role==='editor',reception=owner||user.role==='reception';
       if(path==='/api/admin/requests/notify'&&req.method==='POST'&&reception)return json(200,await chat.retryNotification(body.id));
+      if(path==='/api/admin/social-links'&&req.method==='PUT'&&editor){
+        let socialLinks;try{socialLinks=normalizeSocialLinks(body.socialLinks);}catch{return json(400,{error:'Bitte gültige Instagram- oder Facebook-Profillinks verwenden (https://).'});}
+        const row=(await supabase.rest('content','?collection=eq.settings&id=eq.practice&select=draft,published'))[0];
+        if(!row)return json(404,{error:'Praxisdaten fehlen.'});
+        await supabase.rest('revisions','',{method:'POST',body:{collection:'settings',entity_id:'practice',snapshot:row.draft,actor:user.id,actor_email:user.email}});
+        await supabase.rest('content','?collection=eq.settings&id=eq.practice',{method:'PATCH',body:{draft:{...row.draft,socialLinks},published:{...(row.published||row.draft),socialLinks},updated_at:new Date().toISOString()}});
+        publicContentCache=null;await audit(user,'publish social links','settings/practice');
+        return json(200,{ok:true,socialLinks});
+      }
       if(path==='/api/admin/content'&&req.method==='GET'&&editor)return json(200,snapshots(await supabase.rest('content','?select=collection,id,draft,published'),true));
       const match=/^\/api\/admin\/content\/([a-z]+)\/([a-z0-9-]+)$/.exec(path);
       if(match&&editor){

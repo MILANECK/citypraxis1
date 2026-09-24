@@ -66,6 +66,13 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     assert.equal((await call('admin/content/settings/practice','PUT',{data:{...practice,socialLinks:[{platform:'instagram',url:'https://evil.example/fake'}]},publish:true},editor)).status,400);
     assert.equal((await call('admin/content/settings/practice','PUT',{data:{...practice,socialLinks:[socialLinks[0],socialLinks[0]]},publish:true},editor)).status,400);
     assert.deepEqual((await call('content')).data.settings[0].socialLinks,socialLinks);
+    assert.equal((await call('admin/social-links','PUT',{socialLinks:[]},reception)).status,403);
+    assert.equal((await call('admin/social-links','PUT',{socialLinks:[{platform:'facebook',url:'https://evil.example/fake'}]},editor)).status,400);
+    assert.equal((await call('admin/content/settings/practice','PUT',{data:{...practice,title:'PRIVATE SETTINGS DRAFT'}},editor)).status,200);
+    assert.equal((await call('admin/social-links','PUT',{socialLinks:[socialLinks[0]]},editor)).status,200);
+    assert.deepEqual((await call('content')).data.settings[0].socialLinks,[socialLinks[0]]);
+    assert.equal((await call('content')).data.settings[0].title,practice.title);
+    assert.equal((await call('admin/content','GET',null,editor)).data.settings[0].title,'PRIVATE SETTINGS DRAFT');
     assert.equal((await call('requests','POST',{name:'Test',email:'invalid',consent:true})).status,400);
     assert.equal((await call('requests','POST',{name:'Test person',email:'patient@test.local',consent:true})).status,400);
     const request=await call('requests','POST',{name:'Test person',email:'patient@test.local',phone:'+4369912682157',consent:true,concern:'Andere Beschwerden',symptoms:'Kurze Beschreibung',preference:'Afternoon'});
@@ -107,5 +114,5 @@ test('staff authorization, draft isolation, revisions, request handling and sess
 });
 test('SQLite migrations are repeatable and published content survives reopen',()=>{
   const folder=mkdtempSync(join(tmpdir(),'citypraxis-test-')),file=join(folder,'test.sqlite');
-  try{let db=openDatabase(file);const total=contentSnapshot(db).services.length;db.prepare("UPDATE content SET draft=?,published=? WHERE collection='faqs' AND id='verordnung'").run('{"id":"verordnung","title":"Persistent"}','{"id":"verordnung","title":"Persistent"}');db.close();db=openDatabase(file);assert.equal(contentSnapshot(db).services.length,total);assert.equal(contentSnapshot(db).faqs.find(f=>f.id==='verordnung').title,'Persistent');db.close();}finally{rmSync(folder,{recursive:true,force:true});}
+  try{let db=openDatabase(file);const services=contentSnapshot(db).services,total=services.length;assert.equal(services.some(item=>item.id==='rueckenfit'),false);assert.doesNotMatch(services.find(item=>item.id==='physiotherapie').bodyEn,/Back fitness/);assert.equal(services.find(item=>item.id==='kindergesundheit').titleEn,"Children's health");assert.equal(services.find(item=>item.id==='logopaedie').titleEn,'Speech therapy');assert.equal(services.find(item=>item.id==='heilmassage').title,'Massage');db.prepare("UPDATE content SET draft=?,published=? WHERE collection='faqs' AND id='verordnung'").run('{"id":"verordnung","title":"Persistent"}','{"id":"verordnung","title":"Persistent"}');db.close();db=openDatabase(file);assert.equal(contentSnapshot(db).services.length,total);assert.equal(contentSnapshot(db).faqs.find(f=>f.id==='verordnung').title,'Persistent');db.close();}finally{rmSync(folder,{recursive:true,force:true});}
 });

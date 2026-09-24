@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { seed } from './seed.mjs';
+import {childrenService,refineTherapyRecord} from './therapy-catalog.mjs';
 import originalContent from './original-content.json' with {type:'json'};
 import { englishContent } from './english-content.mjs';
 import { importTherapistsSqlite } from './therapist-import.mjs';
@@ -164,6 +165,29 @@ export function openDatabase(file = process.env.DB_PATH || resolve('data/citypra
     try{
       db.exec("ALTER TABLE requests ADD COLUMN intake TEXT; ALTER TABLE requests ADD COLUMN submission_key TEXT; ALTER TABLE requests ADD COLUMN notification_status TEXT NOT NULL DEFAULT 'not_configured'; CREATE UNIQUE INDEX requests_submission_key_idx ON requests(submission_key); INSERT INTO migrations(version) VALUES(10);");
       db.exec('COMMIT');
+    }catch(error){db.exec('ROLLBACK');throw error;}
+  }
+  if(!db.prepare('SELECT version FROM migrations WHERE version=11').get()){
+    db.exec('BEGIN');
+    try{
+      const back=db.prepare("SELECT draft FROM content WHERE collection='services' AND id='rueckenfit'").get();
+      if(back){
+        db.prepare('INSERT INTO revisions(collection,entity_id,snapshot,actor) VALUES(?,?,?,?)').run('services','rueckenfit',back.draft,'therapy catalog update');
+        db.prepare("DELETE FROM content WHERE collection='services' AND id='rueckenfit'").run();
+      }
+      for(const id of ['physiotherapie','logopaedie','heilmassage']){
+        const row=db.prepare("SELECT draft,published FROM content WHERE collection='services' AND id=?").get(id);
+        if(!row)continue;
+        const change=value=>value?JSON.stringify(refineTherapyRecord(id,JSON.parse(value))):null;
+        const draft=change(row.draft),published=change(row.published);
+        if(draft!==row.draft||published!==row.published){
+          db.prepare('INSERT INTO revisions(collection,entity_id,snapshot,actor) VALUES(?,?,?,?)').run('services',id,row.draft,'therapy catalog update');
+          db.prepare("UPDATE content SET draft=?,published=? WHERE collection='services' AND id=?").run(draft,published,id);
+        }
+      }
+      const value=JSON.stringify(childrenService);
+      db.prepare("INSERT OR IGNORE INTO content(collection,id,draft,published) VALUES('services',?,?,?)").run(childrenService.id,value,value);
+      db.prepare('INSERT INTO migrations(version) VALUES(11)').run();db.exec('COMMIT');
     }catch(error){db.exec('ROLLBACK');throw error;}
   }
   return db;
