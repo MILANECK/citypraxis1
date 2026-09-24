@@ -24,7 +24,7 @@ p { font-size: 18px; line-height: 1.8; }
 .quick-links div > span { display: block; font-size: 13px; line-height: 1.6; margin-top: 3px; color: var(--muted); }
 .quick-links + .section { padding-top: 45px; }
 /* Trial: edge-to-edge matte glass navigation over the hero media. */
-.hero-quick-strip{position:relative;z-index:2;background:#344453;border-block:1px solid #ffffff30;box-shadow:inset 0 1px 0 #ffffff0d}
+.hero-quick-strip{position:relative;z-index:2;background:#344453;border-bottom:1px solid #ffffff30}
 @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.hero-quick-strip{background:#f6f4f126;-webkit-backdrop-filter:blur(22px) saturate(.65);backdrop-filter:blur(22px) saturate(.65)}}
 .hero-quick-strip .quick-links{padding-block:22px;gap:22px}
 .hero-quick-strip .quick-links>a{color:#fff;border-radius:0}
