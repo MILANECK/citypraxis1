@@ -12,6 +12,7 @@ ANSWER FIRST: Read the whole message and address EVERY allowed question, even wh
 BOUNDARIES: Only CityPraxis administrative topics. Never diagnose, interpret symptoms medically, recommend treatment/exercises/medicines, promise availability, change a therapist or claim a booking is confirmed. We have no calendar or medical records. The secretary arranges the FIRST appointment by phone or email after submission. A dedicated therapist is assigned after that first appointment. For a mixed medical and administrative question, politely decline only the medical part and answer the administrative parts. Mark kind medical in that case; answer must still contain only allowed administrative information. For unrelated-only messages use off_topic. For emergencies use emergency.
 INTAKE: Extract explicitly supplied information from the CURRENT message, including a self-reported concern alongside factual questions. Do not infer identity or symptoms. Preserve the person's meaning without medical interpretation. Use recentConversation to understand follow-ups and avoid repetition, but never re-extract old details as newly provided. booking_intent is request only for an explicit wish to request an appointment, or an affirmative answer to our invitation; defer for an explicit no/not yet/only information; otherwise unspecified. Mentioning symptoms alone is NOT agreement to proceed. After acknowledging a concern, the application politely offers an appointment request before collecting contacts. Respect a decline; remain available for questions.
 If a visitor declines to provide a contact detail, respect that choice. Full name, email and phone are required for the current appointment request process. Never promise that a different contact channel replaces a missing required detail. Do not repeat a declined request; answer other CityPraxis questions normally. The application tracks the declined field and suppresses its follow-up question until the visitor supplies it.
+Distinguish declining a CONTACT METHOD from declining to PROVIDE a detail. A visitor who already supplied an email address and says they do not want email notifications has expressed a phone-contact preference; do not claim that their email is missing or that you will not ask for it again.
 For a greeting, greet back and ask how you can help; a greeting is not off-topic. For an appointment request, warmly agree to prepare it; the application asks what the visitor would like help with. Never say you have booked or can guarantee an appointment.
 The application appends ONE question for the next missing field or the review step. Do not ask intake questions or invite booking in answer. Do not duplicate a sentence or restate a question in other words. A short stage answer such as a name or "flexible" is appointment information. The supplied practice-local time and published hours can tell you whether the practice is currently closed. Do not promise exactly when staff will reply. Return the required JSON only.`;
 
@@ -45,7 +46,7 @@ function absorbContact(raw,d){
 }
 function makeIntake(state,lang){
   const d=state.draft;
-  return {version:2,conversation_version:2,kind:'digital_reception',language:lang,first_name:d.first_name,last_name:d.last_name,email:d.email,phone:d.phone,request_type:'appointment_request',patient_status_claimed:d.patient_status||'unsure',preferred_contact:'either',description:d.reason,availability_notes:d.availability,consent:true,review_confirmed:true,consent_version:'digital-reception-ai-2026-09',summary_source:'ai',initial_message_raw:state.messages.find(m=>m.role==='visitor')?.text||'',transcript:state.messages.map(m=>({role:m.role,text:m.text}))};
+  return {version:2,conversation_version:2,kind:'digital_reception',language:lang,first_name:d.first_name,last_name:d.last_name,email:d.email,phone:d.phone,request_type:'appointment_request',patient_status_claimed:d.patient_status||'unsure',preferred_contact:d.preferred_contact||'either',description:d.reason,availability_notes:d.availability,consent:true,review_confirmed:true,consent_version:'digital-reception-ai-2026-09',summary_source:'ai',initial_message_raw:state.messages.find(m=>m.role==='visitor')?.text||'',transcript:state.messages.map(m=>({role:m.role,text:m.text}))};
 }
 const plain=(value,max=2500)=>String(value||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim().slice(0,max);
 export function practiceHoursStatus(settings={},date=new Date()){
@@ -68,6 +69,7 @@ function declinesContact(raw,stage){
   const alternative=stage==='phone'?/\b(?:email|e-?mail)\s+only\b|\b(?:only|just|prefer|rather|want(?: to be notified)?)\b.{0,35}\b(?:by|via|through|per)?\s*(?:email|e-?mail)\b|\b(?:nur|lieber)\s+(?:per\s+)?e-?mail\b/iu.test(raw):stage==='email'?/\b(?:phone|telephone|call)\s+only\b|\b(?:only|just|prefer|rather|want)\b.{0,35}\b(?:by|via|per)?\s*(?:phone|telephone|call)\b|\b(?:nur|lieber)\s+(?:per\s+)?telefon(?:isch)?\b/iu.test(raw):false;
   return bareNo||(refusal&&(target.test(raw)||pronoun))||alternative;
 }
+const prefersPhoneContact=raw=>/(?:don't|do not|won't|will not|rather not|prefer not|keine|nicht)\b.{0,50}(?:notif(?:y|ied|ication|ications)|contact|messages?|benachrichtig\w*|kontakt\w*)\b.{0,25}(?:by|via|per)?\s*(?:e-?mail)|(?:keine|nicht|no)\s+(?:e-?mail)[- ]?(?:notifications?|benachrichtig\w*)/iu.test(raw);
 const briefAcknowledgement=answer=>/^(?:(?:perfect|great|okay|ok|got it|sure|of course|perfekt|gut|verstanden)[,.!\s]*)?(?:(?:thank you|thanks|danke|vielen dank)[,.!\s]*)?$/iu.test(answer.trim());
 function contactAcknowledgement(stage,lang){
   return stage==='email'?localized(lang,'Danke, ich habe Ihre E-Mail-Adresse.','Thank you, I have your email.'):stage==='phone'?localized(lang,'Alles klar, danke.','Got it, thank you.'):stage==='availability'?localized(lang,'Danke, das hilft uns weiter.','Thank you, that helps.'):localized(lang,'Danke.','Thank you.');
@@ -160,10 +162,14 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const draft={...s.draft};
       absorbContact(raw,draft);
       let ai=null,answer='',kind='appointment';
-      const declined=declinesContact(raw,stage)&&!draft[stage==='name'?'first_name':stage];
+      const phoneContactPreference=stage==='phone'&&draft.email&&!draft.phone&&prefersPhoneContact(raw);
+      const declined=!phoneContactPreference&&declinesContact(raw,stage)&&!draft[stage==='name'?'first_name':stage];
       const simpleGreeting=/^(?:hello|hi|hey|good morning|good afternoon|good evening|hallo|guten tag|guten morgen|guten abend|servus|grüß gott)[.!\s]*$/iu.test(raw);
       const simpleAppointment=stage==='reason'&&/^(?:(?:i want|i need|i(?:'d| would) like|can i (?:book|make|request)|please (?:book|make)) (?:an? )?(?:appointment|booking)(?: (?:please|at (?:citypraxis|your (?:practice|praxis))))?|(?:ich möchte|ich brauche|ich hätte gerne|kann ich|bitte) (?:einen? )?(?:termin|ersttermin)(?: (?:bitte|vereinbaren|buchen))?)[.!\s]*$/iu.test(raw);
-      if(declined){
+      if(phoneContactPreference){
+        draft.preferred_contact='phone';
+        answer=localized(lang,'Verstanden. Ich notiere, dass Sie einen Anruf bevorzugen.','Understood. I’ll note that you prefer a phone call.');
+      }else if(declined){
         draft.refusedContact=stage;
         answer=localized(lang,'Das verstehe ich. Für eine Terminanfrage benötigen wir Ihren vollständigen Namen, Ihre E-Mail-Adresse und Ihre Telefonnummer. Sie können sich auch direkt an die Praxis wenden.','I understand. To submit an appointment request, we need your full name, email address and phone number. You can also contact the practice directly.');
       }else if(simpleGreeting){

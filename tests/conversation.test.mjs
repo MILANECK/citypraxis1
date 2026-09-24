@@ -49,7 +49,7 @@ test('a refused contact detail is respected while supplied names and later detai
   let calls=0;
   const service=createConversationService({getFacts:async()=>conversationFacts({}),fetcher:async(_,options)=>{
     calls++;const input=JSON.parse(JSON.parse(options.body).input),raw=input.visitorMessage;
-    const value=raw.includes('shoulder')?answer({reason:'Shoulder concern',answer:'I see.'}):raw.includes('Michael Black')?answer({first_name:'Michael',last_name:'Black',answer:'Perfect, thank you.'}):raw.includes('price')?answer({kind:'practice_question',booking_intent:'unspecified',answer:'Our reception team can explain current prices.'}):answer({answer:'Perfect, thank you.'});
+    const value=raw.includes('shoulder')?answer({reason:'Shoulder concern',answer:'I see.'}):raw.includes('Michael Black')?answer({first_name:'Michael',last_name:'Black',answer:'Perfect, thank you.'}):raw.includes('price')?answer({kind:'practice_question',booking_intent:'unspecified',answer:'Our reception team can explain current prices.'}):raw==='Afternoons'?answer({availability:'Afternoons'}):answer({answer:'Perfect, thank you.'});
     return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
   }});
   const token=newSession();const turn=async(message,session=token)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:session,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
@@ -66,7 +66,8 @@ test('a refused contact detail is respected while supplied names and later detai
     const another=newSession();await turn('I want an appointment',another);await turn('My shoulder hurts',another);await turn('Michael Black',another);
     const noEmail=await turn("I don't want to share my email",another);assert.match(noEmail.message,/need your full name, email address and phone number/);assert.doesNotMatch(noEmail.message,/Which email address/);
     const phonePreference=newSession();await turn('I want an appointment',phonePreference);await turn('My shoulder hurts',phonePreference);await turn('Michael Black',phonePreference);await turn('michael@example.test',phonePreference);
-    const noEmailContact=await turn("I don't want notifications by email",phonePreference);assert.doesNotMatch(noEmailContact.message,/need your full name, email address and phone number/);assert.match(noEmailContact.message,/phone number, including/);
+    const noEmailContact=await turn("I don't want notifications by email",phonePreference);assert.match(noEmailContact.message,/prefer a phone call/);assert.doesNotMatch(noEmailContact.message,/need your full name, email address and phone number|won't ask you to provide an email/);assert.match(noEmailContact.message,/phone number, including/);
+    await turn('+43 699 12682157',phonePreference);const review=await turn('Afternoons',phonePreference);assert.equal(review.ready,true);assert.deepEqual(review.summary.find(([key])=>key==='Preferred contact'),['Preferred contact','Phone']);
   }finally{process.env=old;}
 });
 test('mixed questions retain concerns, ask before intake, respect a decline and preserve complete answers',async()=>{
