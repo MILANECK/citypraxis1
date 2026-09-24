@@ -11,8 +11,8 @@
 .team-directory .team-portrait{overflow:hidden}
 .team-profile-link .team-photo{object-position:center 22%;transform-origin:50% 28%;transition:transform .68s cubic-bezier(.22,1,.36,1),filter .45s ease}
 @media(hover:hover) and (pointer:fine){.team-profile-link:hover .team-photo{transform:scale(1.035);filter:brightness(1.025)}}
-.team-directory .team-person.team-reveal{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1);transition-delay:var(--team-delay,0ms)}
-.team-directory .team-person.team-reveal.is-visible{opacity:1;transform:translateY(0)}
+.team-directory .team-person.team-reveal{opacity:0;transform:translate3d(0,36px,0);transition:opacity 1.15s ease-in-out,transform 1.25s cubic-bezier(.2,.7,.2,1);transition-delay:var(--team-delay,0ms);backface-visibility:hidden}
+.team-directory .team-person.team-reveal.is-visible{opacity:1;transform:translate3d(0,0,0)}
 .team-profile-link:hover .team-profile-prompt{color:var(--pink)}
 .therapist-profile{padding-block:30px 88px}
 .profile-breadcrumb{display:flex;align-items:center;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-bottom:30px}

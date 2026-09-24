@@ -76,12 +76,13 @@ try{
   const team=page.locator('.team-directory .team-person').first();
   await team.scrollIntoViewIfNeeded();
   await team.waitFor({state:'visible'});
+  assert.equal(await team.evaluate(el=>getComputedStyle(el).transitionDuration),'1.15s, 1.25s');
   const teamStagger=await page.locator('.team-directory .team-person').evaluateAll(cards=>{
     const columns=getComputedStyle(cards[0].parentElement).gridTemplateColumns.split(' ').filter(Boolean).length;
     return cards.filter((_,index)=>(index+1)%columns===0).map(card=>card.style.getPropertyValue('--team-delay'));
   });
   assert.ok(teamStagger.length>0&&teamStagger.every(delay=>parseInt(delay,10)>0));
-  await page.waitForTimeout(850);
+  await page.waitForTimeout(1500);
   assert.equal(await team.evaluate(el=>el.classList.contains('is-visible')),true);
   await team.hover();
   assert.notEqual(await team.locator('.team-photo').evaluate(el=>getComputedStyle(el).transform),'none');

@@ -226,7 +226,8 @@ function bind() {
       },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
       const teamGrid=teamCards[0].parentElement;
       const columns=getComputedStyle(teamGrid).gridTemplateColumns.split(' ').filter(Boolean).length||1;
-      teamCards.forEach((card,index)=>{card.classList.add('team-reveal');card.style.setProperty('--team-delay',`${(index%columns)*95}ms`);teamObserver.observe(card);});
+      teamCards.forEach((card,index)=>{card.classList.add('team-reveal');card.style.setProperty('--team-delay',`${(index%columns)*140}ms`);});
+      requestAnimationFrame(()=>requestAnimationFrame(()=>teamCards.forEach(card=>teamObserver.observe(card))));
     }
     document.querySelectorAll('.process-grid').forEach(grid=>{
       grid.classList.add('process-sequence-ready');
