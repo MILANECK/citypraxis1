@@ -29,7 +29,13 @@ try{
     await page.locator('.conversation-start button').click();assert.equal(sessions,0);
     await page.locator('.conversation-start input').check();await page.locator('.conversation-start button').click();
     await page.locator('#conversation-input').fill('Synthetic test only, Test Visitor, test@example.test, +43 699 12682157, flexible');
-    await page.locator('.conversation-compose button').click();if(!mobile){await page.locator('.is-typing').waitFor();await page.waitForFunction(()=>Boolean(document.querySelector('.is-typing [aria-hidden]')?.textContent));}await page.locator('.conversation-review').waitFor();
+    await page.locator('.conversation-compose button').click();
+    if(!mobile){
+      await page.locator('.is-typing').waitFor();
+      assert.equal(await page.locator('.is-typing .sr-only').evaluate(el=>{const style=getComputedStyle(el);return style.position==='absolute'&&style.clip==='rect(0px, 0px, 0px, 0px)'&&el.getBoundingClientRect().width===1;}),true,'Screen-reader copy must not appear beside the animated reply');
+    }
+    await page.locator('.conversation-review').waitFor();
+    assert.equal(await page.locator('.conversation-message.from-assistant p').last().textContent(),lang==='en'?'Please review your details.':'Bitte prüfen Sie Ihre Angaben.','Completed reply must contain the answer exactly once');
     assert.equal(submitted,0);await page.locator('[data-edit=email]').click();await page.locator('#conversation-input').fill('test@example.test');await page.locator('.conversation-compose button').click();await page.locator('.conversation-review').waitFor();
     const bounds=await page.locator('.chat-window').boundingBox();assert.ok(bounds.x>=0&&bounds.x+bounds.width<=(mobile?390:1440));assert.ok(bounds.y>=0);
     assert.equal(await page.locator('.chat-scroll').evaluate(el=>el.scrollWidth<=el.clientWidth),true);

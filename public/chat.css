@@ -81,6 +81,6 @@
 @media(max-height:740px){.conversation-preview .conversation-thread{margin-bottom:12px}.conversation-unlock{padding-top:0}}
 
 .chat-window:has(.conversation-preview){height:min(470px,calc(100dvh - 115px));transition:height .38s cubic-bezier(.22,1,.36,1),transform .38s cubic-bezier(.22,1,.36,1),opacity .28s ease,visibility .38s}
-#cp-chat .conversation-preview .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+#cp-chat .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 @media(max-width:767px){.chat-window:has(.conversation-preview){height:min(480px,calc(100dvh - 168px - env(safe-area-inset-bottom)))}}
 @media(max-height:600px){.chat-window:has(.conversation-preview){height:calc(100dvh - 24px)}}

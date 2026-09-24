@@ -43,6 +43,7 @@ async function revealReply(){
     }
     requestAnimationFrame(frame);
   });
+  paragraph.replaceChildren(document.createTextNode(full));
   paragraph.classList.remove('is-typing');controls.forEach(button=>button.disabled=false);
   if(review){review.hidden=false;scrollEnd();}
 }
