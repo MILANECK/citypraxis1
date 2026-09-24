@@ -312,7 +312,24 @@ function bind() {
     };
     concernOptions.forEach(option=>option.addEventListener('change',()=>toggleCustomSymptoms([...concernOptions].some(input=>input.checked&&input.dataset.other==='true'))));
   }
-  $('#booking-form')?.addEventListener('submit',async e=>{
+  const bookingForm=$('#booking-form');
+  if(bookingForm){
+    const nameInput=bookingForm.elements.namedItem('name');
+    const folder=document.createElement('div');
+    folder.className='booking-folder';
+    folder.setAttribute('aria-hidden','true');
+    folder.innerHTML='<span class="booking-folder-label">NAME</span><strong class="booking-folder-name"></strong>';
+    bookingForm.prepend(folder);
+    const updateFolder=()=>{
+      const name=nameInput.value.trim();
+      $('.booking-folder-name',folder).textContent=name;
+      folder.classList.toggle('is-visible',Boolean(name));
+    };
+    nameInput.addEventListener('input',updateFolder);
+    nameInput.addEventListener('change',updateFolder);
+    updateFolder();
+  }
+  bookingForm?.addEventListener('submit',async e=>{
     e.preventDefault();const form=e.currentTarget,button=$('button[type=submit]',form),message=$('.form-message',form),fields=new FormData(form);form.dataset.submissionKey||=crypto.randomUUID();button.disabled=true;message.textContent=I18n.language==='en'?'Saving your request…':'Anfrage wird gespeichert …';
     try{const response=await fetch('/api/requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...Object.fromEntries(fields),concerns:fields.getAll('concern'),language:I18n.language,submissionKey:form.dataset.submissionKey,acute:fields.has('acute'),consent:fields.has('consent')})});const result=await response.json();if(!response.ok)throw new Error(result.error);form.innerHTML=`<div class="success-mark">✓</div><h2>${I18n.language==='en'?'Thank you':'Vielen Dank'}, ${esc(fields.get('name'))}.</h2><p>${esc(result.message)}</p><a class="button" href="/">${I18n.language==='en'?'Back to home':'Zur Startseite'} ↗︎</a>`;import('/confirmation.js').then(({enhanceConfirmation})=>enhanceConfirmation(form)).catch(()=>{});}catch(error){message.textContent=error.message;button.disabled=false;}
   });
