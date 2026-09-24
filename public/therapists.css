@@ -8,8 +8,11 @@
 .team-directory .team-person h3{font-size:17px;line-height:1.4;margin-bottom:8px;overflow-wrap:normal;hyphens:auto}
 .team-directory .team-role{font-size:13px;line-height:1.6;margin:0 0 18px}
 .team-profile-prompt{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--blue);font-size:12px;margin-top:auto}
-.team-profile-link .team-photo{object-position:center 22%;transition:filter .3s ease}
-.team-profile-link:hover .team-photo{filter:brightness(1.035)}
+.team-directory .team-portrait{overflow:hidden}
+.team-profile-link .team-photo{object-position:center 22%;transform-origin:50% 28%;transition:transform .68s cubic-bezier(.22,1,.36,1),filter .45s ease}
+@media(hover:hover) and (pointer:fine){.team-profile-link:hover .team-photo{transform:scale(1.035);filter:brightness(1.025)}}
+.team-directory .team-person.team-reveal{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1);transition-delay:var(--team-delay,0ms)}
+.team-directory .team-person.team-reveal.is-visible{opacity:1;transform:translateY(0)}
 .team-profile-link:hover .team-profile-prompt{color:var(--pink)}
 .therapist-profile{padding-block:30px 88px}
 .profile-breadcrumb{display:flex;align-items:center;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-bottom:30px}
@@ -55,4 +58,4 @@
 @media(max-width:700px){.therapist-hero,.therapist-details{grid-template-columns:1fr}.therapist-photo-frame{max-width:360px}.therapist-photo-frame>img{aspect-ratio:1;object-position:center 18%}.therapist-intro h1{font-size:36px}.therapist-details{margin-top:36px;gap:20px}.therapist-profile-end .button{width:100%}.therapist-profile{padding-bottom:56px}.profile-breadcrumb{font-size:12px;gap:8px}}
 @media(max-width:600px){.team-directory .team-profiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.team-directory .team-card-copy{padding:16px 12px}.team-directory .team-person h3{font-size:16px}.team-directory .team-role{font-size:12px}.therapist-choice{gap:10px}.therapist-choice-portrait{flex-basis:52px;width:52px;height:66px}}
 @media(max-width:360px){.team-directory .team-profiles{grid-template-columns:minmax(0,230px);justify-content:center}}
-@media(prefers-reduced-motion:reduce){.team-profile-link .team-photo{transition:none}}
+@media(prefers-reduced-motion:reduce){.team-profile-link .team-photo{transition:none}.team-directory .team-person.team-reveal{opacity:1;transform:none;transition:none}}

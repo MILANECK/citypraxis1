@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, unlink } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 import { randomBytes, createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
@@ -10,6 +10,7 @@ import { openDatabase, contentSnapshot, collections, passwordHash, verifyPasswor
 import { hasSupabaseConfig } from './supabase-client.mjs';
 import { createSupabaseApp } from './supabase-server.mjs';
 import { normalizeSocialLinks } from './social-links.mjs';
+import { mediaInUse,mediaDownloadName } from './media-library.mjs';
 import {createAppointmentService} from './appointment-service.mjs';
 import {createConversationService,conversationFacts} from './chat/conversation.mjs';
 import {createChatService} from './chat/service.mjs';
@@ -195,6 +196,25 @@ export function createApp(db = openDatabase()) {
           const id = randomBytes(12).toString('hex'), path = `/uploads/${id}.${type}`;
           await mkdir(resolve(root,'uploads'),{recursive:true}); await writeFile(resolve(root,`.${path}`),bytes);
           db.prepare('INSERT INTO media(id,path,name,alt) VALUES(?,?,?,?)').run(id,path,clean(body.name),clean(body.alt,300)); audit(user,'upload image',id); return json(201,{path});
+        }
+      }
+      const mediaAction=/^\/api\/admin\/media\/([a-zA-Z0-9-]+)(?:\/(download))?$/.exec(path);
+      if(mediaAction && editor){
+        const media=db.prepare('SELECT * FROM media WHERE id=?').get(mediaAction[1]);
+        if(!media)return json(404,{error:'Datei nicht gefunden.'});
+        if(mediaAction[2]==='download'&&req.method==='GET'){
+          if(!/^\/(assets|uploads)\/[a-zA-Z0-9._-]+$/.test(media.path))return json(400,{error:'Ungültiger Medienpfad.'});
+          const file=resolve(root,`.${media.path}`),bytes=await readFile(file);
+          res.writeHead(200,{'Content-Type':mime[extname(file)]||'application/octet-stream','Content-Disposition':`attachment; filename="${mediaDownloadName(media)}"`,'Content-Length':bytes.length,'Cache-Control':'no-store'});
+          return res.end(bytes);
+        }
+        if(!mediaAction[2]&&req.method==='DELETE'){
+          const rows=db.prepare('SELECT draft,published FROM content').all();
+          if(mediaInUse(media.path,rows))return json(409,{error:'Dieses Medium wird noch auf der Website oder in einem Entwurf verwendet.'});
+          if(/^\/uploads\/[a-zA-Z0-9._-]+$/.test(media.path)){
+            try{await unlink(resolve(root,`.${media.path}`));}catch(error){if(error.code!=='ENOENT')throw error;}
+          }
+          db.prepare('DELETE FROM media WHERE id=?').run(media.id);audit(user,'delete media',media.id);return json(200,{ok:true});
         }
       }
       return json(403,{error:'Diese Aktion ist für Ihr Konto nicht verfügbar.'});

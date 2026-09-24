@@ -8,6 +8,7 @@ import { collections } from './database.mjs';
 import { createSupabaseClient } from './supabase-client.mjs';
 import {createAppointmentService} from './appointment-service.mjs';
 import {normalizeSocialLinks} from './social-links.mjs';
+import {mediaInUse,mediaDownloadName} from './media-library.mjs';
 import {createConversationService,conversationFacts} from './chat/conversation.mjs';
 import {createChatService} from './chat/service.mjs';
 import {supabaseChatStore} from './chat/store.mjs';
@@ -177,6 +178,28 @@ export function createSupabaseApp() {
       if(path==='/api/admin/media'&&editor){
         if(req.method==='GET')return json(200,await supabase.rest('media','?select=*&order=created_at.desc'));
         if(req.method==='POST'){const image=/^data:image\/(png|jpeg|webp);base64,([a-zA-Z0-9+/=]+)$/.exec(body.data||'');if(!image||!clean(body.alt))return json(400,{error:'PNG, JPEG oder WebP mit Alternativtext erforderlich.'});const bytes=Buffer.from(image[2],'base64'),type=`image/${image[1]}`,extension=mediaType(bytes,type);if(!extension||bytes.length>2_500_000)return json(400,{error:'Ungültiges Bild oder größer als 2,5 MB.'});const id=randomBytes(12).toString('hex'),storagePath=`uploads/${id}.${extension}`,mediaPath=await supabase.upload(storagePath,bytes,type);await supabase.rest('media','',{method:'POST',body:{id,path:mediaPath,storage_path:storagePath,name:clean(body.name),alt:clean(body.alt,300),mime_type:type,created_by:user.id}});await audit(user,'upload image',id);return json(201,{path:mediaPath});}
+      }
+      const mediaAction=/^\/api\/admin\/media\/([a-zA-Z0-9-]+)(?:\/(download))?$/.exec(path);
+      if(mediaAction&&editor){
+        const media=(await supabase.rest('media',`?id=${filter(mediaAction[1])}&select=*`))[0];
+        if(!media)return json(404,{error:'Datei nicht gefunden.'});
+        if(mediaAction[2]==='download'&&req.method==='GET'){
+          let bytes;
+          if(media.storage_path&&/^uploads\/[a-zA-Z0-9._-]+$/.test(media.storage_path))bytes=await supabase.download(media.storage_path);
+          else if(/^\/assets\/[a-zA-Z0-9._-]+$/.test(media.path))bytes=await readFile(resolve(root,`.${media.path}`));
+          else return json(400,{error:'Ungültiger Medienpfad.'});
+          res.writeHead(200,{'Content-Type':media.mime_type||mime[extname(media.path)]||'application/octet-stream','Content-Disposition':`attachment; filename="${mediaDownloadName(media)}"`,'Content-Length':bytes.length,'Cache-Control':'no-store'});
+          return res.end(bytes);
+        }
+        if(!mediaAction[2]&&req.method==='DELETE'){
+          const rows=await supabase.rest('content','?select=draft,published');
+          if(mediaInUse(media.path,rows))return json(409,{error:'Dieses Medium wird noch auf der Website oder in einem Entwurf verwendet.'});
+          if(media.storage_path){
+            if(!/^uploads\/[a-zA-Z0-9._-]+$/.test(media.storage_path))return json(400,{error:'Ungültiger Speicherpfad.'});
+            await supabase.remove(media.storage_path);
+          }
+          await supabase.rest('media',`?id=${filter(media.id)}`,{method:'DELETE'});await audit(user,'delete media',media.id);return json(200,{ok:true});
+        }
       }
       return json(403,{error:'Diese Aktion ist für Ihr Konto nicht verfügbar.'});
     }catch(error){if(!error.status||error.status>=500)console.error(error);if(!res.headersSent)json(error.status&&error.status<500?error.status:500,{error:error.status&&error.status<500?'Supabase-Anfrage konnte nicht verarbeitet werden.':'Ein Fehler ist aufgetreten. Bitte erneut versuchen.'});}

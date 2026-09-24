@@ -24,3 +24,31 @@
 .request-notes{white-space:pre-line}
 .chat-handoff{border-top:1px solid var(--line);padding-top:20px;margin-top:18px}.chat-handoff>p{font-size:13px;color:var(--muted)}.chat-handoff dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 25px;margin:20px 0}.chat-handoff dt{font-size:11px;color:var(--muted)}.chat-handoff dd{margin:3px 0 0;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}.chat-handoff details{margin:20px 0}.chat-handoff summary{cursor:pointer;color:var(--blue);font-size:13px}.chat-handoff pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;background:#f6f4f1;padding:12px;border-radius:10px}@media(max-width:600px){.chat-handoff dl{grid-template-columns:1fr}}
 .social-list-field{grid-column:1/-1;margin:0;padding:22px;border:1px solid #d9e3e1;border-radius:18px;background:#f7faf9}.social-list-field legend{padding:0 8px;font-weight:700;color:#222344}.social-list-field>p{margin:0 0 16px;color:#66706f;font-size:13px}.social-editor-rows{display:grid;gap:10px;margin-bottom:14px}.social-editor-row{display:grid;grid-template-columns:minmax(140px,.45fr) minmax(220px,1fr) auto;align-items:end;gap:10px;padding:12px;background:#fff;border:1px solid #e2e9e7;border-radius:13px}.social-editor-row label{margin:0}.social-editor-row .delete-entry{align-self:end}@media(max-width:700px){.social-editor-row{grid-template-columns:1fr}.social-editor-row .delete-entry{justify-self:start}}
+
+/* Compact media library and expandable reception queue. */
+.media-grid{grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:13px}
+.media-grid .media-card{min-width:0;margin:0;padding:15px;border-radius:17px}
+.media-thumb{display:grid;place-items:center;height:116px;margin-bottom:11px;border-radius:12px;background:#f2f5f6;overflow:hidden}
+.media-grid .media-thumb img,.media-grid .media-thumb video{display:block;width:100%;height:100%;margin:0;object-fit:contain;background:transparent;border-radius:0}
+.media-grid .media-card h3{margin:0 0 6px;font-size:14px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.media-grid .media-card p{margin:0 0 14px;min-height:36px;font-size:11px;line-height:1.55;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.media-card-actions{display:flex;gap:7px;align-items:center;margin-top:auto}
+.media-card-actions .button,.media-card-actions .delete-entry{min-height:35px;padding:8px 9px;font-size:11px;white-space:nowrap}
+.media-card-actions .button{flex:1;text-align:center}
+#request-list{display:grid;gap:9px}
+.request-disclosure{padding:0;margin:0;border-radius:15px;overflow:clip}
+.request-disclosure>summary{display:grid;grid-template-columns:95px 160px minmax(140px,1fr) 180px 20px;align-items:center;gap:14px;min-height:66px;padding:15px 21px;list-style:none;cursor:pointer;transition:background .28s ease,color .28s ease}
+.request-disclosure>summary::-webkit-details-marker{display:none}
+.request-disclosure>summary:hover,.request-disclosure[open]>summary{background:#f1f7f9}
+.request-disclosure>summary:focus-visible{outline:2px solid var(--blue);outline-offset:-4px}
+.request-disclosure>summary>*{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.request-number{font-weight:700;color:var(--blue);font-size:12px}
+.request-disclosure time,.request-source{font-size:12px;color:var(--muted)}
+.request-disclosure>summary strong{font-size:14px;font-weight:600}
+.request-disclosure .request-toggle{font-size:20px;line-height:1;color:var(--blue);text-align:center;transition:transform .38s cubic-bezier(.22,1,.36,1)}
+.request-disclosure[open] .request-toggle{transform:rotate(180deg)}
+.request-detail{padding:20px 22px 24px;border-top:1px solid #e5edef}
+.request-contact{margin:0 0 18px;font-size:13px}
+@media(max-width:1100px){.request-disclosure>summary{grid-template-columns:72px 135px minmax(110px,1fr) 140px 18px;gap:9px}}
+@media(max-width:700px){.request-disclosure>summary{grid-template-columns:72px minmax(0,1fr) 20px;gap:5px 10px;padding:13px 15px}.request-disclosure>summary strong{grid-column:2;grid-row:1}.request-disclosure>summary time{grid-column:1/3;grid-row:2}.request-disclosure>summary .request-source{grid-column:2;grid-row:2;text-align:right}.request-disclosure>summary .request-toggle{grid-column:3;grid-row:1/3}.request-detail{padding:16px}}
+@media(prefers-reduced-motion:reduce){.request-disclosure>summary,.request-disclosure .request-toggle{transition:none}}

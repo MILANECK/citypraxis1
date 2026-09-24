@@ -86,5 +86,13 @@ export function createSupabaseClient() {
       });
       return `${url}/storage/v1/object/public/${encodeURIComponent(bucket)}/${storagePath.split('/').map(encodeURIComponent).join('/')}`;
     },
+    async download(storagePath) {
+      const response=await fetch(`${url}/storage/v1/object/${encodeURIComponent(bucket)}/${storagePath.split('/').map(encodeURIComponent).join('/')}`,{headers:serviceHeaders});
+      if(!response.ok)throw Object.assign(new Error('Storage download failed'),{status:response.status});
+      return Buffer.from(await response.arrayBuffer());
+    },
+    remove(storagePath) {
+      return request(`/storage/v1/object/${encodeURIComponent(bucket)}`,{method:'DELETE',body:{prefixes:[storagePath]}});
+    },
   };
 }

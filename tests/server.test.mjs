@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { openDatabase,passwordHash,contentSnapshot } from '../src/database.mjs';
 import { createApp } from '../src/server.mjs';
-import { mkdtempSync,rmSync,readFileSync,unlinkSync } from 'node:fs';
+import { mkdtempSync,rmSync,readFileSync,unlinkSync,existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join,resolve,sep } from 'node:path';
 
@@ -78,7 +78,20 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     assert.equal((await call('admin/media','POST',{data:'data:image/png;base64,YmFk',alt:'fake'},owner)).status,400);
     const uploaded=await fetch(origin+'/api/admin/media-upload?name=qa-logo.png&alt=QA%20logo',{method:'POST',headers:{Origin:origin,'Content-Type':'image/png',Cookie:editor.cookie,'X-CSRF-Token':editor.csrf},body:readFileSync('public/assets/wordmark-white.png')});
     assert.equal(uploaded.status,201);const uploadedMedia=await uploaded.json();const uploadedFile=resolve('public','.'+uploadedMedia.path);assert.ok(uploadedFile.startsWith(resolve('public/uploads')+sep));
-    try{assert.equal((await fetch(origin+uploadedMedia.path)).status,200);assert.ok((await call('admin/media','GET',null,editor)).data.some(m=>m.path===uploadedMedia.path));}finally{unlinkSync(uploadedFile);}
+    try{
+      assert.equal((await fetch(origin+uploadedMedia.path)).status,200);
+      const media=(await call('admin/media','GET',null,editor)).data.find(m=>m.path===uploadedMedia.path);assert.ok(media);
+      assert.equal((await fetch(origin+`/api/admin/media/${media.id}/download`)).status,401);
+      const download=await fetch(origin+`/api/admin/media/${media.id}/download`,{headers:{Cookie:editor.cookie}});
+      assert.equal(download.status,200);assert.match(download.headers.get('content-disposition'),/attachment/);
+      assert.deepEqual(Buffer.from(await download.arrayBuffer()),readFileSync('public/assets/wordmark-white.png'));
+      assert.equal((await call(`admin/content/team/media-check`,'PUT',{data:{title:'Media check',image:uploadedMedia.path},publish:true},editor)).status,200);
+      assert.equal((await call(`admin/media/${media.id}`,'DELETE',{},editor)).status,409);
+      assert.equal((await call('admin/content/team/media-check','DELETE',{},editor)).status,200);
+      assert.equal((await call(`admin/media/${media.id}`,'DELETE',{},editor)).status,200);
+      assert.equal(existsSync(uploadedFile),false);
+      assert.equal((await call('admin/media','GET',null,editor)).data.some(m=>m.id===media.id),false);
+    }finally{if(existsSync(uploadedFile))unlinkSync(uploadedFile);}
     assert.equal((await call('admin/users','PUT',{id:1,active:false},owner)).status,400);
     assert.equal((await call('logout','POST',{},owner)).status,200);
     assert.equal((await call('me','GET',null,owner)).status,401);

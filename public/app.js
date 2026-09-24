@@ -50,7 +50,7 @@ function socialLinksMarkup(settings){
 function footer() {
   const s = data.settings[0];
   const c=privacyCopy();
-  return `<footer><div class="container footer-top"><div><img class="footer-logo" src="/assets/wordmark-black.png" alt="Citypraxis" width="250" height="34"><img class="footer-symbol" src="/assets/logo-symbol.png" alt="" width="38" height="49"><p>Gemeinsam weiterkommen.<br>Mitten in Wien.</p>${socialLinksMarkup(s)}</div><div><h3>Besuchen Sie uns</h3><p>${esc(s.address)}<br>${esc(s.city)}</p><a href="https://www.google.com/maps/search/?api=1&query=Stubenbastei+12+1010+Wien" target="_blank" rel="noopener">Route planen ↗︎</a></div><div><h3>Wir sind für Sie da</h3><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><p>${esc(s.hours)}<br>${esc(s.saturdayHours?I18n.translate('Samstag')+' '+s.saturdayHours:s.saturday)}</p></div><div><h3>Gut zu wissen</h3><a href="/ablauf-wahltherapie">Ablauf & Wahltherapie</a><a href="/leistungen">Unsere Leistungen</a><p>${esc(s.payment)}</p></div></div><div class="container footer-bottom"><span>© ${new Date().getFullYear()} Citypraxis Wien</span><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><button class="cookie-settings-link" type="button">${c.settings}</button><a href="/admin">Praxis-Login ↗︎</a></div></div></footer><div class="mobile-booking"><a href="tel:${esc(s.phone.replaceAll(' ',''))}">Anrufen</a><a class="button" href="/termin">Ersttermin buchen ${arrow}</a></div>`;
+  return `<footer><div class="container footer-top"><div><img class="footer-logo" src="/assets/wordmark-black.png" alt="Citypraxis" width="250" height="34"><img class="footer-symbol" src="/assets/logo-symbol.png" alt="" width="38" height="49"><p>Gemeinsam weiterkommen.<br>Mitten in Wien.</p>${socialLinksMarkup(s)}</div><div><h3>Besuchen Sie uns</h3><p>${esc(s.address)}<br>${esc(s.city)}</p><a href="https://www.google.com/maps/search/?api=1&query=Stubenbastei+12+1010+Wien" target="_blank" rel="noopener">Route planen ↗︎</a></div><div><h3>Wir sind für Sie da</h3><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><p><strong>${I18n.language==='en'?'Opening hours':'Öffnungszeiten'}</strong><br>${esc(s.hours)}</p></div><div><h3>Gut zu wissen</h3><a href="/ablauf-wahltherapie">Ablauf & Wahltherapie</a><a href="/leistungen">Unsere Leistungen</a><p>${esc(s.payment)}</p></div></div><div class="container footer-bottom"><span>© ${new Date().getFullYear()} Citypraxis Wien</span><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><button class="cookie-settings-link" type="button">${c.settings}</button><a href="/admin">Praxis-Login ↗︎</a></div></div></footer><div class="mobile-booking"><a href="tel:${esc(s.phone.replaceAll(' ',''))}">Anrufen</a><a class="button" href="/termin">Ersttermin buchen ${arrow}</a></div>`;
 }
 function processBlock() {
   const steps = [['Verordnung','Klären Sie die ärztliche Verordnung vor Ihrem ersten Termin.'],['Behandlung','Wir hören zu, untersuchen und planen gemeinsam Ihre Therapie.'],['Bezahlung','Sie bezahlen vor Ort und erhalten Ihre Rechnung.'],['Rückerstattung','Reichen Sie die Unterlagen bei Ihrer Versicherung ein.']];
@@ -217,6 +217,13 @@ function bind() {
         entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');reviewObserver.unobserve(entry.target);}});
       },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
       reviewCards.forEach((card,index)=>{card.classList.add('review-reveal');card.style.setProperty('--review-delay',`${index*135}ms`);reviewObserver.observe(card);});
+    }
+    const teamCards=[...document.querySelectorAll('.team-directory .team-person')];
+    if(teamCards.length){
+      const teamObserver=new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');teamObserver.unobserve(entry.target);}});
+      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
+      teamCards.forEach((card,index)=>{card.classList.add('team-reveal');card.style.setProperty('--team-delay',`${(index%5)*95}ms`);teamObserver.observe(card);});
     }
     document.querySelectorAll('.process-grid').forEach(grid=>{
       grid.classList.add('process-sequence-ready');
