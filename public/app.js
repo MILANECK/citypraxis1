@@ -320,14 +320,22 @@ function bind() {
     folder.setAttribute('aria-hidden','true');
     folder.innerHTML='<strong class="booking-folder-name"></strong>';
     bookingForm.prepend(folder);
+    const folderName=$('.booking-folder-name',folder);
+    const nameMeasure=document.createElement('canvas').getContext('2d');
     const updateFolder=()=>{
       const name=nameInput.value.trim();
-      $('.booking-folder-name',folder).textContent=name;
+      folderName.textContent=name;
+      if(name && nameMeasure){
+        nameMeasure.font=getComputedStyle(folderName).font;
+        const width=Math.min(bookingForm.clientWidth,Math.max(140,Math.ceil(nameMeasure.measureText(name).width)+104));
+        bookingForm.style.setProperty('--booking-folder-width',`${width}px`);
+      }
       folder.classList.toggle('is-visible',Boolean(name));
       bookingForm.classList.toggle('has-folder',Boolean(name));
     };
     nameInput.addEventListener('input',updateFolder);
     nameInput.addEventListener('change',updateFolder);
+    window.addEventListener('resize',updateFolder);
     updateFolder();
   }
   bookingForm?.addEventListener('submit',async e=>{

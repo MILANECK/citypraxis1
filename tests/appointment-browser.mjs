@@ -30,6 +30,13 @@ try{
   assert.equal(await folder.getAttribute('aria-hidden'),'true');
   assert.equal(await folder.locator('.booking-folder-label').count(),0);
   assert.equal(await folder.evaluate(el=>el.classList.contains('is-visible')),false);
+  await page.locator('#booking-form [name=name]').fill('Ana');
+  const shortWidth=await page.locator('#booking-form').evaluate(el=>parseFloat(el.style.getPropertyValue('--booking-folder-width')));
+  await page.locator('#booking-form [name=name]').fill('Alexandra Maria Beispiel');
+  const longWidth=await page.locator('#booking-form').evaluate(el=>parseFloat(el.style.getPropertyValue('--booking-folder-width')));
+  assert.ok(longWidth>shortWidth,`The raised edge should grow leftward with the name: ${shortWidth} -> ${longWidth}`);
+  const folderStyle=await page.locator('#booking-form').evaluate(el=>({background:getComputedStyle(el,'::before').backgroundColor,topLine:getComputedStyle(el,'::before').borderTopColor}));
+  assert.deepEqual(folderStyle,{background:'rgb(255, 255, 255)',topLine:'rgb(149, 27, 129)'});
   await page.locator('#booking-form [name=name]').fill('Browser Form Test');
   assert.equal(await page.locator('#booking-form').evaluate(el=>el.classList.contains('has-folder')),true);
   assert.equal(await folder.locator('.booking-folder-name').innerText(),'Browser Form Test');
@@ -67,6 +74,9 @@ try{
   await page.screenshot({path:'test-results/appointment-admin.png',fullPage:true});
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});mobile.on('pageerror',e=>failures.push(e.message));
   await mobile.goto(origin+'/termin?lang=de');await mobile.locator('.cookie-acknowledge').click();await choose('Kiefer',mobile);await choose('Andere Beschwerden',mobile);await mobile.locator('[name=symptoms]').fill('Kurze Testbeschreibung.');
+  await mobile.locator('#booking-form [name=name]').fill('Anna Alexandra Maria Elisabeth Beispiel');
+  const mobileFolderSize=await mobile.locator('#booking-form').evaluate(el=>({tab:parseFloat(el.style.getPropertyValue('--booking-folder-width')),card:el.clientWidth}));
+  assert.ok(mobileFolderSize.tab<=mobileFolderSize.card,`Long names must stay within the form width: ${JSON.stringify(mobileFolderSize)}`);
   await mobile.locator('#booking-form [name=name]').fill('Anna Beispiel');
   assert.equal(await mobile.locator('.booking-folder-name').innerText(),'Anna Beispiel');
   await mobile.locator('.booking-folder').evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(animation=>animation.finished));});
