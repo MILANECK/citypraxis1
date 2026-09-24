@@ -318,12 +318,13 @@ function bind() {
     const folder=document.createElement('div');
     folder.className='booking-folder';
     folder.setAttribute('aria-hidden','true');
-    folder.innerHTML='<span class="booking-folder-label">NAME</span><strong class="booking-folder-name"></strong>';
+    folder.innerHTML='<strong class="booking-folder-name"></strong>';
     bookingForm.prepend(folder);
     const updateFolder=()=>{
       const name=nameInput.value.trim();
       $('.booking-folder-name',folder).textContent=name;
       folder.classList.toggle('is-visible',Boolean(name));
+      bookingForm.classList.toggle('has-folder',Boolean(name));
     };
     nameInput.addEventListener('input',updateFolder);
     nameInput.addEventListener('change',updateFolder);

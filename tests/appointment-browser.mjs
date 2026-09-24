@@ -28,14 +28,17 @@ try{
   await page.screenshot({path:'test-results/appointment-desktop.png',fullPage:true});
   const folder=page.locator('.booking-folder');
   assert.equal(await folder.getAttribute('aria-hidden'),'true');
+  assert.equal(await folder.locator('.booking-folder-label').count(),0);
   assert.equal(await folder.evaluate(el=>el.classList.contains('is-visible')),false);
   await page.locator('#booking-form [name=name]').fill('Browser Form Test');
+  assert.equal(await page.locator('#booking-form').evaluate(el=>el.classList.contains('has-folder')),true);
   assert.equal(await folder.locator('.booking-folder-name').innerText(),'Browser Form Test');
   await folder.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(animation=>animation.finished));});
   assert.equal(await folder.evaluate(el=>getComputedStyle(el).opacity),'1');
   await page.screenshot({path:'test-results/appointment-folder-desktop.png'});
   await page.locator('#booking-form [name=name]').fill('');
   assert.equal(await folder.evaluate(el=>el.classList.contains('is-visible')),false);
+  assert.equal(await page.locator('#booking-form').evaluate(el=>el.classList.contains('has-folder')),false);
   await page.locator('#booking-form [name=name]').fill('Browser Form Test');
   await page.locator('#booking-form [name=email]').fill('browser-form@example.test');
   assert.equal(await page.locator('#booking-form [name=preference]').count(),0);
