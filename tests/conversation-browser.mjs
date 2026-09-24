@@ -40,7 +40,9 @@ try{
     const bounds=await page.locator('.chat-window').boundingBox();assert.ok(bounds.x>=0&&bounds.x+bounds.width<=(mobile?390:1440));assert.ok(bounds.y>=0);
     assert.equal(await page.locator('.chat-scroll').evaluate(el=>el.scrollWidth<=el.clientWidth),true);
     await page.screenshot({path:`test-results/conversation-${lang}-${mobile?'mobile':'desktop'}-review.png`});
-    await page.locator('.conversation-confirm input').check();await page.locator('.conversation-confirm button').click();await page.locator('.chat-success').waitFor();assert.equal(submitted,1);
+    await page.locator('.conversation-confirm input').check();await page.locator('.conversation-confirm button').click();await page.locator('.request-confirmation .confirmation-logo').waitFor();assert.equal(submitted,1);
+    assert.equal(await page.locator('.request-confirmation .confirmation-logo img').count(),1);
+    if(mobile)await page.screenshot({path:`test-results/conversation-${lang}-mobile-success.png`});
     assert.equal(await page.evaluate(()=>sessionStorage.getItem('citypraxis-conversation-v2')),null);assert.deepEqual(errors,[]);
     await page.close();console.log(`${lang} ${mobile?'mobile':'desktop'} passed`);
   }

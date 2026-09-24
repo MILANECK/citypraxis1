@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 70 64"
+     width="70" height="64"
+     fill="none"
+     aria-label="Animated chat icon">
+  <style>
+    .bubble {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 3.25;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      opacity: 0;
+      animation: drawBubble 2.2s cubic-bezier(.65,0,.35,1) infinite;
+    }
+
+    .dot {
+      fill: #fff;
+      opacity: 0;
+      animation-duration: 2.2s;
+      animation-timing-function: cubic-bezier(.34,1.56,.64,1);
+      animation-iteration-count: infinite;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    .d1 { animation-name: dot1; }
+    .d2 { animation-name: dot2; }
+    .d3 { animation-name: dot3; }
+
+    @keyframes drawBubble {
+      0%, 6% {
+        stroke-dashoffset: 100;
+        opacity: 0;
+      }
+      10% {
+        stroke-dashoffset: 96;
+        opacity: 1;
+      }
+      44% {
+        stroke-dashoffset: 0;
+        opacity: 1;
+      }
+      82% {
+        stroke-dashoffset: 0;
+        opacity: 1;
+      }
+      96% {
+        stroke-dashoffset: -100;
+        opacity: 1;
+      }
+      100% {
+        stroke-dashoffset: -100;
+        opacity: 0;
+      }
+    }
+
+    @keyframes dot1 {
+      0%, 32% { opacity: 0; transform: scale(0); }
+      41%     { opacity: 1; transform: scale(1.12); }
+      46%,82% { opacity: 1; transform: scale(1); }
+      92%,100%{ opacity: 0; transform: scale(0); }
+    }
+    @keyframes dot2 {
+      0%, 38% { opacity: 0; transform: scale(0); }
+      47%     { opacity: 1; transform: scale(1.12); }
+      52%,82% { opacity: 1; transform: scale(1); }
+      92%,100%{ opacity: 0; transform: scale(0); }
+    }
+    @keyframes dot3 {
+      0%, 44% { opacity: 0; transform: scale(0); }
+      53%     { opacity: 1; transform: scale(1.12); }
+      58%,82% { opacity: 1; transform: scale(1); }
+      92%,100%{ opacity: 0; transform: scale(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bubble { animation: none; stroke-dashoffset: 0; opacity: 1; }
+      .dot { animation: none; opacity: 1; transform: scale(1); }
+    }
+  </style>
+
+  <!--
+    Closed path.
+    Start/end point sits in the middle of the straight bottom edge,
+    so the animated seam is invisible and the tail keeps rounded joins.
+  -->
+  <path class="bubble" pathLength="100"
+        d="M34 46
+           H21
+           L14 51
+           L14 24.5
+           C14 17.2 19.9 11.3 27.2 11.3
+           H42.8
+           C50.2 11.3 56.2 17.3 56.2 24.7
+           V32.5
+           C56.2 39.9 50.2 46 42.7 46
+           H34
+           Z" />
+
+  <circle class="dot d1" cx="28.5" cy="29.6" r="2.25"/>
+  <circle class="dot d2" cx="35.0" cy="29.6" r="2.25"/>
+  <circle class="dot d3" cx="41.5" cy="29.6" r="2.25"/>
+</svg>
