@@ -21,6 +21,8 @@ try{
   assert.ok(Math.abs(gradientLayout.right-gradientLayout.viewport)<1,`Gradient should cover the right screen edge: ${JSON.stringify(gradientLayout)}`);
   assert.ok(gradientLayout.formLeft>=gradientLayout.left&&gradientLayout.formRight<=gradientLayout.right,`Form should sit over the gradient: ${JSON.stringify(gradientLayout)}`);
   assert.ok(gradientLayout.bufferWidth>0&&gradientLayout.bufferHeight>0,`Gradient canvas should render: ${JSON.stringify(gradientLayout)}`);
+  const formBalance=await page.locator('#booking-form').evaluate(form=>{const stage=form.closest('.booking-gradient-stage').getBoundingClientRect(),box=form.getBoundingClientRect();return {top:box.top-stage.top,bottom:stage.bottom-box.bottom};});
+  assert.ok(Math.abs(formBalance.top-formBalance.bottom)<1,`Desktop form should be vertically centered in the gradient stage: ${JSON.stringify(formBalance)}`);
   assert.equal(await page.locator('#booking-form select,#booking-form [name=therapistId]').count(),0);
   assert.match(await page.locator('.article-intro').innerText(),/secretary.*phone or email/);
   const choose=async(value,p=page)=>p.locator(`.concern-chip:has(input[value="${value}"])`).click();
