@@ -17,7 +17,6 @@ import {createChatService} from './chat/service.mjs';
 import {sqliteChatStore} from './chat/store.mjs';
 
 const root = resolve('public');
-const neatModule = resolve('node_modules/@firecms/neat/dist/index.es.js');
 const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.mp4':'video/mp4' };
 const hash = value => createHash('sha256').update(value).digest('hex');
 const clean = (value, max = 200) => typeof value === 'string' ? value.trim().slice(0,max) : '';
@@ -50,13 +49,9 @@ export function createApp(db = openDatabase()) {
       const path = decodeURIComponent(url.pathname);
       if(path.split('/').some(part=>part.startsWith('.')))return json(404,{error:'Nicht gefunden.'});
       if (['GET','HEAD'].includes(req.method) && !path.startsWith('/api/')) {
-        let file;
-        if(path==='/vendor/neat.js')file=neatModule;
-        else{
-          file = resolve(root, `.${path}`);
-          if (!file.startsWith(root + sep) && file !== root) return json(404,{ error:'Nicht gefunden.' });
-          if (!extname(path)) file = resolve(root, path.startsWith('/admin') ? 'admin.html' : 'index.html');
-        }
+        let file = resolve(root, `.${path}`);
+        if (!file.startsWith(root + sep) && file !== root) return json(404,{ error:'Nicht gefunden.' });
+        if (!extname(path)) file = resolve(root, path.startsWith('/admin') ? 'admin.html' : 'index.html');
         try {
           await serveFile(req,res,file,mime[extname(file)] || 'application/octet-stream');
         } catch { if(!res.headersSent)json(404,{error:'Nicht gefunden.'}); }

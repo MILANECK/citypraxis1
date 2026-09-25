@@ -13,7 +13,7 @@ export async function initBookingGradient(){
   addEventListener('resize',syncCanvasStart);
   const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
   try{
-    const {NeatGradient}=await import('/vendor/neat.js');
+    const {NeatGradient}=await import('/vendor/neat.js?v=1');
     activeGradient=new NeatGradient({
       ref:canvas,
       colors:[
