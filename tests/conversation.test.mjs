@@ -122,7 +122,9 @@ test('AI errors, malformed output, boundaries, limits and concurrent requests ar
     const token=newSession();assert.match((await call(token,'Write a recipe')).message,/only help with CityPraxis/);
     assert.equal((await call(token,'I cannot breathe')).emergency,true);assert.equal(calls,1);
     value=answer({first_name:{bad:true}});assert.equal((await call(token,'A normal message')).code,'ai_unavailable');
-    value=answer({kind:'medical'});assert.match((await call(token,'What exercises should I do?')).message,/cannot assess/);
+    value=answer({kind:'medical'});assert.match((await call(token,'What exercises should I do?')).message,/^I'm sorry, but I can't provide a medical assessment\./);
+    value=answer({kind:'medical',answer:"I can't assess what may be causing this. Our reception team can clarify the next step."});assert.match((await call(token,'What could be causing this?')).message,/^I'm sorry, but I can't assess/);
+    value=answer({kind:'medical',answer:'I see. We can’t assess breathing concerns or advise medically here.'});const gentle=(await call(token,'Can you assess this breathing concern?')).message;assert.match(gentle,/^I'm sorry, but we can’t assess/);assert.doesNotMatch(gentle,/^I see/);
     value=answer({kind:'off_topic'});waiting=true;const pending=call(token,'A question');await new Promise(r=>setImmediate(r));assert.equal((await call(token,'Another')).code,'busy');waiting=false;release();await pending;
     const limited=newSession();for(let i=0;i<16;i++){const result=await call(limited,'Unrelated question');assert.equal(result.status,200);if(i===15)assert.equal(result.limitReached,true);}
     assert.equal((await call(limited,'One more')).code,'conversation_limit');
