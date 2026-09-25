@@ -289,7 +289,6 @@ footer{background:#f6f4f1;color:var(--ink)}
   transition:color .3s ease,transform .35s cubic-bezier(.22,1,.36,1),opacity .3s ease;
 }
 .therapy-card{transition:transform .42s cubic-bezier(.22,1,.36,1),box-shadow .42s ease}
-.contact-map .map-pin{position:absolute;z-index:1;left:50%;top:50%;width:40px;height:52px;margin:0;transform:translate(-50%,-100%);filter:drop-shadow(0 4px 7px #22234440);pointer-events:none;color:var(--pink)}
 .map-details{width:100%;padding:22px 25px 25px}
 .map-details details{margin:0}
 .map-details summary{display:flex;align-items:center;justify-content:space-between;gap:18px;list-style:none;padding-block:20px;font-weight:600}
@@ -454,7 +453,9 @@ footer{background:#f6f4f1;color:var(--ink)}
 
 /* Animated Neat gradient fills the right half of the booking page behind the form. */
 .booking-gradient-stage{position:relative;isolation:isolate;overflow:clip}
-.booking-gradient-canvas{position:absolute;inset:var(--booking-gradient-top,0) 0 0 34%;z-index:0;display:block;width:66%;height:calc(100% - var(--booking-gradient-top,0));pointer-events:none;background:radial-gradient(circle at 22% 20%,#3ea1c7 0,transparent 42%),radial-gradient(circle at 72% 64%,#741b75 0,transparent 50%),#0b3954;-webkit-mask-image:radial-gradient(ellipse 125% 150% at 112% 82%,#000 0 67%,#000e 70%,#0008 75%,transparent 81%);mask-image:radial-gradient(ellipse 125% 150% at 112% 82%,#000 0 67%,#000e 70%,#0008 75%,transparent 81%)}
+.booking-gradient-canvas{position:absolute;inset:var(--booking-gradient-top,0) 0 0 34%;z-index:0;display:block;width:66%;height:calc(100% - var(--booking-gradient-top,0));pointer-events:none;background:radial-gradient(circle at 22% 20%,#3ea1c7 0,transparent 42%),radial-gradient(circle at 72% 64%,#741b75 0,transparent 50%),#0b3954;opacity:0;transition:opacity 1.4s cubic-bezier(.22,1,.36,1);-webkit-mask-image:radial-gradient(ellipse 125% 150% at 112% 82%,#000 0 67%,#000e 70%,#0008 75%,transparent 81%);mask-image:radial-gradient(ellipse 125% 150% at 112% 82%,#000 0 67%,#000e 70%,#0008 75%,transparent 81%)}
+.booking-gradient-canvas.is-ready,.booking-gradient-canvas.is-fallback{opacity:1}
+@media(prefers-reduced-motion:reduce){.booking-gradient-canvas{opacity:1;transition:none}}
 .booking-gradient-stage>.booking-layout{position:relative;z-index:1;padding-block:105px}
 .booking-gradient-stage #booking-form{box-shadow:0 22px 60px #17193226}
 .booking-gradient-stage #booking-form.request-confirmation{align-self:center}

@@ -146,7 +146,10 @@ try{
   assert.equal(await page.locator('.chat-launch span').isVisible(),false);
   assert.equal(await page.locator('.mobile-booking a').count(),2);
   const actions=await page.evaluate(()=>({chat:document.querySelector('.chat-launch').getBoundingClientRect().toJSON(),booking:document.querySelector('.mobile-booking').getBoundingClientRect().toJSON(),call:document.querySelector('.mobile-call').getBoundingClientRect().toJSON()}));
-  assert.ok(actions.chat.bottom<actions.booking.top);
+  assert.ok(Math.abs(actions.chat.bottom-actions.booking.bottom)<1);
+  assert.ok(Math.abs(actions.chat.width-actions.call.width)<1);
+  assert.ok(actions.chat.right<=actions.call.left);
+  assert.ok(actions.call.right<=actions.booking.right);
   assert.ok(actions.call.width===actions.call.height);
   await page.screenshot({path:'test-results/mobile-floating-actions.png'});
   assert.deepEqual(errors,[]);

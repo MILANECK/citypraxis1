@@ -24,7 +24,10 @@ try{
       return {chat:rect('.chat-launch'),call:rect('.mobile-call'),book:rect('.mobile-appointment'),form:rect('#booking-form'),intro:rect('.booking-layout>div')};
     });
     for(const circle of [actions.chat,actions.call,actions.book])assert.equal(circle.width,58);
-    assert.ok(Math.abs(actions.chat.centerX-(actions.call.centerX+actions.book.centerX)/2)<1);
+    assert.ok(Math.abs(actions.chat.y-actions.call.y)<1);
+    assert.ok(Math.abs(actions.call.y-actions.book.y)<1);
+    assert.ok(actions.chat.x+actions.chat.width<=actions.call.x);
+    assert.ok(actions.call.x+actions.call.width<=actions.book.x);
     assert.ok(actions.form.y-actions.intro.y-actions.intro.height>=90);
     await page.evaluate(()=>{const form=document.querySelector('#booking-form');scrollTo(0,form.getBoundingClientRect().top+scrollY-250);});
     await page.screenshot({path:`test-results/booking-${width}-form-top.png`});
