@@ -154,7 +154,7 @@ function contact() {
 function route() {
   const path=location.pathname.replace(/\/$/,'')||'/';
   if(path==='/') return home();
-  if(path==='/termin') return appointment();
+  if(path==='/termin') return `<div class="booking-gradient-stage"><canvas id="booking-gradient" class="booking-gradient-canvas" aria-hidden="true"></canvas>${appointment()}</div>`;
   if(path.startsWith('/team/')){
     const therapist=data.team.find(t=>path===`/team/${encodeURIComponent(t.id)}`);
     if(therapist)return therapistPage(therapist);
@@ -314,6 +314,7 @@ function bind() {
   }
   const bookingForm=$('#booking-form');
   if(bookingForm){
+    import('/booking-gradient.js?v=1').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
     const nameInput=bookingForm.elements.namedItem('name');
     const folder=document.createElement('div');
     folder.className='booking-folder';

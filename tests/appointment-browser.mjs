@@ -14,6 +14,13 @@ try{
   const page=await browser.newPage({viewport:{width:1440,height:1050}});
   page.on('pageerror',e=>failures.push(e.message));
   await page.goto(origin+'/termin?lang=en');await page.locator('.cookie-acknowledge').click();
+  const gradient=page.locator('#booking-gradient');
+  await page.waitForFunction(()=>document.querySelector('#booking-gradient')?.classList.contains('is-ready')||document.querySelector('#booking-gradient')?.classList.contains('is-fallback'));
+  const gradientLayout=await gradient.evaluate(canvas=>{const box=canvas.getBoundingClientRect(),form=document.querySelector('#booking-form').getBoundingClientRect();return {left:box.left,right:box.right,viewport:innerWidth,formLeft:form.left,formRight:form.right,bufferWidth:canvas.width,bufferHeight:canvas.height};});
+  assert.ok(Math.abs(gradientLayout.left-gradientLayout.viewport/2)<1,`Gradient should begin at the screen midpoint: ${JSON.stringify(gradientLayout)}`);
+  assert.ok(Math.abs(gradientLayout.right-gradientLayout.viewport)<1,`Gradient should cover the right screen edge: ${JSON.stringify(gradientLayout)}`);
+  assert.ok(gradientLayout.formLeft>=gradientLayout.left&&gradientLayout.formRight<=gradientLayout.right,`Form should sit over the gradient: ${JSON.stringify(gradientLayout)}`);
+  assert.ok(gradientLayout.bufferWidth>0&&gradientLayout.bufferHeight>0,`Gradient canvas should render: ${JSON.stringify(gradientLayout)}`);
   assert.equal(await page.locator('#booking-form select,#booking-form [name=therapistId]').count(),0);
   assert.match(await page.locator('.article-intro').innerText(),/secretary.*phone or email/);
   const choose=async(value,p=page)=>p.locator(`.concern-chip:has(input[value="${value}"])`).click();
@@ -74,6 +81,10 @@ try{
   await page.screenshot({path:'test-results/appointment-admin.png',fullPage:true});
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});mobile.on('pageerror',e=>failures.push(e.message));
   await mobile.goto(origin+'/termin?lang=de');await mobile.locator('.cookie-acknowledge').click();await choose('Kiefer',mobile);await choose('Andere Beschwerden',mobile);await mobile.locator('[name=symptoms]').fill('Kurze Testbeschreibung.');
+  await mobile.waitForFunction(()=>document.querySelector('#booking-gradient')?.classList.contains('is-ready')||document.querySelector('#booking-gradient')?.classList.contains('is-fallback'));
+  const mobileGradient=await mobile.evaluate(()=>{const canvas=document.querySelector('#booking-gradient').getBoundingClientRect(),form=document.querySelector('#booking-form').getBoundingClientRect(),intro=document.querySelector('.booking-layout>div').getBoundingClientRect();return {canvasTop:canvas.top,formTop:form.top,introBottom:intro.bottom};});
+  assert.ok(mobileGradient.canvasTop>=mobileGradient.introBottom,`Mobile gradient should not sit behind the introduction: ${JSON.stringify(mobileGradient)}`);
+  assert.ok(mobileGradient.canvasTop<=mobileGradient.formTop,`Mobile gradient should begin just before the form: ${JSON.stringify(mobileGradient)}`);
   await mobile.locator('#booking-form [name=name]').fill('Anna Alexandra Maria Elisabeth Beispiel');
   const mobileFolderSize=await mobile.locator('#booking-form').evaluate(el=>({tab:parseFloat(el.style.getPropertyValue('--booking-folder-width')),card:el.clientWidth}));
   assert.ok(mobileFolderSize.tab<=mobileFolderSize.card,`Long names must stay within the form width: ${JSON.stringify(mobileFolderSize)}`);
