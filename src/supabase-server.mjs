@@ -166,6 +166,21 @@ export function createSupabaseApp() {
         return json(200,{ok:true,socialLinks});
       }
       if(path==='/api/admin/content'&&req.method==='GET'&&editor)return json(200,snapshots(await supabase.rest('content','?select=collection,id,draft,published'),true));
+      if(path==='/api/admin/team-order'&&req.method==='PUT'&&editor){
+        const ids=body.ids,rows=await supabase.rest('content','?collection=eq.team&select=id,draft,published');
+        if(!Array.isArray(ids)||ids.length!==rows.length||ids.length>20||ids.some(id=>typeof id!=='string'||!/^[a-z0-9-]{1,200}$/.test(id))||new Set(ids).size!==ids.length||rows.some(row=>!ids.includes(row.id)))return json(400,{error:'Die Teamreihenfolge ist ungültig. Bitte laden Sie die Seite neu.'});
+        if(rows.some(row=>row.id==='isabella-casny')&&ids[0]!=='isabella-casny')return json(400,{error:'Isabella bleibt als hervorgehobenes Profil an erster Stelle.'});
+        const byId=new Map(rows.map(row=>[row.id,row])),changed=[];
+        for(const [order,id]of ids.entries()){
+          const row=byId.get(id),draft={...row.draft,order},published=row.published?{...row.published,order}:null;
+          if(Number(row.draft.order)===order&&(!published||Number(row.published.order)===order))continue;
+          changed.push({row,draft,published});
+        }
+        for(const {row}of changed)await supabase.rest('revisions','',{method:'POST',body:{collection:'team',entity_id:row.id,snapshot:row.draft,actor:user.id,actor_email:user.email}});
+        for(const {row,draft,published}of changed)await supabase.rest('content',`?collection=eq.team&id=eq.${filter(row.id)}`,{method:'PATCH',body:{draft,published,updated_at:new Date().toISOString()}});
+        if(changed.length){publicContentCache=null;await audit(user,'reorder','team');}
+        return json(200,{ok:true});
+      }
       const match=/^\/api\/admin\/content\/([a-z]+)\/([a-z0-9-]+)$/.exec(path);
       if(match&&editor){
         const [,collection,id]=match;if(!collections.includes(collection))return json(400,{error:'Unbekannter Bereich.'});

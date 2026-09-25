@@ -123,6 +123,27 @@ export function createApp(db = openDatabase()) {
         }catch(error){db.exec('ROLLBACK');throw error;}
         return json(200,{ok:true,socialLinks});
       }
+      if (path === '/api/admin/team-order' && req.method === 'PUT' && editor) {
+        const ids=body.ids,rows=db.prepare("SELECT id,draft,published FROM content WHERE collection='team'").all();
+        if(!Array.isArray(ids)||ids.length!==rows.length||ids.length>20||ids.some(id=>typeof id!=='string'||!/^[a-z0-9-]{1,200}$/.test(id))||new Set(ids).size!==ids.length||rows.some(row=>!ids.includes(row.id)))return json(400,{error:'Die Teamreihenfolge ist ungültig. Bitte laden Sie die Seite neu.'});
+        if(rows.some(row=>row.id==='isabella-casny')&&ids[0]!=='isabella-casny')return json(400,{error:'Isabella bleibt als hervorgehobenes Profil an erster Stelle.'});
+        const byId=new Map(rows.map(row=>[row.id,row]));
+        const changed=ids.map((id,order)=>({row:byId.get(id),order})).filter(({row,order})=>{
+          const draft=JSON.parse(row.draft),published=row.published?JSON.parse(row.published):null;
+          return Number(draft.order)!==order||(published&&Number(published.order)!==order);
+        });
+        db.exec('BEGIN');
+        try{
+          for(const {row,order} of changed){
+            const draft={...JSON.parse(row.draft),order},published=row.published?{...JSON.parse(row.published),order}:null;
+            db.prepare('INSERT INTO revisions(collection,entity_id,snapshot,actor) VALUES(?,?,?,?)').run('team',row.id,row.draft,user.email);
+            db.prepare('UPDATE content SET draft=?,published=?,updated_at=CURRENT_TIMESTAMP WHERE collection=\'team\' AND id=?').run(JSON.stringify(draft),published?JSON.stringify(published):null,row.id);
+          }
+          if(changed.length)audit(user,'reorder','team');
+          db.exec('COMMIT');
+        }catch(error){db.exec('ROLLBACK');throw error;}
+        return json(200,{ok:true});
+      }
       if (path === '/api/admin/content' && req.method === 'GET' && editor) return json(200,contentSnapshot(db,true));
       const contentMatch = /^\/api\/admin\/content\/([a-z]+)\/([a-z0-9-]+)$/.exec(path);
       if (contentMatch && editor) {

@@ -249,6 +249,16 @@ function bind() {
       },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
       mapObserver.observe(contactMap);
     }
+    const bookingForm=document.querySelector('#main #booking-form');
+    if(bookingForm){
+      bookingForm.classList.add('booking-form-reveal');
+      const bookingObserver=new IntersectionObserver(entries=>{
+        if(!entries.some(entry=>entry.isIntersecting))return;
+        bookingForm.classList.add('is-visible');
+        bookingObserver.disconnect();
+      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
+      bookingObserver.observe(bookingForm);
+    }
     const hours=document.querySelector('#main .weekly-hours');
     if(hours){
       const rows=[...hours.querySelectorAll(':scope > div')];

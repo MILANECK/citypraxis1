@@ -121,7 +121,46 @@ async function render(){
     api('admin/capacity').then(data=>showCapacity(capacityPanel,data)).catch(()=>showCapacity(capacityPanel,{available:false}));
   } else if(labels[view]) {
     const collection=view,records=content[view]||[];
+    if(collection==='team')records.sort((a,b)=>Number(b.id==='isabella-casny')-Number(a.id==='isabella-casny')||(Number(a.order)||0)-(Number(b.order)||0));
     w.innerHTML=`<div class="toolbar"><p>${collection==='team'?`Teamprofile: ${records.length} / 20. Neue URL-Kürzel werden automatisch aus dem Namen erstellt.`:'Entwürfe bleiben intern, bis Sie sie veröffentlichen.'}</p>${view!=='settings'?'<button class="button" id="new-content">+ Neuer Eintrag</button>':''}</div><div class="admin-panel table-wrap"><table><thead><tr><th>Inhalt</th><th>Status</th><th>Reihenfolge</th><th>Aktion</th></tr></thead><tbody>${records.map(r=>`<tr><td><strong>${esc(I18n.language==='en'&&r.titleEn?r.titleEn:r.title)}</strong><small>${esc(r.id)}</small></td><td><span class="status ${r.dirty?'draft':'live'}">${r.dirty?'Entwurf':r.published?'Veröffentlicht':'Entwurf'}</span></td><td>${r.order||0}</td><td><div class="row-actions"><button class="table-action" data-edit="${esc(r.id)}">Bearbeiten ↗</button>${protectedContent(view,r.id)?'<span class="protected-entry">Basisinhalt</span>':`<button class="delete-entry" data-remove="${esc(r.id)}" aria-label="${esc(I18n.translate('Eintrag löschen')+': '+(I18n.language==='en'&&r.titleEn?r.titleEn:r.title))}">Löschen</button>`}</div></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Noch keine Einträge. Legen Sie den ersten an.</td></tr>'}</tbody></table></div>`;
+    if(collection==='team'){
+      const tbody=$('tbody',w),rows=[...tbody.querySelectorAll('tr')].slice(0,records.length),pinned=records[0]?.id==='isabella-casny';
+      $('.toolbar p',w).textContent=`Teamprofile: ${records.length} / 20. Isabella bleibt oben hervorgehoben; die übrigen Profile können Sie hier sortieren.`;
+      rows.forEach((row,index)=>{
+        const record=records[index],name=I18n.language==='en'&&record.titleEn?record.titleEn:record.title,isFixed=pinned&&index===0;
+        row.dataset.teamOrderId=record.id;row.dataset.fixed=isFixed?'true':'false';row.draggable=!isFixed;row.classList.add('team-order-row');
+        row.cells[2].innerHTML=`<div class="team-order-tools"><span class="team-drag-handle" aria-hidden="true">${isFixed?'•':'⠿'}</span><span class="team-order-number">${index+1}</span><button type="button" data-team-shift="-1" aria-label="${esc(name)} nach oben verschieben" ${isFixed||index===0||index===1&&pinned?'disabled':''}>↑</button><button type="button" data-team-shift="1" aria-label="${esc(name)} nach unten verschieben" ${isFixed||index===records.length-1?'disabled':''}>↓</button></div>`;
+      });
+      let dragRow=null,dragStartIds=null,saving=false;
+      const orderIds=()=>[...tbody.querySelectorAll('tr[data-team-order-id]')].map(row=>row.dataset.teamOrderId);
+      const persistOrder=async before=>{
+        const ids=orderIds();if(saving||!before||ids.every((id,index)=>id===before[index]))return;
+        saving=true;tbody.querySelectorAll('[data-team-shift]').forEach(button=>button.disabled=true);
+        try{await api('admin/team-order','PUT',{ids});await refresh();await render();toast('Teamreihenfolge gespeichert.');}
+        catch(error){await refresh();await render();toast(error.message);}
+        finally{saving=false;}
+      };
+      tbody.addEventListener('dragstart',event=>{
+        dragRow=event.target.closest('tr[data-team-order-id]');if(!dragRow||dragRow.dataset.fixed==='true'){dragRow=null;return;}
+        dragStartIds=orderIds();event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',dragRow.dataset.teamOrderId);
+        requestAnimationFrame(()=>dragRow?.classList.add('is-dragging'));
+      });
+      tbody.addEventListener('dragover',event=>{
+        if(!dragRow)return;const target=event.target.closest('tr[data-team-order-id]');
+        if(!target||target===dragRow||target.dataset.fixed==='true')return;
+        event.preventDefault();const after=event.clientY>target.getBoundingClientRect().top+target.offsetHeight/2,next=after?target.nextElementSibling:target;
+        if(next!==dragRow)tbody.insertBefore(dragRow,next);
+      });
+      tbody.addEventListener('drop',event=>{if(!dragRow)return;event.preventDefault();void persistOrder(dragStartIds);});
+      tbody.addEventListener('dragend',()=>{dragRow?.classList.remove('is-dragging');dragRow=null;void persistOrder(dragStartIds);dragStartIds=null;});
+      tbody.addEventListener('click',event=>{
+        const button=event.target.closest('[data-team-shift]');if(!button||button.disabled)return;
+        const row=button.closest('tr[data-team-order-id]'),siblings=[...tbody.querySelectorAll('tr[data-team-order-id]')],index=siblings.indexOf(row),direction=Number(button.dataset.teamShift),target=siblings[index+direction];
+        if(!target||target.dataset.fixed==='true')return;const before=orderIds();
+        if(direction<0)tbody.insertBefore(row,target);else tbody.insertBefore(target,row);
+        void persistOrder(before);
+      });
+    }
     document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>removeContent(collection,records.find(r=>r.id===b.dataset.remove)));
     if(collection==='reviews'){
       $('#new-content').disabled=records.length>=3;

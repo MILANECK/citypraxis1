@@ -19,6 +19,18 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     assert.equal((await call('admin/capacity')).status,401);
     const owner=await login('owner'),editor=await login('editor'),reception=await login('reception');
     assert.deepEqual((await call('admin/capacity','GET',null,owner)).data,{available:false});
+    const originalTeam=(await call('admin/content','GET',null,editor)).data.team;
+    if(originalTeam.length>2){
+      const pinned=originalTeam.find(item=>item.id==='isabella-casny'),movable=originalTeam.filter(item=>item.id!=='isabella-casny');
+      const requested=[...(pinned?[pinned.id]:[]),movable[1].id,movable[0].id,...movable.slice(2).map(item=>item.id)];
+      assert.equal((await call('admin/team-order','PUT',{ids:requested},editor)).status,200);
+      const adminTeam=(await call('admin/content','GET',null,editor)).data.team,publicTeam=(await call('content')).data.team;
+      assert.deepEqual(adminTeam.map(item=>item.id),requested);
+      assert.deepEqual(publicTeam.map(item=>item.id),requested);
+      assert.deepEqual(adminTeam.map(item=>item.order),adminTeam.map((_,index)=>index));
+      assert.equal((await call('admin/team-order','PUT',{ids:[...requested.slice(1),requested[0]]},editor)).status,400);
+      assert.equal((await call('admin/team-order','PUT',{ids:requested},reception)).status,403);
+    }
     const review={title:'Test review',body:'Fixture text only',rating:'5',source:'Test fixture'};
     assert.equal((await call('admin/content/reviews/unsafe-link','PUT',{data:{...review,sourceUrl:'javascript:alert(1)'}},editor)).status,400);
     assert.equal((await call('admin/content/reviews/example','PUT',{data:review},editor)).status,200);

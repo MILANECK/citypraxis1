@@ -1,0 +1,12 @@
+.team-order-tools{display:flex;align-items:center;justify-content:flex-start;gap:8px;min-width:150px}
+.team-order-row[draggable="true"]{cursor:grab}
+.team-order-row.is-dragging{opacity:.42;background:#eaf3f4}
+.team-order-row[data-fixed="true"]{background:#faf9f7}
+.team-drag-handle{display:grid;place-items:center;width:24px;height:30px;color:var(--muted);font-size:19px;cursor:grab;user-select:none}
+.team-order-row[data-fixed="true"] .team-drag-handle{font-size:15px;cursor:default;color:var(--pink)}
+.team-order-number{min-width:20px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.team-order-tools button{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--blue);font-size:15px;line-height:1;transition:background .2s ease,transform .2s ease}
+.team-order-tools button:hover:not(:disabled){background:var(--pale);transform:translateY(-1px)}
+.team-order-tools button:disabled{opacity:.36;cursor:default}
+@media(max-width:767px){.team-order-tools{gap:5px;min-width:0}.team-order-tools button{width:32px;height:32px}.team-drag-handle{width:20px}}
+@media(prefers-reduced-motion:reduce){.team-order-tools button{transition:none}.team-order-tools button:hover:not(:disabled){transform:none}}
