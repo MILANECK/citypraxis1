@@ -85,12 +85,13 @@ p { font-size: 18px; line-height: 1.8; }
 .footer-social svg{display:block;width:20px;height:20px}
 @media(prefers-reduced-motion:reduce){.footer-top .footer-social a{transition:none}.footer-top .footer-social a:hover{transform:none}}
 .review-avatar, .review-card figcaption .review-avatar { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: #e6f3f7; color: #0085ac; font-size: 18px; font-weight: 600; margin: 0; }
-.review-person{min-width:0}
-.review-name-line{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px}
+.review-person{flex:1;min-width:0}
+.review-name-line{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
 .review-name-line strong{font-weight:600}
 .review-name-line .review-stars{flex:none;font-size:16px;line-height:1;letter-spacing:1px;white-space:nowrap}
 .review-source{display:block;margin-top:6px;color:var(--blue);font-size:13px;transition:color .2s ease}.review-source:hover{color:var(--pink)}
 .review-placeholder-footer { display: flex; gap: 12px; align-items: center; margin-top: auto; padding-top: 12px; color: var(--muted); font-size: 13px; }
+.review-placeholder-footer .review-name-line{flex:1}
 .team-profiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
 .team-preview .team-profiles { margin-bottom: 0; }
 .team-person { padding: 0; border-radius: 12px; overflow: hidden; background: white; box-shadow: 0 8px 30px #22234404; }

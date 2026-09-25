@@ -38,6 +38,14 @@ try{
   await publicPage.locator('.reviews-grid').scrollIntoViewIfNeeded();
   await publicPage.locator('.reviews-grid .review-card').last().waitFor({state:'visible'});
   await publicPage.waitForTimeout(1050);
+  const alignment=await publicPage.locator('.reviews-grid .review-card').first().evaluate(card=>{
+    const avatar=card.querySelector('.review-avatar').getBoundingClientRect();
+    const stars=card.querySelector('.review-stars').getBoundingClientRect();
+    const bounds=card.getBoundingClientRect();
+    return {left:avatar.left-bounds.left,bottom:bounds.bottom-avatar.bottom,right:bounds.right-stars.right};
+  });
+  assert.ok(Math.abs(alignment.left-alignment.bottom)<1,`The initial circle should have equal left and bottom spacing: ${JSON.stringify(alignment)}`);
+  assert.ok(Math.abs(alignment.left-alignment.right)<1,`Stars should align to the card's right padding: ${JSON.stringify(alignment)}`);
   await mkdir('test-results',{recursive:true});
   await publicPage.locator('.reviews-grid').screenshot({path:'test-results/review-cards-compact.png'});
   await page.locator(`[data-remove="${ids[2]}"]`).click();await page.locator('[data-confirm]').click();
