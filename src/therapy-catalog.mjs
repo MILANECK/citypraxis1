@@ -22,6 +22,8 @@ export function refineTherapyRecord(id,record){
     if(typeof next.related==='string')next.related=next.related.split(',').map(value=>value.trim()).filter(value=>value&&value!=='rueckenfit').join(',');
     if(typeof next.body==='string')next.body=next.body.replace(/\n- 6\.\) Rückenfitkurs - in Gruppentherapie(?=\n|$)/u,'');
     if(typeof next.bodyEn==='string')next.bodyEn=next.bodyEn.replace(/\n- 6\.\) Back fitness course — group therapy(?=\n|$)/u,'');
+    if(typeof next.body==='string')next.body=next.body.replace(/\n{2}## Behandlungskonzepte in der Physiotherapie[\s\S]*$/u,'');
+    if(typeof next.bodyEn==='string')next.bodyEn=next.bodyEn.replace(/\n{2}## Treatment approaches in physiotherapy[\s\S]*$/u,'');
   }
   if(id==='logopaedie'&&next.titleEn==='Speech & language therapy')next.titleEn='Speech therapy';
   if(id==='heilmassage'){

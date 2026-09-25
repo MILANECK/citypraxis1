@@ -203,6 +203,21 @@ export function openDatabase(file = process.env.DB_PATH || resolve('data/citypra
       db.prepare('INSERT INTO migrations(version) VALUES(12)').run();db.exec('COMMIT');
     }catch(error){db.exec('ROLLBACK');throw error;}
   }
+  if(!db.prepare('SELECT version FROM migrations WHERE version=13').get()){
+    db.exec('BEGIN');
+    try{
+      const row=db.prepare("SELECT draft,published FROM content WHERE collection='services' AND id='physiotherapie'").get();
+      if(row){
+        const change=value=>value?JSON.stringify(refineTherapyRecord('physiotherapie',JSON.parse(value))):null;
+        const draft=change(row.draft),published=change(row.published);
+        if(draft!==row.draft||published!==row.published){
+          db.prepare('INSERT INTO revisions(collection,entity_id,snapshot,actor) VALUES(?,?,?,?)').run('services','physiotherapie',row.draft,'physiotherapy approaches update');
+          db.prepare("UPDATE content SET draft=?,published=? WHERE collection='services' AND id='physiotherapie'").run(draft,published);
+        }
+      }
+      db.prepare('INSERT INTO migrations(version) VALUES(13)').run();db.exec('COMMIT');
+    }catch(error){db.exec('ROLLBACK');throw error;}
+  }
   return db;
 }
 export function contentSnapshot(db, admin = false) {

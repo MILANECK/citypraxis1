@@ -100,14 +100,7 @@ Thank you for your understanding!`},
 - Treatment of acute and chronic conditions
 - Sport
 
-## Treatment approaches in physiotherapy
-
-- 1.) Fascial treatments
-- 2.) Craniofacial therapy (= CRAFTA®)
-- 3.) Craniomandibular (= CMD) concept
-- 4.) Maitland manual therapy
-- 5.) Sports physiotherapy
-- 6.) Back fitness course — group therapy`,methods:''},
+`,methods:''},
     osteopathie:{title:'Osteopathy',tag:'OSTEOPATHY IN 1010 VIENNA',intro:'Have you never heard the word osteopathy, or are you unsure what it means? Do not worry — you are not alone; we hear this very often.',body:`Basic osteopathy training in Austria takes at least five years to develop sound knowledge of anatomy, physiology and biomechanics. Admission is now restricted to doctors and physiotherapists.
 
 After basic osteopathy training, there is the option of attending a further 1.5-year university programme in osteopathy at Danube University Krems and graduating with a master's degree in Austria.
