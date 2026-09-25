@@ -130,7 +130,19 @@ function therapistSelection(){
 }
 function listing(kind) {
   const symptoms = kind === 'symptoms';
-  return article(symptoms?'Was führt Sie zu uns?':'Unsere Leistungen',symptoms?'Finden Sie einen ersten Einblick in unsere Schwerpunkte.':'Vier Fachrichtungen und Angebote für Kinder.','',`<div class="listing-grid ${symptoms?'symptom-listing':'service-listing'}">${data[kind].map(s=>`<a class="listing-card" href="/${symptoms?'schwerpunkte':'leistungen'}/${esc(s.id)}">${symptoms?icon(s.icon):'<span class="eyebrow">'+esc(s.tag)+'</span>'}<h2>${esc(s.title)}</h2><p>${esc(s.intro)}</p><span class="text-link">Mehr erfahren ${arrow}</span></a>`).join('')}</div>`);
+  const card=s=>`<a class="listing-card" href="/leistungen/${esc(s.id)}"><span class="eyebrow">${esc(s.tag)}</span><h2>${esc(s.title)}</h2><p>${esc(s.intro)}</p><span class="text-link">Mehr erfahren ${arrow}</span></a>`;
+  if(!symptoms){
+    const categories=[
+      {id:'physiotherapie',members:['physiotherapie','kindergesundheit','faszienbehandlungen','crafta','cmd']},
+      {id:'osteopathie',members:['osteopathie']},
+      {id:'logopaedie',members:['logopaedie']},
+      {id:'heilmassage',members:['heilmassage']}
+    ].map(group=>({...group,title:data.services.find(service=>service.id===group.id)?.title,items:group.members.map(id=>data.services.find(service=>service.id===id)).filter(Boolean)})).filter(group=>group.title&&group.items.length);
+    const tabs=categories.map((group,index)=>`<button id="service-tab-${index}" type="button" role="tab" aria-selected="${index===0}" aria-controls="service-panel-${index}" tabindex="${index===0?'0':'-1'}" data-service-tab="${index}">${esc(group.title)}</button>`).join('');
+    const panels=categories.map((group,index)=>`<div id="service-panel-${index}" class="service-category-panel" role="tabpanel" aria-labelledby="service-tab-${index}"${index?' hidden':''}><div class="listing-grid service-listing">${group.items.map(card).join('')}</div></div>`).join('');
+    return article('Unsere Leistungen','Vier Fachrichtungen und Angebote für Kinder.','',`<div class="service-tabs therapy-category-tabs" role="tablist" aria-label="Therapiebereiche">${tabs}</div>${panels}`);
+  }
+  return article('Was führt Sie zu uns?','Finden Sie einen ersten Einblick in unsere Schwerpunkte.','',`<div class="listing-grid symptom-listing">${data.symptoms.map(s=>`<a class="listing-card" href="/schwerpunkte/${esc(s.id)}">${icon(s.icon)}<h2>${esc(s.title)}</h2><p>${esc(s.intro)}</p><span class="text-link">Mehr erfahren ${arrow}</span></a>`).join('')}</div>`);
 }
 function appointment() {
   const acute = new URLSearchParams(location.search).has('akut');
@@ -198,6 +210,9 @@ function bind() {
   const priceTabs=[...document.querySelectorAll('[data-price-tab]')];
   const selectPriceTab=index=>{priceTabs.forEach((tab,i)=>{const active=i===index;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$(`#price-panel-${i}`).hidden=!active;});};
   priceTabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectPriceTab(index));tab.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?priceTabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+priceTabs.length)%priceTabs.length;selectPriceTab(next);priceTabs[next].focus();});});
+  const serviceTabs=[...document.querySelectorAll('[data-service-tab]')];
+  const selectServiceTab=index=>{serviceTabs.forEach((tab,i)=>{const active=i===index;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$(`#service-panel-${i}`).hidden=!active;});};
+  serviceTabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectServiceTab(index));tab.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?serviceTabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+serviceTabs.length)%serviceTabs.length;selectServiceTab(next);serviceTabs[next].focus();});});
   if(!reducedMotion.matches){
     const headlines=[...document.querySelectorAll('#main h1, #main h2')];
     const revealObserver=new IntersectionObserver(entries=>{

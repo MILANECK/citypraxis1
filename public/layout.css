@@ -151,6 +151,10 @@ p { font-size: 18px; line-height: 1.8; }
 .clinical-contents a { font-size: 14px; line-height: 1.55; color: var(--blue); }
 .clinical-reading .clinical-card { background: transparent; padding: 12px 0 30px; }
 .listing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; }
+.therapy-category-tabs { display: flex; gap: 8px; margin: 0 0 26px; padding: 6px; border: 0; border-radius: 18px; background: #f0f0ef; }
+.therapy-category-tabs button { flex: 1; min-width: 0; padding: 14px 18px; border: 0; border-radius: 13px; background: transparent; color: var(--ink); }
+.therapy-category-tabs button[aria-selected="true"] { background: #fff; color: var(--blue); box-shadow: 0 3px 12px #2223440a; }
+.service-category-panel[hidden] { display: none !important; }
 .listing-card { padding: 36px; display: flex; flex-direction: column; align-items: flex-start; }
 .listing-card h2 { font-size: 28px; }
 .listing-card p { font-size: 17px; line-height: 1.8; }
@@ -168,6 +172,8 @@ p { font-size: 18px; line-height: 1.8; }
   .clinical-layout { gap: 32px; }
 }
 @media (max-width: 767px) {
+  .therapy-category-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 5px; }
+  .therapy-category-tabs button { padding: 13px 8px; font-size: 13px; }
   .team-thumbnails { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
   .reviews-grid { grid-template-columns: 1fr; }
   html { scroll-padding-top: 95px; }
