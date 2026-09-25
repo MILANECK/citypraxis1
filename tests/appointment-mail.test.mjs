@@ -25,10 +25,10 @@ test('all selected concerns and full notes survive the legacy preview limit',()=
   const edited={appointmentConcerns:[{title:'Neue Kategorie',titleEn:'New category',custom:true}]};
   assert.equal(requestPreference({concerns:['New category'],symptoms:'My brief note'},null,edited).intake.other_concern,'My brief note');
   assert.throws(()=>requestPreference({concerns:['Kiefer']},null,edited));
-  const additional=requestPreference({concerns:["Children's health",'Speech therapy']},null,edited).intake.concerns;
-  assert.deepEqual(additional.map(item=>item.title),['Kindergesundheit','Logopädie']);
-  const ordered=requestPreference({concerns:['Other concern',"Children's health",'Speech therapy']},null).intake.concerns;
-  assert.deepEqual(ordered.map(item=>item.title),['Andere Beschwerden','Kindergesundheit','Logopädie']);
+  const additional=requestPreference({concerns:["Children's health",'Speech therapy','Massage']},null,edited).intake.concerns;
+  assert.deepEqual(additional.map(item=>item.title),['Kindergesundheit','Logopädie','Massage']);
+  const ordered=requestPreference({concerns:['Other concern',"Children's health",'Speech therapy','Massage']},null).intake.concerns;
+  assert.deepEqual(ordered.map(item=>item.title),['Andere Beschwerden','Kindergesundheit','Logopädie','Massage']);
 });
 
 test('email and Admin render the same complete information and escape visitor markup',()=>{

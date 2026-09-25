@@ -31,8 +31,9 @@ try{
   const choose=async(value,p=page)=>p.locator(`.concern-chip:has(input[value="${value}"])`).click();
   await page.getByRole('checkbox',{name:"Children's health"}).waitFor();
   await page.getByRole('checkbox',{name:'Speech therapy'}).waitFor();
+  await page.getByRole('checkbox',{name:'Massage',exact:true}).waitFor();
   const labels=await page.locator('.concern-chip span').allInnerTexts();
-  assert.deepEqual(labels.slice(-3),["Children's health",'Speech therapy','Other concern']);
+  assert.deepEqual(labels.slice(-4),["Children's health",'Speech therapy','Massage','Other concern']);
   await choose('Kiefer');await choose('Tinnitus');await choose('Andere Beschwerden');
   const custom=page.locator('.custom-symptoms');await custom.locator('textarea').fill('This is a synthetic browser test.');
   // Changing another category must not close or erase the Other concern field.

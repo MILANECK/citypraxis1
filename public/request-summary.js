@@ -1,6 +1,6 @@
 import {summaryRows} from './chat-model.js';
-export const defaultConcerns=[{title:'Kiefer',titleEn:'Jaw'},{title:'Kopf & Migräne',titleEn:'Headaches & migraine'},{title:'Tinnitus',titleEn:'Tinnitus'},{title:'Schwindel',titleEn:'Dizziness'},{title:'Unfall & OP',titleEn:'Injury & surgery'},{title:'Kindergesundheit',titleEn:"Children's health"},{title:'Logopädie',titleEn:'Speech therapy'},{title:'Andere Beschwerden',titleEn:'Other concern',custom:true}];
-const additionalConcerns=defaultConcerns.slice(5,7);
+export const defaultConcerns=[{title:'Kiefer',titleEn:'Jaw'},{title:'Kopf & Migräne',titleEn:'Headaches & migraine'},{title:'Tinnitus',titleEn:'Tinnitus'},{title:'Schwindel',titleEn:'Dizziness'},{title:'Unfall & OP',titleEn:'Injury & surgery'},{title:'Kindergesundheit',titleEn:"Children's health"},{title:'Logopädie',titleEn:'Speech therapy'},{title:'Massage',titleEn:'Massage'},{title:'Andere Beschwerden',titleEn:'Other concern',custom:true}];
+const additionalConcerns=defaultConcerns.slice(5,8);
 export function normalizeAppointmentConcerns(configured){
   const items=Array.isArray(configured)&&configured.length?configured:defaultConcerns;
   const concerns=items.map(item=>({...item}));
