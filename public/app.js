@@ -59,7 +59,7 @@ function processBlock() {
 function faqs() { return `<div class="faq-list">${data.faqs.map(f=>`<details><summary>${esc(f.title)}<span aria-hidden="true">+</span></summary><div>${paragraph(f.body)}</div></details>`).join('')}</div>`; }
 function heroMarkup(h,s,quickLinks='') {
   const video=h.heroMedia==='video' && h.video;
-  return `<section class="hero hero-immersive hero-${esc(h.heroHeight||'fullscreen')} overlay-${esc(h.heroOverlay||'balanced')} focus-${esc(h.heroPosition||'center')} mobile-focus-${esc(h.heroMobilePosition||'center')}" aria-label="Willkommen in der Citypraxis">
+  return `<section class="hero hero-immersive${video?' hero-video-parallax':''} hero-${esc(h.heroHeight||'fullscreen')} overlay-${esc(h.heroOverlay||'balanced')} focus-${esc(h.heroPosition||'center')} mobile-focus-${esc(h.heroMobilePosition||'center')}" aria-label="Willkommen in der Citypraxis">
     <div class="hero-media"><img class="hero-backdrop" src="${esc(optimizedImage(h.image))}" alt="${esc(h.heroAlt||'Einblicke in die Citypraxis Wien')}" fetchpriority="high" decoding="async">${video?`<video id="hero-video" class="hero-background-video" data-src="${esc(h.video)}" poster="${esc(optimizedImage(h.image))}" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>`:''}</div>
     <div class="hero-shade"></div><div class="container hero-stage"><div class="hero-copy"><span class="eyebrow"><span class="tiny-line"></span>${esc(h.eyebrow)}</span><h1>${esc(h.title)}<br><span>${esc(h.subtitle)}</span></h1><p>${esc(h.intro)}</p><div class="hero-actions"><a class="button" href="/termin">Ersttermin buchen ${arrow}</a><a class="urgent-button" href="/termin?akut=1"><span class="availability ${s.acuteAvailable?'is-available':''}"></span>Akuttermin anfragen ${arrow}</a></div></div></div>${quickLinks}
   </section>`;
@@ -102,7 +102,7 @@ function pricesBlock(){
   const en=I18n.language==='en',groups=[];
   for(const item of data.prices){const category=item.category|| (en?'Other':'Weitere');let group=groups.find(entry=>entry.category===category);if(!group){group={category,items:[]};groups.push(group);}group.items.push(item);}
   const tabs=groups.map((group,index)=>`<button id="price-tab-${index}" role="tab" aria-selected="${index===0}" aria-controls="price-panel-${index}" tabindex="${index===0?'0':'-1'}" data-price-tab="${index}">${esc(group.category)}</button>`).join('');
-  const panels=groups.map((group,index)=>`<section id="price-panel-${index}" class="price-category-panel" role="tabpanel" aria-labelledby="price-tab-${index}"${index?' hidden':''}><div class="reimbursement-wrap"><table class="reimbursement-table price-table"><caption>${esc(group.category)}</caption><thead><tr><th scope="col">${en?'Treatment':'Behandlung'}</th><th scope="col">${en?'Appointment / duration':'Termin / Dauer'}</th><th scope="col">${en?'Price':'Preis'}</th></tr></thead><tbody>${group.items.map(item=>`<tr><th scope="row"><strong>${esc(item.title)}</strong>${item.details?`<small>${esc(item.details)}</small>`:''}</th><td>${esc(item.duration||'')}</td><td>${item.amount?`${esc(item.amount)} €`:''}</td></tr>`).join('')}</tbody></table></div></section>`).join('');
+  const panels=groups.map((group,index)=>`<section id="price-panel-${index}" class="price-category-panel" role="tabpanel" aria-labelledby="price-tab-${index}"${index?' hidden':''}><div class="reimbursement-wrap"><table class="reimbursement-table price-table"><caption>${esc(group.category)}</caption><thead><tr><th scope="col">${en?'Treatment':'Behandlung'}</th><th scope="col">${en?'Appointment / duration':'Termin / Dauer'}</th><th scope="col">${en?'Price':'Preis'}</th></tr></thead><tbody>${group.items.map(item=>`<tr><th scope="row"><strong>${esc(item.title)}</strong>${item.details?`<small>${esc(item.details)}</small>`:''}</th><td>${esc(item.duration||'')}</td><td>${item.amount?`<span class="price-amount">${esc(item.amount)} €</span>`:''}</td></tr>`).join('')}</tbody></table></div></section>`).join('');
   return `<section class="clinical-card price-categories"><span class="eyebrow">${en?'PRICE LIST 2026':'PREISLISTE 2026'}</span><h2>${en?'Practice prices':'Praxispreise'}</h2><div class="price-category-tabs" role="tablist" aria-label="${en?'Price categories':'Preiskategorien'}">${tabs}</div>${panels}<aside class="private-practice-note"><strong>${en?'Private practitioners · no direct insurance contracts':'WahltherapeutInnen · keine Kassen'}</strong><span>${en?'Appointments by arrangement only':'Termine nur nach Vereinbarung'}</span></aside><p class="price-footnote">${en?'The stated times cover the total time for your appointment, including the preliminary conversation, changing and resting afterwards. The effective treatment time may therefore differ. Prices dated 12 January 2026; changes and errors excepted.':'Die angegebenen Zeiten umfassen den gesamten Zeitaufwand Ihres Termins einschließlich Vorgespräch, Umziehen und Nachruhen. Die effektive Behandlungszeit kann daher abweichen. Preisliste Stand 12. Januar 2026 – Änderungen und Irrtümer vorbehalten.'}</p></section><section class="clinical-card"><span class="eyebrow">RÜCKERSTATTUNG DURCH DIE KRANKENKASSE</span><h2>Rückerstattungstarife</h2><p class="source-date">Stand der übernommenen Tabelle: ${esc(data.reimbursements[0]?.asOf||'04/2023')} – alle Angaben ohne Gewähr. Diese Beträge sind Rückerstattungen, keine Behandlungspreise. Aktuelle Beträge bitte bei Ihrer Versicherung prüfen.</p><div class="reimbursement-wrap"><table class="reimbursement-table"><caption>Rückerstattung laut bisheriger Praxiswebsite</caption><thead><tr><th scope="col">Leistung</th><th scope="col">ÖGKK</th><th scope="col">BVAEB</th><th scope="col">KFA</th><th scope="col">SVS</th></tr></thead><tbody>${data.reimbursements.map(r=>`<tr><th scope="row">${esc(r.title)}</th>${['oegkk','bvaeb','kfa','svs'].map(k=>`<td>${esc(r[k])}${r[k]&&r[k]!=='–'?' €':''}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;
 }
 function teamThumbnail(t){
@@ -209,8 +209,24 @@ function bind() {
   $('.cookie-close',panel)?.addEventListener('click',acknowledgePrivacy);
   $('.cookie-acknowledge',panel)?.addEventListener('click',acknowledgePrivacy);
   const priceTabs=[...document.querySelectorAll('[data-price-tab]')];
-  const selectPriceTab=index=>{priceTabs.forEach((tab,i)=>{const active=i===index;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$(`#price-panel-${i}`).hidden=!active;});};
+  const revealPriceAmounts=panel=>{
+    if(!panel||panel.hidden||reducedMotion.matches)return;
+    const amounts=[...panel.querySelectorAll('.price-amount')];
+    amounts.forEach((amount,index)=>{amount.classList.add('price-amount-reveal');amount.classList.remove('is-visible');amount.style.setProperty('--price-delay',`${index*95}ms`);});
+    if(!amounts.length)return;
+    void panel.offsetHeight;
+    requestAnimationFrame(()=>amounts.forEach(amount=>amount.classList.add('is-visible')));
+  };
+  const selectPriceTab=index=>{priceTabs.forEach((tab,i)=>{const active=i===index;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$(`#price-panel-${i}`).hidden=!active;});revealPriceAmounts($(`#price-panel-${index}`));};
   priceTabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectPriceTab(index));tab.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?priceTabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+priceTabs.length)%priceTabs.length;selectPriceTab(next);priceTabs[next].focus();});});
+  const priceSection=document.querySelector('#main .price-categories');
+  const firstPricePanel=priceSection?.querySelector('.price-category-panel:not([hidden])');
+  if(priceSection&&firstPricePanel&&!reducedMotion.matches){
+    const amounts=[...firstPricePanel.querySelectorAll('.price-amount')];
+    amounts.forEach((amount,index)=>{amount.classList.add('price-amount-reveal');amount.style.setProperty('--price-delay',`${index*95}ms`);});
+    const pricesObserver=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){revealPriceAmounts(firstPricePanel);pricesObserver.disconnect();}},{threshold:.18,rootMargin:'0px 0px -4% 0px'});
+    pricesObserver.observe(priceSection);
+  }
   if(!reducedMotion.matches){
     const headlines=[...document.querySelectorAll('#main h1, #main h2')];
     const revealObserver=new IntersectionObserver(entries=>{
@@ -346,6 +362,20 @@ function bind() {
   const video=$('#hero-video');
   if(video) {
     const motion=reducedMotion;
+    const parallaxHero=$('.hero-video-parallax');
+    let parallaxFrame=0;
+    const updateVideoParallax=()=>{
+      if(parallaxFrame||motion.matches)return;
+      parallaxFrame=requestAnimationFrame(()=>{
+        parallaxFrame=0;
+        const bounds=parallaxHero.getBoundingClientRect();
+        if(bounds.bottom<0||bounds.top>innerHeight)return;
+        const progress=(innerHeight-bounds.top)/(innerHeight+bounds.height);
+        const distance=matchMedia('(max-width: 767px)').matches?10:18;
+        parallaxHero.style.setProperty('--hero-video-y',`${((progress-.5)*distance).toFixed(2)}px`);
+      });
+    };
+    if(parallaxHero){window.addEventListener('scroll',updateVideoParallax,{passive:true});window.addEventListener('resize',updateVideoParallax,{passive:true});motion.addEventListener('change',()=>{if(motion.matches)parallaxHero.style.removeProperty('--hero-video-y');else updateVideoParallax();});updateVideoParallax();}
     async function play(){if(!video.getAttribute('src'))video.src=video.dataset.src;video.muted=true;try{await video.play();}catch{}}
     video.addEventListener('playing',()=>video.classList.add('is-playing'));
     video.addEventListener('error',()=>video.classList.remove('is-playing'));

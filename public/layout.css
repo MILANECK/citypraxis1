@@ -439,11 +439,13 @@ footer{background:#f6f4f1;color:var(--ink)}
 .booking-layout #booking-form.booking-form-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0)}
 .weekly-hours>div.hours-row-reveal{opacity:0;transform:translate3d(-12px,5px,0);transition:opacity .62s ease var(--hours-delay,0ms),transform .76s cubic-bezier(.22,1,.36,1) var(--hours-delay,0ms);will-change:opacity,transform}
 .weekly-hours>div.hours-row-reveal.is-visible{opacity:1;transform:translate3d(0,0,0)}
+.price-table .price-amount.price-amount-reveal{display:inline-block;opacity:0;transform:translate3d(-12px,5px,0);transition:opacity .62s ease var(--price-delay,0ms),transform .76s cubic-bezier(.22,1,.36,1) var(--price-delay,0ms);will-change:opacity,transform}
+.price-table .price-amount.price-amount-reveal.is-visible{opacity:1;transform:translate3d(0,0,0)}
 .listing-grid .listing-card.listing-reveal{opacity:0;filter:blur(3px);transform:translate3d(0,18px,0) scale(.99);transition:opacity .82s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),filter .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),transform .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms);will-change:opacity,filter,transform}
 .listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
 @media(hover:hover){.listing-grid .listing-card.listing-reveal.is-visible:hover{transform:translate3d(0,-4px,0) scale(1)}}
 @media(prefers-reduced-motion:reduce){
-  .contact-grid .map-card.contact-map-reveal,.contact-grid .map-card.contact-map-reveal.is-visible,.booking-layout #booking-form.booking-form-reveal,.booking-layout #booking-form.booking-form-reveal.is-visible,.weekly-hours>div.hours-row-reveal,.weekly-hours>div.hours-row-reveal.is-visible,.listing-grid .listing-card.listing-reveal,.listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:none;transform:none;transition:none;will-change:auto}
+  .contact-grid .map-card.contact-map-reveal,.contact-grid .map-card.contact-map-reveal.is-visible,.booking-layout #booking-form.booking-form-reveal,.booking-layout #booking-form.booking-form-reveal.is-visible,.weekly-hours>div.hours-row-reveal,.weekly-hours>div.hours-row-reveal.is-visible,.price-table .price-amount.price-amount-reveal,.price-table .price-amount.price-amount-reveal.is-visible,.listing-grid .listing-card.listing-reveal,.listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:none;transform:none;transition:none;will-change:auto}
 }
 
 /* Clear, low-pressure concern choices in the appointment form. */
