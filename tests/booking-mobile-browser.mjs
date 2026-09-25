@@ -15,7 +15,7 @@ await mkdir('test-results',{recursive:true});
 try{
   for(const width of [375,390]){
     const page=await browser.newPage({viewport:{width,height:844},reducedMotion:'reduce'});
-    await page.route('**/api/requests',route=>route.fulfill({status:201,json:{id:99,patientReceipt:'not_configured',message:'Your request has been saved. Our secretary will contact you by phone or email to arrange an appointment.'}}));
+    await page.route('**/api/requests',route=>route.fulfill({status:201,json:{id:99,patientReceipt:'sent',message:'Your request has been saved. Our secretary will contact you by phone or email to arrange an appointment.'}}));
     await page.goto(`${origin}/termin?lang=en`);
     await page.locator('#booking-form').waitFor();
     await page.locator('.cookie-acknowledge').click();
@@ -40,7 +40,17 @@ try{
     const confirmation=await page.locator('#booking-form').boundingBox();
     assert.ok(confirmation.y>=80,`confirmation top ${confirmation.y}`);
     assert.ok(confirmation.y+confirmation.height<=844,`confirmation bottom ${confirmation.y+confirmation.height}`);
-    assert.equal(await page.locator('#booking-form.has-folder').count(),0);
+    assert.equal(await page.locator('#booking-form.has-folder').count(),1);
+    assert.equal(await page.locator('#booking-form .booking-folder-name').textContent(),'Test Patient');
+    const successLayout=await page.evaluate(()=>{
+      const rect=selector=>{const {x,y,width,height}=document.querySelector(selector).getBoundingClientRect();return {x,y,width,height};};
+      return {chat:rect('.chat-launch'),call:rect('.mobile-call'),book:rect('.mobile-appointment'),home:rect('#booking-form>.button')};
+    });
+    for(const circle of [successLayout.chat,successLayout.call,successLayout.book])assert.equal(circle.width,58);
+    assert.ok(Math.abs(successLayout.chat.y-successLayout.call.y)<1);
+    assert.ok(Math.abs(successLayout.call.y-successLayout.book.y)<1);
+    assert.ok(successLayout.chat.x+successLayout.chat.width<=successLayout.call.x);
+    assert.ok(successLayout.chat.y>=successLayout.home.y+successLayout.home.height||successLayout.chat.y+successLayout.chat.height<=successLayout.home.y);
     await page.screenshot({path:`test-results/booking-${width}-confirmation.png`});
     await page.close();
     console.log(`${width}px booking layout passed`);

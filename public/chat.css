@@ -110,3 +110,4 @@
   .chat-window:has(.conversation-preview){height:min(610px,calc(100dvh - 176px - env(safe-area-inset-bottom)))}
 }
 @media(max-width:767px) and (max-height:600px){.chat-window,.chat-window:has(.conversation-preview){bottom:12px;height:calc(100dvh - 24px)}}
+@media(max-width:767px){body:has(#booking-form.request-confirmation) #cp-chat .chat-launch{right:152px;bottom:calc(16px + env(safe-area-inset-bottom))}}

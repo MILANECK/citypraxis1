@@ -444,6 +444,7 @@ footer{background:#f6f4f1;color:var(--ink)}
 .booking-gradient-stage #booking-form{box-shadow:0 22px 60px #17193226}
 .booking-gradient-stage #booking-form.request-confirmation{align-self:center}
 @media(max-width:767px){.booking-gradient-stage>.booking-layout{padding-block:35px 70px}.booking-gradient-stage #booking-form{box-shadow:0 18px 45px #17193222}}
+@media(max-width:767px){.booking-gradient-stage:has(#booking-form.request-confirmation)>.booking-layout{padding-bottom:calc(145px + env(safe-area-inset-bottom))}}
 @media(max-width:767px){.booking-gradient-canvas{inset-inline:0;width:100%;-webkit-mask-image:none;mask-image:none}}
 
 /* The card grows a subtle folder edge as the visitor enters a name. */
