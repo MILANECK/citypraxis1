@@ -103,13 +103,16 @@ test('conversational reception validates, reviews, edits and submits exactly onc
     assert.equal((await call('finish',{confirmed:true})).code,'invalid_request');assert.equal(saved.length,0);
     assert.match((await turn('test@example.test')).message,/phone number/);
     const review=await turn('+43 699 12682157');assert.equal(review.ready,true);assert.ok(!review.summary.some(([key])=>['Source','Herkunft'].includes(key)));assert.ok(review.summary.some(([,v])=>v==='test@example.test'));assert.ok(!review.summary.some(([key])=>key==='Availability note'));
+    assert.equal((await call('review-choice',{field:'patient_status',value:'unknown'})).code,'invalid_request');
+    const statusChoice=await call('review-choice',{field:'patient_status',value:'existing'});assert.equal(statusChoice.ready,true);assert.deepEqual(statusChoice.summary.find(([key])=>key==='Patient status (self-reported)'),['Patient status (self-reported)','Yes — treated here before']);
+    const contactChoice=await call('review-choice',{field:'preferred_contact',value:'email'});assert.equal(contactChoice.ready,true);assert.deepEqual(contactChoice.summary.find(([key])=>key==='Preferred contact'),['Preferred contact','Email']);
     assert.match((await call('edit',{field:'availability'})).message,/days or times/);
     const withAvailability=await turn('Afternoons');assert.equal(withAvailability.ready,true);assert.deepEqual(withAvailability.summary.find(([key])=>key==='Availability note'),['Availability note','Afternoons']);
     assert.equal((await call('finish')).code,'consent_required');
     assert.match((await call('edit',{field:'email'})).message,/email address/);
     assert.equal((await turn('corrected@example.test')).ready,true);
     assert.equal((await call('finish',{confirmed:true})).status,201);
-    assert.equal((await call('finish',{confirmed:true})).duplicate,true);assert.equal(saved.length,1);assert.equal(saved[0].email,'corrected@example.test');assert.equal(saved[0].intake.conversation_version,2);assert.ok(saved[0].intake.transcript.length>5);
+    assert.equal((await call('finish',{confirmed:true})).duplicate,true);assert.equal(saved.length,1);assert.equal(saved[0].email,'corrected@example.test');assert.equal(saved[0].intake.patient_status_claimed,'existing');assert.equal(saved[0].intake.preferred_contact,'email');assert.equal(saved[0].intake.conversation_version,2);assert.ok(saved[0].intake.transcript.length>5);
     assert.equal((await turn('Again')).code,'already_submitted');
     assert.equal((await call('turn',{message:'Resume',turnNumber:2,consent:true,turnKey:randomUUID()},newSession())).code,'session_expired');
   }finally{process.env=old;}

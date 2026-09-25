@@ -1,11 +1,12 @@
 import {enhanceConfirmation} from '/confirmation.js';
+import {choices} from '/chat-model.js';
 const en=window.I18n?.language==='en',lang=en?'en':'de',t=(de,english)=>en?english:de;
 const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const storageKey='citypraxis-conversation-v2',consentVersion='citypraxis-reception-consent-2026-09-24';
 const welcome=t('Herzlich willkommen in der Citypraxis! Ich bin unser digitaler Empfang und helfe Ihnen gerne bei Fragen zur Praxis oder einer Terminanfrage. Wie dürfen wir Sie unterstützen?','Hello and welcome to CityPraxis! I’m our digital receptionist. I’ll gladly help with questions about our practice or prepare an appointment request with you. How can we help?');
 const errors={session_expired:t('Die Sitzung ist abgelaufen. Bitte beginnen Sie neu.','This session has expired. Please start again.'),rate_limit:t('Bitte versuchen Sie es später erneut oder nutzen Sie das Terminformular.','Please try later or use the appointment form.'),conversation_limit:t('Das Gesprächslimit ist erreicht. Sie können das Terminformular verwenden.','The conversation limit has been reached. You can use the appointment form.'),ai_unavailable:t('Der digitale Empfang ist gerade nicht verfügbar. Bitte nutzen Sie das Terminformular.','The digital receptionist is temporarily unavailable. Please use the appointment form.')};
 const blank=()=>({token:null,expires:0,started:false,consentVersion:null,messages:[],summary:null,ready:false,sent:null,outsideHours:false,patientReceipt:null,turnsRemaining:16,turnKey:null,pendingMessage:null,turnNumber:0,limitReached:false,emergency:false});
-let state=blank(),opened=false,busy=false;
+let state=blank(),opened=false,busy=false,openChoice=null;
 try{const saved=JSON.parse(sessionStorage.getItem(storageKey));if(saved?.expires>Date.now()&&saved.token&&saved.consentVersion===consentVersion)state={...state,...saved};else sessionStorage.removeItem(storageKey);}catch{}
 const persist=()=>{try{if(state.started&&!state.sent)sessionStorage.setItem(storageKey,JSON.stringify(state));}catch{}};
 const clear=()=>{try{sessionStorage.removeItem(storageKey);}catch{}};
@@ -49,13 +50,20 @@ async function revealReply(){
   if(review){review.hidden=false;scrollEnd();}
 }
 function summary(){
-  const fieldFor=key=>({'Name':'name','Email':'email','E-Mail':'email','Phone':'phone','Telefon':'phone','Your short description':'reason','Ihre kurze Beschreibung':'reason','Availability note':'availability','Hinweis zur Verfügbarkeit':'availability'})[key];
+  const fieldFor=key=>({'Name':'name','Patient status (self-reported)':'patient_status','Patientenstatus (eigene Angabe)':'patient_status','Email':'email','E-Mail':'email','Phone':'phone','Telefon':'phone','Preferred contact':'preferred_contact','Bevorzugter Kontakt':'preferred_contact','Your short description':'reason','Ihre kurze Beschreibung':'reason','Availability note':'availability','Hinweis zur Verfügbarkeit':'availability'})[key];
+  const choiceFields={patient_status:{model:'patient_status_claimed',values:['existing','new','unsure']},preferred_contact:{model:'preferred_contact',values:['email','phone','either']}};
   const rows=(state.summary||[]).filter(([key])=>!['Source','Herkunft'].includes(key));
   if(!rows.some(([key])=>fieldFor(key)==='availability'))rows.push([t('Hinweis zur Verfügbarkeit','Availability note'),t('Keine Angabe','Not specified')]);
   return `<div class="conversation-summary">${rows.map(([key,value])=>{
     const field=fieldFor(key),editable=field&&state.turnsRemaining>0;
-    const inner=`<span class="conversation-summary-text"><span class="conversation-summary-label">${esc(key)}</span><span class="conversation-summary-value">${esc(value)}</span></span>`;
-    return editable?`<button type="button" class="conversation-summary-row is-editable" data-edit="${field}" aria-label="${esc(t('Bearbeiten: ','Edit: ')+key)}">${inner}<span class="conversation-row-action" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m15 5 4 4M4 20l4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/></svg>${t('Ändern','Edit')}</span></button>`:`<div class="conversation-summary-row">${inner}</div>`;
+    const label=field==='patient_status'?t('Waren Sie schon in der Citypraxis in Behandlung?','Have you been treated at CityPraxis before?'):field==='preferred_contact'?t('Bevorzugter Kontakt (E-Mail / Telefon)','Preferred contact (email / phone)'):key;
+    const inner=`<span class="conversation-summary-text"><span class="conversation-summary-label">${esc(label)}</span><span class="conversation-summary-value">${esc(value)}</span></span>`;
+    const action=`<span class="conversation-row-action" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m15 5 4 4M4 20l4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/></svg>${t('Ändern','Edit')}</span>`;
+    if(!editable)return `<div class="conversation-summary-row">${inner}</div>`;
+    if(!choiceFields[field])return `<button type="button" class="conversation-summary-row is-editable" data-edit="${field}" aria-label="${esc(t('Bearbeiten: ','Edit: ')+label)}">${inner}${action}</button>`;
+    const expanded=openChoice===field,config=choiceFields[field];
+    const options=expanded?`<div class="conversation-choice-options" id="review-choices-${field}" role="group" aria-label="${esc(label)}">${config.values.map(id=>{const choice=choices[config.model][id][en?1:0];return `<button type="button" data-review-choice="${field}" data-value="${id}" aria-pressed="${String(choice===value)}">${esc(choice)}</button>`;}).join('')}</div>`:'';
+    return `<div class="conversation-choice-group"><button type="button" class="conversation-summary-row is-editable" data-review-choice-toggle="${field}" aria-expanded="${String(expanded)}"${expanded?` aria-controls="review-choices-${field}"`:''} aria-label="${esc(t('Bearbeiten: ','Edit: ')+label)}">${inner}${action}</button>${options}</div>`;
   }).join('')}</div>`;
 }
 function render(){
@@ -73,6 +81,8 @@ function bind(){
   content.querySelector('.conversation-compose')?.addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget,message=form.elements.message.value.trim();if(!message)return;run(async()=>{if(state.pendingMessage!==message){state.turnKey=crypto.randomUUID();state.pendingMessage=message;}const result=await api('turn',{message,turnKey:state.turnKey,consent:true,turnNumber:state.turnNumber});state.turnNumber++;state.turnKey=null;state.messages.push({role:'visitor',text:message},{role:'assistant',text:result.message});state.ready=result.ready;state.summary=result.summary;state.turnsRemaining=result.turnsRemaining;state.limitReached=result.limitReached;state.emergency=result.emergency===true;persist();render();await revealReply();});});
   content.querySelector('.conversation-confirm')?.addEventListener('submit',event=>{event.preventDefault();run(async()=>{const result=await api('finish',{confirmed:true});state.sent=result.id;state.outsideHours=result.officeOpen===false;state.patientReceipt=result.patientReceipt;clear();render();});});
   content.querySelectorAll('[data-edit]').forEach(button=>button.addEventListener('click',()=>run(async()=>{const result=await api('edit',{field:button.dataset.edit});state.messages.push({role:'assistant',text:result.message});state.ready=false;state.summary=null;persist();render();})));
+  content.querySelectorAll('[data-review-choice-toggle]').forEach(button=>button.addEventListener('click',()=>{openChoice=openChoice===button.dataset.reviewChoiceToggle?null:button.dataset.reviewChoiceToggle;render();if(openChoice)requestAnimationFrame(()=>content.querySelector(`#review-choices-${openChoice}`)?.scrollIntoView({block:'nearest'}));}));
+  content.querySelectorAll('[data-review-choice]').forEach(button=>button.addEventListener('click',()=>run(async()=>{const result=await api('review-choice',{field:button.dataset.reviewChoice,value:button.dataset.value});state.summary=result.summary;state.turnsRemaining=result.turnsRemaining;openChoice=null;persist();render();})));
   content.querySelector('#conversation-input')?.addEventListener('keydown',event=>{if(state.started&&event.key==='Enter'&&!event.shiftKey){event.preventDefault();event.currentTarget.form.requestSubmit();}});
 }
 $('.chat-launch').onclick=()=>setOpen(!opened);

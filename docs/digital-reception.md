@@ -20,12 +20,15 @@ are not a billing cap.
 ## Visitor flow and boundaries
 
 The visitor starts with one general processing consent, then chats in German or
-English. There is no separate optional OpenAI switch. The introduction names
-OpenAI and links to privacy information and the ordinary appointment form.
+English. There is no separate optional OpenAI switch. The consent links to
+privacy information, and the visitor can use the ordinary appointment form.
 Luna answers administrative questions using published practice information and
 extracts explicitly supplied details. Server validation controls contact fields,
 missing questions, review and submission. No live appointment calendar is connected.
 The visitor reviews and can correct the concern, name, email, phone and preferences.
+The final review asks explicitly whether they have been treated at CityPraxis
+before and lets them choose their preferred contact method (email, phone or
+either). These choices update the stored request directly without another AI turn.
 Only an explicit final send stores the request and emails the secretary. An email
 failure keeps the request available in Admin for retry. Email identifies Chatbot
 as its source; Admin also shows the submitted conversation.

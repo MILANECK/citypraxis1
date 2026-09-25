@@ -141,7 +141,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
   const sessions=new Map(),limit=makeLimiter();
   const prune=()=>{for(const [id,s] of sessions)if(s.expires<Date.now())sessions.delete(id);};
   async function handle(req,path,body,json){
-    if(!['/api/chat/turn','/api/chat/edit','/api/chat/finish'].includes(path))return false;
+    if(!['/api/chat/turn','/api/chat/edit','/api/chat/review-choice','/api/chat/finish'].includes(path))return false;
     let locked;
     try{
       if(req.method!=='POST')throw new ChatError('not_found',404);
@@ -151,6 +151,16 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       if(!s){if(path!=='/api/chat/turn'||body.turnNumber>0)throw new ChatError('session_expired',401);if(body.consent!==true)throw new ChatError('consent_required');if(sessions.size>=1000)throw new ChatError('rate_limit',429);s={expires:token.expires,messages:[],draft:{},turns:0,submitted:null,lastTurn:null};sessions.set(token.id,s);setTimeout(()=>sessions.delete(token.id),Math.max(0,token.expires-Date.now())).unref();}
       if(s.busy)throw new ChatError('busy',409);s.busy=true;locked=s;
       const lang=body.language==='en'?'en':'de';
+      if(path==='/api/chat/review-choice'){
+        if(s.submitted)throw new ChatError('already_submitted',409);
+        if(s.turns>=CONVERSATION_LIMIT)throw new ChatError('conversation_limit',429);
+        if(nextSlot(s.draft)!=='review')throw new ChatError('invalid_request');
+        const allowed={patient_status:['new','existing','unsure'],preferred_contact:['email','phone','either']};
+        if(!Object.hasOwn(allowed,body.field)||!allowed[body.field].includes(body.value))throw new ChatError('invalid_request');
+        s.draft[body.field]=body.value;
+        s.lastTurn=null;
+        json(200,{ready:true,summary:summaryRows(makeIntake(s,lang),lang),turnsRemaining:CONVERSATION_LIMIT-s.turns});return true;
+      }
       if(path==='/api/chat/edit'){
         if(s.submitted)throw new ChatError('already_submitted',409);
         if(s.turns>=CONVERSATION_LIMIT)throw new ChatError('conversation_limit',429);
