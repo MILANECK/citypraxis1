@@ -1,9 +1,9 @@
 import {text,phone,emailValid,ChatError} from './chat/validation.mjs';
-import {defaultConcerns} from '../public/request-summary.js';
+import {normalizeAppointmentConcerns} from '../public/request-summary.js';
 export const validTherapistId=value=>typeof value==='string'&&/^[a-z0-9-]{1,100}$/.test(value);
 export function requestPreference(body,therapist,settings={}){
   const language=body.language==='en'?'en':'de';
-  const available=Array.isArray(settings.appointmentConcerns)&&settings.appointmentConcerns.length?settings.appointmentConcerns:defaultConcerns;
+  const available=normalizeAppointmentConcerns(settings.appointmentConcerns);
   const incoming=body.concerns===undefined?(body.concern?[body.concern]:[]):body.concerns;
   if(!Array.isArray(incoming)||incoming.length>20)throw new ChatError('invalid_choice');
   const concerns=[];

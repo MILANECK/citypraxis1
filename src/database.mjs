@@ -7,6 +7,7 @@ import {childrenService,refineTherapyRecord} from './therapy-catalog.mjs';
 import originalContent from './original-content.json' with {type:'json'};
 import { englishContent } from './english-content.mjs';
 import { importTherapistsSqlite } from './therapist-import.mjs';
+import { normalizeAppointmentConcerns } from '../public/request-summary.js';
 
 export const collections = Object.keys(seed);
 export function passwordHash(password) {
@@ -226,6 +227,7 @@ export function contentSnapshot(db, admin = false) {
     const value = admin ? row.draft : row.published;
     if (value) {
       const record={...JSON.parse(value)};
+      if(row.collection==='settings'&&Array.isArray(record.appointmentConcerns))record.appointmentConcerns=normalizeAppointmentConcerns(record.appointmentConcerns);
       if(row.collection==='services'&&record.id==='kindergesundheit'){delete record.methods;delete record.methodsEn;}
       result[row.collection].push({ ...record, ...(admin ? { published: Boolean(row.published), dirty: row.draft !== row.published } : {}) });
     }

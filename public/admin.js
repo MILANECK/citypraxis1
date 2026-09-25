@@ -1,5 +1,5 @@
 import {renderChatIntake,chatIntake} from './admin-chat.js?v=conversation-2';
-import {requestSource} from './request-summary.js';
+import {requestSource,normalizeAppointmentConcerns} from './request-summary.js?v=booking-concerns-1';
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={pages:'Seiten',symptoms:'Schwerpunkte',services:'Therapien',team:'Team',reviews:'Bewertungen',faqs:'Häufige Fragen',prices:'Praxispreise',reimbursements:'Rückerstattung',settings:'Praxisdaten'};
@@ -14,7 +14,7 @@ const fields={
   reimbursements:[['title','Leistung'],['oegkk','ÖGKK (€)'],['bvaeb','BVAEB (€)'],['kfa','KFA (€)'],['svs','SVS (€)'],['asOf','Tabellenstand (MM/JJJJ)']],
   settings:[['title','Bezeichnung'],['appointmentConcerns','Terminformular: Auswahlkategorien','concern-list'],['reviewsTitle','Bewertungen: Abschnittsüberschrift'],['reviewsIntro','Bewertungen: Einleitung','textarea'],['email','E-Mail','email'],['phone','Telefon'],['address','Adresse'],['city','PLZ & Ort'],['hours','Terminzeiten'],...['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'].map((day,i)=>[['monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday'][i],day]),['payment','Zahlungshinweis','textarea'],['acute','Akuttermin-Hinweis'],['acuteAvailable','Aktuelle Akutverfügbarkeit bestätigt','checkbox']]
 };
-const defaultAppointmentConcerns=[{title:'Kiefer',titleEn:'Jaw'},{title:'Kopf & Migräne',titleEn:'Headaches & migraine'},{title:'Tinnitus',titleEn:'Tinnitus'},{title:'Schwindel',titleEn:'Dizziness'},{title:'Unfall & OP',titleEn:'Injury & surgery'},{title:'Andere Beschwerden',titleEn:'Other concern',custom:true}];
+const defaultAppointmentConcerns=[{title:'Kiefer',titleEn:'Jaw'},{title:'Kopf & Migräne',titleEn:'Headaches & migraine'},{title:'Tinnitus',titleEn:'Tinnitus'},{title:'Schwindel',titleEn:'Dizziness'},{title:'Unfall & OP',titleEn:'Injury & surgery'},{title:'Kindergesundheit',titleEn:"Children's health"},{title:'Logopädie',titleEn:'Speech therapy'},{title:'Andere Beschwerden',titleEn:'Other concern',custom:true}];
 fields.settings.push(['chatEmergency','Chat: Notfallhinweis','textarea']);
 let user,content={},view='overview',requests=[],staff=[],recoveryAccessToken='';
 const heroFields=[['heroMedia','Hintergrund','select',[['video','Video'],['image','Foto']]],['image','Foto / Video-Standbild','media-image'],['video','Hintergrundvideo','media-video'],['heroAlt','Medienbeschreibung'],['heroHeight','Höhe','select',[['fullscreen','Bildschirmfüllend'],['large','Groß (kompakter)']]],['heroPosition','Bildausschnitt Desktop','select',[['left','Links'],['center','Mitte'],['right','Rechts']]],['heroMobilePosition','Bildausschnitt Mobil','select',[['left','Links'],['center','Mitte'],['right','Rechts']]],['heroOverlay','Abdunklung für lesbaren Text','select',[['soft','Leicht'],['balanced','Ausgewogen'],['strong','Stark']]]];
@@ -170,7 +170,7 @@ function fieldHtml([name,label,type='text',options],record){
     return `<fieldset class="social-list-field" data-social-editor><legend>${label}</legend><p>Instagram oder Facebook auswählen und den vollständigen Profil-Link eintragen. Veröffentlichen, damit das Symbol im Footer erscheint.</p><input type="hidden" name="${name}" value="${esc(JSON.stringify(items))}"><div class="social-editor-rows">${items.map(socialRow).join('')}</div><button type="button" class="button button-outline add-social">+ Plattform hinzufügen</button></fieldset>`;
   }
   if(type==='concern-list'){
-    const items=Array.isArray(record[name])&&record[name].length?record[name]:defaultAppointmentConcerns;
+    const items=normalizeAppointmentConcerns(Array.isArray(record[name])&&record[name].length?record[name]:defaultAppointmentConcerns);
     const rows=items.map((item,index)=>concernRow(item,index)).join('');
     return `<fieldset class="concern-list-field" data-concern-editor><legend>${label}</legend><p>Jede Zeile erscheint als Auswahlknopf im Terminanfrageformular. Deutsch und Englisch werden gemeinsam gepflegt.</p><input type="hidden" name="${name}" value="${esc(JSON.stringify(items))}"><div class="concern-editor-rows">${rows}</div><button type="button" class="button button-outline add-concern">+ Kategorie hinzufügen</button></fieldset>`;
   }

@@ -13,7 +13,7 @@ import {renderChatIntake} from '../public/admin-chat.js';
 test('all selected concerns and full notes survive the legacy preview limit',()=>{
   const body={concerns:[...defaultConcerns.map(c=>c.title),'Kiefer'],symptoms:'s'.repeat(220),preference:'p'.repeat(300),language:'en'};
   const result=requestPreference(body,null);
-  assert.equal(result.intake.concerns.length,6);
+  assert.equal(result.intake.concerns.length,defaultConcerns.length);
   assert.equal(result.intake.other_concern.length,220);
   assert.equal(result.intake.availability.length,300);
   assert.equal(result.value.length,300);
@@ -25,6 +25,10 @@ test('all selected concerns and full notes survive the legacy preview limit',()=
   const edited={appointmentConcerns:[{title:'Neue Kategorie',titleEn:'New category',custom:true}]};
   assert.equal(requestPreference({concerns:['New category'],symptoms:'My brief note'},null,edited).intake.other_concern,'My brief note');
   assert.throws(()=>requestPreference({concerns:['Kiefer']},null,edited));
+  const additional=requestPreference({concerns:["Children's health",'Speech therapy']},null,edited).intake.concerns;
+  assert.deepEqual(additional.map(item=>item.title),['Kindergesundheit','Logopädie']);
+  const ordered=requestPreference({concerns:['Other concern',"Children's health",'Speech therapy']},null).intake.concerns;
+  assert.deepEqual(ordered.map(item=>item.title),['Andere Beschwerden','Kindergesundheit','Logopädie']);
 });
 
 test('email and Admin render the same complete information and escape visitor markup',()=>{

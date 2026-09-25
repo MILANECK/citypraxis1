@@ -1,5 +1,17 @@
 import {summaryRows} from './chat-model.js';
-export const defaultConcerns=[{title:'Kiefer',titleEn:'Jaw'},{title:'Kopf & Migräne',titleEn:'Headaches & migraine'},{title:'Tinnitus',titleEn:'Tinnitus'},{title:'Schwindel',titleEn:'Dizziness'},{title:'Unfall & OP',titleEn:'Injury & surgery'},{title:'Andere Beschwerden',titleEn:'Other concern',custom:true}];
+export const defaultConcerns=[{title:'Kiefer',titleEn:'Jaw'},{title:'Kopf & Migräne',titleEn:'Headaches & migraine'},{title:'Tinnitus',titleEn:'Tinnitus'},{title:'Schwindel',titleEn:'Dizziness'},{title:'Unfall & OP',titleEn:'Injury & surgery'},{title:'Kindergesundheit',titleEn:"Children's health"},{title:'Logopädie',titleEn:'Speech therapy'},{title:'Andere Beschwerden',titleEn:'Other concern',custom:true}];
+const additionalConcerns=defaultConcerns.slice(5,7);
+export function normalizeAppointmentConcerns(configured){
+  const items=Array.isArray(configured)&&configured.length?configured:defaultConcerns;
+  const concerns=items.map(item=>({...item}));
+  for(const addition of additionalConcerns){
+    if(!concerns.some(item=>item.title===addition.title||item.titleEn===addition.titleEn)){
+      const firstCustom=concerns.findIndex(item=>item.custom===true);
+      concerns.splice(firstCustom<0?concerns.length:firstCustom,0,{...addition});
+    }
+  }
+  return concerns;
+}
 export function requestSource(intake){
   if(intake?.kind==='digital_reception')return 'chatbot';
   return intake?.therapist?.id?'therapist_profile':'first_appointment';

@@ -12,6 +12,7 @@ import {mediaInUse,mediaDownloadName} from './media-library.mjs';
 import {createConversationService,conversationFacts} from './chat/conversation.mjs';
 import {createChatService} from './chat/service.mjs';
 import {supabaseChatStore} from './chat/store.mjs';
+import {normalizeAppointmentConcerns} from '../public/request-summary.js';
 
 const root = resolve('public');
 const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.mp4':'video/mp4' };
@@ -26,6 +27,7 @@ function snapshots(rows, admin = false) {
     const value = admin ? row.draft : row.published;
     if (value) {
       const record={...value};
+      if(row.collection==='settings'&&Array.isArray(record.appointmentConcerns))record.appointmentConcerns=normalizeAppointmentConcerns(record.appointmentConcerns);
       if(row.collection==='services'&&record.id==='kindergesundheit'){delete record.methods;delete record.methodsEn;}
       result[row.collection].push({ ...record, ...(admin ? { published:Boolean(row.published), dirty:JSON.stringify(row.draft)!==JSON.stringify(row.published) } : {}) });
     }
