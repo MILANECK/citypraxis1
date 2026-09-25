@@ -61,7 +61,7 @@ function heroMarkup(h,s,quickLinks='') {
   const video=h.heroMedia==='video' && h.video;
   return `<section class="hero hero-immersive${video?' hero-video-parallax':''} hero-${esc(h.heroHeight||'fullscreen')} overlay-${esc(h.heroOverlay||'balanced')} focus-${esc(h.heroPosition||'center')} mobile-focus-${esc(h.heroMobilePosition||'center')}" aria-label="Willkommen in der Citypraxis">
     <div class="hero-media"><img class="hero-backdrop" src="${esc(optimizedImage(h.image))}" alt="${esc(h.heroAlt||'Einblicke in die Citypraxis Wien')}" fetchpriority="high" decoding="async">${video?`<video id="hero-video" class="hero-background-video" data-src="${esc(h.video)}" poster="${esc(optimizedImage(h.image))}" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>`:''}</div>
-    <div class="hero-shade"></div><div class="hero-dot-field" aria-hidden="true"></div><div class="container hero-stage"><div class="hero-copy"><span class="eyebrow"><span class="tiny-line"></span>${esc(h.eyebrow)}</span><h1>${esc(h.title)}<br><span>${esc(h.subtitle)}</span></h1><p>${esc(h.intro)}</p><div class="hero-actions"><a class="button" href="/termin">Ersttermin buchen ${arrow}</a><a class="urgent-button" href="/termin?akut=1"><span class="availability ${s.acuteAvailable?'is-available':''}"></span>Akuttermin anfragen ${arrow}</a></div></div></div>${quickLinks}
+    <div class="hero-shade"></div><div class="container hero-stage"><div class="hero-copy"><span class="eyebrow"><span class="tiny-line"></span>${esc(h.eyebrow)}</span><h1>${esc(h.title)}<br><span>${esc(h.subtitle)}</span></h1><p>${esc(h.intro)}</p><div class="hero-actions"><a class="button" href="/termin">Ersttermin buchen ${arrow}</a><a class="urgent-button" href="/termin?akut=1"><span class="availability ${s.acuteAvailable?'is-available':''}"></span>Akuttermin anfragen ${arrow}</a></div></div></div>${quickLinks}
   </section>`;
 }
 function therapyCard(s) {
@@ -351,30 +351,37 @@ function bind() {
   });
   const urgent=$('.urgent-button');
   if(urgent){
+    let glowReset;
     urgent.addEventListener('pointermove',event=>{
       if(event.pointerType==='touch'||reducedMotion.matches)return;
+      clearTimeout(glowReset);
       const bounds=urgent.getBoundingClientRect();
       urgent.style.setProperty('--glow-x', ((event.clientX-bounds.left)/bounds.width*100)+'%');
       urgent.style.setProperty('--glow-y', ((event.clientY-bounds.top)/bounds.height*100)+'%');
+      urgent.classList.add('has-glow');
     });
-    urgent.addEventListener('pointerleave',()=>{urgent.style.removeProperty('--glow-x');urgent.style.removeProperty('--glow-y');});
+    urgent.addEventListener('pointerleave',()=>{
+      urgent.classList.remove('has-glow');
+      glowReset=setTimeout(()=>{urgent.style.removeProperty('--glow-x');urgent.style.removeProperty('--glow-y');},320);
+    });
   }
-  const dotField=$('.hero-dot-field'),dotHero=dotField?.closest('.hero');
-  if(dotField&&dotHero&&!reducedMotion.matches&&matchMedia('(hover:hover) and (pointer:fine)').matches){
+  const dotPage=$('#main.landing-dot-page');
+  if(dotPage&&!reducedMotion.matches&&matchMedia('(hover:hover) and (pointer:fine)').matches){
     let dotFrame=0,lastPointer;
-    dotHero.addEventListener('pointermove',event=>{
+    dotPage.addEventListener('pointermove',event=>{
       if(event.pointerType!=='mouse')return;
+      if(event.target.closest('.hero')){dotPage.classList.remove('has-pointer');return;}
       lastPointer=event;
       if(dotFrame)return;
       dotFrame=requestAnimationFrame(()=>{
         dotFrame=0;
-        const bounds=dotHero.getBoundingClientRect();
-        dotField.style.setProperty('--dot-x',`${((lastPointer.clientX-bounds.left)/bounds.width*100).toFixed(2)}%`);
-        dotField.style.setProperty('--dot-y',`${((lastPointer.clientY-bounds.top)/bounds.height*100).toFixed(2)}%`);
-        dotField.classList.add('has-pointer');
+        const bounds=dotPage.getBoundingClientRect();
+        dotPage.style.setProperty('--dot-x',`${(lastPointer.clientX-bounds.left).toFixed(1)}px`);
+        dotPage.style.setProperty('--dot-y',`${(lastPointer.clientY-bounds.top).toFixed(1)}px`);
+        dotPage.classList.add('has-pointer');
       });
     });
-    dotHero.addEventListener('pointerleave',()=>dotField.classList.remove('has-pointer'));
+    dotPage.addEventListener('pointerleave',()=>dotPage.classList.remove('has-pointer'));
   }
   const video=$('#hero-video');
   if(video) {
@@ -462,7 +469,8 @@ function bind() {
 const contentCacheKey='citypraxis-public-content-v4',contentCacheLifetime=5*60*1000;
 function renderApp(content,preview){
   data=I18n.localizeContent(content);
-  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+`<main id="main">${route()}</main>`+footer()+cookiePanel();
+  const landingPage=location.pathname==='/'||location.pathname==='';
+  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+`<main id="main"${landingPage?' class="landing-dot-page"':''}>${route()}</main>`+footer()+cookiePanel();
   I18n.apply();const title=$('h1')?.textContent;document.title=(title?`${title} · `:'')+'Citypraxis Wien';bind();
   if(['#team','#oeffnungszeiten'].includes(location.hash))requestAnimationFrame(()=>$(location.hash)?.scrollIntoView({block:'center'}));
 }
