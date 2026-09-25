@@ -48,7 +48,7 @@ body{background:var(--beige)}
 .faq-list details{border:0;background:white;border-radius:18px;margin-bottom:12px;padding-inline:24px}.faq-list summary{font-size:16px}.faq-list summary>span{color:var(--pink)}.faq-list details>div{padding-bottom:24px}
 .contact-banner{background:#e6f3f7;border:0;border-radius:30px}.contact-banner .button{background:var(--pink)}
 footer{background:var(--ink)}.footer-top h3{color:white}.footer-top p{color:#cfcee0}.footer-top a{color:#e6f3f7}.footer-bottom{border:0;color:#cfcee0}
-.listing-card,.info-card,.map-card,.form-card,.notice{border:0;border-radius:26px;box-shadow:0 12px 35px #22234404}.listing-card svg{color:var(--blue)}.map-card{background-color:var(--pale)}.map-pin{color:var(--blue)}
+.listing-card,.info-card,.map-card,.form-card,.notice{border:0;border-radius:26px;box-shadow:0 12px 35px #22234404}.listing-card svg{color:var(--blue)}.map-card{background-color:var(--pale)}.map-pin{color:var(--pink)}
 .booking-note{background:var(--pale);border-radius:24px}.form-notice{border:0;padding:12px;background:var(--beige);border-radius:10px}
 input,textarea,select{border:0;background:#f3f2f0;box-shadow:none;border-radius:10px}.mobile-booking{border:0;box-shadow:0 -6px 25px #22234408}.mobile-booking .button{background:var(--pink)}
 .price-list>div{border:0;background:white;margin-block:10px;border-radius:16px}.hero-immersive a:focus-visible,.video-toggle:focus-visible{outline:3px solid white;outline-offset:5px}

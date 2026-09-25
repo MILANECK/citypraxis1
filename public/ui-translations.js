@@ -2,7 +2,7 @@ const entries = `
 Therapien|Therapies
 Schwerpunkte|Specializations
 Preise|Prices
-Ablauf|Your visit
+Ersttermin|First visit
 Kontakt|Contact
 Mitten in Wien. Ganz bei Ihnen.|In the heart of Vienna. Here for you.
 Mitten in Wien.|In the heart of Vienna.
@@ -18,7 +18,7 @@ Besuchen Sie uns|Visit us
 Route planen|Get directions
 Wir sind für Sie da|We are here for you
 Gut zu wissen|Good to know
-Ablauf & Wahltherapie|Your visit & private therapy
+Ersttermin & Wahltherapie|First visit & private therapy
 Unsere Leistungen|Our therapies
 Impressum|Legal notice
 Datenschutz|Privacy
@@ -65,7 +65,7 @@ Gut vorbereitet.|Well prepared.
 In Ruhe ankommen.|Arrive at ease.
 Von der Verordnung bis zur Rückerstattung.|From referral to reimbursement.
 Wir erklären Ihnen die nächsten Schritte.|We explain your next steps.
-Alles zum Ablauf|Planning your visit
+Alles zum Ablauf|First visit details
 PREISE & WAHLTHERAPIE|PRICES & PRIVATE THERAPY
 Was kostet|How much does
 meine Behandlung?|my treatment cost?
