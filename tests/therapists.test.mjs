@@ -35,14 +35,14 @@ test('profile import preserves edited and unpublished records on rerun',()=>{
 for(const backend of ['sqlite','supabase'])test(`${backend}: booking records the published therapist, rejects missing/draft profiles and preserves notes`,async()=>{
   const originalFetch=global.fetch,keys=['SUPABASE_URL','SUPABASE_PUBLISHABLE_KEY','SUPABASE_SECRET_KEY','APP_ORIGIN'],env=Object.fromEntries(keys.map(k=>[k,process.env[k]]));
   delete process.env.APP_ORIGIN;
-  let db,server,saved,published=true;
+  let db,server,saved,published=true,publishedTherapist=therapistProfiles[0];
   const therapist=therapistProfiles[0];
   if(backend==='sqlite'){db=openDatabase(':memory:');server=createApp(db);}
   else{
     Object.assign(process.env,{SUPABASE_URL:'https://supabase.example',SUPABASE_PUBLISHABLE_KEY:'test-key',SUPABASE_SECRET_KEY:'test-secret'});
     global.fetch=async(url,options={})=>{
       const parsed=new URL(url);
-      if(parsed.pathname==='/rest/v1/content')return Response.json(published&&parsed.searchParams.get('id')===`eq.${therapist.id}`?[{published:therapist}]:[]);
+      if(parsed.pathname==='/rest/v1/content')return Response.json(published&&parsed.searchParams.get('id')===`eq.${therapist.id}`?[{published:publishedTherapist}]:[]);
       if(parsed.pathname==='/rest/v1/appointment_requests'){saved=JSON.parse(options.body);return Response.json([{id:1,...saved}]);}
       throw new Error(`Unexpected Supabase call: ${parsed.pathname}`);
     };
@@ -55,6 +55,12 @@ for(const backend of ['sqlite','supabase'])test(`${backend}: booking records the
     assert.equal((await post({})).status,201);
     if(db)saved=db.prepare('SELECT * FROM requests ORDER BY id DESC').get();
     assert.equal(saved.preference,`WunschtherapeutIn: ${therapist.title}\nAnliegen: Kiefer\nAfternoons`);
+    publishedTherapist={...therapist,bookable:false};
+    if(db)db.prepare("UPDATE content SET published=? WHERE collection='team' AND id=?").run(JSON.stringify(publishedTherapist),therapist.id);
+    assert.equal((await post({})).status,400,'disabled profile bookings are rejected');
+    publishedTherapist={...therapist,bookable:true};
+    if(db)db.prepare("UPDATE content SET published=? WHERE collection='team' AND id=?").run(JSON.stringify(publishedTherapist),therapist.id);
+    assert.equal((await post({})).status,201,'an enabled profile still accepts bookings');
     assert.equal((await post({therapistId:'missing'})).status,400);
     assert.equal((await post({therapistId:'invalid&id=other'})).status,400);
     assert.equal((await post({preference:'x'.repeat(301)})).status,400);

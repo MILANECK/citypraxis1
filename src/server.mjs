@@ -15,6 +15,7 @@ import {createAppointmentService} from './appointment-service.mjs';
 import {createConversationService,conversationFacts} from './chat/conversation.mjs';
 import {createChatService} from './chat/service.mjs';
 import {sqliteChatStore} from './chat/store.mjs';
+import {isTeamMemberBookable} from './team-booking.mjs';
 
 const root = resolve('public');
 const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.mp4':'video/mp4' };
@@ -25,7 +26,7 @@ export function createApp(db = openDatabase()) {
   const conversation=createConversationService({store:sqliteChatStore(db),getFacts:async()=>conversationFacts(contentSnapshot(db))});
   const chat=createChatService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{}});
   const appointment=createAppointmentService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{},getTherapist:async id=>{
-    const row=db.prepare("SELECT published FROM content WHERE collection='team' AND id=? AND published IS NOT NULL").get(id);return row?JSON.parse(row.published):null;
+    const row=db.prepare("SELECT published FROM content WHERE collection='team' AND id=? AND published IS NOT NULL").get(id);const therapist=row?JSON.parse(row.published):null;return therapist&&isTeamMemberBookable(therapist)?therapist:null;
   }});
   const attempts = new Map();
   function limit(key, max) {

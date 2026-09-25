@@ -12,6 +12,7 @@ import {mediaInUse,mediaDownloadName} from './media-library.mjs';
 import {createConversationService,conversationFacts} from './chat/conversation.mjs';
 import {createChatService} from './chat/service.mjs';
 import {supabaseChatStore} from './chat/store.mjs';
+import {isTeamMemberBookable} from './team-booking.mjs';
 import {normalizeAppointmentConcerns} from '../public/request-summary.js';
 
 const root = resolve('public');
@@ -40,7 +41,7 @@ export function createSupabaseApp() {
   const supabase = createSupabaseClient();
   const appointment=createAppointmentService({store:supabaseChatStore(supabase),getSettings:async()=>{
     const rows=await supabase.rest('content','?collection=eq.settings&select=published');return rows.find(r=>r.published)?.published||{};
-  },getTherapist:async id=>(await supabase.rest('content',`?collection=eq.team&id=${filter(id)}&published=not.is.null&select=published`))[0]?.published});
+  },getTherapist:async id=>{const therapist=(await supabase.rest('content',`?collection=eq.team&id=${filter(id)}&published=not.is.null&select=published`))[0]?.published;return therapist&&isTeamMemberBookable(therapist)?therapist:null;}});
   const chat=createChatService({store:supabaseChatStore(supabase),getSettings:async()=>{
     const rows=await supabase.rest('content','?collection=eq.settings&select=published');return rows.find(r=>r.published)?.published||{};
   }});

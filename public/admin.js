@@ -7,7 +7,7 @@ const fields={
   pages:[['title','Überschrift'],['subtitle','Zweite Zeile'],['eyebrow','Dachzeile'],['intro','Einleitung','textarea'],['body','Inhalt','textarea'],['image','Bildpfad']],
   symptoms:[['title','Name'],['subtitle','Kurzzeile'],['intro','Einleitung','textarea'],['body','Beschreibung','textarea'],['service','Leistung (URL-Kürzel)'],['icon','Symbol','select',['jaw','head','ear','balance','movement']]],
   services:[['title','Name'],['tag','Dachzeile'],['intro','Einleitung','textarea'],['body','Beschreibung (## Überschrift, - Aufzählung)','textarea'],['methods','Methoden (pro Zeile: Titel|Beschreibung)','textarea'],['image','Therapiefoto / Kartenbild','media-image'],['related','Verwandte Leistungen (URL-Kürzel, mit Komma getrennt)']],
-  team:[['title','Name'],['role','Fachrichtung'],['qualifications','Qualifikationen','textarea'],['body','Persönliche Vorstellung','textarea'],['specialties','Behandlungsschwerpunkte (eine Zeile mit - pro Punkt)','textarea'],['methods','Angebot & Methoden (eine Zeile mit - pro Punkt)','textarea'],['career','Beruflicher Werdegang (eine Zeile mit - pro Station)','textarea'],['phone','Telefon'],['email','E-Mail','email'],['image','Teamfoto (leere Auswahl entfernt das Foto)','media-image']],
+  team:[['title','Name'],['role','Fachrichtung'],['bookable','Buchungsanfragen über dieses Profil aktivieren','checkbox'],['qualifications','Qualifikationen','textarea'],['body','Persönliche Vorstellung','textarea'],['specialties','Behandlungsschwerpunkte (eine Zeile mit - pro Punkt)','textarea'],['methods','Angebot & Methoden (eine Zeile mit - pro Punkt)','textarea'],['career','Beruflicher Werdegang (eine Zeile mit - pro Station)','textarea'],['phone','Telefon'],['email','E-Mail','email'],['image','Teamfoto (leere Auswahl entfernt das Foto)','media-image']],
   reviews:[['title','Anzeigename'],['body','Freigegebene Bewertung (Originalwortlaut)','textarea'],['rating','Sterne','rating'],['source','Quelle (z. B. Google oder direktes Feedback)'],['sourceUrl','Link zur Originalbewertung (optional)','url']],
   faqs:[['title','Frage'],['body','Antwort','textarea']],
   prices:[['category','Kategorie'],['title','Behandlung / Preisposition'],['duration','Terminart oder Dauer'],['amount','Preis in Euro','number'],['details','Zusatzinformation','textarea']],
@@ -253,6 +253,7 @@ async function removeContent(collection,record){
   }catch(error){toast(error.message);}
 }
 function editContent(collection,record={}){
+  if(collection==='team')record={...record,bookable:typeof record.bookable==='boolean'?record.bookable:!(/\b(?:lisa|petra)\b/i.test(`${record.id||''} ${record.title||''}`)||/\b(?:secretary|receptionist|sekretär(?:in)?|sekretaer(?:in)?|rezeption(?:ist(?:in)?)?)\b/i.test(record.role||''))};
   const isNew=!record.id;
   if(collection==='reviews'&&isNew&&(content.reviews||[]).length>=3){toast(I18n.language==='en'?'All three review slots are filled. Edit or delete an existing review.':'Alle drei Bewertungsplätze sind belegt. Bitte bearbeiten oder löschen Sie eine bestehende Bewertung.');return;}
   if(collection==='team'&&isNew&&(content.team||[]).length>=20){toast('Es können höchstens 20 Teamprofile angelegt werden.');return;}
