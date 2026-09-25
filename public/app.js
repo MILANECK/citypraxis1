@@ -61,7 +61,7 @@ function heroMarkup(h,s,quickLinks='') {
   const video=h.heroMedia==='video' && h.video;
   return `<section class="hero hero-immersive${video?' hero-video-parallax':''} hero-${esc(h.heroHeight||'fullscreen')} overlay-${esc(h.heroOverlay||'balanced')} focus-${esc(h.heroPosition||'center')} mobile-focus-${esc(h.heroMobilePosition||'center')}" aria-label="Willkommen in der Citypraxis">
     <div class="hero-media"><img class="hero-backdrop" src="${esc(optimizedImage(h.image))}" alt="${esc(h.heroAlt||'Einblicke in die Citypraxis Wien')}" fetchpriority="high" decoding="async">${video?`<video id="hero-video" class="hero-background-video" data-src="${esc(h.video)}" poster="${esc(optimizedImage(h.image))}" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>`:''}</div>
-    <div class="hero-shade"></div><div class="container hero-stage"><div class="hero-copy"><span class="eyebrow"><span class="tiny-line"></span>${esc(h.eyebrow)}</span><h1>${esc(h.title)}<br><span>${esc(h.subtitle)}</span></h1><p>${esc(h.intro)}</p><div class="hero-actions"><a class="button" href="/termin">Ersttermin buchen ${arrow}</a><a class="urgent-button" href="/termin?akut=1"><span class="availability ${s.acuteAvailable?'is-available':''}"></span>Akuttermin anfragen ${arrow}</a></div></div></div>${quickLinks}
+    <div class="hero-shade"></div><div class="hero-dot-field" aria-hidden="true"></div><div class="container hero-stage"><div class="hero-copy"><span class="eyebrow"><span class="tiny-line"></span>${esc(h.eyebrow)}</span><h1>${esc(h.title)}<br><span>${esc(h.subtitle)}</span></h1><p>${esc(h.intro)}</p><div class="hero-actions"><a class="button" href="/termin">Ersttermin buchen ${arrow}</a><a class="urgent-button" href="/termin?akut=1"><span class="availability ${s.acuteAvailable?'is-available':''}"></span>Akuttermin anfragen ${arrow}</a></div></div></div>${quickLinks}
   </section>`;
 }
 function therapyCard(s) {
@@ -358,6 +358,23 @@ function bind() {
       urgent.style.setProperty('--glow-y', ((event.clientY-bounds.top)/bounds.height*100)+'%');
     });
     urgent.addEventListener('pointerleave',()=>{urgent.style.removeProperty('--glow-x');urgent.style.removeProperty('--glow-y');});
+  }
+  const dotField=$('.hero-dot-field'),dotHero=dotField?.closest('.hero');
+  if(dotField&&dotHero&&!reducedMotion.matches&&matchMedia('(hover:hover) and (pointer:fine)').matches){
+    let dotFrame=0,lastPointer;
+    dotHero.addEventListener('pointermove',event=>{
+      if(event.pointerType!=='mouse')return;
+      lastPointer=event;
+      if(dotFrame)return;
+      dotFrame=requestAnimationFrame(()=>{
+        dotFrame=0;
+        const bounds=dotHero.getBoundingClientRect();
+        dotField.style.setProperty('--dot-x',`${((lastPointer.clientX-bounds.left)/bounds.width*100).toFixed(2)}%`);
+        dotField.style.setProperty('--dot-y',`${((lastPointer.clientY-bounds.top)/bounds.height*100).toFixed(2)}%`);
+        dotField.classList.add('has-pointer');
+      });
+    });
+    dotHero.addEventListener('pointerleave',()=>dotField.classList.remove('has-pointer'));
   }
   const video=$('#hero-video');
   if(video) {

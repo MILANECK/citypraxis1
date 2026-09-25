@@ -214,6 +214,14 @@ try{
   await page.evaluate(()=>window.scrollTo(0,240));
   await page.waitForFunction(initial=>document.querySelector('.hero-video-parallax')?.style.getPropertyValue('--hero-video-y')!==initial,startingOffset);
   assert.notEqual(await videoHero.evaluate(el=>getComputedStyle(el.querySelector('.hero-background-video')).transform),'none');
+  const dotField=page.locator('.hero-dot-field');
+  await dotField.waitFor();
+  const heroBounds=await videoHero.boundingBox();
+  await page.mouse.move(heroBounds.x+80,Math.max(10,heroBounds.y+heroBounds.height/2));
+  await page.waitForFunction(()=>document.querySelector('.hero-dot-field')?.classList.contains('has-pointer'));
+  assert.match(await dotField.evaluate(el=>el.style.getPropertyValue('--dot-x')),/%$/);
+  await page.mouse.move(-10,-10);
+  await page.waitForFunction(()=>!document.querySelector('.hero-dot-field')?.classList.contains('has-pointer'));
   await page.locator('.chat-launch').waitFor();
   assert.equal(await page.locator('.chat-launch span').isVisible(),false);
   assert.equal(await page.locator('.mobile-booking a').count(),2);
