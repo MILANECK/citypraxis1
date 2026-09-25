@@ -166,7 +166,7 @@ function route() {
   if(path==='/preise')return article('Preise & Rückerstattung','Kosten und Informationen zur Wahltherapie.','',pricesBlock());
   if(path==='/ablauf-wahltherapie'){
     const page=data.pages.find(p=>p.id==='ablauf-wahltherapie');
-    return article(page?.title||'Private Wahltherapie',page?.intro||'Ihr Weg zur Behandlung','',''+processBlock()+`<div class="source-date">Die folgenden Angaben zur Verordnung und Versicherung wurden von der bisherigen Praxiswebsite übernommen. Bitte klären Sie aktuelle Vorgaben vor Behandlungsbeginn.</div><div class="clinical-reading">${clinicalBody(page?.body)}</div><a class="button" href="/preise">Preise & Rückerstattung ansehen ↗︎</a>`);
+    return article(page?.title||'Private Wahltherapie',page?.intro||'Ihr Weg zur Behandlung','',''+processBlock()+`<div class="clinical-reading">${clinicalBody(page?.body)}</div><a class="button" href="/preise">Preise & Rückerstattung ansehen ↗︎</a>`);
   }
   const parts=path.split('/');
   const collection=parts[1]==='schwerpunkte'?'symptoms':parts[1]==='leistungen'?'services':null;

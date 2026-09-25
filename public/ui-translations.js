@@ -127,7 +127,6 @@ SO ERREICHEN SIE UNS|GET IN TOUCH
 Termine|Appointments
 In Google Maps öffnen|Open in Google Maps
 Kosten und Informationen zur Wahltherapie.|Fees and information about private therapy.
-Die folgenden Angaben zur Verordnung und Versicherung wurden von der bisherigen Praxiswebsite übernommen. Bitte klären Sie aktuelle Vorgaben vor Behandlungsbeginn.|The following referral and insurance information was carried over from the original practice website. Please check current requirements before starting treatment.
 Preise & Rückerstattung ansehen|View prices & reimbursement
 Zur Behandlung|View treatment
 Unser Team|Our team
