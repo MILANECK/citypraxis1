@@ -65,10 +65,14 @@
 .conversation-summary-row.is-editable{cursor:pointer;transition:background .2s,border-color .2s,box-shadow .2s}
 .conversation-summary-row.is-editable:hover,.conversation-summary-row.is-editable:focus-visible{background:#eaf5f8;border-color:var(--chat-blue);box-shadow:0 3px 12px #0085ac15;outline:none}
 .conversation-summary-row[aria-expanded=true]{background:#eaf5f8;border-color:var(--chat-blue)}
-.conversation-choice-group{display:grid;gap:6px}
-.conversation-choice-options{display:grid;gap:6px;padding:2px 4px 7px}
+.conversation-choice-group{display:grid;gap:0}
+.conversation-choice-reveal{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .5s cubic-bezier(.65,0,.35,1),opacity .36s ease-in-out}
+.conversation-choice-group.is-open .conversation-choice-reveal{grid-template-rows:1fr;opacity:1}
+.conversation-choice-reveal-inner{min-height:0;overflow:hidden}
+.conversation-choice-options{display:grid;gap:6px;padding:8px 4px 7px}
 .conversation-choice-options button{min-height:44px;padding:9px 12px;border:1px solid #d5e5ea;border-radius:10px;background:#fff;text-align:left;color:#33465b;font-size:12px;line-height:1.4;transition:background .2s,border-color .2s}
 .conversation-choice-options button:hover,.conversation-choice-options button:focus-visible,.conversation-choice-options button[aria-pressed=true]{background:#eaf5f8;border-color:var(--chat-blue);outline:none}
+@media(prefers-reduced-motion:reduce){.conversation-choice-reveal,.conversation-choice-options button{transition:none}}
 .conversation-summary-text{display:grid;gap:4px;min-width:0}
 .conversation-summary-label{font-size:10px;color:var(--chat-muted)}
 .conversation-summary-value{font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}

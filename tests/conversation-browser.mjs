@@ -48,7 +48,13 @@ try{
     assert.equal(await page.locator('button[data-edit=reason] .conversation-row-action').isVisible(),true);
     assert.match(await page.locator('[data-review-choice-toggle=patient_status]').innerText(),lang==='en'?/treated at CityPraxis before/:/Citypraxis in Behandlung/);
     assert.match(await page.locator('[data-review-choice-toggle=preferred_contact]').innerText(),lang==='en'?/email \/ phone/:/E-Mail \/ Telefon/);
-    await page.locator('[data-review-choice-toggle=patient_status]').click();assert.equal(await page.locator('[data-review-choice=patient_status]').count(),3);
+    const statusToggle=page.locator('[data-review-choice-toggle=patient_status]'),statusReveal=page.locator('#review-choices-patient_status');
+    assert.equal(await statusReveal.evaluate(el=>el.inert),true);
+    assert.ok((await statusReveal.boundingBox()).height<1);
+    await statusToggle.click();assert.equal(await statusToggle.getAttribute('aria-expanded'),'true');assert.equal(await statusReveal.evaluate(el=>el.inert),false);assert.equal(await page.locator('[data-review-choice=patient_status]').count(),3);
+    if(!mobile){await page.waitForTimeout(120);const mid=(await statusReveal.boundingBox()).height;await page.waitForTimeout(440);const full=(await statusReveal.boundingBox()).height;assert.ok(mid>0&&mid<full);await statusToggle.click();await page.waitForTimeout(120);const closing=(await statusReveal.boundingBox()).height;assert.ok(closing>0&&closing<full);await page.waitForTimeout(440);}else await statusToggle.click();
+    assert.equal(await statusToggle.getAttribute('aria-expanded'),'false');assert.ok((await statusReveal.boundingBox()).height<1);
+    await statusToggle.click();
     await page.locator('[data-review-choice=patient_status][data-value=existing]').click();await page.waitForFunction(expected=>document.querySelector('[data-review-choice-toggle=patient_status]')?.textContent.includes(expected),lang==='en'?'treated here before':'bereits in Behandlung');
     await page.locator('[data-review-choice-toggle=preferred_contact]').click();assert.equal(await page.locator('[data-review-choice=preferred_contact]').count(),3);
     if(mobile)await page.screenshot({path:`test-results/conversation-${lang}-mobile-contact-options.png`});
