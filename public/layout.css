@@ -60,34 +60,37 @@ p { font-size: 18px; line-height: 1.8; }
 .reviews-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .review-card { margin: 0; padding: 30px; border-radius: 24px; background: white; display: flex; flex-direction: column; align-items: flex-start; }
 .review-quote { font: 64px/1 Georgia, serif; color: var(--blue); height: 50px; }
-.review-card blockquote { margin: 12px 0 24px; }
+.review-card blockquote { margin: 8px 0 18px; }
 .review-card blockquote p { font-size: 17px; margin-top: 0; }
 .review-card figcaption { margin-top: auto; font-size: 15px; }
-.review-card figcaption span { display: block; margin-top: 8px; color: var(--muted); font-size: 13px; }
+.review-card figcaption .review-person > span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; }
 .review-stars { color: var(--blue); letter-spacing: 3px; }
 .review-placeholder p { font-size: 17px; color: var(--muted); }
 .reviews-section + .first-visit { padding-top: 10px; }
-.review-card { box-shadow: 0 12px 38px #22234406; padding: 26px; min-height: 245px; }
-.review-card blockquote{margin:7px 0 14px}
+.review-card { box-shadow: 0 12px 38px #22234406; padding: 23px; min-height: 220px; }
+.review-card blockquote{margin:3px 0 10px}
 .review-card.review-reveal{opacity:0;transform:translateY(22px);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1);transition-delay:var(--review-delay,0ms)}
 .review-card.review-reveal.is-visible{opacity:1;transform:translateY(0)}
 @media(prefers-reduced-motion:reduce){.review-card.review-reveal{opacity:1;transform:none;transition:none}}
 .review-top { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-.reviews-grid .review-top{margin-bottom:8px}
-.review-top .review-quote { margin-left: auto; height: 35px; font-size: 56px; color: #99cede; }
+.reviews-grid .review-top{margin-bottom:4px}
+.review-top .review-quote { margin-left: auto; height: 30px; font-size: 52px; color: #99cede; }
 .review-stars { font-size: 21px; color: #951b81; letter-spacing: 3px; }
 .review-stars-empty { color: #aeb7c1; }
-.review-card figcaption { display: flex; gap: 13px; align-items: center; width: 100%; padding-top: 18px; }
-.reviews-grid .review-card figcaption{padding-top:12px}
+.review-card figcaption { display: flex; gap: 12px; align-items: center; width: 100%; padding-top: 12px; }
+.reviews-grid .review-card figcaption{padding-top:8px}
 .footer-top .footer-social{display:flex;align-items:center;gap:9px;margin-top:19px}
 .footer-top .footer-social a{display:grid;place-items:center;width:39px;height:39px;border:1px solid #c8d8dd;border-radius:50%;color:var(--blue);transition:color .25s ease,border-color .25s ease,background .25s ease,transform .3s cubic-bezier(.22,1,.36,1)}
 .footer-top .footer-social a:hover{color:#fff;border-color:var(--blue);background:var(--blue);transform:translateY(-2px)}
 .footer-social svg{display:block;width:20px;height:20px}
 @media(prefers-reduced-motion:reduce){.footer-top .footer-social a{transition:none}.footer-top .footer-social a:hover{transform:none}}
 .review-avatar, .review-card figcaption .review-avatar { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: #e6f3f7; color: #0085ac; font-size: 18px; font-weight: 600; margin: 0; }
-.review-card figcaption div > span { display: block; color: var(--muted); margin-top: 6px; font-size: 13px; }
+.review-person{min-width:0}
+.review-name-line{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px}
+.review-name-line strong{font-weight:600}
+.review-name-line .review-stars{flex:none;font-size:16px;line-height:1;letter-spacing:1px;white-space:nowrap}
 .review-source{display:block;margin-top:6px;color:var(--blue);font-size:13px;transition:color .2s ease}.review-source:hover{color:var(--pink)}
-.review-placeholder-footer { display: flex; gap: 13px; align-items: center; margin-top: auto; padding-top: 22px; color: var(--muted); font-size: 13px; }
+.review-placeholder-footer { display: flex; gap: 12px; align-items: center; margin-top: auto; padding-top: 12px; color: var(--muted); font-size: 13px; }
 .team-profiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; align-items: stretch; }
 .team-preview .team-profiles { margin-bottom: 0; }
 .team-person { padding: 0; border-radius: 12px; overflow: hidden; background: white; box-shadow: 0 8px 30px #22234404; }

@@ -1,6 +1,7 @@
 // Run against the disposable browser fixture, never production.
 import {createRequire} from 'node:module';
 import assert from 'node:assert/strict';
+import {mkdir} from 'node:fs/promises';
 const {chromium}=createRequire(import.meta.url)('C:/Users/kovac/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try{
@@ -31,6 +32,14 @@ try{
   const publicPage=await browser.newPage();await publicPage.goto('' + (process.env.QA_ORIGIN||'http://127.0.0.1:3011') + '/?lang=en');
   await publicPage.locator('.review-card blockquote').first().waitFor();
   assert.deepEqual(await publicPage.locator('.review-card blockquote').allTextContents(),['Independent review 1','Edited second review','Independent review 3']);
+  assert.equal(await publicPage.locator('.reviews-grid .review-card figcaption .review-stars').count(),3);
+  assert.equal(await publicPage.locator('.reviews-grid .review-top .review-stars').count(),0);
+  await publicPage.locator('.cookie-acknowledge').click();
+  await publicPage.locator('.reviews-grid').scrollIntoViewIfNeeded();
+  await publicPage.locator('.reviews-grid .review-card').last().waitFor({state:'visible'});
+  await publicPage.waitForTimeout(1050);
+  await mkdir('test-results',{recursive:true});
+  await publicPage.locator('.reviews-grid').screenshot({path:'test-results/review-cards-compact.png'});
   await page.locator(`[data-remove="${ids[2]}"]`).click();await page.locator('[data-confirm]').click();
   await page.waitForFunction(()=>document.querySelector('#new-content')?.disabled===false);
   console.log('Three independent reviews, edit isolation, display limit and deletion passed');
