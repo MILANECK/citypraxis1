@@ -7,7 +7,7 @@ export async function initBookingGradient(){
   const form=document.getElementById('booking-form');
   const syncCanvasStart=()=>{
     if(!stage||!form)return;
-    stage.style.setProperty('--booking-gradient-top',innerWidth<=767?`${Math.max(0,form.offsetTop-32)}px`:'0px');
+    stage.style.setProperty('--booking-gradient-top',innerWidth<=767?`${Math.max(0,form.offsetTop-72)}px`:'0px');
   };
   syncCanvasStart();
   addEventListener('resize',syncCanvasStart);

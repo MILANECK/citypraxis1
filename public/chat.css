@@ -94,7 +94,7 @@
 @media(max-height:600px){.chat-window:has(.conversation-preview){height:calc(100dvh - 24px)}}
 
 @media(max-width:767px){
-  .chat-launch{right:16px;bottom:calc(86px + env(safe-area-inset-bottom));display:grid;place-items:center;width:60px;height:60px;padding:0;border-radius:50%;gap:0}
+  .chat-launch{right:50px;bottom:calc(84px + env(safe-area-inset-bottom));display:grid;place-items:center;width:58px;height:58px;padding:0;border-radius:50%;gap:0}
   .chat-launch span{display:none}
   .chat-launch .chat-launch-icon{margin:0}
   .chat-window{bottom:calc(160px + env(safe-area-inset-bottom));height:min(610px,calc(100dvh - 176px - env(safe-area-inset-bottom)))}
