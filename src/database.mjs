@@ -224,7 +224,11 @@ export function contentSnapshot(db, admin = false) {
   const result = Object.fromEntries(collections.map(k => [k, []]));
   for (const row of db.prepare('SELECT * FROM content').all()) {
     const value = admin ? row.draft : row.published;
-    if (value) result[row.collection].push({ ...JSON.parse(value), ...(admin ? { published: Boolean(row.published), dirty: row.draft !== row.published } : {}) });
+    if (value) {
+      const record={...JSON.parse(value)};
+      if(row.collection==='services'&&record.id==='kindergesundheit'){delete record.methods;delete record.methodsEn;}
+      result[row.collection].push({ ...record, ...(admin ? { published: Boolean(row.published), dirty: row.draft !== row.published } : {}) });
+    }
   }
   for (const values of Object.values(result)) values.sort((a,b) => (a.order || 0) - (b.order || 0));
   return result;

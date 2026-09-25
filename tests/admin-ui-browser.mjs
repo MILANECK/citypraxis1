@@ -35,6 +35,9 @@ try{
   assert.match(serviceList,/Logopädie/);
   assert.match(serviceList,/Massage/);
   assert.doesNotMatch(serviceList,/Rückenfit/);
+  await page.locator('[data-edit="kindergesundheit"]').click();
+  assert.equal(await page.locator('#content-form [name=methods], #content-form [name=methodsEn]').count(),0);
+  await page.locator('#editor-dialog .close-dialog').click();
   await page.locator('[data-view=requests]').click();
   assert.equal(await page.locator('.request-count a').count(),0);
   const request=page.locator('.request-disclosure').first();
@@ -123,6 +126,17 @@ try{
   assert.match(therapyList,/Massage/);
   assert.doesNotMatch(therapyList,/Back fitness/);
   assert.doesNotMatch(therapyList,/Children's health|Fascial treatments|CRAFTA|Craniomandibular concept/i);
+  await page.goto(origin+'/leistungen/kindergesundheit?lang=de');
+  await page.locator('.service-article').waitFor();
+  const childrenText=await page.locator('.clinical-text').innerText();
+  assert.doesNotMatch(childrenText,/Physiotherapie für Kinder|Logopädie für Kinder|Osteopathie für Kinder/);
+  assert.equal(await page.locator('.clinical-text .faq-list').count(),0);
+  await page.goto(origin+'/leistungen/kindergesundheit?lang=en');
+  await page.locator('.service-article').waitFor();
+  const childrenTextEn=await page.locator('.clinical-text').innerText();
+  assert.doesNotMatch(childrenTextEn,/Physiotherapy for children|Speech therapy for children|Osteopathy for children/);
+  await page.goto(origin+'/leistungen?lang=en');
+  await page.locator('.service-listing').waitFor();
   await page.locator('.service-listing a[href^="/leistungen/physiotherapie"]').click();
   await page.locator('.related-links').waitFor();
   const physioApproaches=await page.locator('.clinical-text').innerText();

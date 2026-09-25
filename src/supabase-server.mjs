@@ -24,7 +24,11 @@ function snapshots(rows, admin = false) {
   const result = Object.fromEntries(collections.map(key => [key, []]));
   for (const row of rows) {
     const value = admin ? row.draft : row.published;
-    if (value) result[row.collection].push({ ...value, ...(admin ? { published:Boolean(row.published), dirty:JSON.stringify(row.draft)!==JSON.stringify(row.published) } : {}) });
+    if (value) {
+      const record={...value};
+      if(row.collection==='services'&&record.id==='kindergesundheit'){delete record.methods;delete record.methodsEn;}
+      result[row.collection].push({ ...record, ...(admin ? { published:Boolean(row.published), dirty:JSON.stringify(row.draft)!==JSON.stringify(row.published) } : {}) });
+    }
   }
   for (const values of Object.values(result)) values.sort((a,b)=>(a.order||0)-(b.order||0));
   return result;
