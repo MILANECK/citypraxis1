@@ -42,8 +42,8 @@ try{
   await page.locator('#booking-form [name=name]').fill('Alexandra Maria Beispiel');
   const longWidth=await page.locator('#booking-form').evaluate(el=>parseFloat(el.style.getPropertyValue('--booking-folder-width')));
   assert.ok(longWidth>shortWidth,`The raised edge should grow leftward with the name: ${shortWidth} -> ${longWidth}`);
-  const folderStyle=await page.locator('#booking-form').evaluate(el=>({background:getComputedStyle(el,'::before').backgroundColor,topLine:getComputedStyle(el,'::before').borderTopColor}));
-  assert.deepEqual(folderStyle,{background:'rgb(255, 255, 255)',topLine:'rgb(149, 27, 129)'});
+  const folderStyle=await page.locator('#booking-form').evaluate(el=>({tab:getComputedStyle(el,'::before').backgroundColor,curve:getComputedStyle(el,'::after').backgroundColor,topLine:getComputedStyle(el,'::before').borderTopWidth,curveShape:getComputedStyle(el,'::after').clipPath}));
+  assert.deepEqual({...folderStyle,curveShape:folderStyle.curveShape==='none'?'none':'curved'},{tab:'rgb(255, 255, 255)',curve:'rgb(255, 255, 255)',topLine:'0px',curveShape:'curved'});
   await page.locator('#booking-form [name=name]').fill('Browser Form Test');
   assert.equal(await page.locator('#booking-form').evaluate(el=>el.classList.contains('has-folder')),true);
   assert.equal(await folder.locator('.booking-folder-name').innerText(),'Browser Form Test');

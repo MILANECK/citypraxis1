@@ -446,13 +446,14 @@ footer{background:#f6f4f1;color:var(--ink)}
 
 /* The card grows a subtle folder edge as the visitor enters a name. */
 #booking-form{position:relative;overflow:visible}
-#booking-form::before{content:"";position:absolute;top:-38px;right:0;z-index:0;width:var(--booking-folder-width,140px);height:74px;background:#fff;border-top:3px solid var(--pink);clip-path:polygon(0 52%,32px 52%,66px 52%,100% 52%,100% 100%,0 100%);border-radius:0 17px 0 0;opacity:0;transform:translateY(8px);transition:width .6s cubic-bezier(.22,1,.36,1),clip-path .72s cubic-bezier(.22,1,.36,1),opacity .38s ease,transform .72s cubic-bezier(.22,1,.36,1);pointer-events:none}
-#booking-form.has-folder::before{clip-path:polygon(0 52%,32px 52%,66px 0,100% 0,100% 100%,0 100%);opacity:1;transform:translateY(0)}
+#booking-form::before{content:"";position:absolute;top:-38px;right:0;z-index:0;width:calc(var(--booking-folder-width,140px) - 68px);height:76px;background:#fff;border-radius:18px 18px 0 0;opacity:0;transform:translateY(9px) scaleX(.94);transform-origin:bottom right;transition:width .6s cubic-bezier(.22,1,.36,1),opacity .35s ease,transform .72s cubic-bezier(.22,1,.36,1);pointer-events:none}
+#booking-form::after{content:"";position:absolute;top:-38px;right:calc(var(--booking-folder-width,140px) - 88px);z-index:0;width:88px;height:38px;background:#fff;clip-path:path("M0 38 C32 38 39 0 88 0 L88 38 Z");opacity:0;transform:translateY(9px);transition:right .6s cubic-bezier(.22,1,.36,1),opacity .35s ease,transform .72s cubic-bezier(.22,1,.36,1);pointer-events:none}
+#booking-form.has-folder::before,#booking-form.has-folder::after{opacity:1;transform:translateY(0) scaleX(1)}
 .booking-folder{position:absolute;top:-27px;right:18px;z-index:1;width:calc(var(--booking-folder-width,140px) - 100px);color:var(--ink);opacity:0;transform:translateY(6px);transition:width .6s cubic-bezier(.22,1,.36,1),opacity .3s ease,transform .5s cubic-bezier(.22,1,.36,1);pointer-events:none}
 #booking-form.has-folder .booking-folder{opacity:1;transform:translateY(0);transition-delay:.22s}
 .booking-folder-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:600;line-height:1.35}
-@media(max-width:767px){.booking-layout{gap:55px}#booking-form::before{top:-34px;height:68px}.booking-folder{top:-23px;right:12px;width:calc(var(--booking-folder-width,140px) - 92px)}.booking-folder-name{font-size:12px}}
-@media(prefers-reduced-motion:reduce){#booking-form::before,.booking-folder{transition:none;transform:none}#booking-form.has-folder .booking-folder{transform:none}}
+@media(max-width:767px){.booking-layout{gap:55px}#booking-form::before{top:-34px;width:calc(var(--booking-folder-width,140px) - 64px);height:68px}#booking-form::after{top:-34px;right:calc(var(--booking-folder-width,140px) - 84px);width:84px;height:34px;clip-path:path("M0 34 C30 34 38 0 84 0 L84 34 Z")}.booking-folder{top:-23px;right:12px;width:calc(var(--booking-folder-width,140px) - 92px)}.booking-folder-name{font-size:12px}}
+@media(prefers-reduced-motion:reduce){#booking-form::before,#booking-form::after,.booking-folder{transition:none;transform:none}#booking-form.has-folder .booking-folder{transform:none}}
 
 /* Compact mobile contact actions float below the chat launcher. */
 @media(max-width:767px){
