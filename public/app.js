@@ -91,8 +91,11 @@ function clinicalContents(body){
   return sections.length>1?'<nav class="clinical-contents" aria-label="Auf dieser Seite"><strong>Auf dieser Seite</strong>'+sections.map(section=>'<a href="#'+section.id+'">'+esc(section.title)+'</a>').join('')+'</nav>':'';
 }
 function servicePage(item){
-  const related=(item.related||'').split(',').map(id=>data.services.find(s=>s.id===id)).filter(Boolean);
-  return `<section class="container article service-article"><a class="breadcrumb" href="/leistungen">Leistungen / ${esc(item.title)}</a><div class="service-intro"><div><span class="eyebrow">${esc(item.tag||'CITYPRAXIS WIEN')}</span><h1>${esc(item.title)}</h1><p>${esc(item.intro)}</p></div>${item.image?`<img src="${esc(optimizedImage(item.image))}" alt="${esc(item.title)} in der Citypraxis" fetchpriority="high" decoding="async">`:''}</div>${clinicalContents(item.body)?`<details class="mobile-contents"><summary>Auf dieser Seite</summary>${clinicalContents(item.body)}</details>`:''}<div class="clinical-layout"><div class="clinical-text">${clinicalBody(item.body,item.id)}${item.methods?`<div class="faq-list">${item.methods.split('\n').filter(Boolean).map(m=>{const [title,...text]=m.split('|');return `<details><summary>${esc(title)}<span>+</span></summary><div>${paragraph(text.join('|'))}</div></details>`;}).join('')}</div>`:''}${related.length?`<section class="clinical-card"><h2>Behandlungskonzepte entdecken</h2><div class="related-links">${related.map(r=>`<a href="/leistungen/${esc(r.id)}">${esc(r.title)} ↗︎</a>`).join('')}</div></section>`:''}</div><aside class="clinical-aside">${clinicalContents(item.body)}<span class="eyebrow">WIR SIND FÜR SIE DA</span><h2>Ihr nächster Schritt.</h2><p>Vereinbaren Sie Ihren Ersttermin in der Citypraxis.</p><a class="button" href="/termin">Ersttermin anfragen ↗︎</a><a class="text-link" href="/ablauf-wahltherapie">Ablauf & Wahltherapie →</a><a class="text-link" href="/preise">Preise & Rückerstattung →</a></aside></div></section>`;
+  const english=I18n.language==='en',isPhysio=item.id==='physiotherapie';
+  const relatedIds=isPhysio?['kindergesundheit','faszienbehandlungen','crafta','cmd']:(item.related||'').split(',').map(id=>id.trim()).filter(Boolean);
+  const related=relatedIds.map(id=>data.services.find(s=>s.id===id)).filter(Boolean);
+  const relatedSection=related.length?`<section class="clinical-card"><h2>${isPhysio?(english?'Treatment approaches in physiotherapy':'Behandlungsansätze in der Physiotherapie'):(english?'Related treatments':'Behandlungskonzepte entdecken')}</h2><div class="related-links">${related.map(r=>`<a href="/leistungen/${esc(r.id)}">${esc(r.title)} ↗︎</a>`).join('')}</div></section>`:'';
+  return `<section class="container article service-article"><a class="breadcrumb" href="/leistungen">Leistungen / ${esc(item.title)}</a><div class="service-intro"><div><span class="eyebrow">${esc(item.tag||'CITYPRAXIS WIEN')}</span><h1>${esc(item.title)}</h1><p>${esc(item.intro)}</p></div>${item.image?`<img src="${esc(optimizedImage(item.image))}" alt="${esc(item.title)} in der Citypraxis" fetchpriority="high" decoding="async">`:''}</div>${clinicalContents(item.body)?`<details class="mobile-contents"><summary>Auf dieser Seite</summary>${clinicalContents(item.body)}</details>`:''}<div class="clinical-layout"><div class="clinical-text">${clinicalBody(item.body,item.id)}${item.methods?`<div class="faq-list">${item.methods.split('\n').filter(Boolean).map(m=>{const [title,...text]=m.split('|');return `<details><summary>${esc(title)}<span>+</span></summary><div>${paragraph(text.join('|'))}</div></details>`;}).join('')}</div>`:''}${relatedSection}</div><aside class="clinical-aside">${clinicalContents(item.body)}<span class="eyebrow">WIR SIND FÜR SIE DA</span><h2>Ihr nächster Schritt.</h2><p>Vereinbaren Sie Ihren Ersttermin in der Citypraxis.</p><a class="button" href="/termin">Ersttermin anfragen ↗︎</a><a class="text-link" href="/ablauf-wahltherapie">Ablauf & Wahltherapie →</a><a class="text-link" href="/preise">Preise & Rückerstattung →</a></aside></div></section>`;
 }
 function pricesBlock(){
   const en=I18n.language==='en',groups=[];
@@ -130,19 +133,9 @@ function therapistSelection(){
 }
 function listing(kind) {
   const symptoms = kind === 'symptoms';
-  const card=s=>`<a class="listing-card" href="/leistungen/${esc(s.id)}"><span class="eyebrow">${esc(s.tag)}</span><h2>${esc(s.title)}</h2><p>${esc(s.intro)}</p><span class="text-link">Mehr erfahren ${arrow}</span></a>`;
-  if(!symptoms){
-    const categories=[
-      {id:'physiotherapie',members:['physiotherapie','kindergesundheit','faszienbehandlungen','crafta','cmd']},
-      {id:'osteopathie',members:['osteopathie']},
-      {id:'logopaedie',members:['logopaedie']},
-      {id:'heilmassage',members:['heilmassage']}
-    ].map(group=>({...group,title:data.services.find(service=>service.id===group.id)?.title,items:group.members.map(id=>data.services.find(service=>service.id===id)).filter(Boolean)})).filter(group=>group.title&&group.items.length);
-    const tabs=categories.map((group,index)=>`<button id="service-tab-${index}" type="button" role="tab" aria-selected="${index===0}" aria-controls="service-panel-${index}" tabindex="${index===0?'0':'-1'}" data-service-tab="${index}">${esc(group.title)}</button>`).join('');
-    const panels=categories.map((group,index)=>`<div id="service-panel-${index}" class="service-category-panel" role="tabpanel" aria-labelledby="service-tab-${index}"${index?' hidden':''}><div class="listing-grid service-listing">${group.items.map(card).join('')}</div></div>`).join('');
-    return article('Unsere Leistungen','Vier Fachrichtungen und Angebote für Kinder.','',`<div class="service-tabs therapy-category-tabs" role="tablist" aria-label="Therapiebereiche">${tabs}</div>${panels}`);
-  }
-  return article('Was führt Sie zu uns?','Finden Sie einen ersten Einblick in unsere Schwerpunkte.','',`<div class="listing-grid symptom-listing">${data.symptoms.map(s=>`<a class="listing-card" href="/schwerpunkte/${esc(s.id)}">${icon(s.icon)}<h2>${esc(s.title)}</h2><p>${esc(s.intro)}</p><span class="text-link">Mehr erfahren ${arrow}</span></a>`).join('')}</div>`);
+  const services=['physiotherapie','osteopathie','logopaedie','heilmassage'].map(id=>data.services.find(service=>service.id===id)).filter(Boolean);
+  const entries=symptoms?data.symptoms:services;
+  return article(symptoms?'Was führt Sie zu uns?':'Unsere Leistungen',symptoms?'Finden Sie einen ersten Einblick in unsere Schwerpunkte.':'Vier Fachrichtungen und Angebote für Kinder.','',`<div class="listing-grid ${symptoms?'symptom-listing':'service-listing'}">${entries.map(s=>`<a class="listing-card" href="/${symptoms?'schwerpunkte':'leistungen'}/${esc(s.id)}">${symptoms?icon(s.icon):'<span class="eyebrow">'+esc(s.tag)+'</span>'}<h2>${esc(s.title)}</h2><p>${esc(s.intro)}</p><span class="text-link">Mehr erfahren ${arrow}</span></a>`).join('')}</div>`);
 }
 function appointment() {
   const acute = new URLSearchParams(location.search).has('akut');
@@ -210,9 +203,6 @@ function bind() {
   const priceTabs=[...document.querySelectorAll('[data-price-tab]')];
   const selectPriceTab=index=>{priceTabs.forEach((tab,i)=>{const active=i===index;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$(`#price-panel-${i}`).hidden=!active;});};
   priceTabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectPriceTab(index));tab.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?priceTabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+priceTabs.length)%priceTabs.length;selectPriceTab(next);priceTabs[next].focus();});});
-  const serviceTabs=[...document.querySelectorAll('[data-service-tab]')];
-  const selectServiceTab=index=>{serviceTabs.forEach((tab,i)=>{const active=i===index;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$(`#service-panel-${i}`).hidden=!active;});};
-  serviceTabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectServiceTab(index));tab.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?serviceTabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+serviceTabs.length)%serviceTabs.length;selectServiceTab(next);serviceTabs[next].focus();});});
   if(!reducedMotion.matches){
     const headlines=[...document.querySelectorAll('#main h1, #main h2')];
     const revealObserver=new IntersectionObserver(entries=>{
