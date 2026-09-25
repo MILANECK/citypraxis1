@@ -141,6 +141,8 @@ p { font-size: 18px; line-height: 1.8; }
 .clinical-text > .clinical-card + .clinical-card { padding-top: 16px; }
 .clinical-card h2 { font-size: 30px; line-height: 1.3; text-wrap: pretty; }
 .clinical-card p, .clinical-card li { font-size: 18px; line-height: 1.85; }
+.clinical-highlight { margin: 22px 0 30px; padding: 20px 24px; background: #f6f4f1; border: 0; border-radius: 14px; }
+.clinical-highlight p { margin: 0; color: var(--ink); }
 .clinical-card { scroll-margin-top: 16px; }
 .clinical-aside { position: sticky; max-height: calc(100dvh - 145px); overflow-y: auto; }
 .mobile-contents { display: none; }
@@ -206,6 +208,7 @@ p { font-size: 18px; line-height: 1.8; }
   .clinical-contents a { font-size: 15px; }
   .clinical-card h2 { font-size: 27px; }
   .clinical-card p, .clinical-card li, .article-body p, .article-body li { font-size: 17px; }
+  .clinical-highlight { padding: 17px 19px; }
   .listing-grid { grid-template-columns: 1fr; }
   .listing-card { padding: 28px; }
 }
