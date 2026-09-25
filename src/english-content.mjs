@@ -83,7 +83,8 @@ Thank you for your understanding!`},
     datenschutz:{title:'Privacy',intro:'Privacy information will be added before publication.',body:'Local development version: appointment requests are saved in the local database. Use test data only in the preview. The final privacy policy, retention periods and responsibilities must be established before public operation.'}
   },
   symptoms:{
-    kiefer:{title:'Jaw',subtitle:'When tension takes hold.',intro:'Jaw clicking, teeth grinding or pain when opening your mouth? We consider how the jaw, head and neck work together.',body:'We start with a conversation and an individual examination. Together, we discuss which therapeutic steps suit your situation.\n\nOur specialisms include craniomandibular and craniofacial symptoms. Depending on the findings, we combine physiotherapy and speech and language therapy perspectives.'},
+    hirnnervenprobleme:{title:'Cranial Nerve Disorders',subtitle:'',intro:'',body:''},
+    kiefer:{title:'Jaw',subtitle:'When tension takes hold.',intro:'Jaw clicking, teeth grinding or pain when opening your mouth? We consider how the jaw, head and neck work together.',body:'We start with a conversation and an individual examination. Together, we discuss which therapeutic steps suit your situation.\n\nOur specializations include craniomandibular and craniofacial symptoms. Depending on the findings, we combine physiotherapy and speech and language therapy perspectives.'},
     kopfschmerzen:{title:'Headaches & migraine',subtitle:'Space for a clearer head.',intro:'Recurring head and neck symptoms can have a considerable effect on everyday life. We take time to listen to your history.',body:'We examine possible connections involving the neck, jaw and movement. Based on our findings and your medical assessment, we plan your therapy together.\n\nNot every headache has the same cause. Treatment is therefore adapted to your individual situation.'},
     tinnitus:{title:'Tinnitus',subtitle:'Understanding the connections.',intro:'With ringing in the ears, it can be useful to include the jaw and cervical spine in the examination.',body:'Following medical assessment, we consider possible functional connections. Therapeutic measures are selected according to your individual findings.\n\nTreatment does not guarantee that tinnitus will disappear. We discuss the options and goals openly with you.'},
     schwindel:{title:'Dizziness',subtitle:'Finding greater confidence again.',intro:'We support you with an individually tailored approach to dizziness that has been medically assessed.',body:'Dizziness can have different causes. Medical assessment and a careful examination are therefore important foundations.\n\nTogether, we work on the movements and everyday situations that matter to you.'},
@@ -148,7 +149,7 @@ The cooperation between physiotherapy and speech and language therapy at Citypra
 
 Alongside classic speech and language therapy techniques, treatment also follows CRAFTA® (= a craniofacial, craniomandibular and craniocervical manual therapy concept).
 
-## Speech & language therapy specialisms
+## Speech & language therapy specializations
 
 - Acquired/neurologically caused language, swallowing and speech disorders (aphasia, dysphagia, dysarthria)
 - Myofunctional therapy / orofacial dysfunctions
@@ -263,5 +264,5 @@ Tongue problems, sensory disturbances of the tongue, face, pharynx or throat; fa
   },
   prices:{rueckenfit:{title:'Back fitness course',details:'10 sessions plus the 11th session free'}},
   reimbursements:{'physio-30':{title:'Physiotherapy 30 minutes'},'physio-45':{title:'Physiotherapy 45 minutes'},'physio-60':{title:'Physiotherapy 60 minutes'},hausbesuch:{title:'Home visit'},'massage-15':{title:'Massage 15 minutes'},'massage-30':{title:'Massage 30 minutes'},osteopathie:{title:'Osteopathy'}},
-  team:Object.fromEntries(Array.from({length:12},(_,i)=>[`team-${i+1}`,{role:i===0?'Physiotherapist · Craniosacral therapist':['Physiotherapy','Osteopathy','Speech & language therapy','Therapeutic massage'][i%4],body:i===0?'Physiotherapy and craniosacral therapy at Citypraxis.':'Fictional sample profile. A personal introduction and treatment specialisms will be added here.'}]))
+  team:Object.fromEntries(Array.from({length:12},(_,i)=>[`team-${i+1}`,{role:i===0?'Physiotherapist · Craniosacral therapist':['Physiotherapy','Osteopathy','Speech & language therapy','Therapeutic massage'][i%4],body:i===0?'Physiotherapy and craniosacral therapy at Citypraxis.':'Fictional sample profile. A personal introduction and treatment specializations will be added here.'}]))
 };

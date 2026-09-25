@@ -190,6 +190,19 @@ export function openDatabase(file = process.env.DB_PATH || resolve('data/citypra
       db.prepare('INSERT INTO migrations(version) VALUES(11)').run();db.exec('COMMIT');
     }catch(error){db.exec('ROLLBACK');throw error;}
   }
+  if(!db.prepare('SELECT version FROM migrations WHERE version=12').get()){
+    db.exec('BEGIN');
+    try{
+      const exists=db.prepare("SELECT 1 FROM content WHERE collection='symptoms' AND id='hirnnervenprobleme'").get();
+      if(!exists){
+        const order=db.prepare("SELECT COALESCE(MAX(CAST(json_extract(draft,'$.order') AS INTEGER)), -1) + 1 AS value FROM content WHERE collection='symptoms'").get().value;
+        const record={id:'hirnnervenprobleme',title:'Hirnnervenprobleme',titleEn:'Cranial Nerve Disorders',subtitle:'',intro:'',body:'',service:'physiotherapie',icon:'head',order};
+        const value=JSON.stringify(record);
+        db.prepare("INSERT INTO content(collection,id,draft,published) VALUES('symptoms',?,?,?)").run(record.id,value,value);
+      }
+      db.prepare('INSERT INTO migrations(version) VALUES(12)').run();db.exec('COMMIT');
+    }catch(error){db.exec('ROLLBACK');throw error;}
+  }
   return db;
 }
 export function contentSnapshot(db, admin = false) {

@@ -1,6 +1,6 @@
 const entries = `
 Therapien|Therapies
-Schwerpunkte|Specialisms
+Schwerpunkte|Specializations
 Preise|Prices
 Ablauf|Your visit
 Kontakt|Contact
@@ -56,7 +56,7 @@ Vier Fachrichtungen.|Four disciplines.
 Gemeinsam für Sie.|Working together for you.
 Alle Behandlungen|All therapies
 Was führt Sie zu uns?|What brings you to us?
-Entdecken Sie unsere Schwerpunkte.|Explore our specialisms.
+Entdecken Sie unsere Schwerpunkte.|Explore our specializations.
 DIE MENSCHEN IN DER CITYPRAXIS|THE PEOPLE AT CITYPRAXIS
 Ihr Team. An Ihrer Seite.|Your team. By your side.
 Das gesamte Team|Meet the whole team
@@ -104,7 +104,7 @@ Beispielportrait – kein tatsächliches Teammitglied|Sample portrait — not an
 Noch kein Portrait hinterlegt|No portrait added yet
 Fiktives Profil|Fictional profile
 Beispielbild|Sample photo
-Finden Sie einen ersten Einblick in unsere Schwerpunkte.|Get an introduction to our specialisms.
+Finden Sie einen ersten Einblick in unsere Schwerpunkte.|Get an introduction to our specializations.
 Vier Fachrichtungen, ergänzt durch Bewegung in der Gruppe.|Four disciplines, complemented by group exercise.
 Mehr erfahren|Learn more
 DER ERSTE SCHRITT|THE FIRST STEP
@@ -164,7 +164,7 @@ Leistung (URL-Kürzel)|Service (URL slug)
 Symbol|Icon
 Beschreibung (## Überschrift, - Aufzählung)|Description (## heading, - list item)
 Verwandte Leistungen (URL-Kürzel, mit Komma getrennt)|Related therapies (comma-separated URL slugs)
-Fachrichtung|Specialism
+Fachrichtung|Specialization
 Qualifikationen|Qualifications
 Biografie|Biography
 Teamfoto (leere Auswahl entfernt das Foto)|Team photo (leave empty to remove photo)
