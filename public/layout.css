@@ -105,7 +105,6 @@ p { font-size: 18px; line-height: 1.8; }
 .team-contact { margin-top: 12px; }
 .team-contact a { font-size: 13px; line-height: 1.6; padding-block: 3px; }
 .team-directory { margin-block: 50px 70px; }
-.team-directory .team-profiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
 .team-directory .team-person { border-radius: 24px; }
 .team-directory .team-card-copy { padding: 26px; }
 .team-directory .team-person h3 { font-size: 23px; }
@@ -159,7 +158,6 @@ p { font-size: 18px; line-height: 1.8; }
 
 @media (max-width: 1150px) {
   .team-thumbnails { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .team-directory .team-profiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .quick-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 30px; }
   .therapy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .team-profiles, .team-preview .team-profiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -213,7 +211,6 @@ p { font-size: 18px; line-height: 1.8; }
   .listing-card { padding: 28px; }
 }
 @media (max-width: 600px) {
-  .team-directory .team-profiles { grid-template-columns: 1fr; }
   .therapy-grid { grid-template-columns: 1fr; }
   .team-profiles, .team-preview .team-profiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .therapy-card-media { aspect-ratio: 3 / 2; }
@@ -248,11 +245,6 @@ footer{background:#f6f4f1;color:var(--ink)}
 @media(prefers-reduced-motion:reduce){.urgent-button,.urgent-button::before{transition:none}}
 
 /* Smaller team portraits with enough room for names and contact details. */
-.team-directory .team-profiles{grid-template-columns:repeat(5,minmax(0,1fr));gap:26px}
-.team-directory .team-featured,.team-directory .team-roster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px}
-.team-directory .team-featured{margin-bottom:26px}
-.team-directory .team-featured .team-person{grid-column:1}
-.team-directory .team-roster{margin-bottom:0}
 .team-directory .team-person{border-radius:18px}
 .team-directory .team-card-copy{padding:20px 18px}
 .team-directory .team-person h3{font-size:18px;line-height:1.4;margin-bottom:10px}
@@ -273,11 +265,8 @@ footer{background:#f6f4f1;color:var(--ink)}
 .map-caption h2{font-size:27px;margin-top:12px}
 .map-caption p{font-size:15px;margin:10px 0 0;color:var(--muted)}
 .map-caption .button{margin-top:22px;font-size:14px}
-@media(max-width:1200px){.team-directory .team-profiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}}
-@media(max-width:900px){.team-directory .team-profiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:767px){.contact-map{height:360px}.map-caption{padding:26px}.weekly-hours{font-size:14px}}
-@media(max-width:600px){.team-directory .team-profiles,.team-directory .team-featured,.team-directory .team-roster{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.team-directory .team-featured{margin-bottom:18px}.team-directory .team-card-copy{padding:18px 14px}.team-directory .team-person h3{font-size:16px}.team-directory .team-role{font-size:13px}.team-directory .team-contact a{font-size:12px}.team-directory .placeholder-tag{font-size:9px;padding:5px}}
-@media(max-width:360px){.team-directory .team-profiles{grid-template-columns:minmax(0,230px);justify-content:center}}
+@media(max-width:600px){.team-directory .team-card-copy{padding:18px 14px}.team-directory .team-person h3{font-size:16px}.team-directory .team-role{font-size:13px}.team-directory .team-contact a{font-size:12px}.team-directory .placeholder-tag{font-size:9px;padding:5px}}
 
 .contact-map{position:relative;height:490px}.contact-map img{width:100%;height:100%;display:block;object-fit:cover}.map-scale-note{position:absolute;bottom:14px;left:18px;right:18px;font-size:11px;color:#626776;background:#ffffffdf;border-radius:8px;padding:8px 12px;width:max-content;max-width:calc(100% - 36px)}
 @media(max-width:767px){.contact-map{height:360px}}

@@ -84,7 +84,7 @@ function home() {
   <section class="container cost-overview"><div><span class="eyebrow">PREISE & WAHLTHERAPIE</span><h2>Was kostet<br>meine Behandlung?</h2><p>Informationen zu Praxispreisen und zur Rückerstattung durch Ihre Krankenkasse finden Sie an einem Ort.</p><a class="button button-outline" href="/preise">Preise & Rückerstattung ${arrow}</a></div><div><h3>Fragen vor dem ersten Termin</h3>${faqs()}</div></section>
   `;
 }
-function article(title,intro,body,extra='') { return `<section class="container article"><a class="breadcrumb" href="/">Startseite /</a><span class="eyebrow">CITYPRAXIS WIEN</span><h1>${esc(title)}</h1><p class="article-intro">${esc(intro)}</p><div class="article-body">${paragraph(body)}</div>${extra}</section>`; }
+function article(title,intro,body,extra='') { return `<section class="container article"><a class="breadcrumb" href="/">Startseite /</a><span class="eyebrow">CITYPRAXIS WIEN</span><h1>${esc(title)}</h1><p class="article-intro">${esc(intro)}</p>${body?`<div class="article-body">${paragraph(body)}</div>`:''}${extra}</section>`; }
 function clinicalBody(body,serviceId=''){return String(body||'').split(/\n\n(?=## )/).map((part,i)=>{const content=serviceId==='heilmassage'?part.split('\n\n').map(block=>/^(?:We expressly point out that our massage services|Wir weisen ausdrücklich darauf hin, dass unsere Angebote bei den Massagen)/.test(block.trim())?`<aside class="clinical-highlight">${paragraph(block)}</aside>`:paragraph(block)).join(''):paragraph(part);return `<section class="clinical-card" id="abschnitt-${i}">${content}</section>`;}).join('');}
 function clinicalContents(body){
   const sections=String(body||'').split(/\n\n(?=## )/).map((part,i)=>({title:part.startsWith('## ')?part.split('\n')[0].slice(3):'Über die Behandlung',id:'abschnitt-'+i}));
@@ -120,7 +120,7 @@ function reviewsSection(){
 const teamPath=t=>`/team/${encodeURIComponent(t.id)}${new URLSearchParams(location.search).has('preview')?'?preview=1':''}`;
 const teamMemberBookable=t=>typeof t.bookable==='boolean'?t.bookable:!(/\b(?:lisa|petra)\b/i.test(`${t.id||''} ${t.title||''}`)||/\b(?:secretary|receptionist|sekretär(?:in)?|sekretaer(?:in)?|rezeption(?:ist(?:in)?)?)\b/i.test(t.role||''));
 function teamCard(t){
-  return `<article class="team-person"><a class="team-profile-link" href="${esc(teamPath(t))}" aria-labelledby="team-name-${esc(t.id)}"><div class="team-portrait">${t.image?`<img class="team-photo" src="${esc(optimizedImage(t.image))}" alt="" loading="lazy" decoding="async" width="360" height="360">`:'<div class="team-no-photo" aria-hidden="true">CP</div>'}</div><div class="team-card-copy"><h3 id="team-name-${esc(t.id)}">${esc(t.title)}</h3><p class="team-role">${esc(t.role).replaceAll(' / ','<br>').replaceAll(' · ','<br>')}</p><span class="team-profile-prompt">${I18n.language==='en'?'View profile':'Profil ansehen'} ${arrow}</span></div></a></article>`;
+  return `<article class="team-person"><a class="team-profile-link" href="${esc(teamPath(t))}" aria-labelledby="team-name-${esc(t.id)}"><div class="team-portrait">${t.image?`<img class="team-photo" src="${esc(optimizedImage(t.image))}" alt="" loading="lazy" decoding="async" width="360" height="360">`:'<div class="team-no-photo" aria-hidden="true">CP</div>'}</div><div class="team-card-copy">${t.id==='isabella-casny'?`<span class="team-lead-label">${I18n.language==='en'?'Practice director':'Praxisleitung'}</span>`:''}<h3 id="team-name-${esc(t.id)}">${esc(t.title)}</h3><p class="team-role">${esc(t.role).replaceAll(' / ','<br>').replaceAll(' · ','<br>')}</p><span class="team-profile-prompt">${I18n.language==='en'?'View profile':'Profil ansehen'} ${arrow}</span></div></a></article>`;
 }
 function therapistPage(t){
   const en=I18n.language==='en';
@@ -189,7 +189,7 @@ function route() {
   }
   const pageId=path==='/ueber-uns'?'about':parts[1];
   const page=data.pages.find(p=>p.id===pageId);
-  if(pageId==='about' && page){const team=data.team||[],lead=team.find(person=>person.id==='isabella-casny'),roster=team.filter(person=>person.id!=='isabella-casny');return article(page.title,page.intro,'',`<section class="team-directory" id="team"><div class="section-heading"><div><span class="eyebrow">DIE MENSCHEN IN DER CITYPRAXIS</span><h2>Unser Team</h2></div></div>${lead?`<div class="team-featured">${teamCard(lead)}</div>`:''}<div class="team-profiles team-roster">${roster.map(teamCard).join('')}</div></section><div class="clinical-reading">${clinicalBody(page.body)}</div>`);}
+  if(pageId==='about' && page){const team=data.team||[],lead=team.find(person=>person.id==='isabella-casny'),roster=lead?[lead,...team.filter(person=>person.id!=='isabella-casny')]:team,columns=Math.min(7,Math.max(1,roster.length<=7?roster.length:Math.ceil(roster.length/2)));return article(page.title,page.intro,'',`<section class="team-directory" id="team"><div class="section-heading"><div><span class="eyebrow">DIE MENSCHEN IN DER CITYPRAXIS</span><h2>Unser Team</h2></div></div><div class="team-profiles" data-columns="${columns}">${roster.map(teamCard).join('')}</div></section><div class="clinical-reading">${clinicalBody(page.body)}</div>`);}
   if(page) return article(page.title,page.intro,page.body,pageId==='datenschutz'?chatPrivacyInfo():'');
   if(['impressum','datenschutz'].includes(pageId)) return article(pageId==='impressum'?'Impressum':'Datenschutz','Diese Seite wird vor Veröffentlichung vervollständigt.','Dies ist eine lokale Entwicklungsvorschau. Bitte verwenden Sie keine echten Patientendaten.');
   return article('Seite nicht gefunden','Hier geht es zurück zu Ihrer Citypraxis.','', '<a class="button" href="/">Zur Startseite</a>');
@@ -254,7 +254,7 @@ function bind() {
         entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');teamObserver.unobserve(entry.target);}});
       },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
       const teamGrid=teamCards[0].parentElement;
-      const columns=getComputedStyle(teamGrid).gridTemplateColumns.split(' ').filter(Boolean).length||1;
+      const columns=Number(getComputedStyle(teamGrid).getPropertyValue('--team-columns'))||1;
       teamCards.forEach((card,index)=>{card.classList.add('team-reveal');card.style.setProperty('--team-delay',`${(index%columns)*85}ms`);teamObserver.observe(card);});
     }
     const contactMap=document.querySelector('#main .contact-grid .map-card');

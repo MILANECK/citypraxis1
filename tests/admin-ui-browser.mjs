@@ -115,8 +115,20 @@ try{
   await page.waitForTimeout(250);
   const inMotion=Number(await team.evaluate(el=>getComputedStyle(el).opacity));
   assert.ok(inMotion>0&&inMotion<1,`The card should fade in after it enters the viewport; opacity=${inMotion}`);
+  const teamGrid=page.locator('.team-directory .team-profiles');
+  assert.equal(await teamGrid.locator('.team-person').first().locator('h3').innerText(),'Isabella Casny');
+  assert.equal(await page.locator('.team-featured').count(),0);
+  const teamLayout=await teamGrid.evaluate(grid=>{
+    const cards=[...grid.querySelectorAll('.team-person')],firstTop=cards[0].offsetTop,firstRow=cards.filter(card=>card.offsetTop===firstTop),lastTop=cards.at(-1).offsetTop,lastRow=cards.filter(card=>card.offsetTop===lastTop);
+    return {count:cards.length,columns:Number(getComputedStyle(grid).getPropertyValue('--team-columns')),firstRow:firstRow.length,lastRow:lastRow.length,lastRowCenter:(lastRow[0].offsetLeft+lastRow.at(-1).offsetLeft+lastRow.at(-1).offsetWidth)/2,gridCenter:grid.clientWidth/2,cardWidth:cards[0].offsetWidth};
+  });
+  assert.equal(teamLayout.columns,6);
+  assert.equal(teamLayout.firstRow,6);
+  assert.equal(teamLayout.lastRow,teamLayout.count-6);
+  assert.ok(Math.abs(teamLayout.lastRowCenter-teamLayout.gridCenter)<2);
+  assert.ok(teamLayout.cardWidth>=170&&teamLayout.cardWidth<=196);
   const teamStagger=await page.locator('.team-directory .team-person').evaluateAll(cards=>{
-    const columns=getComputedStyle(cards[0].parentElement).gridTemplateColumns.split(' ').filter(Boolean).length;
+    const columns=Number(getComputedStyle(cards[0].parentElement).getPropertyValue('--team-columns'));
     return cards.filter((_,index)=>(index+1)%columns===0).map(card=>card.style.getPropertyValue('--team-delay'));
   });
   assert.ok(teamStagger.length>0&&teamStagger.every(delay=>parseInt(delay,10)>0));
@@ -125,7 +137,33 @@ try{
   assert.equal(Number(await team.evaluate(el=>getComputedStyle(el).opacity)),1);
   await team.hover();
   assert.notEqual(await team.locator('.team-photo').evaluate(el=>getComputedStyle(el).transform),'none');
-  await page.locator('.team-directory .team-profiles').screenshot({path:'test-results/team-scroll-hover.png'});
+  await teamGrid.locator('.team-person').last().scrollIntoViewIfNeeded();
+  await page.waitForFunction(()=>[...document.querySelectorAll('.team-directory .team-person')].every(card=>card.classList.contains('is-visible')));
+  await page.waitForTimeout(1100);
+  await teamGrid.screenshot({path:'test-results/team-scroll-hover.png'});
+  const thirteenPage=await browser.newPage({viewport:{width:1366,height:900}});
+  await thirteenPage.route('**/api/content',async route=>{
+    const response=await route.fetch(),content=await response.json(),extras=content.team.slice(1,3).map((person,index)=>({...person,id:`qa-team-${index}`,title:`Test colleague ${index+1}`}));
+    content.team.push(...extras);
+    await route.fulfill({response,body:JSON.stringify(content)});
+  });
+  await thirteenPage.goto(origin+'/ueber-uns?lang=de');
+  const thirteenGrid=thirteenPage.locator('.team-directory .team-profiles');
+  await thirteenGrid.locator('.team-person').nth(12).waitFor();
+  const thirteenLayout=await thirteenGrid.evaluate(grid=>{
+    const cards=[...grid.querySelectorAll('.team-person')],firstTop=cards[0].offsetTop;
+    return {columns:Number(getComputedStyle(grid).getPropertyValue('--team-columns')),firstRow:cards.filter(card=>card.offsetTop===firstTop).length,rows:new Set(cards.map(card=>card.offsetTop)).size,cardWidth:cards[0].offsetWidth};
+  });
+  assert.equal(thirteenLayout.columns,7);
+  assert.equal(thirteenLayout.firstRow,7);
+  assert.equal(thirteenLayout.rows,2);
+  assert.ok(thirteenLayout.cardWidth>=160);
+  await thirteenPage.locator('.cookie-acknowledge').click();
+  await thirteenGrid.locator('.team-person').last().scrollIntoViewIfNeeded();
+  await thirteenPage.waitForFunction(()=>[...document.querySelectorAll('.team-directory .team-person')].every(card=>card.classList.contains('is-visible')));
+  await thirteenPage.waitForTimeout(1100);
+  await thirteenGrid.screenshot({path:'test-results/team-thirteen-desktop.png'});
+  await thirteenPage.close();
   await page.setViewportSize({width:390,height:700});
   await page.goto(origin+'/ueber-uns?lang=de');
   const mobileTeam=page.locator('.team-directory .team-person').first();
@@ -135,6 +173,11 @@ try{
   const mobileProgress=Number(await mobileTeam.evaluate(el=>getComputedStyle(el).opacity));
   assert.ok(mobileProgress>0&&mobileProgress<1,'Mobile team card should enter gradually');
   await page.waitForTimeout(1000);
+  const mobileTeamLayout=await page.locator('.team-directory .team-profiles').evaluate(grid=>{
+    const cards=[...grid.querySelectorAll('.team-person')];
+    return {columns:Number(getComputedStyle(grid).getPropertyValue('--team-columns')),firstPair:cards[0].offsetTop===cards[1].offsetTop,nextRow:cards[2].offsetTop>cards[1].offsetTop,withinViewport:document.documentElement.scrollWidth<=document.documentElement.clientWidth};
+  });
+  assert.deepEqual(mobileTeamLayout,{columns:2,firstPair:true,nextRow:true,withinViewport:true});
   await page.screenshot({path:'test-results/team-mobile-reveal.png'});
   await page.setViewportSize({width:1366,height:900});
   await page.goto(origin+'/?lang=de');
