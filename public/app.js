@@ -187,7 +187,7 @@ function route() {
   }
   const pageId=path==='/ueber-uns'?'about':parts[1];
   const page=data.pages.find(p=>p.id===pageId);
-  if(pageId==='about' && page)return article(page.title,page.intro,'',`<section class="team-directory" id="team"><div class="section-heading"><div><span class="eyebrow">DIE MENSCHEN IN DER CITYPRAXIS</span><h2>Unser Team</h2></div></div><div class="team-profiles">${data.team.map(teamCard).join('')}</div></section><div class="clinical-reading">${clinicalBody(page.body)}</div>`);
+  if(pageId==='about' && page){const team=data.team||[],lead=team.find(person=>person.id==='isabella-casny'),roster=team.filter(person=>person.id!=='isabella-casny');return article(page.title,page.intro,'',`<section class="team-directory" id="team"><div class="section-heading"><div><span class="eyebrow">DIE MENSCHEN IN DER CITYPRAXIS</span><h2>Unser Team</h2></div></div>${lead?`<div class="team-featured">${teamCard(lead)}</div>`:''}<div class="team-profiles team-roster">${roster.map(teamCard).join('')}</div></section><div class="clinical-reading">${clinicalBody(page.body)}</div>`);}
   if(page) return article(page.title,page.intro,page.body,pageId==='datenschutz'?chatPrivacyInfo():'');
   if(['impressum','datenschutz'].includes(pageId)) return article(pageId==='impressum'?'Impressum':'Datenschutz','Diese Seite wird vor Veröffentlichung vervollständigt.','Dies ist eine lokale Entwicklungsvorschau. Bitte verwenden Sie keine echten Patientendaten.');
   return article('Seite nicht gefunden','Hier geht es zurück zu Ihrer Citypraxis.','', '<a class="button" href="/">Zur Startseite</a>');

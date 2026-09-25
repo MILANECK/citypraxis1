@@ -136,6 +136,7 @@ export function createApp(db = openDatabase()) {
         }
         if (req.method === 'PUT') {
           if(body.createOnly&&row)return json(409,{error:'This entry already exists. Please edit it or choose a different identifier.'});
+          if(collection==='team'&&!row&&db.prepare("SELECT COUNT(*) AS total FROM content WHERE collection='team'").get().total>=20)return json(409,{error:'Es können höchstens 20 Teamprofile angelegt werden.'});
           if(collection==='reviews'&&!row&&db.prepare('SELECT COUNT(*) AS total FROM content WHERE collection=?').get('reviews').total>=3)return json(409,{error:'All three review slots are filled. Please edit or delete an existing review.'});
           if (!body.data || typeof body.data !== 'object' || Array.isArray(body.data)) return json(400,{error:'Inhalt fehlt.'});
           const data = { id };

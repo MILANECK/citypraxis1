@@ -1,5 +1,5 @@
 import {renderChatIntake,chatIntake} from './admin-chat.js?v=conversation-2';
-import {requestSource,normalizeAppointmentConcerns} from './request-summary.js?v=booking-concerns-2';
+import {requestSource,normalizeAppointmentConcerns} from './request-summary.js?v=team-capacity-1';
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={pages:'Seiten',symptoms:'Schwerpunkte',services:'Therapien',team:'Team',reviews:'Bewertungen',faqs:'Häufige Fragen',prices:'Praxispreise',reimbursements:'Rückerstattung',settings:'Praxisdaten'};
@@ -121,12 +121,13 @@ async function render(){
     api('admin/capacity').then(data=>showCapacity(capacityPanel,data)).catch(()=>showCapacity(capacityPanel,{available:false}));
   } else if(labels[view]) {
     const collection=view,records=content[view]||[];
-    w.innerHTML=`<div class="toolbar"><p>Entwürfe bleiben intern, bis Sie sie veröffentlichen.</p>${view!=='settings'?'<button class="button" id="new-content">+ Neuer Eintrag</button>':''}</div><div class="admin-panel table-wrap"><table><thead><tr><th>Inhalt</th><th>Status</th><th>Reihenfolge</th><th>Aktion</th></tr></thead><tbody>${records.map(r=>`<tr><td><strong>${esc(I18n.language==='en'&&r.titleEn?r.titleEn:r.title)}</strong><small>${esc(r.id)}</small></td><td><span class="status ${r.dirty?'draft':'live'}">${r.dirty?'Entwurf':r.published?'Veröffentlicht':'Entwurf'}</span></td><td>${r.order||0}</td><td><div class="row-actions"><button class="table-action" data-edit="${esc(r.id)}">Bearbeiten ↗</button>${protectedContent(view,r.id)?'<span class="protected-entry">Basisinhalt</span>':`<button class="delete-entry" data-remove="${esc(r.id)}" aria-label="${esc(I18n.translate('Eintrag löschen')+': '+(I18n.language==='en'&&r.titleEn?r.titleEn:r.title))}">Löschen</button>`}</div></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Noch keine Einträge. Legen Sie den ersten an.</td></tr>'}</tbody></table></div>`;
+    w.innerHTML=`<div class="toolbar"><p>${collection==='team'?`Teamprofile: ${records.length} / 20. Neue URL-Kürzel werden automatisch aus dem Namen erstellt.`:'Entwürfe bleiben intern, bis Sie sie veröffentlichen.'}</p>${view!=='settings'?'<button class="button" id="new-content">+ Neuer Eintrag</button>':''}</div><div class="admin-panel table-wrap"><table><thead><tr><th>Inhalt</th><th>Status</th><th>Reihenfolge</th><th>Aktion</th></tr></thead><tbody>${records.map(r=>`<tr><td><strong>${esc(I18n.language==='en'&&r.titleEn?r.titleEn:r.title)}</strong><small>${esc(r.id)}</small></td><td><span class="status ${r.dirty?'draft':'live'}">${r.dirty?'Entwurf':r.published?'Veröffentlicht':'Entwurf'}</span></td><td>${r.order||0}</td><td><div class="row-actions"><button class="table-action" data-edit="${esc(r.id)}">Bearbeiten ↗</button>${protectedContent(view,r.id)?'<span class="protected-entry">Basisinhalt</span>':`<button class="delete-entry" data-remove="${esc(r.id)}" aria-label="${esc(I18n.translate('Eintrag löschen')+': '+(I18n.language==='en'&&r.titleEn?r.titleEn:r.title))}">Löschen</button>`}</div></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Noch keine Einträge. Legen Sie den ersten an.</td></tr>'}</tbody></table></div>`;
     document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>removeContent(collection,records.find(r=>r.id===b.dataset.remove)));
     if(collection==='reviews'){
       $('#new-content').disabled=records.length>=3;
       $('.toolbar p').textContent=I18n.language==='en'?`${records.length} / 3 reviews. Edit each review separately, or delete one to replace it. Drafts stay private until published.`:`${records.length} / 3 Bewertungen. Jede Bewertung ist einzeln bearbeitbar. Zum Ersetzen können Sie eine löschen. Entwürfe bleiben bis zur Veröffentlichung privat.`;
     }
+    if(collection==='team')$('#new-content').disabled=records.length>=20;
     $('#new-content')?.addEventListener('click',()=>editContent(view));document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editContent(view,records.find(r=>r.id===b.dataset.edit)));
   } else if(view==='social') {
     const practice=(content.settings||[]).find(item=>item.id==='practice')||{};
@@ -215,6 +216,7 @@ async function removeContent(collection,record){
 function editContent(collection,record={}){
   const isNew=!record.id;
   if(collection==='reviews'&&isNew&&(content.reviews||[]).length>=3){toast(I18n.language==='en'?'All three review slots are filled. Edit or delete an existing review.':'Alle drei Bewertungsplätze sind belegt. Bitte bearbeiten oder löschen Sie eine bestehende Bewertung.');return;}
+  if(collection==='team'&&isNew&&(content.team||[]).length>=20){toast('Es können höchstens 20 Teamprofile angelegt werden.');return;}
   const entryId=record.id||(collection==='reviews'?`review-${crypto.randomUUID()}`:'');
   const dialog=$('#editor-dialog');
   const baseFields=recordFields(collection,record);
@@ -222,11 +224,18 @@ function editContent(collection,record={}){
   translatable.add('chatEmergency');
   const englishFields=baseFields.filter(f=>translatable.has(f[0]) && !(f[0]==='title'&&['team','reviews'].includes(collection))).map(([name,label,type])=>[name+'En',label,type]);
   const editableFields=[...baseFields,...englishFields];
-  dialog.innerHTML=`<div class="editor-heading"><div><span class="eyebrow">${labels[collection]}</span><h2 id="editor-title">${record.id?'Eintrag bearbeiten':'Neuer Eintrag'}</h2></div><div class="editor-heading-actions">${record.id&&!protectedContent(collection,record.id)?'<button class="delete-entry" id="delete-content">Eintrag löschen</button>':''}<button class="close-dialog" aria-label="Schließen">×</button></div></div><form id="content-form"><label>URL-Kürzel<input name="id" pattern="[a-z0-9-]+" value="${esc(record.id)}" ${record.id?'readonly':''} required placeholder="zum-beispiel-kiefer"></label><h3>Deutsch · Originaltext</h3>${baseFields.map(f=>fieldHtml(f,record)).join('')}<section class="translation-fields"><h3>Englische Übersetzung</h3><p>Leere englische Felder verwenden den deutschen Originaltext. Namen, Preise und Medien gelten für beide Sprachen.</p>${englishFields.map(f=>fieldHtml(f,record)).join('')}</section>${fieldHtml(['order','Reihenfolge','number'],record)}<div class="editor-actions"><button type="submit" class="button button-outline" name="action" value="draft">Entwurf speichern</button><button type="submit" class="button" name="action" value="publish">Veröffentlichen ↗</button></div><p class="editor-message" role="alert"></p></form>${record.id?`<details id="revisions"><summary>Vorherige Versionen</summary><div id="revision-list">Versionen werden geladen …</div></details>`:''}`;
+  dialog.innerHTML=`<div class="editor-heading"><div><span class="eyebrow">${labels[collection]}</span><h2 id="editor-title">${record.id?'Eintrag bearbeiten':'Neuer Eintrag'}</h2></div><div class="editor-heading-actions">${record.id&&!protectedContent(collection,record.id)?'<button class="delete-entry" id="delete-content">Eintrag löschen</button>':''}<button class="close-dialog" aria-label="Schließen">×</button></div></div><form id="content-form"><label>${collection==='team'?'URL-Kürzel (wird aus dem Namen erstellt)':'URL-Kürzel'}<input name="id" pattern="[a-z0-9-]+" value="${esc(record.id)}" ${record.id?'readonly':''} required placeholder="zum-beispiel-kiefer"></label><h3>Deutsch · Originaltext</h3>${baseFields.map(f=>fieldHtml(f,record)).join('')}<section class="translation-fields"><h3>Englische Übersetzung</h3><p>Leere englische Felder verwenden den deutschen Originaltext. Namen, Preise und Medien gelten für beide Sprachen.</p>${englishFields.map(f=>fieldHtml(f,record)).join('')}</section>${fieldHtml(['order','Reihenfolge','number'],record)}<div class="editor-actions"><button type="submit" class="button button-outline" name="action" value="draft">Entwurf speichern</button><button type="submit" class="button" name="action" value="publish">Veröffentlichen ↗</button></div><p class="editor-message" role="alert"></p></form>${record.id?`<details id="revisions"><summary>Vorherige Versionen</summary><div id="revision-list">Versionen werden geladen …</div></details>`:''}`;
   const close=()=>dialog.close();$('.close-dialog',dialog).onclick=close;dialog.showModal();
   if(collection==='reviews'){
     const idInput=$('#content-form').elements.id;idInput.value=entryId;idInput.closest('label').style.display='none';
     if(isNew)$('#content-form').elements.order.value=Math.max(-1,...(content.reviews||[]).map(item=>Number(item.order)||0))+1;
+  }
+  if(collection==='team'&&isNew){
+    const idInput=$('#content-form').elements.id,titleInput=$('#content-form').elements.title,orderInput=$('#content-form').elements.order;
+    orderInput.value=Math.max(-1,...(content.team||[]).map(item=>Number(item.order)||0))+1;
+    let lastGenerated='';
+    const slugify=value=>value.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    titleInput.addEventListener('input',()=>{const next=slugify(titleInput.value);if(!idInput.value||idInput.value===lastGenerated){idInput.value=next;lastGenerated=next;}});
   }
   dialog.querySelectorAll('[data-concern-editor]').forEach(editor=>{
     const rows=$('.concern-editor-rows',editor),hidden=$('input[type=hidden]',editor);

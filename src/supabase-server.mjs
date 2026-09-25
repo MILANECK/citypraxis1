@@ -173,6 +173,7 @@ export function createSupabaseApp() {
         if(req.method==='PATCH'){if(collection==='settings'||(collection==='pages'&&['home','about'].includes(id)))return json(400,{error:'Dieser Basisinhalt muss veröffentlicht bleiben.'});await supabase.rest('content',`?collection=${filter(collection)}&id=${filter(id)}`,{method:'PATCH',body:{published:null}});publicContentCache=null;await audit(user,'unpublish',`${collection}/${id}`);return json(200,{ok:true});}
         if(req.method==='PUT'){
           if(body.createOnly&&row)return json(409,{error:'This entry already exists. Please edit it or choose a different identifier.'});
+          if(collection==='team'&&!row&&(await supabase.rest('content','?collection=eq.team&select=id')).length>=20)return json(409,{error:'Es können höchstens 20 Teamprofile angelegt werden.'});
           if(collection==='reviews'&&!row&&(await supabase.rest('content','?collection=eq.reviews&select=id')).length>=3)return json(409,{error:'All three review slots are filled. Please edit or delete an existing review.'});
           if(!body.data||typeof body.data!=='object'||Array.isArray(body.data))return json(400,{error:'Inhalt fehlt.'});const data={id};
           for(const [key,value]of Object.entries(body.data))if(/^[a-zA-Z]+$/.test(key)&&!['published','dirty','id','__proto__','constructor','prototype'].includes(key)&&['string','number','boolean'].includes(typeof value))data[key]=typeof value==='string'?value.slice(0,20000):value;

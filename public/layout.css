@@ -249,6 +249,10 @@ footer{background:#f6f4f1;color:var(--ink)}
 
 /* Smaller team portraits with enough room for names and contact details. */
 .team-directory .team-profiles{grid-template-columns:repeat(5,minmax(0,1fr));gap:26px}
+.team-directory .team-featured,.team-directory .team-roster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px}
+.team-directory .team-featured{margin-bottom:26px}
+.team-directory .team-featured .team-person{grid-column:1}
+.team-directory .team-roster{margin-bottom:0}
 .team-directory .team-person{border-radius:18px}
 .team-directory .team-card-copy{padding:20px 18px}
 .team-directory .team-person h3{font-size:18px;line-height:1.4;margin-bottom:10px}
@@ -272,7 +276,7 @@ footer{background:#f6f4f1;color:var(--ink)}
 @media(max-width:1200px){.team-directory .team-profiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}}
 @media(max-width:900px){.team-directory .team-profiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:767px){.contact-map{height:360px}.map-caption{padding:26px}.weekly-hours{font-size:14px}}
-@media(max-width:600px){.team-directory .team-profiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.team-directory .team-card-copy{padding:18px 14px}.team-directory .team-person h3{font-size:16px}.team-directory .team-role{font-size:13px}.team-directory .team-contact a{font-size:12px}.team-directory .placeholder-tag{font-size:9px;padding:5px}}
+@media(max-width:600px){.team-directory .team-profiles,.team-directory .team-featured,.team-directory .team-roster{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.team-directory .team-featured{margin-bottom:18px}.team-directory .team-card-copy{padding:18px 14px}.team-directory .team-person h3{font-size:16px}.team-directory .team-role{font-size:13px}.team-directory .team-contact a{font-size:12px}.team-directory .placeholder-tag{font-size:9px;padding:5px}}
 @media(max-width:360px){.team-directory .team-profiles{grid-template-columns:minmax(0,230px);justify-content:center}}
 
 .contact-map{position:relative;height:490px}.contact-map img{width:100%;height:100%;display:block;object-fit:cover}.map-scale-note{position:absolute;bottom:14px;left:18px;right:18px;font-size:11px;color:#626776;background:#ffffffdf;border-radius:8px;padding:8px 12px;width:max-content;max-width:calc(100% - 36px)}

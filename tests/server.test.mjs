@@ -114,6 +114,22 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     const unauthUpload=await fetch(origin+'/api/admin/media-upload?name=test.mp4&alt=test',{method:'POST',headers:{Origin:origin,'Content-Type':'video/mp4'},body:Buffer.from('not a video')});assert.equal(unauthUpload.status,401);
   }finally{await new Promise(resolve=>server.close(resolve));db.close();}
 });
+test('team profiles can be added through 20 entries and the 21st is rejected',async()=>{
+  const db=openDatabase(':memory:');db.prepare('INSERT INTO users(email,name,password,role) VALUES(?,?,?,?)').run('team-owner@test.local','Team Owner',passwordHash('team-password-strong'),'owner');
+  const server=createApp(db);await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const origin=`http://127.0.0.1:${server.address().port}`;
+  const call=async(path,method='GET',body,session={})=>{const response=await fetch(origin+'/api/'+path,{method,headers:{Origin:origin,'Content-Type':'application/json',Cookie:session.cookie||'','X-CSRF-Token':session.csrf||''},...(body?{body:JSON.stringify(body)}:{})});return {status:response.status,data:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0]};};
+  try{
+    const login=await call('login','POST',{email:'team-owner@test.local',password:'team-password-strong'});assert.equal(login.status,200);assert.ok(login.cookie);
+    const profile=await call('me','GET',null,{cookie:login.cookie});assert.equal(profile.status,200,JSON.stringify({hasCookie:Boolean(login.cookie),profile:profile.data}));const owner={cookie:login.cookie,csrf:profile.data.csrf};
+    const teamSnapshot=await call('admin/content','GET',null,owner);assert.equal(teamSnapshot.status,200,JSON.stringify(teamSnapshot.data));let count=teamSnapshot.data.team.length;
+    const add=async id=>call(`admin/content/team/${id}`,'PUT',{createOnly:true,publish:true,data:{title:`QA team ${id}`,role:'Physiotherapy'}},owner);
+    while(count<12){const result=await add(`qa-team-${count+1}`);assert.equal(result.status,200);count++;}
+    assert.equal((await add('qa-team-13')).status,200);count++;
+    while(count<20){const result=await add(`qa-team-${count+1}`);assert.equal(result.status,200);count++;}
+    assert.equal((await add('qa-team-21')).status,409);
+    assert.equal((await call('admin/content','GET',null,owner)).data.team.length,20);
+  }finally{await new Promise(resolve=>server.close(resolve));db.close();}
+});
 test('SQLite migrations are repeatable and published content survives reopen',()=>{
   const folder=mkdtempSync(join(tmpdir(),'citypraxis-test-')),file=join(folder,'test.sqlite');
   try{let db=openDatabase(file);const services=contentSnapshot(db).services,total=services.length;assert.equal(services.some(item=>item.id==='rueckenfit'),false);assert.doesNotMatch(services.find(item=>item.id==='physiotherapie').bodyEn,/Back fitness/);assert.equal(services.find(item=>item.id==='kindergesundheit').titleEn,"Children's health");assert.equal(services.find(item=>item.id==='logopaedie').titleEn,'Speech therapy');assert.equal(services.find(item=>item.id==='heilmassage').title,'Massage');db.prepare("UPDATE content SET draft=?,published=? WHERE collection='faqs' AND id='verordnung'").run('{"id":"verordnung","title":"Persistent"}','{"id":"verordnung","title":"Persistent"}');db.close();db=openDatabase(file);assert.equal(contentSnapshot(db).services.length,total);assert.equal(contentSnapshot(db).faqs.find(f=>f.id==='verordnung').title,'Persistent');db.close();}finally{rmSync(folder,{recursive:true,force:true});}
