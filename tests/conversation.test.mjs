@@ -62,7 +62,8 @@ test('a refused contact detail is respected while supplied names and later detai
     const beforeRefusal=calls;
     const refused=await turn('no I want to be notified via email thanx');assert.equal(calls,beforeRefusal);assert.match(refused.message,/does need your full name, email address and phone number/);assert.match(refused.message,/unable to complete it here/);assert.match(refused.message,/Stubenbastei 12\/11, 1010 Wien/);assert.match(refused.message,/\+43 699 12682157/);assert.match(refused.message,/info@citypraxis.wien/);assert.doesNotMatch(refused.message,/phone number, including|contact you by email instead/i);
     const price=await turn('What is the price?');assert.match(price.message,/explain current prices/);assert.doesNotMatch(price.message,/phone number, including/);
-    const accepted=await turn('My number is +43 699 12682157');assert.match(accepted.message,/Got it, thank you\./);assert.match(accepted.message,/days or times/);
+    const beforePhone=calls;
+    const accepted=await turn('My number is +43 699/12682157');assert.equal(calls,beforePhone);assert.match(accepted.message,/Got it, thank you\./);assert.equal(accepted.ready,true);assert.match(accepted.message,/ready to review/);assert.deepEqual(accepted.summary.find(([key])=>key==='Phone'),['Phone','+4369912682157']);
     assert.doesNotMatch(`${named.message}\n${emailed.message}\n${accepted.message}`,/Perfect, thank you/);
     const another=newSession();await turn('I want an appointment',another);await turn('My shoulder hurts',another);await turn('Michael Black',another);
     const noEmail=await turn("I don't want to share my email",another);assert.match(noEmail.message,/does need your full name, email address and phone number/);assert.match(noEmail.message,/unable to complete it here/);assert.doesNotMatch(noEmail.message,/Which email address/);
@@ -70,7 +71,7 @@ test('a refused contact detail is respected while supplied names and later detai
     const noDetails=await turn("I don't want to share my contact details",allDetails);assert.match(noDetails.message,/unable to complete it here/);assert.doesNotMatch(noDetails.message,/first and last name, please/);
     const phonePreference=newSession();await turn('I want an appointment',phonePreference);await turn('My shoulder hurts',phonePreference);await turn('Michael Black',phonePreference);await turn('michael@example.test',phonePreference);
     const noEmailContact=await turn("I don't want notifications by email",phonePreference);assert.match(noEmailContact.message,/does need your full name, email address and phone number/);assert.match(noEmailContact.message,/unable to complete it here/);assert.doesNotMatch(noEmailContact.message,/phone number, including|won't ask you to provide an email/);
-    await turn('+43 699 12682157',phonePreference);const review=await turn('Afternoons',phonePreference);assert.equal(review.ready,true);assert.deepEqual(review.summary.find(([key])=>key==='Preferred contact'),['Preferred contact','Phone']);
+    const review=await turn('+43 699 12682157',phonePreference);assert.equal(review.ready,true);assert.deepEqual(review.summary.find(([key])=>key==='Preferred contact'),['Preferred contact','Phone']);
   }finally{process.env=old;}
 });
 test('mixed questions retain concerns, ask before intake, respect a decline and preserve complete answers',async()=>{
@@ -101,8 +102,9 @@ test('conversational reception validates, reviews, edits and submits exactly onc
     assert.equal((await turn('Changed',{turnKey:key})).code,'invalid_request');
     assert.equal((await call('finish',{confirmed:true})).code,'invalid_request');assert.equal(saved.length,0);
     assert.match((await turn('test@example.test')).message,/phone number/);
-    assert.match((await turn('+43 699 12682157')).message,/days or times/);
-    value=answer({availability:'Afternoons'});const review=await turn('Afternoons');assert.equal(review.ready,true);assert.ok(!review.summary.some(([key])=>['Source','Herkunft'].includes(key)));assert.ok(review.summary.some(([,v])=>v==='test@example.test'));
+    const review=await turn('+43 699 12682157');assert.equal(review.ready,true);assert.ok(!review.summary.some(([key])=>['Source','Herkunft'].includes(key)));assert.ok(review.summary.some(([,v])=>v==='test@example.test'));assert.ok(!review.summary.some(([key])=>key==='Availability note'));
+    assert.match((await call('edit',{field:'availability'})).message,/days or times/);
+    const withAvailability=await turn('Afternoons');assert.equal(withAvailability.ready,true);assert.deepEqual(withAvailability.summary.find(([key])=>key==='Availability note'),['Availability note','Afternoons']);
     assert.equal((await call('finish')).code,'consent_required');
     assert.match((await call('edit',{field:'email'})).message,/email address/);
     assert.equal((await turn('corrected@example.test')).ready,true);

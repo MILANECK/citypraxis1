@@ -158,11 +158,13 @@ CHAT_NOTIFY_TO=kovac.design@gmail.com
 
 Resend's default testing sender only delivers to the email address used for the Resend account. Register with the test recipient above, or verify a sending domain and use an address on that domain. See [Resend's testing-domain restriction](https://resend.com/docs/knowledge-base/403-error-resend-dev-domain). After adding the API key and both variables to Render, use **Save, rebuild, and deploy**. Check one synthetic request from each source and its Admin delivery status. `sent` means the provider accepted the message; inbox/spam placement still needs checking.
 
+The chatbot and forms accept any valid patient email address and still save the request and notify the office at `CHAT_NOTIFY_TO`. A separate patient confirmation email thanks the visitor, repeats the submitted details and states clearly that no appointment is confirmed. During testing with `onboarding@resend.dev`, the patient copy is sent only when the patient address is the same as the office test inbox (`kovac.design@gmail.com`). For copies to other patient addresses, verify a sending domain and set `PATIENT_CONFIRMATION_FROM=Citypraxis <hello@verified-domain>` in Render. The patient copy is attempted after saving the request and is best effort; a failed copy does not undo submission or the office notification. The screen reports a copy only when Resend accepts it. The office notification and patient copy use separate idempotency keys.
+
 Email is attempted only **after** persistence. Failure does not undo the request. Staff can send requests originally saved without email configuration and retry pending/failed notifications in Admin. Provider idempotency keys reduce duplicate sends; provider deduplication has a bounded retention period, so a much later retry after an uncertain delivery can still duplicate an email. No automatic background queue is introduced. The provider request timeout is six seconds.
 
 The general appointment form does not select a therapist. An explicit request from a therapist profile shows that person's photo/name as a fixed preference. The secretary arranges dates and assignment by phone or email; the site does not reserve calendar slots. Multiple concerns are checked independently, including Admin-added categories. Full answers are stored in the existing `intake` column, while the old `preference` column holds a short preview for compatibility. The existing digital reception migration is sufficient; no additional SQL or reseeding is needed.
 
-Consent and the privacy supplement describe forwarding the submitted details, including voluntarily supplied health information, through Resend to the reception inbox.
+Consent and the privacy supplement describe forwarding the submitted details, including voluntarily supplied health information, through Resend to the reception inbox and, when delivery is configured, sending a copy to the patient.
 
 ## Security and operations
 

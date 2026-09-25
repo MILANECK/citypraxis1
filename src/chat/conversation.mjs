@@ -2,7 +2,7 @@ import {createHash} from 'node:crypto';
 import {ChatError,text,name,phone,emailValid} from './validation.mjs';
 import {verify,clientAddress,makeLimiter} from './security.mjs';
 import {safetySignal} from './interpret.mjs';
-import {emailConfigured,notifyRequest} from './notify.mjs';
+import {emailConfigured,notifyRequest,notifyPatient} from './notify.mjs';
 import {summaryRows} from '../../public/chat-model.js';
 
 export const CONVERSATION_LIMIT=16;
@@ -18,7 +18,7 @@ The application appends ONE question for the next missing field or the review st
 const responseSchema={type:'object',additionalProperties:false,properties:{kind:{type:'string',enum:['appointment','practice_question','off_topic','medical','emergency']},answer:{type:'string'},booking_intent:{type:'string',enum:['request','defer','unspecified']},reason:{type:['string','null']},availability:{type:['string','null']},first_name:{type:['string','null']},last_name:{type:['string','null']},patient_status:{type:['string','null'],enum:[null,'new','existing','unsure']}},required:['kind','answer','booking_intent','reason','availability','first_name','last_name','patient_status']};
 const localized=(lang,de,en)=>lang==='en'?en:de;
 const question=(slot,lang)=>({proceed:localized(lang,'Möchten Sie, dass wir gemeinsam eine Terminanfrage für unser Sekretariat vorbereiten?','Would you like us to prepare an appointment request for our reception team together?'),reason:localized(lang,'Wobei dürfen wir Ihnen in der Citypraxis helfen?','What would you like CityPraxis to help you with?'),name:localized(lang,'Darf ich bitte Ihren Vor- und Nachnamen erfahren?','May I have your first and last name, please?'),email:localized(lang,'Unter welcher E-Mail-Adresse dürfen wir Sie kontaktieren?','Which email address may our reception team use to contact you?'),phone:localized(lang,'Unter welcher Telefonnummer mit Vorwahl erreichen wir Sie?','Could you also share your phone number, including the country code, please?'),availability:localized(lang,'Welche Tage oder Uhrzeiten würden Ihnen für einen Termin passen? Sie können auch flexibel angeben.','Which days or times would suit an appointment? You can also say flexible.')})[slot]||'';
-const nextSlot=d=>!d.reason?'reason':!d.bookingApproved?'proceed':!d.first_name||!d.last_name?'name':!d.email?'email':!d.phone?'phone':!d.availability?'availability':'review';
+const nextSlot=d=>!d.reason?'reason':!d.bookingApproved?'proceed':!d.first_name||!d.last_name?'name':!d.email?'email':!d.phone?'phone':'review';
 export function composeReply(answer,followUp=''){
   const budget=700-(followUp?followUp.length+2:0);
   const clean=s=>s.toLocaleLowerCase().replace(/[\s.!?…]+/g,' ').trim();
@@ -39,7 +39,7 @@ export function composeReply(answer,followUp=''){
 const contactEmail=raw=>/[^\s@]+@[^\s@]+\.[a-z]{2,63}/i.exec(raw)?.[0]?.replace(/[.,;!?]+$/,'');
 function absorbContact(raw,d){
   const foundEmail=contactEmail(raw);if(foundEmail&&emailValid(foundEmail))d.email=foundEmail.toLowerCase();
-  for(const match of raw.matchAll(/(?:\+\d|\b0)[\d ()-]{6,}\d/g)){try{d.phone=phone(match[0]);break;}catch{}}
+  for(const match of raw.matchAll(/(?:\+\d|\b0)[\d ()/.-]{6,}\d/g)){try{d.phone=phone(match[0]);break;}catch{}}
   const explicit=/(?:my name is|ich heiße|ich heisse|mein name ist)\s+([\p{L}\p{M}.'’\-]+)\s+([\p{L}\p{M}.'’\-]+)/iu.exec(raw);
   if(explicit){try{d.first_name=name(explicit[1]);d.last_name=name(explicit[2]);}catch{}}
 }
@@ -156,6 +156,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         if(s.turns>=CONVERSATION_LIMIT)throw new ChatError('conversation_limit',429);
         if(nextSlot(s.draft)!=='review'||!['reason','name','email','phone','availability'].includes(body.field))throw new ChatError('invalid_request');
         if(body.field==='name'){delete s.draft.first_name;delete s.draft.last_name;}else delete s.draft[body.field];
+        s.editing=body.field==='availability'?'availability':null;
         s.lastTurn=null;const message=question(body.field,lang);s.messages.push({role:'assistant',text:message});json(200,{message,ready:false,turnsRemaining:CONVERSATION_LIMIT-s.turns});return true;
       }
       if(path==='/api/chat/finish'){
@@ -167,10 +168,11 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         const result=await store.save({name:`${intake.first_name} ${intake.last_name}`,email:intake.email,phone:intake.phone,preference:'Termin anfragen',intake,submission_key:token.id,notification_status:emailConfigured()?'pending':'not_configured'});
         if(result.row.intake?.fingerprint!==intake.fingerprint)throw new ChatError('already_submitted',409);
         s.submitted=result.row.id;
-        if(result.created)await notifyRequest(result.row,store,fetcher);
+        let patientReceipt='not_configured';
+        if(result.created){await notifyRequest(result.row,store,fetcher);patientReceipt=await notifyPatient(result.row,fetcher);}
         let officeOpen=null;
         try{officeOpen=practiceHoursStatus((await getFacts()).openingHours).open;}catch{}
-        json(result.created?201:200,{id:result.row.id,received:true,duplicate:!result.created,officeOpen});return true;
+        json(result.created?201:200,{id:result.row.id,received:true,duplicate:!result.created,officeOpen,patientReceipt});return true;
       }
       if(s.submitted)throw new ChatError('already_submitted',409);
       if(typeof body.turnKey!=='string'||! /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(body.turnKey))throw new ChatError('invalid_request');
@@ -180,7 +182,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const raw=text(body.message,650,{required:true});
       const signal=safetySignal(raw);
       if(signal==='emergency'){json(200,{emergency:true,message:localized(lang,'Dieser Chat ist kein Notfalldienst. Bitte rufen Sie in Österreich 144 oder 112 an.','This chat is not an emergency service. In Austria, please call 144 or 112.')});return true;}
-      const stage=nextSlot(s.draft);s.turns++;limit(`conversation-session:${token.id}`,CONVERSATION_LIMIT);
+      const stage=s.editing||nextSlot(s.draft);s.turns++;limit(`conversation-session:${token.id}`,CONVERSATION_LIMIT);
       const draft={...s.draft};
       absorbContact(raw,draft);
       let ai=null,answer='',kind='appointment';
@@ -200,7 +202,12 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       }else if(stage==='proceed'&&/^(?:yes|yes please|sure|okay|ok|let'?s (?:do it|make an appointment)|ja|ja bitte|gerne|bitte|einverstanden)[.!\s]*$/iu.test(raw)){
         draft.bookingApproved=true;draft.bookingDeclined=false;
         answer=localized(lang,'Perfekt, danke.','Perfect, thank you.');
-      }else if(!((stage==='email'&&emailValid(raw))||(stage==='phone'&&/^[+\d ()-]+$/.test(raw)&&draft.phone))){
+      }else if(stage==='availability'){
+        draft.availability=text(raw,200,{required:true});
+        s.editing=null;
+      }else if(stage==='phone'&&draft.phone&&!raw.includes('?')){
+        // A valid number is sufficient even when the visitor writes "my phone is …".
+      }else if(!((stage==='email'&&emailValid(raw))||(stage==='phone'&&draft.phone))){
         limit('conversation-ai-day',Math.max(1,Math.min(2000,Number(process.env.CHAT_AI_DAILY_LIMIT)||200)),86400000);
         try{ai=await aiTurn(raw,lang,{...draft,_stage:stage},await getFacts(),fetcher,s.messages);}catch(error){if(error instanceof ChatError)throw error;throw new ChatError('ai_unavailable',503);}
         kind=ai.kind;answer=ai.answer.trim();
@@ -226,7 +233,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         }else if(briefAcknowledgement(answer)&&['email','phone','availability'].includes(stage))answer=contactAcknowledgement(stage,lang);
         else if(!answer&&['email','phone','availability'].includes(stage))answer=contactAcknowledgement(stage,lang);
       }
-      if(['appointment','practice_question','medical'].includes(kind))s.draft=draft;
+      if(['appointment','practice_question','medical'].includes(kind)||stage==='phone'&&draft.phone)s.draft=draft;
       if(!answer&&kind==='appointment')answer=localized(lang,'Perfekt, vielen Dank.','Perfect, thank you.');
       const slot=nextSlot(s.draft),ready=slot==='review';
       const followUp=kind==='greeting'?'':ready?localized(lang,'Vielen Dank. Ihre Anfrage ist vorbereitet. Bitte prüfen Sie die Angaben unten. Nach dem Absenden meldet sich unser Sekretariat zur Terminvereinbarung.','Your request is ready to review below. Once you send it, our reception team will contact you to arrange an appointment. Thank you!'):s.draft.bookingDeclined||s.draft.refusedContact===slot?'':kind==='practice_question'&&!s.draft.reason?'':question(slot,lang);

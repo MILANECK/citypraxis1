@@ -3,7 +3,7 @@ import {ChatError,normalizeIntake,name,phone,emailValid,text} from './validation
 import {newSession,sign,verify,clientAddress,makeLimiter} from './security.mjs';
 import {interpret,aiEnabled,safetySignal} from './interpret.mjs';
 import {defaults,label} from '../../public/chat-model.js';
-import {emailConfigured,notifyRequest} from './notify.mjs';
+import {emailConfigured,notifyRequest,notifyPatient} from './notify.mjs';
 
 export function createChatService({store,getSettings=async()=>({}),fetcher=fetch}){
   const limit=makeLimiter();
@@ -53,8 +53,9 @@ export function createChatService({store,getSettings=async()=>({}),fetcher=fetch
         intake.submitted_at=new Date().toISOString();
         const result=await store.save({name:`${intake.first_name} ${intake.last_name}`,email:intake.email,phone:intake.phone,preference:label('request_type',intake.request_type,'de'),intake,submission_key:session.id,notification_status:emailConfigured()?'pending':'not_configured'});
         if(result.row.intake?.fingerprint!==intake.fingerprint)throw new ChatError('already_submitted',409);
-        if(result.created)await notifyRequest(result.row,store,fetcher);
-        json(result.created?201:200,{id:result.row.id,received:true,duplicate:!result.created});return true;
+        let patientReceipt='not_configured';
+        if(result.created){await notifyRequest(result.row,store,fetcher);patientReceipt=await notifyPatient(result.row,fetcher);}
+        json(result.created?201:200,{id:result.row.id,received:true,duplicate:!result.created,patientReceipt});return true;
       }
       throw new ChatError('not_found',404);
     }catch(error){

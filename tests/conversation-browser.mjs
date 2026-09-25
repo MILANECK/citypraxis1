@@ -13,7 +13,7 @@ try{
     await page.route('**/api/chat/session',route=>{sessions++;return route.fulfill({json:{token:'fixture',expires:Date.now()+1800000,aiAvailable:true}});});
     await page.route('**/api/chat/turn',async route=>{
       const body=route.request().postDataJSON();assert.equal(body.consent,true);
-      await route.fulfill({json:{message:lang==='en'?'Please review your details.':'Bitte prüfen Sie Ihre Angaben.',ready:true,summary:[['Name','Test Visitor'],['Email','test@example.test'],['Phone','+4369912682157'],['Concern','Synthetic test only'],['Availability','Flexible']],turnsRemaining:15}});
+      await route.fulfill({json:{message:lang==='en'?'Please review your details.':'Bitte prüfen Sie Ihre Angaben.',ready:true,summary:lang==='en'?[['Name','Test Visitor'],['Email','test@example.test'],['Phone','+4369912682157'],['Your short description','Synthetic test only'],['Availability note','Flexible']]:[['Name','Test Visitor'],['E-Mail','test@example.test'],['Telefon','+4369912682157'],['Ihre kurze Beschreibung','Synthetic test only'],['Hinweis zur Verfügbarkeit','Flexible']],turnsRemaining:15}});
     });
     await page.route('**/api/chat/edit',route=>route.fulfill({json:{message:'What email address can our secretary use?',ready:false,turnsRemaining:15}}));
     await page.route('**/api/chat/finish',route=>{assert.equal(route.request().postDataJSON().confirmed,true);submitted++;return route.fulfill({status:201,json:{id:999,received:true}});});
@@ -41,6 +41,9 @@ try{
     }
     await page.locator('.conversation-review').waitFor();
     assert.equal(await page.locator('.conversation-message.from-assistant p').last().textContent(),lang==='en'?'Please review your details.':'Bitte prüfen Sie Ihre Angaben.','Completed reply must contain the answer exactly once');
+    assert.equal(await page.locator('.conversation-edit').count(),0);
+    assert.equal(await page.locator('.conversation-summary-row.is-editable').count(),5);
+    assert.equal(await page.locator('button[data-edit=reason] .conversation-row-action').isVisible(),true);
     assert.equal(submitted,0);await page.locator('[data-edit=email]').click();await page.locator('#conversation-input').fill('test@example.test');await page.locator('.conversation-compose button').click();await page.locator('.conversation-review').waitFor();
     const bounds=await page.locator('.chat-window').boundingBox();assert.ok(bounds.x>=0&&bounds.x+bounds.width<=(mobile?390:1440));assert.ok(bounds.y>=0);
     assert.equal(await page.locator('.chat-scroll').evaluate(el=>el.scrollWidth<=el.clientWidth),true);

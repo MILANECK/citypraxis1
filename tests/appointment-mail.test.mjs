@@ -5,7 +5,7 @@ import {openDatabase,contentSnapshot} from '../src/database.mjs';
 import {createApp} from '../src/server.mjs';
 import {sqliteChatStore} from '../src/chat/store.mjs';
 import {createChatService} from '../src/chat/service.mjs';
-import {requestEmail,notifyRequest} from '../src/chat/notify.mjs';
+import {requestEmail,patientConfirmationEmail,patientReceiptConfigured,notifyPatient,notifyRequest} from '../src/chat/notify.mjs';
 import {requestPreference} from '../src/appointment-preference.mjs';
 import {defaultConcerns,sourceLabel} from '../public/request-summary.js';
 import {renderChatIntake} from '../public/admin-chat.js';
@@ -45,9 +45,44 @@ test('email and Admin render the same complete information and escape visitor ma
   assert.doesNotMatch(renderChatIntake({...row,notification_status:'sent'},'en'),/data-retry-notification/);
 });
 
+test('patient copy contains submitted details without admin links and works for the shared test inbox',async()=>{
+  const keys=['RESEND_API_KEY','CHAT_NOTIFY_FROM','CHAT_NOTIFY_TO','PATIENT_CONFIRMATION_FROM'];
+  const env=Object.fromEntries(keys.map(key=>[key,process.env[key]]));
+  Object.assign(process.env,{RESEND_API_KEY:'test-key',CHAT_NOTIFY_FROM:'Citypraxis <onboarding@resend.dev>',CHAT_NOTIFY_TO:'kovac.design@gmail.com'});
+  delete process.env.PATIENT_CONFIRMATION_FROM;
+  const {intake}=requestPreference({concerns:['Tinnitus','Andere Beschwerden'],symptoms:'<script>alert(1)</script>',language:'en'});
+  const row={id:18,submission_key:'patient-copy-18',name:'Test Patient',email:'kovac.design@gmail.com',phone:'+4369912682157',intake};
+  const mail=patientConfirmationEmail(row);
+  assert.match(mail.text,/Thank you for contacting CityPraxis, Test Patient/);
+  assert.match(mail.text,/Tinnitus/);
+  assert.match(mail.text,/not an appointment confirmation/);
+  assert.doesNotMatch(mail.text,/Admin|Im Admin/);
+  assert.match(mail.html,/&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+  assert.doesNotMatch(mail.html,/<script>/);
+  const sent=[];
+  const fetcher=async(_url,options)=>{sent.push({headers:options.headers,mail:JSON.parse(options.body)});return Response.json({id:'mock-id'});};
+  try{
+    assert.equal(patientReceiptConfigured(row),true);
+    assert.equal(await notifyPatient(row,fetcher),'sent');
+    assert.equal(sent.length,1);
+    assert.deepEqual(sent[0].mail.to,[row.email]);
+    assert.equal(sent[0].mail.from,process.env.CHAT_NOTIFY_FROM);
+    assert.equal(sent[0].headers['Idempotency-Key'],'citypraxis-patient-patient-copy-18');
+    const other={...row,email:'other@example.test'};
+    assert.equal(patientReceiptConfigured(other),false);
+    assert.equal(await notifyPatient(other,fetcher),'not_configured');
+    assert.equal(sent.length,1);
+    process.env.PATIENT_CONFIRMATION_FROM='Citypraxis <hello@verified.example>';
+    assert.equal(patientReceiptConfigured(other),true);
+    assert.equal(await notifyPatient(other,fetcher),'sent');
+    assert.deepEqual(sent[1].mail.to,[other.email]);
+    assert.equal(sent[1].mail.from,process.env.PATIENT_CONFIRMATION_FROM);
+  }finally{for(const key of keys)if(env[key]===undefined)delete process.env[key];else process.env[key]=env[key];}
+});
+
 test('first appointment, therapist and chatbot notify once after storage; failure and retry preserve the request',async()=>{
-  const originalFetch=global.fetch,keys=['RESEND_API_KEY','CHAT_NOTIFY_FROM','CHAT_NOTIFY_TO','APP_ORIGIN'],env=Object.fromEntries(keys.map(k=>[k,process.env[k]]));
-  Object.assign(process.env,{RESEND_API_KEY:'fake-test-key',CHAT_NOTIFY_FROM:'Citypraxis <onboarding@resend.dev>',CHAT_NOTIFY_TO:'kovac.design@gmail.com'});delete process.env.APP_ORIGIN;
+  const originalFetch=global.fetch,keys=['RESEND_API_KEY','CHAT_NOTIFY_FROM','CHAT_NOTIFY_TO','PATIENT_CONFIRMATION_FROM','APP_ORIGIN'],env=Object.fromEntries(keys.map(k=>[k,process.env[k]]));
+  Object.assign(process.env,{RESEND_API_KEY:'fake-test-key',CHAT_NOTIFY_FROM:'Citypraxis <onboarding@resend.dev>',CHAT_NOTIFY_TO:'kovac.design@gmail.com'});delete process.env.APP_ORIGIN;delete process.env.PATIENT_CONFIRMATION_FROM;
   const db=openDatabase(':memory:'),outbox=[];
   let failEmail=false;
   global.fetch=async(url,options)=>{
@@ -56,7 +91,7 @@ test('first appointment, therapist and chatbot notify once after storage; failur
       const row=db.prepare('SELECT * FROM requests ORDER BY id DESC').get();assert.ok(row);
       const mail=JSON.parse(options.body);outbox.push(mail);
       assert.deepEqual(mail.to,['kovac.design@gmail.com']);
-      assert.ok(options.headers['Idempotency-Key'].startsWith('citypraxis-request-'));
+      assert.match(options.headers['Idempotency-Key'],/^citypraxis-(?:request|patient)-/);
       return Response.json(failEmail?{message:'Simulated delivery failure'}:{id:'mock-id'},{status:failEmail?503:200});
     }
     return originalFetch(url,options);
@@ -87,6 +122,11 @@ test('first appointment, therapist and chatbot notify once after storage; failur
     delete process.env.RESEND_API_KEY;
     const pending=await call('requests',{...body,submissionKey:randomUUID()});assert.equal(pending.status,201);assert.equal((await store.get(pending.data.id)).notification_status,'not_configured');assert.equal(outbox.length,5);
     process.env.RESEND_API_KEY='fake-test-key';assert.equal((await service.retryNotification(pending.data.id)).status,'sent');assert.equal(outbox.length,6);
+    const sharedBody={...body,email:'kovac.design@gmail.com',submissionKey:randomUUID()};
+    const sharedInbox=await call('requests',sharedBody);
+    assert.equal(sharedInbox.status,201);assert.equal(sharedInbox.data.patientReceipt,'sent');
+    assert.equal(outbox.length,8);assert.match(outbox[6].subject,/Ersttermin-Formular/);assert.match(outbox[7].subject,/We received your request/);
+    assert.equal((await call('requests',sharedBody)).status,200);assert.equal(outbox.length,8);
     const savedCount=db.prepare('SELECT count(*) AS n FROM requests').get().n;
     assert.equal((await call('requests',{...body,concerns:['Injected category']})).status,400);
     assert.equal(db.prepare('SELECT count(*) AS n FROM requests').get().n,savedCount);
