@@ -439,10 +439,11 @@ footer{background:#f6f4f1;color:var(--ink)}
 
 /* Animated Neat gradient fills the right half of the booking page behind the form. */
 .booking-gradient-stage{position:relative;isolation:isolate;overflow:clip}
-.booking-gradient-canvas{position:absolute;inset:var(--booking-gradient-top,0) 0 0 50%;z-index:0;display:block;width:50%;height:calc(100% - var(--booking-gradient-top,0));pointer-events:none;background:radial-gradient(circle at 22% 20%,#3ea1c7 0,transparent 42%),radial-gradient(circle at 72% 64%,#741b75 0,transparent 50%),#0b3954}
+.booking-gradient-canvas{position:absolute;inset:var(--booking-gradient-top,0) 0 0 34%;z-index:0;display:block;width:66%;height:calc(100% - var(--booking-gradient-top,0));pointer-events:none;background:radial-gradient(circle at 22% 20%,#3ea1c7 0,transparent 42%),radial-gradient(circle at 72% 64%,#741b75 0,transparent 50%),#0b3954;-webkit-mask-image:radial-gradient(ellipse 125% 150% at 112% 82%,#000 0 67%,#000e 70%,#0008 75%,transparent 81%);mask-image:radial-gradient(ellipse 125% 150% at 112% 82%,#000 0 67%,#000e 70%,#0008 75%,transparent 81%)}
 .booking-gradient-stage>.booking-layout{position:relative;z-index:1;padding-block:105px}
 .booking-gradient-stage #booking-form{box-shadow:0 22px 60px #17193226}
 @media(max-width:767px){.booking-gradient-stage>.booking-layout{padding-block:35px 55px}.booking-gradient-stage #booking-form{box-shadow:0 18px 45px #17193222}}
+@media(max-width:767px){.booking-gradient-canvas{inset-inline:0;width:100%;-webkit-mask-image:none;mask-image:none}}
 
 /* The card grows a subtle folder edge as the visitor enters a name. */
 #booking-form{position:relative;overflow:visible}

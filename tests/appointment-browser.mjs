@@ -16,8 +16,9 @@ try{
   await page.goto(origin+'/termin?lang=en');await page.locator('.cookie-acknowledge').click();
   const gradient=page.locator('#booking-gradient');
   await page.waitForFunction(()=>document.querySelector('#booking-gradient')?.classList.contains('is-ready')||document.querySelector('#booking-gradient')?.classList.contains('is-fallback'));
-  const gradientLayout=await gradient.evaluate(canvas=>{const box=canvas.getBoundingClientRect(),form=document.querySelector('#booking-form').getBoundingClientRect();return {left:box.left,right:box.right,viewport:innerWidth,formLeft:form.left,formRight:form.right,bufferWidth:canvas.width,bufferHeight:canvas.height};});
-  assert.ok(Math.abs(gradientLayout.left-gradientLayout.viewport/2)<1,`Gradient should begin at the screen midpoint: ${JSON.stringify(gradientLayout)}`);
+  const gradientLayout=await gradient.evaluate(canvas=>{const box=canvas.getBoundingClientRect(),form=document.querySelector('#booking-form').getBoundingClientRect(),style=getComputedStyle(canvas);return {left:box.left,right:box.right,viewport:innerWidth,formLeft:form.left,formRight:form.right,bufferWidth:canvas.width,bufferHeight:canvas.height,mask:style.maskImage||style.webkitMaskImage};});
+  assert.ok(gradientLayout.left<gradientLayout.viewport/2&&gradientLayout.left>gradientLayout.viewport*.3,`Gradient canvas should extend beneath the curved transition: ${JSON.stringify(gradientLayout)}`);
+  assert.match(gradientLayout.mask,/radial-gradient/,`Desktop gradient should use a softly curved mask: ${JSON.stringify(gradientLayout)}`);
   assert.ok(Math.abs(gradientLayout.right-gradientLayout.viewport)<1,`Gradient should cover the right screen edge: ${JSON.stringify(gradientLayout)}`);
   assert.ok(gradientLayout.formLeft>=gradientLayout.left&&gradientLayout.formRight<=gradientLayout.right,`Form should sit over the gradient: ${JSON.stringify(gradientLayout)}`);
   assert.ok(gradientLayout.bufferWidth>0&&gradientLayout.bufferHeight>0,`Gradient canvas should render: ${JSON.stringify(gradientLayout)}`);
