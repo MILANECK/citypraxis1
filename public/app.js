@@ -239,6 +239,51 @@ function bind() {
       const columns=getComputedStyle(teamGrid).gridTemplateColumns.split(' ').filter(Boolean).length||1;
       teamCards.forEach((card,index)=>{card.classList.add('team-reveal');card.style.setProperty('--team-delay',`${(index%columns)*85}ms`);teamObserver.observe(card);});
     }
+    const contactMap=document.querySelector('#main .contact-grid .map-card');
+    if(contactMap){
+      contactMap.classList.add('contact-map-reveal');
+      const mapObserver=new IntersectionObserver(entries=>{
+        if(!entries.some(entry=>entry.isIntersecting))return;
+        contactMap.classList.add('is-visible');
+        mapObserver.disconnect();
+      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
+      mapObserver.observe(contactMap);
+    }
+    const hours=document.querySelector('#main .weekly-hours');
+    if(hours){
+      const rows=[...hours.querySelectorAll(':scope > div')];
+      rows.forEach((row,index)=>{
+        row.classList.add('hours-row-reveal');
+        row.style.setProperty('--hours-delay',`${index*105}ms`);
+      });
+      const hoursObserver=new IntersectionObserver(entries=>{
+        if(!entries.some(entry=>entry.isIntersecting))return;
+        rows.forEach(row=>row.classList.add('is-visible'));
+        hoursObserver.disconnect();
+      },{threshold:.18,rootMargin:'0px 0px -4% 0px'});
+      hoursObserver.observe(hours);
+    }
+    const listingCards=[...document.querySelectorAll('#main .service-listing .listing-card, #main .symptom-listing .listing-card')];
+    if(listingCards.length){
+      // Shuffle the stagger slots so each visit gets a natural, varied cascade.
+      const delays=listingCards.map((_,index)=>index*115);
+      for(let index=delays.length-1;index>0;index--){
+        const swap=Math.floor(Math.random()*(index+1));
+        [delays[index],delays[swap]]=[delays[swap],delays[index]];
+      }
+      const cardsObserver=new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{
+          if(!entry.isIntersecting)return;
+          entry.target.classList.add('is-visible');
+          cardsObserver.unobserve(entry.target);
+        });
+      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
+      listingCards.forEach((card,index)=>{
+        card.classList.add('listing-reveal');
+        card.style.setProperty('--listing-delay',`${delays[index]}ms`);
+        cardsObserver.observe(card);
+      });
+    }
     document.querySelectorAll('.process-grid').forEach(grid=>{
       grid.classList.add('process-sequence-ready');
       grid.querySelectorAll(':scope > li').forEach((step,index)=>step.style.setProperty('--step-delay',`${index*130}ms`));
