@@ -15,10 +15,10 @@ body{background:var(--beige)}
 .hero-large .hero-stage{min-height:650px}
 .hero-media,.hero-shade{position:absolute;inset:0}.hero-media{z-index:0}.hero-shade{z-index:1;pointer-events:none;background:linear-gradient(90deg,#172a50dd 0%,#1b3150aa 40%,#1b315035 75%),linear-gradient(0deg,#18283dbb,transparent 35%)}
 .hero-dot-field{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;--dot-x:50%;--dot-y:50%}
-.hero-dot-field::before,.hero-dot-field::after{position:absolute;inset:0;content:"";background-image:radial-gradient(circle,rgba(190,225,238,.42) 1px,transparent 1.45px);background-size:23px 23px;background-position:11px 11px;}
-.hero-dot-field::before{opacity:.2;mask-image:linear-gradient(to bottom,transparent 7%,rgba(0,0,0,.08) 43%,rgba(0,0,0,.8) 100%)}
-.hero-dot-field::after{opacity:0;mask-image:radial-gradient(circle 210px at var(--dot-x) var(--dot-y),#000 0%,transparent 100%);transition:opacity .34s ease}
-.hero-dot-field.has-pointer::after{opacity:.4}
+.hero-dot-field::before,.hero-dot-field::after{position:absolute;inset:0;content:"";background-image:radial-gradient(circle,rgba(190,225,238,.62) 1.1px,transparent 1.55px);background-size:23px 23px;background-position:11px 11px;}
+.hero-dot-field::before{opacity:.34;-webkit-mask-image:linear-gradient(to bottom,transparent 7%,rgba(0,0,0,.12) 43%,rgba(0,0,0,.9) 100%);mask-image:linear-gradient(to bottom,transparent 7%,rgba(0,0,0,.12) 43%,rgba(0,0,0,.9) 100%)}
+.hero-dot-field::after{opacity:0;-webkit-mask-image:radial-gradient(circle 210px at var(--dot-x) var(--dot-y),#000 0%,transparent 100%);mask-image:radial-gradient(circle 210px at var(--dot-x) var(--dot-y),#000 0%,transparent 100%);transition:opacity .34s ease}
+.hero-dot-field.has-pointer::after{opacity:.62}
 .overlay-soft .hero-shade{background:linear-gradient(90deg,#172a50b8,#1b315075 50%,#1b315015),linear-gradient(0deg,#18283d99,transparent 30%)}
 .overlay-strong .hero-shade{background:linear-gradient(90deg,#172a50f2,#1b3150c9 45%,#1b315060),linear-gradient(0deg,#18283dcc,transparent 40%)}
 .hero-backdrop,.hero-background-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;max-width:none}
