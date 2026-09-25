@@ -314,7 +314,7 @@ function bind() {
   }
   const bookingForm=$('#booking-form');
   if(bookingForm){
-    import('/booking-gradient.js?v=2').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
+    import('/booking-gradient.js?v=3').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
     const nameInput=bookingForm.elements.namedItem('name');
     const folder=document.createElement('div');
     folder.className='booking-folder';
