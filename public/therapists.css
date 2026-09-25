@@ -61,3 +61,12 @@
 @media(max-width:600px){.team-directory .team-profiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.team-directory .team-roster{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.team-directory .team-card-copy{padding:16px 12px}.team-directory .team-person h3{font-size:16px}.team-directory .team-role{font-size:12px}.therapist-choice{gap:10px}.therapist-choice-portrait{flex-basis:52px;width:52px;height:66px}}
 @media(max-width:360px){.team-directory .team-profiles{grid-template-columns:minmax(0,230px);justify-content:center}.team-directory .team-roster{grid-template-columns:minmax(0,230px);justify-content:center}}
 @media(prefers-reduced-motion:reduce){.team-profile-link .team-photo{transition:none}.team-directory .team-person.team-reveal,.team-directory .team-person.team-reveal.is-visible{opacity:1;transform:none;animation:none}}
+
+/* Keep the directory thumbnails at their original six-across size. Isabella
+   occupies the first slot of her own row; the full roster follows below. */
+.team-directory .team-featured,.team-directory .team-roster{grid-template-columns:repeat(6,minmax(0,1fr));gap:22px}
+.team-directory .team-featured .team-person{grid-column:1}
+@media(max-width:1200px){.team-directory .team-featured,.team-directory .team-roster{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}}
+@media(max-width:900px){.team-directory .team-featured,.team-directory .team-roster{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}}
+@media(max-width:600px){.team-directory .team-featured,.team-directory .team-roster{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}}
+@media(max-width:360px){.team-directory .team-featured,.team-directory .team-roster{grid-template-columns:minmax(0,230px);justify-content:center}}
