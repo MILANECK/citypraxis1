@@ -69,9 +69,11 @@ p { font-size: 18px; line-height: 1.8; }
 .reviews-section + .first-visit { padding-top: 10px; }
 .review-card { box-shadow: 0 12px 38px #22234406; padding: 23px; min-height: 220px; }
 .review-card blockquote{margin:3px 0 10px}
-.review-card.review-reveal{opacity:0;transform:translateY(22px);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1);transition-delay:var(--review-delay,0ms)}
+.review-card.review-reveal{opacity:0;transform:translateY(22px);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1),box-shadow .32s ease;transition-delay:var(--review-delay,0ms)}
 .review-card.review-reveal.is-visible{opacity:1;transform:translateY(0)}
 @media(prefers-reduced-motion:reduce){.review-card.review-reveal{opacity:1;transform:none;transition:none}}
+@media(hover:hover) and (pointer:fine){.reviews-grid{perspective:1100px}.review-card.review-reveal.is-visible{transform-style:preserve-3d}.review-card.review-reveal.is-visible:hover{transform:rotateX(2deg) rotateY(-2deg) translateY(-3px);box-shadow:0 18px 40px #22234416}}
+@media(prefers-reduced-motion:reduce){.review-card.review-reveal.is-visible:hover{transform:none}}
 .review-top { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 .reviews-grid .review-top{margin-bottom:4px}
 .review-top .review-quote { margin-left: auto; height: 30px; font-size: 52px; color: #99cede; }
@@ -220,6 +222,7 @@ p { font-size: 18px; line-height: 1.8; }
 /* A quieter homepage: one group portrait and a single practical closing card. */
 .team-feature{display:grid;grid-template-columns:1.5fr 1fr;align-items:center;background:#f0f2f3;border-radius:28px;overflow:hidden}
 .team-group-photo{display:block;width:100%;height:auto;align-self:center}
+.team-feature-photo-parallax .team-group-photo{transform:scale(1.045) translate3d(0,var(--team-photo-y,0px),0);transform-origin:center;will-change:transform}
 .team-feature-copy{padding:clamp(28px,4vw,58px)}
 .team-feature-copy h2{font-size:clamp(30px,3.3vw,46px);line-height:1.12;margin:20px 0}
 .team-feature-copy p{font-size:17px;line-height:1.75;margin:0 0 28px;color:var(--muted)}
@@ -242,7 +245,7 @@ footer{background:#f6f4f1;color:var(--ink)}
 @media(max-width:767px){.footer-bottom>div{flex-wrap:wrap;gap:12px 20px}}
 @media(max-width:1000px){.team-feature{grid-template-columns:1.25fr 1fr}.team-feature-copy{padding:28px}.team-feature-copy h2{font-size:32px}.team-feature-copy p{font-size:16px}}
 @media(max-width:767px){.team-feature{grid-template-columns:1fr;border-radius:22px}.team-feature-copy{padding:30px}.team-feature-copy h2{max-width:15ch}.team-feature-copy p{max-width:45ch}.cost-overview{margin-bottom:56px}.urgent-button{font-size:14px;min-height:54px;padding:17px 22px}.hero-immersive .hero-actions{gap:14px}}
-@media(prefers-reduced-motion:reduce){.urgent-button,.urgent-button .arrow-symbol,.hero-immersive .hero-actions .button,.hero-immersive .hero-actions .button .arrow-symbol{transition:none}}
+@media(prefers-reduced-motion:reduce){.urgent-button,.urgent-button .arrow-symbol,.hero-immersive .hero-actions .button,.hero-immersive .hero-actions .button .arrow-symbol,.header-cta,.header-cta .arrow-symbol{transition:none}.header-cta:hover{transform:none}}
 
 /* Smaller team portraits with enough room for names and contact details. */
 .team-directory .team-person{border-radius:18px}
@@ -431,8 +434,10 @@ footer{background:#f6f4f1;color:var(--ink)}
 .listing-grid .listing-card.listing-reveal{opacity:0;filter:blur(3px);transform:translate3d(0,18px,0) scale(.99);transition:opacity .82s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),filter .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),transform .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms);will-change:opacity,filter,transform}
 .listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
 @media(hover:hover){.listing-grid .listing-card.listing-reveal.is-visible:hover{transform:translate3d(0,-4px,0) scale(1)}}
+.therapy-grid .therapy-card.therapy-reveal{opacity:0;filter:blur(2px);transform:translate3d(0,16px,0) scale(.99);transition:opacity .78s cubic-bezier(.22,1,.36,1) var(--therapy-delay,0ms),filter .84s cubic-bezier(.22,1,.36,1) var(--therapy-delay,0ms),transform .84s cubic-bezier(.22,1,.36,1) var(--therapy-delay,0ms)}
+.therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
 @media(prefers-reduced-motion:reduce){
-  .booking-layout #booking-form.booking-form-reveal,.booking-layout #booking-form.booking-form-reveal.is-visible,.weekly-hours>div.hours-row-reveal,.weekly-hours>div.hours-row-reveal.is-visible,.price-table .price-amount.price-amount-reveal,.price-table .price-amount.price-amount-reveal.is-visible,.listing-grid .listing-card.listing-reveal,.listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:none;transform:none;transition:none;will-change:auto}
+  .booking-layout #booking-form.booking-form-reveal,.booking-layout #booking-form.booking-form-reveal.is-visible,.weekly-hours>div.hours-row-reveal,.weekly-hours>div.hours-row-reveal.is-visible,.price-table .price-amount.price-amount-reveal,.price-table .price-amount.price-amount-reveal.is-visible,.listing-grid .listing-card.listing-reveal,.listing-grid .listing-card.listing-reveal.is-visible,.therapy-grid .therapy-card.therapy-reveal,.therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;filter:none;transform:none;transition:none;will-change:auto}
   .contact-map iframe{opacity:1;transition:none}
 }
 

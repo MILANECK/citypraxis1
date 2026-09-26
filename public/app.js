@@ -309,6 +309,13 @@ function bind() {
         cardsObserver.observe(card);
       });
     }
+    const therapyCards=[...document.querySelectorAll('#main .therapy-grid .therapy-card')];
+    if(therapyCards.length){
+      const therapyObserver=new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');therapyObserver.unobserve(entry.target);}});
+      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
+      therapyCards.forEach((card,index)=>{card.classList.add('therapy-reveal');card.style.setProperty('--therapy-delay',`${index*95}ms`);therapyObserver.observe(card);});
+    }
     document.querySelectorAll('.process-grid').forEach(grid=>{
       grid.classList.add('process-sequence-ready');
       grid.querySelectorAll(':scope > li').forEach((step,index)=>step.style.setProperty('--step-delay',`${index*130}ms`));
@@ -346,6 +353,28 @@ function bind() {
       };
     });
   });
+  const teamFeature=document.querySelector('#main .team-feature');
+  if(teamFeature&&!reducedMotion.matches&&!navigator.connection?.saveData){
+    teamFeature.classList.add('team-feature-photo-parallax');
+    let teamFrame=0,teamInView=false;
+    const updateTeamParallax=()=>{
+      if(teamFrame||!teamInView||reducedMotion.matches)return;
+      teamFrame=requestAnimationFrame(()=>{
+        teamFrame=0;
+        const bounds=teamFeature.getBoundingClientRect();
+        const progress=Math.max(0,Math.min(1,(innerHeight-bounds.top)/(innerHeight+bounds.height)));
+        const distance=matchMedia('(max-width: 767px)').matches?8:14;
+        teamFeature.style.setProperty('--team-photo-y',`${((.5-progress)*distance).toFixed(2)}px`);
+      });
+    };
+    const teamObserver=new IntersectionObserver(entries=>{
+      teamInView=entries.some(entry=>entry.isIntersecting);
+      if(teamInView)updateTeamParallax();
+    },{rootMargin:'100px 0px'});
+    teamObserver.observe(teamFeature);
+    window.addEventListener('scroll',updateTeamParallax,{passive:true});
+    window.addEventListener('resize',updateTeamParallax,{passive:true});
+  }
   const video=$('#hero-video');
   if(video) {
     const motion=reducedMotion;

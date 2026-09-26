@@ -6,7 +6,10 @@ body{background:var(--beige)}
 .header{background:#f6f4f1f5;border:0;box-shadow:0 3px 25px #22234405}.header-inner{height:90px}
 .brand>span{color:var(--ink)}.desktop-nav a{font-size:14px}.mobile-nav{background:var(--beige);border:0}
 .button{border:0;border-radius:14px;background:var(--blue);box-shadow:none}.button:hover{background:var(--ink);border:0}
-.header-cta{background:var(--pink)}.header-cta:hover{background:var(--berry-dark)}
+.header-cta{background:var(--pink);transition:transform .3s cubic-bezier(.22,1,.36,1),background .3s,box-shadow .3s}
+.header-cta .arrow-symbol{transition:transform .3s cubic-bezier(.22,1,.36,1)}
+.header-cta:hover{background:var(--berry-dark)}
+@media(hover:hover) and (pointer:fine){.header-cta:hover{transform:translateY(-2px);box-shadow:0 8px 22px #951b813d}.header-cta:hover .arrow-symbol{transform:translate(2px,-2px)}}
 .button-outline{background:var(--pale);color:var(--ink)}.button-outline:hover{background:var(--blue);color:white}
 .text-link{border:0;color:var(--blue)}.eyebrow{color:var(--blue)}
 /* Media fills the first screen; content can grow when text zoom requires it. */
@@ -85,4 +88,4 @@ body{background:#fafaf9}.topline{background:#f0f1f2}.header{background:#fafaf9f5
 .team-directory{margin-block:50px}.team-directory .section-heading h2{font-size:34px}.team-profiles{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-bottom:55px}.team-person{background:white;border-radius:26px;padding:30px;position:relative}.team-person .team-photo,.team-no-photo{width:104px;height:104px;border-radius:50%;object-fit:cover;margin-bottom:26px}.team-no-photo{display:grid;place-items:center;background:#eef2f5;font-size:25px;color:var(--blue)}.team-person h3{font-size:23px;margin-bottom:12px}.team-role{font-size:13px;color:var(--blue)}.team-person p{font-size:14px;line-height:1.8}.team-person small{color:var(--muted);font-size:12px}.placeholder-tag{position:absolute;right:25px;top:28px;font-size:10px;background:#f1f0ee;border-radius:20px;padding:6px 9px;color:#72717b}.clinical-reading{margin-top:35px}.team-contact{margin-top:15px}.team-contact a{display:block;font-size:13px;line-height:1.9;color:var(--blue);overflow-wrap:anywhere}
 @media(max-width:1000px){.team-profiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.team-profiles{grid-template-columns:1fr}.team-person{padding:26px}}
-@media(prefers-reduced-motion:reduce){.hero-background-video{transition:none}.hero-video-parallax .hero-backdrop,.hero-video-parallax .hero-background-video{transform:none;will-change:auto}}
+@media(prefers-reduced-motion:reduce){.hero-background-video{transition:none}.hero-video-parallax .hero-backdrop,.hero-video-parallax .hero-background-video,.team-feature-photo-parallax .team-group-photo{transform:none;will-change:auto}.header-cta:hover{transform:none}}
