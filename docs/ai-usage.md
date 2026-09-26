@@ -8,7 +8,7 @@ Set these variables on the server (Render for the hosted site):
 
 - `OPENAI_ADMIN_KEY`: an OpenAI organization admin key used only by the server-side costs request. Treat it as a sensitive organization-level secret. Never put it in frontend code, committed environment files, or chat.
 - `OPENAI_PROJECT_ID`: the project ID (`proj_…`) that the chatbot's `OPENAI_API_KEY` belongs to.
-- `OPENAI_MONTHLY_BUDGET_USD`: the comparison budget; defaults to `20`.
+- `OPENAI_MONTHLY_BUDGET_USD`: an optional comparison budget you choose. It is hidden when unset; there is no default budget.
 
 Use a project dedicated to the chatbot for clean attribution. The line-item filter excludes other models, but other usage of the same model in that project will also be included. OpenAI requires an admin key for the organization Costs endpoint; the dashboard card calls that endpoint only from the authenticated server. If the admin key or project ID is not configured, the card shows that actual costs are unavailable instead of falling back to an estimate or displaying a false `$0`.
 

@@ -7,7 +7,7 @@ export function responseUsage(payload,requestedModel){
   return {model:payload.model||requestedModel,input_tokens:input,output_tokens:output,total_tokens:Number.isSafeInteger(u.total_tokens)&&u.total_tokens>=0?u.total_tokens:input+output,cached_input_tokens:cached};
 }
 export function monthlyBudget(value=process.env.OPENAI_MONTHLY_BUDGET_USD){
-  if(value===undefined||value==='')return 20;
+  if(value===undefined||value==='')return null;
   const n=Number(value);return Number.isFinite(n)&&n>=0?n:null;
 }
 export function monthRange(now=new Date()){

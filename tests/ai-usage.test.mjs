@@ -15,7 +15,7 @@ test('response token usage is recorded without creating a local cost estimate',(
   assert.equal('estimated_cost_usd' in usage,false);
   assert.equal(responseUsage({...payload,usage:{input_tokens:-1,output_tokens:1}}),null);
   assert.equal(responseUsage({}),null);
-  assert.equal(monthlyBudget('0'),0);assert.equal(monthlyBudget('bad'),null);assert.equal(monthlyBudget(''),20);
+  assert.equal(monthlyBudget('0'),0);assert.equal(monthlyBudget('bad'),null);assert.equal(monthlyBudget(''),null);assert.equal(monthlyBudget(undefined),null);
 });
 
 test('monthly chat totals count only unique conversation markers in the UTC month',async()=>{
