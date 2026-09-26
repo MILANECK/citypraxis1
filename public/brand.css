@@ -27,8 +27,10 @@ body{background:var(--beige)}
 .hero-immersive h1>span{color:#bce3ef}
 .hero-immersive .hero-copy>p{color:#f4f3f4;font-size:18px;line-height:1.7;max-width:555px;text-wrap:pretty}
 .hero-immersive .hero-actions{margin-top:32px;gap:28px;flex-direction:row;align-items:center}
-.hero-immersive .hero-actions .button{background:var(--pink);font-size:15px;padding:19px 26px}
+.hero-immersive .hero-actions .button{background:var(--pink);font-size:15px;padding:19px 26px;transition:transform .3s cubic-bezier(.2,.8,.2,1),background .3s,box-shadow .3s,filter .3s}
+.hero-immersive .hero-actions .button .arrow-symbol{transition:transform .3s cubic-bezier(.2,.8,.2,1)}
 .hero-immersive .hero-actions .button:hover{background:#b12499}
+@media(hover:hover) and (pointer:fine){.hero-immersive .hero-actions .button:hover{transform:translateY(-2px);box-shadow:0 8px 24px #951b8140}.hero-immersive .hero-actions .button:hover .arrow-symbol{transform:translate(2px,-2px)}}
 .hero-immersive .subtle-link{color:white;font-size:14px}.hero-immersive .availability{background:#e6a1db}
 .hero-bottom{position:absolute;bottom:30px;left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:25px}
 .hero-scroll{display:flex;align-items:center;gap:15px;font-size:12px}.hero-scroll>span{display:grid;place-items:center;width:42px;height:42px;background:#ffffff1c;border-radius:50%;font-size:20px}
