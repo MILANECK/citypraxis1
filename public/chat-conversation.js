@@ -34,11 +34,20 @@ async function revealReply(){
   status.textContent='';paragraph.classList.add('is-typing');
   const scroll=$('.chat-scroll');scroll.scrollTop=scroll.scrollHeight;
   await new Promise(resolve=>{
-    let start;const duration=Math.min(2200,words.length*32);
+    let start,nextWord=0,elapsed=0;
+    const pauses=words.map(word=>{
+      const token=word.trim();
+      const punctuation=/[,;:—–]$/u.test(token)?95:/[.!?…]$/u.test(token)?150:0;
+      return 46+Math.min(30,token.length*4)+punctuation;
+    });
+    const pacingScale=Math.min(1,3800/pauses.reduce((total,pause)=>total+pause,0));
+    const revealAt=pauses.map(pause=>(elapsed+=pause*pacingScale));
     function frame(now){
       start??=now;
       const follow=scroll.scrollHeight-scroll.scrollTop-scroll.clientHeight<70;
-      const count=!opened||!paragraph.isConnected||document.hidden?words.length:Math.min(words.length,Math.max(1,Math.ceil((now-start)/duration*words.length)));
+      if(!opened||!paragraph.isConnected||document.hidden)nextWord=words.length;
+      else while(nextWord<words.length&&now-start>=revealAt[nextWord])nextWord++;
+      const count=Math.min(words.length,Math.max(1,nextWord));
       visual.textContent=words.slice(0,count).join('');
       if(follow)scroll.scrollTop=scroll.scrollHeight;
       if(count<words.length)requestAnimationFrame(frame);else resolve();
