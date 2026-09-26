@@ -26,7 +26,7 @@ const emailValid = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 export function createApp(db = openDatabase()) {
   const aiUsage=createUsageTracker(sqliteUsageStore(db));
   const conversation=createConversationService({usage:aiUsage,store:sqliteChatStore(db),getFacts:async()=>conversationFacts(contentSnapshot(db))});
-  const chat=createChatService({usage:aiUsage,store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{}});
+  const chat=createChatService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{}});
   const appointment=createAppointmentService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{},getTherapist:async id=>{
     const row=db.prepare("SELECT published FROM content WHERE collection='team' AND id=? AND published IS NOT NULL").get(id);const therapist=row?JSON.parse(row.published):null;return therapist&&isTeamMemberBookable(therapist)?therapist:null;
   }});

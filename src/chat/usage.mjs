@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 
 // USD per million tokens, standard API pricing. See docs/ai-usage.md.
-const prices={'gpt-6-luna':[0.10,0.01,0.50],'gpt-4.1-mini':[0.40,0.10,1.60]};
+const prices={'gpt-6-luna':[0.10,0.01,0.50]};
 export function estimateUsage(payload,requestedModel){
   const u=payload?.usage;if(!u)return null;
   const input=u.input_tokens,output=u.output_tokens,cached=u.input_tokens_details?.cached_tokens??0;

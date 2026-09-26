@@ -16,17 +16,6 @@ export const needsAvailability=d=>['appointment_request','change_request','thera
 export const needsDiscipline=d=>['appointment_request','therapist_change'].includes(d.request_type);
 export const needsLocation=d=>needsDiscipline(d)&&['physiotherapy','osteopathy','unsure'].includes(d.discipline);
 export const needsReferral=d=>d.request_type==='referral_question'||(needsDiscipline(d)&&d.discipline==='physiotherapy');
-export function stepsFor(d){
-  return ['request_type','patient_status_claimed',...(d.patient_status_claimed==='existing'?['previous_therapist']:[]),...(needsDiscipline(d)?['discipline']:[]),...(needsLocation(d)?['body_area']:[]),'description',...(needsReferral(d)?['referral_claimed']:[]),...(['change_request','cancellation_request'].includes(d.request_type)?['appointment_details']:[]),...(needsAvailability(d)?['availability']:[]),'contact','preferred_contact',...(d.preferred_contact!=='email'?['callback_time']:[])];
-}
-export function isStepComplete(step,d){
-  if(step==='contact')return ['first_name','last_name','email','phone'].every(key=>Boolean(d[key]));
-  if(step==='availability')return Boolean(d.preferred_days?.length&&d.preferred_times?.length&&d.availability_notes!==undefined);
-  if(step==='body_area')return Boolean(d.body_area?.length);
-  if(['description','previous_therapist','appointment_details'].includes(step))return d[step]!==undefined;
-  return Boolean(d[step]);
-}
-export const nextStep=d=>stepsFor(d).find(step=>!isStepComplete(step,d))||'review';
 export function summaryRows(d,lang='de'){
   const en=lang==='en',rows=[
     [en?'Name':'Name',[d.first_name,d.last_name].filter(Boolean).join(' ')],

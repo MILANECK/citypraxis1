@@ -116,9 +116,8 @@ test('first appointment, therapist and chatbot notify once after storage; failur
     const therapist=await call('requests',{...body,submissionKey:randomUUID(),therapistId:profile.id,therapistName:'Forged name',source:'chatbot',acute:true});
     assert.equal(therapist.status,201);assert.match(outbox[1].subject,/Therapeutenprofil · AKUT/);assert.ok(outbox[1].text.includes(profile.title));assert.doesNotMatch(outbox[1].text,/Forged name/);
     assert.equal((await store.get(therapist.data.id)).acute,1);
-    const session=(await call('chat/session')).data;
-    const chat=await call('chat/submit',{token:session.token,data:{first_name:'Chat',last_name:'Tester',email:'chat@example.test',phone:'+4369912682157',request_type:'appointment_request',patient_status_claimed:'new',discipline:'physiotherapy',body_area:['neck','shoulder'],description:'A short test request',referral_claimed:'yes',preferred_days:['thursday'],preferred_times:['afternoon'],preferred_contact:'email',consent:true,review_confirmed:true}});
-    assert.equal(chat.status,201);assert.match(outbox[2].subject,/Chatbot/);assert.match(outbox[2].text,/Nacken, Schulter/);assert.match(outbox[2].text,/A short test request/);
+    const chat=await store.save({name:'Chat Tester',preference:'Termin anfragen',email:'chat@example.test',phone:'+4369912682157',intake:{kind:'digital_reception',version:2,conversation_version:2,first_name:'Chat',last_name:'Tester',description:'A short test request',language:'en'},submission_key:randomUUID(),notification_status:'pending'});
+    await notifyRequest(chat.row,store);assert.match(outbox[2].subject,/Chatbot/);assert.match(outbox[2].text,/A short test request/);
     failEmail=true;const failed=await call('requests',{...body,submissionKey:randomUUID()});assert.equal(failed.status,201);
     assert.equal((await store.get(failed.data.id)).notification_status,'failed');
     failEmail=false;const service=createChatService({store});assert.equal((await service.retryNotification(failed.data.id)).status,'sent');assert.equal(outbox.length,5);

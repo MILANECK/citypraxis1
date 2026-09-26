@@ -44,7 +44,7 @@ export function createSupabaseApp() {
   const appointment=createAppointmentService({store:supabaseChatStore(supabase),getSettings:async()=>{
     const rows=await supabase.rest('content','?collection=eq.settings&select=published');return rows.find(r=>r.published)?.published||{};
   },getTherapist:async id=>{const therapist=(await supabase.rest('content',`?collection=eq.team&id=${filter(id)}&published=not.is.null&select=published`))[0]?.published;return therapist&&isTeamMemberBookable(therapist)?therapist:null;}});
-  const chat=createChatService({usage:aiUsage,store:supabaseChatStore(supabase),getSettings:async()=>{
+  const chat=createChatService({store:supabaseChatStore(supabase),getSettings:async()=>{
     const rows=await supabase.rest('content','?collection=eq.settings&select=published');return rows.find(r=>r.published)?.published||{};
   }});
   const attempts = new Map();

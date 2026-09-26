@@ -1,7 +1,7 @@
 import {createHash} from 'node:crypto';
 import {ChatError,text,name,phone,emailValid} from './validation.mjs';
 import {verify,clientAddress,makeLimiter} from './security.mjs';
-import {safetySignal} from './interpret.mjs';
+import {safetySignal} from './safety.mjs';
 import {emailConfigured,notifyRequest,notifyPatient} from './notify.mjs';
 import {summaryRows} from '../../public/chat-model.js';
 

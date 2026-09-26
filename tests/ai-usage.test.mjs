@@ -6,9 +6,9 @@ import {estimateUsage,monthlyBudget,monthRange,createUsageTracker,sqliteUsageSto
 import {createConversationService} from '../src/chat/conversation.mjs';
 import {newSession} from '../src/chat/security.mjs';
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
-const payload={id:'resp_test',model:'gpt-4.1-mini-2025-04-14',usage:{input_tokens:1000,input_tokens_details:{cached_tokens:500},output_tokens:200}};
+const payload={id:'resp_test',model:'gpt-6-luna',usage:{input_tokens:1000,input_tokens_details:{cached_tokens:500},output_tokens:200}};
 test('token pricing discounts cached input, handles snapshots, and flags unknown pricing',()=>{
-  assert.ok(Math.abs(estimateUsage(payload).estimated_cost_usd-.00057)<1e-12);
+  assert.ok(Math.abs(estimateUsage(payload).estimated_cost_usd-.000155)<1e-12);
   assert.equal(estimateUsage({...payload,model:'unknown'}).estimated_cost_usd,null);
   assert.equal(estimateUsage({...payload,service_tier:'priority'}).estimated_cost_usd,null);
   assert.equal(estimateUsage({usage:{input_tokens:-1,output_tokens:1}},'gpt-6-luna'),null);
@@ -19,7 +19,7 @@ test('monthly aggregation deduplicates conversations and responses and excludes 
   const db=new DatabaseSync(':memory:'),store=sqliteUsageStore(db),tracker=createUsageTracker(store);
   try{
     tracker.conversation('session-a');tracker.conversation('session-a');tracker.response('session-a',payload);tracker.response('session-a',payload);await flush();
-    const summary=await tracker.summary();assert.equal(summary.conversations,1);assert.ok(Math.abs(summary.cost-.00057)<1e-12);assert.equal(summary.incomplete,false);
+    const summary=await tracker.summary();assert.equal(summary.conversations,1);assert.ok(Math.abs(summary.cost-.000155)<1e-12);assert.equal(summary.incomplete,false);
     const row={conversation_id:'other',kind:'usage',estimated_cost_usd:5};
     store.insert({...row,event_id:'old',created_at:'2025-12-31T23:59:59.999Z'});
     store.insert({...row,event_id:'start',created_at:'2026-01-01T00:00:00.000Z'});

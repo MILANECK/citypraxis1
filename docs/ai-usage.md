@@ -17,9 +17,8 @@ Standard USD rates per million tokens (verified September 26, 2026):
 | Model | Input | Cached input | Output |
 | --- | ---: | ---: | ---: |
 | gpt-6-luna | 0.10 | 0.01 | 0.50 |
-| gpt-4.1-mini | 0.40 | 0.10 | 1.60 |
 
-Sources: [OpenAI pricing](https://developers.openai.com/api/docs/pricing), [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna), [GPT-4.1 mini](https://developers.openai.com/api/docs/models/gpt-4.1-mini).
+Sources: [OpenAI pricing](https://developers.openai.com/api/docs/pricing), [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna).
 
 Cost = ((input − cached input) × input rate + cached input × cached rate + output × output rate) / 1,000,000. Update the server-side rate table in `src/chat/usage.mjs` when changing models/pricing. Unknown models, nonstandard tiers and inputs over the conservative 128,000-token supported range are flagged as unpriced, rather than treated as free. The current short text chatbot uses no paid tools. Estimates exclude taxes, credits and other applications on the same OpenAI account.
 
