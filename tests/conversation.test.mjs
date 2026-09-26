@@ -38,6 +38,23 @@ test('a short concern can receive a natural acknowledgement without a scripted t
     assert.doesNotMatch(result.message,/Thank you|One sentence is enough/);
   }finally{process.env=old;}
 });
+test('asking about free appointment slots proactively reoffers a request after prior deferral',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const service=createConversationService({fetcher:async(_,options)=>{
+    const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
+    const value=raw==='Not yet, just information'?answer({kind:'practice_question',booking_intent:'defer',answer:'Of course, we can answer your questions.'}):raw==='Tinnitus'?answer({kind:'practice_question',booking_intent:'unspecified',reason:'Tinnitus',answer:'Our team can discuss tinnitus with you.'}):answer({kind:'practice_question',booking_intent:'unspecified',answer:'We cannot see a live calendar or confirm open times. Our receptionist can arrange a time after you submit a request.'});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    await turn('Not yet, just information');await turn('Tinnitus');
+    const availability=await turn('Great, when do you have some free slots?');
+    assert.match(availability.message,/cannot see a live calendar or confirm open times/i);
+    assert.match(availability.message,/Would you like us to prepare an appointment request/i);
+    assert.equal(availability.ready,false);
+    assert.doesNotMatch(availability.message,/first and last name/);
+  }finally{process.env=old;}
+});
 test('an affirmative appointment answer moves directly to the name',async()=>{
   const previous={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   let calls=0;const service=createConversationService({getFacts:async()=>conversationFacts({}),fetcher:async()=>{calls++;return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({booking_intent:'unspecified',reason:'Shoulder concern',answer:'Thank you. Our team can clarify the next step.'}))}]}]})};}});
