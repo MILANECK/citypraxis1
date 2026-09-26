@@ -181,7 +181,10 @@ export function createSupabaseApp() {
           changed.push({row,draft,published});
         }
         for(const {row}of changed)await supabase.rest('revisions','',{method:'POST',body:{collection:'team',entity_id:row.id,snapshot:row.draft,actor:user.id,actor_email:user.email}});
-        for(const {row,draft,published}of changed)await supabase.rest('content',`?collection=eq.team&id=eq.${filter(row.id)}`,{method:'PATCH',body:{draft,published,updated_at:new Date().toISOString()}});
+        for(const {row,draft,published}of changed){
+          const saved=await supabase.rest('content',`?collection=eq.team&id=${filter(row.id)}&select=id`,{method:'PATCH',body:{draft,published,updated_at:new Date().toISOString()}});
+          if(saved.length!==1||saved[0].id!==row.id)throw new Error('Team order was not saved');
+        }
         if(changed.length){publicContentCache=null;await audit(user,'reorder','team');}
         return json(200,{ok:true});
       }
