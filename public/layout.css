@@ -222,7 +222,7 @@ p { font-size: 18px; line-height: 1.8; }
 /* A quieter homepage: one group portrait and a single practical closing card. */
 .team-feature{display:grid;grid-template-columns:1.5fr 1fr;align-items:center;background:#f0f2f3;border-radius:28px;overflow:hidden}
 .team-group-photo{display:block;width:100%;height:auto;align-self:center}
-.team-feature-photo-parallax .team-group-photo{transform:scale(1.045) translate3d(0,var(--team-photo-y,0px),0);transform-origin:center;will-change:transform}
+.team-feature-photo-parallax .team-group-photo{transform:scale(1.08) translate3d(0,var(--team-photo-y,0px),0);transform-origin:center;will-change:transform}
 .team-feature-copy{padding:clamp(28px,4vw,58px)}
 .team-feature-copy h2{font-size:clamp(30px,3.3vw,46px);line-height:1.12;margin:20px 0}
 .team-feature-copy p{font-size:17px;line-height:1.75;margin:0 0 28px;color:var(--muted)}

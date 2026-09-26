@@ -354,7 +354,7 @@ function bind() {
     });
   });
   const teamFeature=document.querySelector('#main .team-feature');
-  if(teamFeature&&!reducedMotion.matches&&!navigator.connection?.saveData){
+  if(teamFeature&&!reducedMotion.matches){
     teamFeature.classList.add('team-feature-photo-parallax');
     let teamFrame=0,teamInView=false;
     const updateTeamParallax=()=>{
@@ -363,7 +363,7 @@ function bind() {
         teamFrame=0;
         const bounds=teamFeature.getBoundingClientRect();
         const progress=Math.max(0,Math.min(1,(innerHeight-bounds.top)/(innerHeight+bounds.height)));
-        const distance=matchMedia('(max-width: 767px)').matches?8:14;
+        const distance=matchMedia('(max-width: 767px)').matches?24:42;
         teamFeature.style.setProperty('--team-photo-y',`${((.5-progress)*distance).toFixed(2)}px`);
       });
     };
