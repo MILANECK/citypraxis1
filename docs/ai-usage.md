@@ -1,25 +1,19 @@
 # AI Chatbot Usage
 
-The existing admin overview shows estimated website chatbot spending, not the OpenAI prepaid balance. It does not enforce a spending cap.
+The admin card uses the OpenAI Costs API for the configured project and `CHAT_CONVERSATION_MODEL`. It no longer displays the local token-price estimate. OpenAI's Costs endpoint returns organization spend grouped by project and line item; the server filters to `OPENAI_PROJECT_ID`, then sums only the configured model for the current UTC month. Recent usage may take time to appear in OpenAI's report. This is reported API cost, not the prepaid account balance, and the website budget is only a visual comparison, not a spending cap.
 
-## Deployment
+## Server configuration
 
-Apply `supabase/migrations/202609260001_ai_usage.sql` in the Supabase SQL Editor before deploying. Set `OPENAI_MONTHLY_BUDGET_USD=20` in the Render service environment (or the local server environment). Restart/redeploy after changing it. Omission defaults to $20; zero is supported. An invalid value is shown as unavailable, not silently replaced.
+Set these variables on the server (Render for the hosted site):
 
-## Storage and calculation
+- `OPENAI_ADMIN_KEY`: an OpenAI organization admin key used only by the server-side costs request. Treat it as a sensitive organization-level secret. Never put it in frontend code, committed environment files, or chat.
+- `OPENAI_PROJECT_ID`: the project ID (`proj_…`) that the chatbot's `OPENAI_API_KEY` belongs to.
+- `OPENAI_MONTHLY_BUDGET_USD`: the comparison budget; defaults to `20`.
 
-`public.chat_ai_usage` stores anonymous conversation-start markers and OpenAI response usage: timestamp, conversation UUID, response identifier, model, input/cached/output/total tokens and estimated USD cost. It contains no patient text or contact data. RLS and grants restrict access to the server service role. The admin endpoint returns aggregates only. Local SQLite uses an equivalent table.
+Use a project dedicated to the chatbot for clean attribution. The line-item filter excludes other models, but other usage of the same model in that project will also be included. OpenAI requires an admin key for the organization Costs endpoint; the dashboard card calls that endpoint only from the authenticated server. If the admin key or project ID is not configured, the card shows that actual costs are unavailable instead of falling back to an estimate or displaying a false `$0`.
 
-Chats count unique existing session IDs with a message, including scripted chats. Merely opening the widget does not count. Duplicate event IDs are ignored. Costs use the actual response model and usage, with the requested model as fallback. Output tokens already include reasoning tokens. Cached input is charged at its discounted rate. Historical event costs remain unchanged if prices change later.
+Apply `supabase/migrations/202609260001_ai_usage.sql` in Supabase if it has not already been applied. Supabase (or local SQLite) continues to store conversation markers and token counts without patient message content; chat totals come from those conversation markers. Cost amounts are fetched from OpenAI and are not inferred from local token rates.
 
-Standard USD rates per million tokens (verified September 26, 2026):
+## Changing the OpenAI account later
 
-| Model | Input | Cached input | Output |
-| --- | ---: | ---: | ---: |
-| gpt-6-luna | 0.10 | 0.01 | 0.50 |
-
-Sources: [OpenAI pricing](https://developers.openai.com/api/docs/pricing), [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna).
-
-Cost = ((input − cached input) × input rate + cached input × cached rate + output × output rate) / 1,000,000. Update the server-side rate table in `src/chat/usage.mjs` when changing models/pricing. Unknown models, nonstandard tiers and inputs over the conservative 128,000-token supported range are flagged as unpriced, rather than treated as free. The current short text chatbot uses no paid tools. Estimates exclude taxes, credits and other applications on the same OpenAI account.
-
-The calendar month is UTC, from its first instant inclusive to the next month exclusive. Remaining = max(0, budget − estimated cost). Tracking begins when deployed; no historical usage is inferred from transcripts. Database logging is asynchronous and bounded to 2.5 seconds. Failures never block chatbot replies; the dashboard warns about observed logging failures for the current server process. Failed writes are not retrospectively recovered. If the database/RPC is unavailable, no misleading $0 balance is shown.
+When CityPraxis has its own OpenAI account, change the server's `OPENAI_API_KEY`, `OPENAI_ADMIN_KEY`, and `OPENAI_PROJECT_ID` to credentials and project from that account, then redeploy. OpenAI's organizations report separately; previous-account costs stay in the previous account and are not combined automatically.

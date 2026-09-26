@@ -1,4 +1,5 @@
 import {createUsageTracker,sqliteUsageStore} from './chat/usage.mjs';
+import {createOpenAICostReporter} from './chat/openai-costs.mjs';
 import http from 'node:http';
 import { readFile, writeFile, mkdir, unlink } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
@@ -24,7 +25,7 @@ const hash = value => createHash('sha256').update(value).digest('hex');
 const clean = (value, max = 200) => typeof value === 'string' ? value.trim().slice(0,max) : '';
 const emailValid = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 export function createApp(db = openDatabase()) {
-  const aiUsage=createUsageTracker(sqliteUsageStore(db));
+  const aiUsage=createUsageTracker(sqliteUsageStore(db),{openAICosts:createOpenAICostReporter()});
   const conversation=createConversationService({usage:aiUsage,store:sqliteChatStore(db),getFacts:async()=>conversationFacts(contentSnapshot(db))});
   const chat=createChatService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{}});
   const appointment=createAppointmentService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{},getTherapist:async id=>{

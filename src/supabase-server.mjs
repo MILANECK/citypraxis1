@@ -1,4 +1,5 @@
 import {createUsageTracker,supabaseUsageStore} from './chat/usage.mjs';
+import {createOpenAICostReporter} from './chat/openai-costs.mjs';
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
@@ -40,7 +41,7 @@ function snapshots(rows, admin = false) {
 
 export function createSupabaseApp() {
   const supabase = createSupabaseClient();
-  const aiUsage=createUsageTracker(supabaseUsageStore(supabase));
+  const aiUsage=createUsageTracker(supabaseUsageStore(supabase),{openAICosts:createOpenAICostReporter()});
   const appointment=createAppointmentService({store:supabaseChatStore(supabase),getSettings:async()=>{
     const rows=await supabase.rest('content','?collection=eq.settings&select=published');return rows.find(r=>r.published)?.published||{};
   },getTherapist:async id=>{const therapist=(await supabase.rest('content',`?collection=eq.team&id=${filter(id)}&published=not.is.null&select=published`))[0]?.published;return therapist&&isTeamMemberBookable(therapist)?therapist:null;}});

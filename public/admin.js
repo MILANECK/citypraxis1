@@ -1,4 +1,4 @@
-import {showAIUsage} from './admin-ai-usage.js?v=1';
+import {showAIUsage} from './admin-ai-usage.js?v=2';
 import {renderChatIntake,chatIntake} from './admin-chat.js?v=conversation-2';
 import {requestSource,normalizeAppointmentConcerns} from './request-summary.js?v=team-capacity-1';
 const $=(s,r=document)=>r.querySelector(s);
