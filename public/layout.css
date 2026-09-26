@@ -72,8 +72,8 @@ p { font-size: 18px; line-height: 1.8; }
 .review-card.review-reveal{opacity:0;transform:translateY(22px);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1),box-shadow .32s ease;transition-delay:var(--review-delay,0ms)}
 .review-card.review-reveal.is-visible{opacity:1;transform:translateY(0)}
 @media(prefers-reduced-motion:reduce){.review-card.review-reveal{opacity:1;transform:none;transition:none}}
-@media(hover:hover) and (pointer:fine){.reviews-grid{perspective:1100px}.review-card.review-reveal.is-visible{transform-style:preserve-3d}.review-card.review-reveal.is-visible:hover{transform:rotateX(2deg) rotateY(-2deg) translateY(-3px);box-shadow:0 18px 40px #22234416}}
-@media(prefers-reduced-motion:reduce){.review-card.review-reveal.is-visible:hover{transform:none}}
+.review-card.review-reveal.review-revealed{transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s ease;transition-delay:0s}
+@media(hover:hover) and (pointer:fine){.review-card.review-reveal.review-revealed:hover{transform:translateY(-5px);box-shadow:0 20px 44px #22234420}}
 .review-top { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 .reviews-grid .review-top{margin-bottom:4px}
 .review-top .review-quote { margin-left: auto; height: 30px; font-size: 52px; color: #99cede; }
@@ -434,8 +434,10 @@ footer{background:#f6f4f1;color:var(--ink)}
 .listing-grid .listing-card.listing-reveal{opacity:0;filter:blur(3px);transform:translate3d(0,18px,0) scale(.99);transition:opacity .82s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),filter .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),transform .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms);will-change:opacity,filter,transform}
 .listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
 @media(hover:hover){.listing-grid .listing-card.listing-reveal.is-visible:hover{transform:translate3d(0,-4px,0) scale(1)}}
-.therapy-grid .therapy-card.therapy-reveal{opacity:0;filter:blur(1px);transform:translate3d(0,9px,0) scale(.997);transition:opacity 1s cubic-bezier(.22,1,.36,1) var(--therapy-delay,0ms),filter .95s cubic-bezier(.22,1,.36,1) var(--therapy-delay,0ms),transform 1s cubic-bezier(.22,1,.36,1) var(--therapy-delay,0ms)}
-.therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
+.therapy-grid .therapy-card.therapy-reveal{opacity:0;transform:translateY(22px);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1);transition-delay:var(--therapy-delay,0ms)}
+.therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;transform:translateY(0)}
+.therapy-grid .therapy-card.therapy-reveal.therapy-revealed{transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s ease;transition-delay:0s}
+@media(hover:hover) and (pointer:fine){.therapy-grid .therapy-card.therapy-reveal.therapy-revealed:hover{transform:translateY(-6px);box-shadow:0 20px 48px #22234412}}
 @media(prefers-reduced-motion:reduce){
   .booking-layout #booking-form.booking-form-reveal,.booking-layout #booking-form.booking-form-reveal.is-visible,.weekly-hours>div.hours-row-reveal,.weekly-hours>div.hours-row-reveal.is-visible,.price-table .price-amount.price-amount-reveal,.price-table .price-amount.price-amount-reveal.is-visible,.listing-grid .listing-card.listing-reveal,.listing-grid .listing-card.listing-reveal.is-visible,.therapy-grid .therapy-card.therapy-reveal,.therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;filter:none;transform:none;transition:none;will-change:auto}
   .contact-map iframe{opacity:1;transition:none}

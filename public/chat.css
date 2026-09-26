@@ -9,7 +9,7 @@
 .chat-launch svg{width:24px;height:24px}.chat-launch span{max-width:0;margin-right:0;overflow:hidden;opacity:0;transform:translateX(8px);font-size:13px;font-weight:600;transition:max-width .36s cubic-bezier(.22,1,.36,1),margin-right .36s cubic-bezier(.22,1,.36,1),opacity .24s ease,transform .36s cubic-bezier(.22,1,.36,1)}
 .chat-launch .chat-launch-icon{width:32px;height:30px;flex:0 0 32px;object-fit:contain;margin:0}
 .chat-launch-icon img{display:block;width:32px;height:30px}
-@media(hover:hover) and (pointer:fine) and (min-width:768px){.chat-launch:hover,.chat-launch:focus-visible{width:190px;box-shadow:0 10px 32px #22234430}.chat-launch:hover span,.chat-launch:focus-visible span{max-width:138px;margin-right:9px;opacity:1;transform:translateX(0)}}
+@media(hover:hover) and (pointer:fine) and (min-width:768px){.chat-launch:hover,.chat-launch:focus-visible{width:160px;box-shadow:0 10px 32px #22234430}.chat-launch:hover span,.chat-launch:focus-visible span{max-width:138px;margin-right:9px;opacity:1;transform:translateX(0)}}
 .chat-window{position:fixed;right:24px;bottom:90px;width:400px;max-width:calc(100vw - 32px);height:min(650px,calc(100dvh - 115px));display:flex;flex-direction:column;background:#fff;border:1px solid #e3e5e7;border-radius:24px;overflow:hidden;box-shadow:0 20px 70px #22234426;transform:translateY(18px) scale(.98);transform-origin:bottom right;opacity:0;visibility:hidden;transition:transform .38s cubic-bezier(.22,1,.36,1),opacity .28s ease,visibility .38s}
 .is-open .chat-window{transform:translateY(0) scale(1);opacity:1;visibility:visible}
 .chat-heading{display:flex;align-items:center;gap:12px;padding:20px;background:#f6f4f1;border-bottom:1px solid #e7e4df;flex-shrink:0}

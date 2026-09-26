@@ -247,7 +247,12 @@ function bind() {
     const reviewCards=[...document.querySelectorAll('.reviews-grid .review-card')];
     if(reviewCards.length){
       const reviewObserver=new IntersectionObserver(entries=>{
-        entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');reviewObserver.unobserve(entry.target);}});
+        entries.forEach(entry=>{if(entry.isIntersecting){
+          const card=entry.target;
+          const finishReveal=event=>{if(event.target!==card||event.propertyName!=='transform')return;card.classList.add('review-revealed');card.removeEventListener('transitionend',finishReveal);};
+          card.addEventListener('transitionend',finishReveal);
+          card.classList.add('is-visible');reviewObserver.unobserve(card);
+        }});
       },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
       reviewCards.forEach((card,index)=>{card.classList.add('review-reveal');card.style.setProperty('--review-delay',`${index*135}ms`);reviewObserver.observe(card);});
     }
@@ -312,7 +317,12 @@ function bind() {
     const therapyCards=[...document.querySelectorAll('#main .therapy-grid .therapy-card')];
     if(therapyCards.length){
       const therapyObserver=new IntersectionObserver(entries=>{
-        entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');therapyObserver.unobserve(entry.target);}});
+        entries.forEach(entry=>{if(entry.isIntersecting){
+          const card=entry.target;
+          const finishReveal=event=>{if(event.target!==card||event.propertyName!=='transform')return;card.classList.add('therapy-revealed');card.removeEventListener('transitionend',finishReveal);};
+          card.addEventListener('transitionend',finishReveal);
+          card.classList.add('is-visible');therapyObserver.unobserve(card);
+        }});
       },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
       therapyCards.forEach((card,index)=>{card.classList.add('therapy-reveal');card.style.setProperty('--therapy-delay',`${index*115}ms`);therapyObserver.observe(card);});
     }
