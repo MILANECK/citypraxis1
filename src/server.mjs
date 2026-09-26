@@ -1,3 +1,4 @@
+import {createUsageTracker,sqliteUsageStore} from './chat/usage.mjs';
 import http from 'node:http';
 import { readFile, writeFile, mkdir, unlink } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
@@ -23,8 +24,9 @@ const hash = value => createHash('sha256').update(value).digest('hex');
 const clean = (value, max = 200) => typeof value === 'string' ? value.trim().slice(0,max) : '';
 const emailValid = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 export function createApp(db = openDatabase()) {
-  const conversation=createConversationService({store:sqliteChatStore(db),getFacts:async()=>conversationFacts(contentSnapshot(db))});
-  const chat=createChatService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{}});
+  const aiUsage=createUsageTracker(sqliteUsageStore(db));
+  const conversation=createConversationService({usage:aiUsage,store:sqliteChatStore(db),getFacts:async()=>conversationFacts(contentSnapshot(db))});
+  const chat=createChatService({usage:aiUsage,store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{}});
   const appointment=createAppointmentService({store:sqliteChatStore(db),getSettings:async()=>contentSnapshot(db).settings[0]||{},getTherapist:async id=>{
     const row=db.prepare("SELECT published FROM content WHERE collection='team' AND id=? AND published IS NOT NULL").get(id);const therapist=row?JSON.parse(row.published):null;return therapist&&isTeamMemberBookable(therapist)?therapist:null;
   }});
@@ -109,6 +111,7 @@ export function createApp(db = openDatabase()) {
       if (path === '/api/me' && req.method === 'GET') return json(200,user);
       if (path === '/api/logout' && req.method === 'POST') { db.prepare('DELETE FROM sessions WHERE token=?').run(hash(token)); res.setHeader('Set-Cookie','cp_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0'); return json(200,{ok:true}); }
       const owner = user.role === 'owner', editor = owner || user.role === 'editor', reception = owner || user.role === 'reception';
+      if(path==='/api/admin/ai-usage'&&req.method==='GET')return json(200,await aiUsage.summary());
       if(path==='/api/admin/capacity'&&req.method==='GET')return json(200,{available:false});
       if(path==='/api/admin/requests/notify'&&req.method==='POST'&&reception)return json(200,await chat.retryNotification(body.id));
       if(path==='/api/admin/social-links'&&req.method==='PUT'&&editor){

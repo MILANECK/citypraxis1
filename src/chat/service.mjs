@@ -5,7 +5,7 @@ import {interpret,aiEnabled,safetySignal} from './interpret.mjs';
 import {defaults,label} from '../../public/chat-model.js';
 import {emailConfigured,notifyRequest,notifyPatient} from './notify.mjs';
 
-export function createChatService({store,getSettings=async()=>({}),fetcher=fetch}){
+export function createChatService({store,getSettings=async()=>({}),fetcher=fetch,usage}){
   const limit=makeLimiter();
   async function config(){
     const s=await getSettings();
@@ -26,7 +26,8 @@ export function createChatService({store,getSettings=async()=>({}),fetcher=fetch
         // Per-process circuit breaker bounds paid calls, including failed attempts.
         if(allowAI){try{limit('ai-budget',Math.max(1,Math.min(2000,Number(process.env.CHAT_AI_DAILY_LIMIT)||200)),86400000);}catch{allowAI=false;}}
         const raw=text(body.raw,650,{required:true});
-        const result=await interpret({raw,context:body.context,aiConsent:allowAI},fetcher);
+        usage?.conversation(session.id);
+        const result=await interpret({raw,context:body.context,aiConsent:allowAI,onUsage:payload=>usage?.response(session.id,payload,process.env.OPENAI_MODEL||'gpt-4.1-mini')},fetcher);
         const receipt=Object.keys(result.suggestions).length?sign({kind:'interpretation',sessionId:session.id,expires:session.expires,raw,context:body.context,suggestions:result.suggestions,source:result.source,confidence:result.confidence}):null;
         json(200,{...result,receipt});return true;
       }

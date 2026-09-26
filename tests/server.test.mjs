@@ -17,8 +17,10 @@ test('staff authorization, draft isolation, revisions, request handling and sess
   try{
     assert.equal((await call('admin/requests')).status,401);
     assert.equal((await call('admin/capacity')).status,401);
+    assert.equal((await call('admin/ai-usage')).status,401);
     const owner=await login('owner'),editor=await login('editor'),reception=await login('reception');
     assert.deepEqual((await call('admin/capacity','GET',null,owner)).data,{available:false});
+    const usage=(await call('admin/ai-usage','GET',null,owner)).data;assert.equal(usage.available,true);assert.equal(usage.conversations,0);assert.equal(usage.cost,0);
     const originalTeam=(await call('admin/content','GET',null,editor)).data.team;
     if(originalTeam.length>2){
       const pinned=originalTeam.find(item=>item.id==='isabella-casny'),movable=originalTeam.filter(item=>item.id!=='isabella-casny');

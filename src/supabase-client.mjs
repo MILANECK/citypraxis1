@@ -17,9 +17,9 @@ export function createSupabaseClient() {
   const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'website-media';
   const serviceHeaders = { apikey: secret, Authorization: `Bearer ${secret}` };
 
-  async function request(path, { method = 'GET', body, headers = {}, key = secret, bearer = key, raw = false } = {}) {
+  async function request(path, { method = 'GET', body, headers = {}, key = secret, bearer = key, raw = false, signal } = {}) {
     const response = await fetch(`${url}${path}`, {
-      method,
+      method, signal,
       headers: {
         apikey: key,
         Authorization: `Bearer ${bearer}`,

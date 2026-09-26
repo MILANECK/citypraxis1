@@ -125,11 +125,11 @@ function languageFacts(value,lang){
   if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).filter(key=>!key.endsWith('En')).map(key=>[key,languageFacts(lang==='en'&&value[key+'En']?value[key+'En']:value[key],lang)]));
   return value;
 }
-async function aiTurn(raw,lang,d,facts,fetcher,history=[]){
+async function aiTurn(raw,lang,d,facts,fetcher,history=[],onUsage=()=>{}){
   const minimized=minimize(raw);
   const result=await fetcher('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,'Content-Type':'application/json'},signal:AbortSignal.timeout(12000),body:JSON.stringify({model:process.env.CHAT_CONVERSATION_MODEL||'gpt-6-luna',reasoning:{effort:'none'},store:false,max_output_tokens:650,instructions:CONVERSATION_PROMPT,input:JSON.stringify({language:lang,currentStage:d._stage||nextSlot(d),knownFields:Object.keys(d).filter(k=>k!=='_stage'&&Boolean(d[k])),publishedFacts:languageFacts(facts,lang),practiceNow:practiceHoursStatus(facts.openingHours),recentConversation:history.slice(-6).map(m=>({role:m.role,text:minimize(m.text)})),visitorMessage:minimized}),text:{format:{type:'json_schema',name:'citypraxis_reception_turn',strict:true,schema:responseSchema}}})});
   if(!result.ok)throw new ChatError('ai_unavailable',503);
-  const payload=await result.json();if(payload.status!=='completed')throw new ChatError('ai_unavailable',503);
+  const payload=await result.json();onUsage(payload);if(payload.status!=='completed')throw new ChatError('ai_unavailable',503);
   const blocks=payload.output?.flatMap(item=>item.content||[])||[];
   if(blocks.some(b=>b.type==='refusal'))throw new ChatError('ai_unavailable',503);
   let value;try{value=JSON.parse(blocks.filter(b=>b.type==='output_text').map(b=>b.text).join(''));}catch{throw new ChatError('ai_unavailable',503);}
@@ -137,7 +137,7 @@ async function aiTurn(raw,lang,d,facts,fetcher,history=[]){
   return value;
 }
 
-export function createConversationService({store,getFacts=async()=>({}),fetcher=fetch}){
+export function createConversationService({store,getFacts=async()=>({}),fetcher=fetch,usage}){
   const sessions=new Map(),limit=makeLimiter();
   const prune=()=>{for(const [id,s] of sessions)if(s.expires<Date.now())sessions.delete(id);};
   async function handle(req,path,body,json){
@@ -190,6 +190,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       if(s.turns>=CONVERSATION_LIMIT)throw new ChatError('conversation_limit',429);
       if(!process.env.OPENAI_API_KEY||process.env.CHAT_AI_ENABLED!=='true')throw new ChatError('ai_unavailable',503);
       const raw=text(body.message,650,{required:true});
+      usage?.conversation(token.id);
       const signal=safetySignal(raw);
       if(signal==='emergency'){json(200,{emergency:true,message:localized(lang,'Dieser Chat ist kein Notfalldienst. Bitte rufen Sie in Österreich 144 oder 112 an.','This chat is not an emergency service. In Austria, please call 144 or 112.')});return true;}
       const stage=s.editing||nextSlot(s.draft);s.turns++;limit(`conversation-session:${token.id}`,CONVERSATION_LIMIT);
@@ -219,7 +220,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         // A valid number is sufficient even when the visitor writes "my phone is …".
       }else if(!((stage==='email'&&emailValid(raw))||(stage==='phone'&&draft.phone))){
         limit('conversation-ai-day',Math.max(1,Math.min(2000,Number(process.env.CHAT_AI_DAILY_LIMIT)||200)),86400000);
-        try{ai=await aiTurn(raw,lang,{...draft,_stage:stage},await getFacts(),fetcher,s.messages);}catch(error){if(error instanceof ChatError)throw error;throw new ChatError('ai_unavailable',503);}
+        try{ai=await aiTurn(raw,lang,{...draft,_stage:stage},await getFacts(),fetcher,s.messages,payload=>usage?.response(token.id,payload,process.env.CHAT_CONVERSATION_MODEL||'gpt-6-luna'));}catch(error){if(error instanceof ChatError)throw error;throw new ChatError('ai_unavailable',503);}
         kind=ai.kind;answer=ai.answer.trim();
         if(kind==='emergency'){json(200,{emergency:true,message:localized(lang,'Dieser Chat ist kein Notfalldienst. Bitte rufen Sie in Österreich 144 oder 112 an.','This chat is not an emergency service. In Austria, please call 144 or 112.')});return true;}
         if(['appointment','practice_question','medical'].includes(kind)){

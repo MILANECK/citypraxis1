@@ -1,3 +1,4 @@
+import {createUsageTracker,supabaseUsageStore} from './chat/usage.mjs';
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
@@ -39,15 +40,16 @@ function snapshots(rows, admin = false) {
 
 export function createSupabaseApp() {
   const supabase = createSupabaseClient();
+  const aiUsage=createUsageTracker(supabaseUsageStore(supabase));
   const appointment=createAppointmentService({store:supabaseChatStore(supabase),getSettings:async()=>{
     const rows=await supabase.rest('content','?collection=eq.settings&select=published');return rows.find(r=>r.published)?.published||{};
   },getTherapist:async id=>{const therapist=(await supabase.rest('content',`?collection=eq.team&id=${filter(id)}&published=not.is.null&select=published`))[0]?.published;return therapist&&isTeamMemberBookable(therapist)?therapist:null;}});
-  const chat=createChatService({store:supabaseChatStore(supabase),getSettings:async()=>{
+  const chat=createChatService({usage:aiUsage,store:supabaseChatStore(supabase),getSettings:async()=>{
     const rows=await supabase.rest('content','?collection=eq.settings&select=published');return rows.find(r=>r.published)?.published||{};
   }});
   const attempts = new Map();
   let publicContentCache;
-  const conversation=createConversationService({store:supabaseChatStore(supabase),getFacts:async()=>{
+  const conversation=createConversationService({usage:aiUsage,store:supabaseChatStore(supabase),getFacts:async()=>{
     if(!publicContentCache||Date.now()-publicContentCache.savedAt>30000)publicContentCache={savedAt:Date.now(),content:snapshots(await supabase.rest('content','?select=collection,id,published&published=not.is.null'),false)};
     return conversationFacts(publicContentCache.content);
   }});
@@ -148,6 +150,7 @@ export function createSupabaseApp() {
       if(path==='/api/me'&&req.method==='GET')return json(200,{id:user.id,email:user.email,name:user.name,role:user.role,csrf:user.csrf});
       if(path==='/api/logout'&&req.method==='POST'){try{await supabase.logout(user.accessToken);}catch{}res.setHeader('Set-Cookie','cp_access=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');return json(200,{ok:true});}
       const owner=user.role==='owner',editor=owner||user.role==='editor',reception=owner||user.role==='reception';
+      if(path==='/api/admin/ai-usage'&&req.method==='GET')return json(200,await aiUsage.summary());
       if(path==='/api/admin/capacity'&&req.method==='GET'){
         try{
           const usage=await supabase.rest('rpc/citypraxis_capacity','',{method:'POST',body:{}});

@@ -68,7 +68,7 @@ export function validateExtraction(value){
   return value;
 }
 export const aiEnabled=()=>process.env.CHAT_AI_ENABLED==='true'&&Boolean(process.env.OPENAI_API_KEY);
-export async function interpret({raw,context,aiConsent=false},fetcher=fetch){
+export async function interpret({raw,context,aiConsent=false,onUsage=()=>{}},fetcher=fetch){
   raw=text(raw,650,{required:true});if(!['initial','body_area','availability','description'].includes(context))throw new ChatError('invalid_request');
   const base=scriptedInterpret(raw,context);
   if(base.emergency||base.medical_advice||!base.relevant)return base;
@@ -78,7 +78,7 @@ export async function interpret({raw,context,aiConsent=false},fetcher=fetch){
   for(const key of ['first_name','last_name'])if(base.suggestions[key])minimized=minimized.replaceAll(base.suggestions[key],'[name removed]');
   try{
     const response=await fetcher('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,'Content-Type':'application/json'},signal:AbortSignal.timeout(6500),body:JSON.stringify({model:process.env.OPENAI_MODEL||'gpt-4.1-mini',store:false,max_output_tokens:500,instructions:GPT_SYSTEM_PROMPT,input:JSON.stringify({context,text:minimized}),text:{format:{type:'json_schema',name:'reception_interpretation',strict:true,schema:extractionSchema}}})});
-    if(!response.ok)throw new Error('AI unavailable');const result=await response.json();if(result.status!=='completed')throw new Error('AI incomplete');
+    if(!response.ok)throw new Error('AI unavailable');const result=await response.json();onUsage(result);if(result.status!=='completed')throw new Error('AI incomplete');
     const blocks=result.output?.flatMap(item=>item.content||[])||[];if(blocks.some(b=>b.type==='refusal'))throw new Error('AI refusal');
     const value=validateExtraction(JSON.parse(blocks.filter(b=>b.type==='output_text').map(b=>b.text).join('')));
     const allowed=context==='initial'?['request_type','patient_status_claimed','body_area','preferred_days','preferred_times']:context==='body_area'?['body_area']:context==='availability'?['preferred_days','preferred_times']:[];
