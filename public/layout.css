@@ -434,7 +434,7 @@ footer{background:#f6f4f1;color:var(--ink)}
 .listing-grid .listing-card.listing-reveal{opacity:0;filter:blur(3px);transform:translate3d(0,18px,0) scale(.99);transition:opacity .82s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),filter .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),transform .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms);will-change:opacity,filter,transform}
 .listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
 @media(hover:hover){.listing-grid .listing-card.listing-reveal.is-visible:hover{transform:translate3d(0,-4px,0) scale(1)}}
-.therapy-grid .therapy-card.therapy-reveal{opacity:0;transform:translateY(22px);transition:opacity .9s cubic-bezier(.22,1,.36,1),transform .9s cubic-bezier(.22,1,.36,1);transition-delay:var(--therapy-delay,0ms)}
+.therapy-grid .therapy-card.therapy-reveal{opacity:0;transform:translateY(12px);transition:opacity 1.25s cubic-bezier(.22,.61,.36,1),transform 1.25s cubic-bezier(.22,.61,.36,1);transition-delay:var(--therapy-delay,0ms)}
 .therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;transform:translateY(0)}
 .therapy-grid .therapy-card.therapy-reveal.therapy-revealed{transition:transform .34s cubic-bezier(.22,1,.36,1),box-shadow .34s cubic-bezier(.22,1,.36,1);transition-delay:0s}
 @media(hover:hover) and (pointer:fine){.therapy-grid .therapy-card.therapy-reveal.therapy-revealed:hover{transform:translateY(-5px);box-shadow:0 20px 48px #22234412}}
