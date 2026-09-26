@@ -9,8 +9,8 @@ services:
     healthCheckPath: /api/health
     autoDeployTrigger: commit
     envVars:
-      - key: OPENAI_MONTHLY_BUDGET_USD
-        value: "20"
+      - key: CHAT_CONVERSATION_MODEL
+        value: gpt-6-luna
       - key: NODE_VERSION
         value: 24.14.1
       - key: SUPABASE_URL
