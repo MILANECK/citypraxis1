@@ -146,7 +146,13 @@ test('AI errors, malformed output, boundaries, limits and concurrent requests ar
     value=answer({first_name:{bad:true}});assert.equal((await call(token,'A normal message')).code,'ai_unavailable');
     value=answer({kind:'medical'});assert.match((await call(token,'What exercises should I do?')).message,/^I'm sorry, but I can't provide a medical assessment\./);
     value=answer({kind:'medical',answer:"I can't assess what may be causing this. Our reception team can clarify the next step."});assert.match((await call(token,'What could be causing this?')).message,/^I'm sorry, but I can't assess/);
-    value=answer({kind:'medical',answer:'I see. We can’t assess breathing concerns or advise medically here.'});const gentle=(await call(token,'Can you assess this breathing concern?')).message;assert.match(gentle,/^I'm sorry, but we can’t assess/);assert.doesNotMatch(gentle,/^I see/);
+    value=answer({kind:'medical',answer:'I see. We can’t assess breathing concerns or advise medically here.'});const gentle=(await call(token,'Can you assess this breathing concern?')).message;assert.match(gentle,/^I'm sorry, but I can't assess/);assert.doesNotMatch(gentle,/^I see/);
+    value=answer({kind:'medical',booking_intent:'unspecified',reason:'Stiffness',answer:"I'm sorry you're experiencing this. Without an in-person assessment by one of our physiotherapists, our team can't reliably determine what may be causing it or make a diagnosis here."});
+    const vague=(await call(newSession(),'I feel stiff but can’t quite define what is wrong.')).message;
+    assert.match(vague,/one of our physiotherapists/);assert.match(vague,/I can't reliably determine what may be causing it/);assert.doesNotMatch(vague,/our team can't reliably determine/);assert.match(vague,/Would you like me to prepare an appointment request/);
+    value=answer({kind:'medical',answer:'Es tut mir leid, aber unser Team kann Ihre Beschwerden nicht zuverlässig beurteilen.'});
+    const german=await call(newSession(),'Ich fühle mich steif und kann nicht genau sagen, was los ist.',{language:'de'});
+    assert.match(german.message,/ich kann Ihre Beschwerden nicht zuverlässig beurteilen/);
     value=answer({kind:'off_topic'});waiting=true;const pending=call(token,'A question');await new Promise(r=>setImmediate(r));assert.equal((await call(token,'Another')).code,'busy');waiting=false;release();await pending;
     const limited=newSession();for(let i=0;i<16;i++){const result=await call(limited,'Unrelated question');assert.equal(result.status,200);if(i===15)assert.equal(result.limitReached,true);}
     assert.equal((await call(limited,'One more')).code,'conversation_limit');
