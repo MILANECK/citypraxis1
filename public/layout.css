@@ -257,19 +257,19 @@ footer{background:#f6f4f1;color:var(--ink)}
 .weekly-hours dt{font-weight:500;color:var(--ink)}
 .weekly-hours dd{margin:0;text-align:right;color:var(--muted)}
 .info-card .hours-intro{font-size:14px;margin-bottom:0}
-.contact-grid{align-items:start}
-.contact-grid .map-card{display:block;padding:0;background:#f0f2f3;overflow:hidden;text-align:left;border-radius:26px}
-.contact-map{height:490px;background:#edf0ed}
-.contact-map iframe{width:100%;height:100%;display:block;border:0;filter:grayscale(.65) saturate(.65);color-scheme:light}
+.contact-grid{align-items:stretch}
+.contact-grid .map-card{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;height:100%;padding:0;background:#f0f2f3;overflow:hidden;text-align:left;border-radius:26px}
+.contact-map{position:relative;flex:1 1 490px;min-height:490px;height:auto;background:linear-gradient(135deg,#edf0ed,#e7ecec)}
+.contact-map iframe{width:100%;height:100%;display:block;border:0;opacity:0;transition:opacity .45s ease;color-scheme:light}
+.contact-map.is-loaded iframe{opacity:1}
 .map-caption{padding:30px}
 .map-caption h2{font-size:27px;margin-top:12px}
 .map-caption p{font-size:15px;margin:10px 0 0;color:var(--muted)}
 .map-caption .button{margin-top:22px;font-size:14px}
-@media(max-width:767px){.contact-map{height:360px}.map-caption{padding:26px}.weekly-hours{font-size:14px}}
+@media(max-width:767px){.contact-map{height:360px;min-height:360px;flex:0 0 360px}.map-caption{padding:26px}.weekly-hours{font-size:14px}}
 @media(max-width:600px){.team-directory .team-card-copy{padding:18px 14px}.team-directory .team-person h3{font-size:16px}.team-directory .team-role{font-size:13px}.team-directory .team-contact a{font-size:12px}.team-directory .placeholder-tag{font-size:9px;padding:5px}}
 
-.contact-map{position:relative;height:490px}.contact-map img{width:100%;height:100%;display:block;object-fit:cover}.map-scale-note{position:absolute;bottom:14px;left:18px;right:18px;font-size:11px;color:#626776;background:#ffffffdf;border-radius:8px;padding:8px 12px;width:max-content;max-width:calc(100% - 36px)}
-@media(max-width:767px){.contact-map{height:360px}}
+.contact-map img{width:100%;height:100%;display:block;object-fit:cover}.map-scale-note{position:absolute;bottom:14px;left:18px;right:18px;font-size:11px;color:#626776;background:#ffffffdf;border-radius:8px;padding:8px 12px;width:max-content;max-width:calc(100% - 36px)}
 
 /* Calm, tactile navigation and continuous FAQ motion. */
 .faq-list details{overflow:clip}
@@ -421,9 +421,7 @@ footer{background:#f6f4f1;color:var(--ink)}
 @media(max-width:767px){.cookie-panel{left:14px;bottom:calc(150px + env(safe-area-inset-bottom));width:calc(100vw - 28px);max-height:calc(100dvh - 174px - env(safe-area-inset-bottom));overflow:auto;padding:23px;border-radius:20px}.cookie-panel h2{font-size:25px}.cookie-options{grid-template-columns:1fr}.cookie-actions{display:grid;grid-template-columns:1fr 1fr}.cookie-actions button{width:100%}.cookie-necessary{grid-column:1/-1;grid-row:2}.cookie-all.button{min-width:0}.map-consent{padding:28px 22px}}
 @media(prefers-reduced-motion:reduce){.cookie-panel{animation:none}.cookie-close,.cookie-options input,.cookie-options input:before{transition:none}}
 
-/* Contact details and service cards reveal gently as they enter view. */
-.contact-grid .map-card.contact-map-reveal{opacity:0;filter:blur(7px);transform:translate3d(0,22px,0);transition:opacity 1.25s cubic-bezier(.22,1,.36,1),filter 1.4s cubic-bezier(.22,1,.36,1),transform 1.25s cubic-bezier(.22,1,.36,1);will-change:opacity,filter,transform}
-.contact-grid .map-card.contact-map-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0)}
+/* Service cards reveal gently as they enter view. The contact map loads in place. */
 .booking-layout #booking-form.booking-form-reveal{opacity:0;filter:blur(5px);transform:translate3d(0,24px,0);transition:opacity 1.15s cubic-bezier(.22,1,.36,1),filter 1.25s cubic-bezier(.22,1,.36,1),transform 1.15s cubic-bezier(.22,1,.36,1);will-change:opacity,filter,transform}
 .booking-layout #booking-form.booking-form-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0)}
 .weekly-hours>div.hours-row-reveal{opacity:0;transform:translate3d(-12px,5px,0);transition:opacity .62s ease var(--hours-delay,0ms),transform .76s cubic-bezier(.22,1,.36,1) var(--hours-delay,0ms);will-change:opacity,transform}
@@ -434,7 +432,8 @@ footer{background:#f6f4f1;color:var(--ink)}
 .listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
 @media(hover:hover){.listing-grid .listing-card.listing-reveal.is-visible:hover{transform:translate3d(0,-4px,0) scale(1)}}
 @media(prefers-reduced-motion:reduce){
-  .contact-grid .map-card.contact-map-reveal,.contact-grid .map-card.contact-map-reveal.is-visible,.booking-layout #booking-form.booking-form-reveal,.booking-layout #booking-form.booking-form-reveal.is-visible,.weekly-hours>div.hours-row-reveal,.weekly-hours>div.hours-row-reveal.is-visible,.price-table .price-amount.price-amount-reveal,.price-table .price-amount.price-amount-reveal.is-visible,.listing-grid .listing-card.listing-reveal,.listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:none;transform:none;transition:none;will-change:auto}
+  .booking-layout #booking-form.booking-form-reveal,.booking-layout #booking-form.booking-form-reveal.is-visible,.weekly-hours>div.hours-row-reveal,.weekly-hours>div.hours-row-reveal.is-visible,.price-table .price-amount.price-amount-reveal,.price-table .price-amount.price-amount-reveal.is-visible,.listing-grid .listing-card.listing-reveal,.listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:none;transform:none;transition:none;will-change:auto}
+  .contact-map iframe{opacity:1;transition:none}
 }
 
 /* Clear, low-pressure concern choices in the appointment form. */
