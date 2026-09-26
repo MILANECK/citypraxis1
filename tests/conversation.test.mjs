@@ -42,14 +42,16 @@ test('asking about free appointment slots proactively reoffers a request after p
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   const service=createConversationService({fetcher:async(_,options)=>{
     const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
-    const value=raw==='Not yet, just information'?answer({kind:'practice_question',booking_intent:'defer',answer:'Of course, we can answer your questions.'}):raw==='Tinnitus'?answer({kind:'practice_question',booking_intent:'unspecified',reason:'Tinnitus',answer:'Our team can discuss tinnitus with you.'}):answer({kind:'practice_question',booking_intent:'unspecified',answer:'I can’t see the live calendar or confirm open times. Our receptionist can arrange a time after you submit a request.'});
+    const value=raw==='Not yet, just information'?answer({kind:'practice_question',booking_intent:'defer',answer:'Of course, we can answer your questions.'}):raw==='Tinnitus'?answer({kind:'practice_question',booking_intent:'unspecified',reason:'Tinnitus',answer:'Our team can discuss tinnitus with you.'}):answer({kind:'practice_question',booking_intent:'unspecified',answer:"I can't access the live calendar here, but I can help prepare an appointment request. Our reception team can contact you to arrange a suitable time."});
     return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
   }});
   const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{
     await turn('Not yet, just information');await turn('Tinnitus');
     const availability=await turn('Great, when do you have some free slots?');
-    assert.match(availability.message,/I can.t see the live calendar or confirm open times/i);
+    assert.match(availability.message,/I can.t access the live calendar here, but I can help prepare an appointment request/i);
+    assert.match(availability.message,/Our reception team can contact you to arrange a suitable time/i);
+    assert.equal((availability.message.match(/\b(?:can't|cannot|unable)\b/gi)||[]).length,1);
     assert.match(availability.message,/Would you like me to prepare an appointment request for our reception team/i);
     assert.equal(availability.ready,false);
     assert.doesNotMatch(availability.message,/first and last name/);
@@ -144,12 +146,12 @@ test('AI errors, malformed output, boundaries, limits and concurrent requests ar
     const token=newSession();assert.match((await call(token,'Write a recipe')).message,/only help with CityPraxis/);
     assert.equal((await call(token,'I cannot breathe')).emergency,true);assert.equal(calls,1);
     value=answer({first_name:{bad:true}});assert.equal((await call(token,'A normal message')).code,'ai_unavailable');
-    value=answer({kind:'medical'});assert.match((await call(token,'What exercises should I do?')).message,/^I'm sorry, but I can't provide a medical assessment\./);
+    value=answer({kind:'medical'});const fallback=(await call(token,'What exercises should I do?')).message;assert.match(fallback,/One of our physiotherapists can assess this in person and recommend next steps\./);assert.doesNotMatch(fallback,/can't|cannot|unable|diagnos/i);
     value=answer({kind:'medical',answer:"I can't assess what may be causing this. Our reception team can clarify the next step."});assert.match((await call(token,'What could be causing this?')).message,/^I'm sorry, but I can't assess/);
     value=answer({kind:'medical',answer:'I see. We can’t assess breathing concerns or advise medically here.'});const gentle=(await call(token,'Can you assess this breathing concern?')).message;assert.match(gentle,/^I'm sorry, but I can't assess/);assert.doesNotMatch(gentle,/^I see/);
-    value=answer({kind:'medical',booking_intent:'unspecified',reason:'Stiffness',answer:"I'm sorry you're experiencing this. Without an in-person assessment by one of our physiotherapists, our team can't reliably determine what may be causing it or make a diagnosis here."});
+    value=answer({kind:'medical',booking_intent:'unspecified',reason:'Stiffness',answer:"I'm sorry you're experiencing stiffness. One of our physiotherapists can assess it in person and recommend the next step."});
     const vague=(await call(newSession(),'I feel stiff but can’t quite define what is wrong.')).message;
-    assert.match(vague,/one of our physiotherapists/);assert.match(vague,/I can't reliably determine what may be causing it/);assert.doesNotMatch(vague,/our team can't reliably determine/);assert.match(vague,/Would you like me to prepare an appointment request/);
+    assert.match(vague,/One of our physiotherapists can assess it in person and recommend the next step\./);assert.doesNotMatch(vague,/so stiff|can't|cannot|unable|diagnos/i);assert.match(vague,/Would you like me to prepare an appointment request/);
     value=answer({kind:'medical',answer:'Es tut mir leid, aber unser Team kann Ihre Beschwerden nicht zuverlässig beurteilen.'});
     const german=await call(newSession(),'Ich fühle mich steif und kann nicht genau sagen, was los ist.',{language:'de'});
     assert.match(german.message,/ich kann Ihre Beschwerden nicht zuverlässig beurteilen/);
