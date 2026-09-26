@@ -314,7 +314,7 @@ function bind() {
       const therapyObserver=new IntersectionObserver(entries=>{
         entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');therapyObserver.unobserve(entry.target);}});
       },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
-      therapyCards.forEach((card,index)=>{card.classList.add('therapy-reveal');card.style.setProperty('--therapy-delay',`${index*95}ms`);therapyObserver.observe(card);});
+      therapyCards.forEach((card,index)=>{card.classList.add('therapy-reveal');card.style.setProperty('--therapy-delay',`${index*115}ms`);therapyObserver.observe(card);});
     }
     document.querySelectorAll('.process-grid').forEach(grid=>{
       grid.classList.add('process-sequence-ready');
