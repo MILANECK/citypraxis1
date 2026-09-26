@@ -105,7 +105,7 @@
 @media(max-width:767px){
   .chat-launch{right:152px;bottom:calc(16px + env(safe-area-inset-bottom));display:grid;place-items:center;width:58px;height:58px;padding:0;border-radius:50%;gap:0}
   .chat-launch span{display:none}
-  .chat-launch .chat-launch-icon{margin:0}
+  .chat-launch .chat-launch-icon{position:absolute;inset:0;margin:auto}
   .chat-window{bottom:calc(160px + env(safe-area-inset-bottom));height:min(610px,calc(100dvh - 176px - env(safe-area-inset-bottom)))}
   .chat-window:has(.conversation-preview){height:min(610px,calc(100dvh - 176px - env(safe-area-inset-bottom)))}
 }
