@@ -8,8 +8,8 @@ body{background:var(--beige)}
 .button{border:0;border-radius:14px;background:var(--blue);box-shadow:none}.button:hover{background:var(--ink);border:0}
 .header-cta{background:var(--pink);transition:transform .3s cubic-bezier(.22,1,.36,1),background .3s,box-shadow .3s}
 .header-cta .arrow-symbol{transition:transform .3s cubic-bezier(.22,1,.36,1)}
-.header-cta:hover{background:var(--berry-dark)}
-@media(hover:hover) and (pointer:fine){.header-cta:hover{transform:translateY(-2px);box-shadow:0 8px 22px #951b813d}.header-cta:hover .arrow-symbol{transform:translate(2px,-2px)}}
+.header-cta:hover{background:#b12499}
+@media(hover:hover) and (pointer:fine){.header-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px #951b8140}.header-cta:hover .arrow-symbol{transform:translate(2px,-2px)}}
 .button-outline{background:var(--pale);color:var(--ink)}.button-outline:hover{background:var(--blue);color:white}
 .text-link{border:0;color:var(--blue)}.eyebrow{color:var(--blue)}
 /* Media fills the first screen; content can grow when text zoom requires it. */
