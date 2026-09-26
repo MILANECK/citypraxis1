@@ -143,8 +143,15 @@ test('AI errors, malformed output, boundaries, limits and concurrent requests ar
   const service=createConversationService({store:{save(){assert.fail('Must not save');}},fetcher:async()=>{calls++;if(waiting)await new Promise(r=>release=r);return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};}});
   const call=async(token,message,extra={})=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,message,language:'en',consent:true,turnKey:randomUUID(),...extra},(status,data)=>result={status,...data});return result;};
   try{
-    const token=newSession();assert.match((await call(token,'Write a recipe')).message,/only help with CityPraxis/);
-    assert.equal((await call(token,'I cannot breathe')).emergency,true);assert.equal(calls,1);
+    const token=newSession();
+    const offTopic=(await call(token,'Write a recipe')).message;
+    assert.match(offTopic,/^I’m happy to answer questions about CityPraxis, our treatments, our team, or appointments\. What would you like to know\?$/);
+    assert.doesNotMatch(offTopic,/sorry|only help/i);
+    value=answer({kind:'off_topic'});
+    const offTopicGerman=await call(newSession(),'Schreib mir ein Rezept.',{language:'de'});
+    assert.match(offTopicGerman.message,/Ich beantworte gern Ihre Fragen zur Citypraxis/);
+    assert.match(offTopicGerman.message,/Was möchten Sie wissen\?/);
+    assert.equal((await call(token,'I cannot breathe')).emergency,true);assert.equal(calls,2);
     value=answer({first_name:{bad:true}});assert.equal((await call(token,'A normal message')).code,'ai_unavailable');
     value=answer({kind:'medical'});const fallback=(await call(token,'What exercises should I do?')).message;assert.match(fallback,/One of our physiotherapists can assess this in person and recommend next steps\./);assert.doesNotMatch(fallback,/can't|cannot|unable|diagnos/i);
     value=answer({kind:'medical',answer:"I can't assess what may be causing this. Our reception team can clarify the next step."});assert.match((await call(token,'What could be causing this?')).message,/^I'm sorry, but I can't assess/);

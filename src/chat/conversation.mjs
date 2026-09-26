@@ -242,7 +242,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         }
       }
       if(kind==='medical')answer=politeMedicalBoundary(answer||localized(lang,'Eine Physiotherapeutin oder ein Physiotherapeut aus unserem Team kann Ihr Anliegen persönlich beurteilen und die nächsten Schritte empfehlen.','One of our physiotherapists can assess this in person and recommend next steps.'),lang);
-      if(kind==='off_topic')answer=localized(lang,'Ich kann nur bei Citypraxis-Anliegen helfen.','I can only help with CityPraxis matters.');
+      if(kind==='off_topic')answer=localized(lang,'Ich beantworte gern Ihre Fragen zur Citypraxis, zu unseren Behandlungen, unserem Team oder zu Terminen. Was möchten Sie wissen?','I’m happy to answer questions about CityPraxis, our treatments, our team, or appointments. What would you like to know?');
       if(!declined&&draft.refusedContact&&draft[draft.refusedContact==='name'?'first_name':draft.refusedContact])delete draft.refusedContact;
       if(!declined&&['appointment','practice_question','medical'].includes(kind)){
         const suppliedName=draft.first_name&&draft.last_name&&(!s.draft.first_name||!s.draft.last_name);
@@ -254,7 +254,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       if(['appointment','practice_question','medical'].includes(kind)||stage==='phone'&&draft.phone)s.draft=draft;
       if(!answer&&kind==='appointment')answer=localized(lang,'Perfekt, vielen Dank.','Perfect, thank you.');
       const slot=nextSlot(s.draft),ready=slot==='review';
-      const followUp=kind==='greeting'?'':ready?localized(lang,'Vielen Dank. Ihre Anfrage ist vorbereitet. Bitte prüfen Sie die Angaben unten. Nach dem Absenden meldet sich unser Sekretariat zur Terminvereinbarung.','Your request is ready to review below. Once you send it, our reception team will contact you to arrange an appointment. Thank you!'):s.draft.bookingDeclined||s.draft.refusedContact===slot?'':kind==='practice_question'&&!s.draft.reason?'':question(slot,lang);
+      const followUp=['greeting','off_topic'].includes(kind)?'':ready?localized(lang,'Vielen Dank. Ihre Anfrage ist vorbereitet. Bitte prüfen Sie die Angaben unten. Nach dem Absenden meldet sich unser Sekretariat zur Terminvereinbarung.','Your request is ready to review below. Once you send it, our reception team will contact you to arrange an appointment. Thank you!'):s.draft.bookingDeclined||s.draft.refusedContact===slot?'':kind==='practice_question'&&!s.draft.reason?'':question(slot,lang);
       const message=composeReply(answer,followUp);
       s.messages.push({role:'visitor',text:raw},{role:'assistant',text:message});
       const intake=ready?makeIntake(s,lang):null;
