@@ -152,9 +152,9 @@ test('AI errors, malformed output, boundaries, limits and concurrent requests ar
     assert.match(offTopicGerman.message,/Ich beantworte gern Ihre Fragen zur Citypraxis/);
     assert.match(offTopicGerman.message,/Was möchten Sie wissen\?/);
     value=answer({kind:'compliment',answer:'Thank you for saying that!'});
-    assert.equal((await call(newSession(),'I think this chat is very good.')).message,'Thank you.');
+    assert.equal((await call(newSession(),'I think this chat is very good.')).message,'Thank you.\n\nWhat would you like CityPraxis to help you with?');
     value=answer({kind:'compliment',answer:'Das freut uns sehr!'});
-    assert.equal((await call(newSession(),'Euer Team ist sehr freundlich.',{language:'de'})).message,'Danke.');
+    assert.equal((await call(newSession(),'Euer Team ist sehr freundlich.',{language:'de'})).message,'Danke.\n\nWobei dürfen wir Ihnen in der Citypraxis helfen?');
     const aiCallsBeforeEmergency=calls;assert.equal((await call(token,'I cannot breathe')).emergency,true);assert.equal(calls,aiCallsBeforeEmergency);
     value=answer({first_name:{bad:true}});assert.equal((await call(token,'A normal message')).code,'ai_unavailable');
     value=answer({kind:'medical'});const fallback=(await call(token,'What exercises should I do?')).message;assert.match(fallback,/One of our physiotherapists can assess this in person and recommend next steps\./);assert.doesNotMatch(fallback,/can't|cannot|unable|diagnos/i);

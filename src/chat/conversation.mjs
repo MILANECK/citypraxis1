@@ -256,7 +256,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       if(['appointment','practice_question','medical'].includes(kind)||stage==='phone'&&draft.phone)s.draft=draft;
       if(!answer&&kind==='appointment')answer=localized(lang,'Perfekt, vielen Dank.','Perfect, thank you.');
       const slot=nextSlot(s.draft),ready=slot==='review';
-      const followUp=['greeting','off_topic','compliment'].includes(kind)?'':ready?localized(lang,'Vielen Dank. Ihre Anfrage ist vorbereitet. Bitte prüfen Sie die Angaben unten. Nach dem Absenden meldet sich unser Sekretariat zur Terminvereinbarung.','Your request is ready to review below. Once you send it, our reception team will contact you to arrange an appointment. Thank you!'):s.draft.bookingDeclined||s.draft.refusedContact===slot?'':kind==='practice_question'&&!s.draft.reason?'':question(slot,lang);
+      const followUp=['greeting','off_topic'].includes(kind)?'':ready?localized(lang,'Vielen Dank. Ihre Anfrage ist vorbereitet. Bitte prüfen Sie die Angaben unten. Nach dem Absenden meldet sich unser Sekretariat zur Terminvereinbarung.','Your request is ready to review below. Once you send it, our reception team will contact you to arrange an appointment. Thank you!'):s.draft.bookingDeclined||s.draft.refusedContact===slot?'':kind==='practice_question'&&!s.draft.reason?'':question(slot,lang);
       const message=composeReply(answer,followUp);
       s.messages.push({role:'visitor',text:raw},{role:'assistant',text:message});
       const intake=ready?makeIntake(s,lang):null;
