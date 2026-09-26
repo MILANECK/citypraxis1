@@ -14,10 +14,10 @@ try{
     await page.route('**/api/chat/session',route=>{sessions++;return route.fulfill({json:{token:'fixture',expires:Date.now()+1800000,aiAvailable:true}});});
     await page.route('**/api/chat/turn',async route=>{
       const body=route.request().postDataJSON();assert.equal(body.consent,true);
-      await route.fulfill({json:{message:lang==='en'?'Please review your details.':'Bitte prüfen Sie Ihre Angaben.',ready:true,summary:reviewSummary,turnsRemaining:15}});
+      await route.fulfill({json:{message:lang==='en'?'Please review your details.':'Bitte prüfen Sie Ihre Angaben.',ready:true,summary:reviewSummary,turnsRemaining:29}});
     });
     await page.route('**/api/chat/edit',route=>route.fulfill({json:{message:'What email address can our secretary use?',ready:false,turnsRemaining:15}}));
-    await page.route('**/api/chat/review-choice',route=>{const {field,value}=route.request().postDataJSON();const key=field==='patient_status'?(lang==='en'?'Patient status (self-reported)':'Patientenstatus (eigene Angabe)'):(lang==='en'?'Preferred contact':'Bevorzugter Kontakt');const row=reviewSummary.find(([label])=>label===key);assert.ok(row);row[1]=field==='patient_status'?(value==='existing'?(lang==='en'?'Yes — treated here before':'Ja – bereits in Behandlung'):(lang==='en'?'No — not yet':'Nein – noch nicht')):(value==='phone'?(lang==='en'?'Phone':'Telefon'):(lang==='en'?'Email':'E-Mail'));return route.fulfill({json:{ready:true,summary:reviewSummary,turnsRemaining:15}});});
+    await page.route('**/api/chat/review-choice',route=>{const {field,value}=route.request().postDataJSON();const key=field==='patient_status'?(lang==='en'?'Patient status (self-reported)':'Patientenstatus (eigene Angabe)'):(lang==='en'?'Preferred contact':'Bevorzugter Kontakt');const row=reviewSummary.find(([label])=>label===key);assert.ok(row);row[1]=field==='patient_status'?(value==='existing'?(lang==='en'?'Yes — treated here before':'Ja – bereits in Behandlung'):(lang==='en'?'No — not yet':'Nein – noch nicht')):(value==='phone'?(lang==='en'?'Phone':'Telefon'):(lang==='en'?'Email':'E-Mail'));return route.fulfill({json:{ready:true,summary:reviewSummary,turnsRemaining:29}});});
     await page.route('**/api/chat/finish',route=>{assert.equal(route.request().postDataJSON().confirmed,true);submitted++;return route.fulfill({status:201,json:{id:999,received:true}});});
     await page.goto((process.env.QA_ORIGIN||'http://127.0.0.1:3006')+'/?lang='+lang);
     await page.locator('.cookie-panel').waitFor();

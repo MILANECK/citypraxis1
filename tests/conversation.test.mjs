@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {createConversationService,conversationFacts,composeReply,practiceHoursStatus} from '../src/chat/conversation.mjs';
+import {CONVERSATION_LIMIT,createConversationService,conversationFacts,composeReply,practiceHoursStatus} from '../src/chat/conversation.mjs';
 import {childrenService} from '../src/therapy-catalog.mjs';
 import {newSession} from '../src/chat/security.mjs';
 
@@ -145,6 +145,7 @@ test('conversational reception validates, reviews, edits and submits exactly onc
 });
 
 test('AI errors, malformed output, boundaries, limits and concurrent requests are safe',async()=>{
+  assert.equal(CONVERSATION_LIMIT,30);
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   let value=answer({kind:'off_topic'}),release,waiting=false,calls=0;
   const service=createConversationService({store:{save(){assert.fail('Must not save');}},fetcher:async()=>{calls++;if(waiting)await new Promise(r=>release=r);return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};}});
@@ -174,7 +175,7 @@ test('AI errors, malformed output, boundaries, limits and concurrent requests ar
     const german=await call(newSession(),'Ich fühle mich steif und kann nicht genau sagen, was los ist.',{language:'de'});
     assert.match(german.message,/ich kann Ihre Beschwerden nicht zuverlässig beurteilen/);
     value=answer({kind:'off_topic'});waiting=true;const pending=call(token,'A question');await new Promise(r=>setImmediate(r));assert.equal((await call(token,'Another')).code,'busy');waiting=false;release();await pending;
-    const limited=newSession();for(let i=0;i<16;i++){const result=await call(limited,'Unrelated question');assert.equal(result.status,200);if(i===15)assert.equal(result.limitReached,true);}
+    const limited=newSession();for(let i=0;i<CONVERSATION_LIMIT;i++){const result=await call(limited,'Unrelated question');assert.equal(result.status,200);if(i===CONVERSATION_LIMIT-1)assert.equal(result.limitReached,true);}
     assert.equal((await call(limited,'One more')).code,'conversation_limit');
     assert.deepEqual(conversationFacts({prices:[{amount:null},{amount:''},{amount:'90',title:'Therapy'}]}).samplePrices,[{category:undefined,service:'Therapy',duration:undefined,euro:90,details:undefined}]);
   }finally{process.env=old;}
