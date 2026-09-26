@@ -34,7 +34,7 @@ test('a short concern can receive a natural acknowledgement without a scripted t
   try{
     await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message:'I have tinnitus',consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});
     assert.match(result.message,/^I see\./);
-    assert.match(result.message,/Would you like us to prepare an appointment request/);
+    assert.match(result.message,/Would you like me to prepare an appointment request for our reception team/);
     assert.doesNotMatch(result.message,/Thank you|One sentence is enough/);
   }finally{process.env=old;}
 });
@@ -42,15 +42,15 @@ test('asking about free appointment slots proactively reoffers a request after p
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   const service=createConversationService({fetcher:async(_,options)=>{
     const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
-    const value=raw==='Not yet, just information'?answer({kind:'practice_question',booking_intent:'defer',answer:'Of course, we can answer your questions.'}):raw==='Tinnitus'?answer({kind:'practice_question',booking_intent:'unspecified',reason:'Tinnitus',answer:'Our team can discuss tinnitus with you.'}):answer({kind:'practice_question',booking_intent:'unspecified',answer:'We cannot see a live calendar or confirm open times. Our receptionist can arrange a time after you submit a request.'});
+    const value=raw==='Not yet, just information'?answer({kind:'practice_question',booking_intent:'defer',answer:'Of course, we can answer your questions.'}):raw==='Tinnitus'?answer({kind:'practice_question',booking_intent:'unspecified',reason:'Tinnitus',answer:'Our team can discuss tinnitus with you.'}):answer({kind:'practice_question',booking_intent:'unspecified',answer:'I can’t see the live calendar or confirm open times. Our receptionist can arrange a time after you submit a request.'});
     return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
   }});
   const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{
     await turn('Not yet, just information');await turn('Tinnitus');
     const availability=await turn('Great, when do you have some free slots?');
-    assert.match(availability.message,/cannot see a live calendar or confirm open times/i);
-    assert.match(availability.message,/Would you like us to prepare an appointment request/i);
+    assert.match(availability.message,/I can.t see the live calendar or confirm open times/i);
+    assert.match(availability.message,/Would you like me to prepare an appointment request for our reception team/i);
     assert.equal(availability.ready,false);
     assert.doesNotMatch(availability.message,/first and last name/);
   }finally{process.env=old;}
@@ -59,7 +59,7 @@ test('an affirmative appointment answer moves directly to the name',async()=>{
   const previous={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   let calls=0;const service=createConversationService({getFacts:async()=>conversationFacts({}),fetcher:async()=>{calls++;return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({booking_intent:'unspecified',reason:'Shoulder concern',answer:'Thank you. Our team can clarify the next step.'}))}]}]})};}});
   const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
-  try{assert.match((await turn('Shoulder concern')).message,/Would you like us to prepare/);const accepted=await turn('yes please');assert.equal(calls,1);assert.equal(accepted.message,'Perfect, thank you.\n\nMay I have your first and last name, please?');}finally{process.env=previous;}
+  try{assert.match((await turn('Shoulder concern')).message,/Would you like me to prepare/);const accepted=await turn('yes please');assert.equal(calls,1);assert.equal(accepted.message,'Perfect, thank you.\n\nMay I have your first and last name, please?');}finally{process.env=previous;}
 });
 test('a refused contact detail is respected while supplied names and later details receive distinct acknowledgements',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
@@ -98,7 +98,7 @@ test('mixed questions retain concerns, ask before intake, respect a decline and 
   const service=createConversationService({store:{save(){assert.fail('No submission expected');}},getFacts:async()=>facts,fetcher:async(_,options)=>{const payload=JSON.parse(options.body),input=JSON.parse(payload.input);assert.equal(input.publishedFacts.team.length,1);assert.equal(input.publishedFacts.services[0].title,"Children's health");assert.equal(input.publishedFacts.specialisms[0].title,'Jaw');assert.equal(input.publishedFacts.informationPages[0].id,'datenschutz');return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};}});
   const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{
-    const invitation=await turn('My jaw hurts, what are the prices?');assert.ok(invitation.message.includes("Published pricing information."));assert.equal((invitation.message.match(/Published pricing information/g)||[]).length,1);assert.match(invitation.message,/Would you like us to prepare/);assert.doesNotMatch(invitation.message,/first and last name/);assert.ok(invitation.message.length<=700);assert.ok(composeReply('A long sentence. '.repeat(100),'May I have your name?').length<=700);assert.equal(composeReply('Perfect, thank you. Perfect, thank you. May I have your name?','May I have your name?'),'Perfect, thank you.\n\nMay I have your name?');
+    const invitation=await turn('My jaw hurts, what are the prices?');assert.ok(invitation.message.includes("Published pricing information."));assert.equal((invitation.message.match(/Published pricing information/g)||[]).length,1);assert.match(invitation.message,/Would you like me to prepare/);assert.doesNotMatch(invitation.message,/first and last name/);assert.ok(invitation.message.length<=700);assert.ok(composeReply('A long sentence. '.repeat(100),'May I have your name?').length<=700);assert.equal(composeReply('Perfect, thank you. Perfect, thank you. May I have your name?','May I have your name?'),'Perfect, thank you.\n\nMay I have your name?');
     value=answer({booking_intent:'defer',answer:'Of course. We are happy to answer your questions.'});const declined=await turn('Not yet, just information');assert.equal(declined.message,value.answer);
     value=answer({kind:'practice_question',booking_intent:'unspecified',answer:'We are in Vienna.'});assert.equal((await turn('Where are you?')).message,value.answer);
     value=answer({booking_intent:'request',answer:'We would be happy to help.'});assert.match((await turn('Yes, I want to request an appointment now')).message,/first and last name/);
