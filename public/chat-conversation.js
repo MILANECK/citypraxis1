@@ -65,14 +65,16 @@ function summary(){
   if(!rows.some(([key])=>fieldFor(key)==='availability'))rows.push([t('Hinweis zur Verfügbarkeit','Availability note'),t('Keine Angabe','Not specified')]);
   return `<div class="conversation-summary">${rows.map(([key,value])=>{
     const field=fieldFor(key),editable=field&&state.turnsRemaining>0;
+    const attention=['patient_status','availability','preferred_contact'].includes(field);
     const label=field==='patient_status'?t('Waren Sie schon in der Citypraxis in Behandlung?','Have you been treated at CityPraxis before?'):field==='preferred_contact'?t('Bevorzugter Kontakt (E-Mail / Telefon)','Preferred contact (email / phone)'):key;
     const inner=`<span class="conversation-summary-text"><span class="conversation-summary-label">${esc(label)}</span><span class="conversation-summary-value">${esc(value)}</span></span>`;
     const action=`<span class="conversation-row-action" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m15 5 4 4M4 20l4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z"/></svg>${t('Ändern','Edit')}</span>`;
-    if(!editable)return `<div class="conversation-summary-row">${inner}</div>`;
-    if(!choiceFields[field])return `<button type="button" class="conversation-summary-row is-editable" data-edit="${field}" aria-label="${esc(t('Bearbeiten: ','Edit: ')+label)}">${inner}${action}</button>`;
+    const attentionClass=attention?' conversation-summary-row--attention':'';
+    if(!editable)return `<div class="conversation-summary-row${attentionClass}">${inner}</div>`;
+    if(!choiceFields[field])return `<button type="button" class="conversation-summary-row is-editable${attentionClass}" data-edit="${field}" aria-label="${esc(t('Bearbeiten: ','Edit: ')+label)}">${inner}${action}</button>`;
     const config=choiceFields[field];
     const options=`<div class="conversation-choice-reveal" id="review-choices-${field}" aria-hidden="true" inert><div class="conversation-choice-reveal-inner"><div class="conversation-choice-options" role="group" aria-label="${esc(label)}">${config.values.map(id=>{const choice=choices[config.model][id][en?1:0];return `<button type="button" data-review-choice="${field}" data-value="${id}" aria-pressed="${String(choice===value)}">${esc(choice)}</button>`;}).join('')}</div></div></div>`;
-    return `<div class="conversation-choice-group"><button type="button" class="conversation-summary-row is-editable" data-review-choice-toggle="${field}" aria-expanded="false" aria-controls="review-choices-${field}" aria-label="${esc(t('Bearbeiten: ','Edit: ')+label)}">${inner}${action}</button>${options}</div>`;
+    return `<div class="conversation-choice-group"><button type="button" class="conversation-summary-row is-editable${attentionClass}" data-review-choice-toggle="${field}" aria-expanded="false" aria-controls="review-choices-${field}" aria-label="${esc(t('Bearbeiten: ','Edit: ')+label)}">${inner}${action}</button>${options}</div>`;
   }).join('')}</div>`;
 }
 function setChoiceOpen(group,open){
