@@ -63,6 +63,38 @@ test('an affirmative appointment answer moves directly to the name',async()=>{
   const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{assert.match((await turn('Shoulder concern')).message,/Would you like me to prepare/);const accepted=await turn('yes please');assert.equal(calls,1);assert.equal(accepted.message,'Perfect, thank you.\n\nMay I have your first and last name, please?');}finally{process.env=previous;}
 });
+test('contact intake advances only after a detail is saved and never thanks for a missing field',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let calls=0;
+  const service=createConversationService({fetcher:async(_,options)=>{
+    calls++;const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
+    const value=raw==='Shoulder pain'?answer({reason:'Shoulder pain',booking_intent:'unspecified',answer:'Our team can assess your concern.'}):raw==='Anna'?answer({booking_intent:'defer',answer:'Thank you, I have your name.'}):raw==='anna@example.test?'?answer({booking_intent:'defer',answer:'Thank you, I have your email. Could you provide your email address?'}):raw==='12345'?answer({answer:'Got it, thanks for your number.'}):answer({kind:'off_topic',booking_intent:'defer',answer:'I can only help with CityPraxis matters.'});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const token=newSession();const turn=async(message,session=token)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:session,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    await turn('Shoulder pain');await turn('yes please');
+    const incompleteName=await turn('Anna');
+    assert.equal(incompleteName.message,'Please send your first and last name.');
+    const named=await turn('Anna Kovač');
+    assert.match(named.message,/Anna Kovač/);
+    assert.match(named.message,/email address/);
+    assert.doesNotMatch(named.message,/first and last name, please/);
+    const emailed=await turn('anna@example.test?');
+    assert.match(emailed.message,/phone number/);
+    assert.doesNotMatch(emailed.message,/provide your email address/i);
+    const invalidPhone=await turn('12345');
+    assert.equal(invalidPhone.message,'Please enter a valid phone number, including the country code.');
+    const completed=await turn('+43 699 12682157?');
+    assert.equal(completed.ready,true);
+    assert.deepEqual(completed.summary.find(([key])=>key==='Phone'),['Phone','+4369912682157']);
+    const local=newSession();await turn('I want an appointment',local);await turn('Shoulder pain',local);await turn('yes please',local);await turn('Anna Kovač',local);await turn('anna@example.test',local);
+    const localNumber=await turn('699 12682157',local);
+    assert.equal(localNumber.ready,true);
+    assert.deepEqual(localNumber.summary.find(([key])=>key==='Phone'),['Phone','+4369912682157']);
+    assert.equal(calls,6);
+  }finally{process.env=old;}
+});
 test('a refused contact detail is respected while supplied names and later details receive distinct acknowledgements',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   let calls=0;
