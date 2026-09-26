@@ -189,7 +189,7 @@ function route() {
   }
   const pageId=path==='/ueber-uns'?'about':parts[1];
   const page=data.pages.find(p=>p.id===pageId);
-  if(pageId==='about' && page){const team=data.team||[],lead=team.find(person=>person.id==='isabella-casny'),roster=lead?[lead,...team.filter(person=>person.id!=='isabella-casny')]:team,columns=Math.min(7,Math.max(1,roster.length<=7?roster.length:Math.ceil(roster.length/2)));return article(page.title,page.intro,'',`<section class="team-directory" id="team"><div class="section-heading"><div><span class="eyebrow">DIE MENSCHEN IN DER CITYPRAXIS</span><h2>Unser Team</h2></div></div><div class="team-profiles" data-columns="${columns}">${roster.map(teamCard).join('')}</div></section><div class="clinical-reading">${clinicalBody(page.body)}</div>`);}
+  if(pageId==='about' && page){const team=data.team||[],lead=team.find(person=>person.id==='isabella-casny'),roster=team.filter(person=>person.id!=='isabella-casny');return article(page.title,page.intro,'',`<section class="team-directory" id="team" aria-label="${I18n.language==='en'?'Citypraxis team':'Citypraxis Team'}"><p class="eyebrow team-directory-label">DIE MENSCHEN IN DER CITYPRAXIS</p><div class="team-profiles">${lead?`<div class="team-featured">${teamCard(lead)}</div>`:''}<div class="team-roster">${roster.map(teamCard).join('')}</div></div></section><div class="clinical-reading">${clinicalBody(page.body)}</div>`);}
   if(page) return article(page.title,page.intro,page.body,pageId==='datenschutz'?chatPrivacyInfo():'');
   if(['impressum','datenschutz'].includes(pageId)) return article(pageId==='impressum'?'Impressum':'Datenschutz','Diese Seite wird vor Veröffentlichung vervollständigt.','Dies ist eine lokale Entwicklungsvorschau. Bitte verwenden Sie keine echten Patientendaten.');
   return article('Seite nicht gefunden','Hier geht es zurück zu Ihrer Citypraxis.','', '<a class="button" href="/">Zur Startseite</a>');
@@ -253,9 +253,8 @@ function bind() {
       const teamObserver=new IntersectionObserver(entries=>{
         entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');teamObserver.unobserve(entry.target);}});
       },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
-      const teamGrid=teamCards[0].parentElement;
-      const columns=Number(getComputedStyle(teamGrid).getPropertyValue('--team-columns'))||1;
-      teamCards.forEach((card,index)=>{card.classList.add('team-reveal');card.style.setProperty('--team-delay',`${(index%columns)*85}ms`);teamObserver.observe(card);});
+      const positions=new Map();
+      teamCards.forEach(card=>{const row=Math.round(card.getBoundingClientRect().top),position=positions.get(row)||0;positions.set(row,position+1);card.classList.add('team-reveal');card.style.setProperty('--team-delay',`${position*85}ms`);teamObserver.observe(card);});
     }
     const contactMap=document.querySelector('#main .contact-grid .map-card');
     if(contactMap){

@@ -117,19 +117,18 @@ try{
   assert.ok(inMotion>0&&inMotion<1,`The card should fade in after it enters the viewport; opacity=${inMotion}`);
   const teamGrid=page.locator('.team-directory .team-profiles');
   assert.equal(await teamGrid.locator('.team-person').first().locator('h3').innerText(),'Isabella Casny');
-  assert.equal(await page.locator('.team-featured').count(),0);
+  assert.equal(await page.locator('.team-featured').count(),1);
+  assert.equal(await page.locator('.team-directory h2').count(),0);
   const teamLayout=await teamGrid.evaluate(grid=>{
-    const cards=[...grid.querySelectorAll('.team-person')],firstTop=cards[0].offsetTop,firstRow=cards.filter(card=>card.offsetTop===firstTop),lastTop=cards.at(-1).offsetTop,lastRow=cards.filter(card=>card.offsetTop===lastTop);
-    return {count:cards.length,columns:Number(getComputedStyle(grid).getPropertyValue('--team-columns')),firstRow:firstRow.length,lastRow:lastRow.length,lastRowCenter:(lastRow[0].offsetLeft+lastRow.at(-1).offsetLeft+lastRow.at(-1).offsetWidth)/2,gridCenter:grid.clientWidth/2,cardWidth:cards[0].offsetWidth};
+    const cards=[...grid.querySelectorAll('.team-person')],tops=[...new Set(cards.map(card=>card.offsetTop))],rows=tops.map(top=>cards.filter(card=>card.offsetTop===top));
+    return {count:cards.length,columns:Number(getComputedStyle(grid).getPropertyValue('--team-columns')),rows:rows.map(row=>row.length),firstLeft:Math.round(cards[0].getBoundingClientRect().left),pageLeft:Math.round(grid.closest('.article').getBoundingClientRect().left),cardWidth:cards[0].getBoundingClientRect().width};
   });
-  assert.equal(teamLayout.columns,6);
-  assert.equal(teamLayout.firstRow,6);
-  assert.equal(teamLayout.lastRow,teamLayout.count-6);
-  assert.ok(Math.abs(teamLayout.lastRowCenter-teamLayout.gridCenter)<2);
-  assert.ok(teamLayout.cardWidth>=170&&teamLayout.cardWidth<=196);
+  assert.equal(teamLayout.columns,5);
+  assert.deepEqual(teamLayout.rows,[5,4,teamLayout.count-9]);
+  assert.equal(teamLayout.firstLeft,teamLayout.pageLeft);
+  assert.ok(teamLayout.cardWidth>=190&&teamLayout.cardWidth<=196);
   const teamStagger=await page.locator('.team-directory .team-person').evaluateAll(cards=>{
-    const columns=Number(getComputedStyle(cards[0].parentElement).getPropertyValue('--team-columns'));
-    return cards.filter((_,index)=>(index+1)%columns===0).map(card=>card.style.getPropertyValue('--team-delay'));
+    return cards.filter((_,index)=>index===4||index===8).map(card=>card.style.getPropertyValue('--team-delay'));
   });
   assert.ok(teamStagger.length>0&&teamStagger.every(delay=>parseInt(delay,10)>0));
   await page.waitForTimeout(1000);
@@ -151,13 +150,12 @@ try{
   const thirteenGrid=thirteenPage.locator('.team-directory .team-profiles');
   await thirteenGrid.locator('.team-person').nth(12).waitFor();
   const thirteenLayout=await thirteenGrid.evaluate(grid=>{
-    const cards=[...grid.querySelectorAll('.team-person')],firstTop=cards[0].offsetTop;
-    return {columns:Number(getComputedStyle(grid).getPropertyValue('--team-columns')),firstRow:cards.filter(card=>card.offsetTop===firstTop).length,rows:new Set(cards.map(card=>card.offsetTop)).size,cardWidth:cards[0].offsetWidth};
+    const cards=[...grid.querySelectorAll('.team-person')],tops=[...new Set(cards.map(card=>card.offsetTop))];
+    return {columns:Number(getComputedStyle(grid).getPropertyValue('--team-columns')),rows:tops.map(top=>cards.filter(card=>card.offsetTop===top).length),cardWidth:cards[0].getBoundingClientRect().width};
   });
-  assert.equal(thirteenLayout.columns,7);
-  assert.equal(thirteenLayout.firstRow,7);
-  assert.equal(thirteenLayout.rows,2);
-  assert.ok(thirteenLayout.cardWidth>=160);
+  assert.equal(thirteenLayout.columns,5);
+  assert.deepEqual(thirteenLayout.rows,[5,4,4]);
+  assert.ok(thirteenLayout.cardWidth>=190);
   await thirteenPage.locator('.cookie-acknowledge').click();
   await thirteenGrid.locator('.team-person').last().scrollIntoViewIfNeeded();
   await thirteenPage.waitForFunction(()=>[...document.querySelectorAll('.team-directory .team-person')].every(card=>card.classList.contains('is-visible')));

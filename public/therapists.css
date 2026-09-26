@@ -1,13 +1,11 @@
 /* Therapist directory and individual profiles. */
-.team-directory{scroll-margin-top:20px;width:min(1420px,calc(100vw - 56px));position:relative;left:50%;transform:translateX(-50%);margin-block:36px 64px}
-.team-directory .team-profiles{display:flex;flex-wrap:wrap;align-items:stretch;justify-content:center;gap:20px;--team-columns:6;--team-card-basis:calc(16.666667% - 16.666667px)}
-.team-directory .team-profiles[data-columns="1"]{--team-columns:1;--team-card-basis:100%}
-.team-directory .team-profiles[data-columns="2"]{--team-columns:2;--team-card-basis:calc(50% - 10px)}
-.team-directory .team-profiles[data-columns="3"]{--team-columns:3;--team-card-basis:calc(33.333333% - 13.333333px)}
-.team-directory .team-profiles[data-columns="4"]{--team-columns:4;--team-card-basis:calc(25% - 15px)}
-.team-directory .team-profiles[data-columns="5"]{--team-columns:5;--team-card-basis:calc(20% - 16px)}
-.team-directory .team-profiles[data-columns="7"]{--team-columns:7;--team-card-basis:calc(14.285714% - 17.142857px)}
-.team-directory .team-person{display:flex;min-width:0;flex:0 0 var(--team-card-basis);max-width:195px}
+.team-directory{scroll-margin-top:20px;width:100%;margin-block:36px 64px}
+.team-directory-label{margin:0 0 30px}
+.team-directory .team-profiles{display:grid;grid-template-columns:repeat(5,minmax(0,195px));align-items:start;gap:20px;--team-columns:5}
+.team-directory .team-featured{grid-column:1;grid-row:1;min-width:0}
+.team-directory .team-roster{grid-column:2 / span 4;grid-row:1;display:grid;grid-template-columns:repeat(4,minmax(0,195px));align-items:stretch;gap:20px;min-width:0}
+.team-directory .team-person{display:flex;min-width:0;width:100%}
+.team-directory .team-featured .team-profile-link{outline:1px solid #951b8130;box-shadow:0 18px 38px #951b8112}
 .team-lead-label{display:block;color:var(--pink);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
 .team-profile-link{display:flex;flex-direction:column;width:100%;border-radius:18px}
 .team-profile-link:focus-visible{outline-offset:-4px}
@@ -66,8 +64,7 @@
 @media(max-width:600px){.team-directory .team-card-copy{padding:16px 12px}.team-directory .team-person h3{font-size:16px}.team-directory .team-role{font-size:12px}.therapist-choice{gap:10px}.therapist-choice-portrait{flex-basis:52px;width:52px;height:66px}}
 @media(prefers-reduced-motion:reduce){.team-profile-link .team-photo{transition:none}.team-directory .team-person.team-reveal,.team-directory .team-person.team-reveal.is-visible{opacity:1;transform:none;animation:none}}
 
-@media(max-width:1200px){.team-directory .team-profiles[data-columns]{--team-columns:5;--team-card-basis:calc(20% - 16px)}}
-@media(max-width:900px){.team-directory .team-profiles[data-columns]{--team-columns:4;--team-card-basis:calc(25% - 15px)}}
-@media(max-width:700px){.team-directory .team-profiles[data-columns]{--team-columns:3;--team-card-basis:calc(33.333333% - 13.333333px)}}
-@media(max-width:600px){.team-directory{width:calc(100vw - 40px)}.team-directory .team-profiles[data-columns]{--team-columns:2;--team-card-basis:calc(50% - 8px)}.team-directory .team-profiles{gap:16px}.team-directory .team-person{max-width:none}}
-@media(max-width:360px){.team-directory .team-profiles[data-columns]{--team-columns:1;--team-card-basis:100%}.team-directory .team-person{max-width:230px}}
+@media(max-width:1100px){.team-directory .team-profiles{grid-template-columns:repeat(4,minmax(0,195px));--team-columns:4}.team-directory .team-featured,.team-directory .team-roster{display:contents}}
+@media(max-width:900px){.team-directory .team-profiles{grid-template-columns:repeat(3,minmax(0,195px));--team-columns:3}}
+@media(max-width:600px){.team-directory .team-profiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;--team-columns:2}}
+@media(max-width:360px){.team-directory .team-profiles{grid-template-columns:minmax(0,230px);--team-columns:1}}
