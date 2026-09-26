@@ -346,40 +346,6 @@ function bind() {
       };
     });
   });
-  const urgent=$('.urgent-button');
-  if(urgent){
-    let glowReset;
-    urgent.addEventListener('pointermove',event=>{
-      if(event.pointerType==='touch'||reducedMotion.matches)return;
-      clearTimeout(glowReset);
-      const bounds=urgent.getBoundingClientRect();
-      urgent.style.setProperty('--glow-x', ((event.clientX-bounds.left)/bounds.width*100)+'%');
-      urgent.style.setProperty('--glow-y', ((event.clientY-bounds.top)/bounds.height*100)+'%');
-      urgent.classList.add('has-glow');
-    });
-    urgent.addEventListener('pointerleave',()=>{
-      urgent.classList.remove('has-glow');
-      glowReset=setTimeout(()=>{urgent.style.removeProperty('--glow-x');urgent.style.removeProperty('--glow-y');},320);
-    });
-  }
-  const dotPage=$('#main.landing-dot-page');
-  if(dotPage&&!reducedMotion.matches&&matchMedia('(hover:hover) and (pointer:fine)').matches){
-    let dotFrame=0,lastPointer;
-    dotPage.addEventListener('pointermove',event=>{
-      if(event.pointerType!=='mouse')return;
-      if(event.target.closest('.hero')){dotPage.classList.remove('has-pointer');return;}
-      lastPointer=event;
-      if(dotFrame)return;
-      dotFrame=requestAnimationFrame(()=>{
-        dotFrame=0;
-        const bounds=dotPage.getBoundingClientRect();
-        dotPage.style.setProperty('--dot-x',`${(lastPointer.clientX-bounds.left).toFixed(1)}px`);
-        dotPage.style.setProperty('--dot-y',`${(lastPointer.clientY-bounds.top).toFixed(1)}px`);
-        dotPage.classList.add('has-pointer');
-      });
-    });
-    dotPage.addEventListener('pointerleave',()=>dotPage.classList.remove('has-pointer'));
-  }
   const video=$('#hero-video');
   if(video) {
     const motion=reducedMotion;
@@ -466,8 +432,7 @@ function bind() {
 const contentCacheKey='citypraxis-public-content-v4',contentCacheLifetime=5*60*1000;
 function renderApp(content,preview){
   data=I18n.localizeContent(content);
-  const landingPage=location.pathname==='/'||location.pathname==='';
-  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+`<main id="main"${landingPage?' class="landing-dot-page"':''}>${route()}</main>`+footer()+cookiePanel();
+  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+`<main id="main">${route()}</main>`+footer()+cookiePanel();
   I18n.apply();const title=$('h1')?.textContent;document.title=(title?`${title} · `:'')+'Citypraxis Wien';bind();
   if(['#team','#oeffnungszeiten'].includes(location.hash))requestAnimationFrame(()=>$(location.hash)?.scrollIntoView({block:'center'}));
 }
