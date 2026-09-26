@@ -121,10 +121,8 @@ const teamPath=t=>`/team/${encodeURIComponent(t.id)}${new URLSearchParams(locati
 const teamMemberBookable=t=>typeof t.bookable==='boolean'?t.bookable:!(/\b(?:lisa|petra)\b/i.test(`${t.id||''} ${t.title||''}`)||/\b(?:secretary|receptionist|sekretär(?:in)?|sekretaer(?:in)?|rezeption(?:ist(?:in)?)?)\b/i.test(t.role||''));
 function teamCardName(t){
   const full=String(t.title||'').trim(),comma=full.indexOf(','),name=comma<0?full:full.slice(0,comma),suffix=comma<0?'':full.slice(comma),breakAt=name.lastIndexOf(' ');
-  const given=String(t.cardGivenName||'').trim()||(breakAt<0?name:name.slice(0,breakAt));
-  const surname=String(t.cardSurname||'').trim()||(breakAt<0?'':name.slice(breakAt+1));
-  const weight=(value,fallback)=>[300,400,500,600,700,800,900].includes(Number(value))?Number(value):fallback;
-  return `<span class="team-given-name team-weight-${weight(t.cardGivenWeight,300)}">${esc(given)}</span>${surname?` <strong class="team-surname team-weight-${weight(t.cardSurnameWeight,900)}">${esc(surname)}</strong>`:''}${esc(suffix)}`;
+  if(breakAt<0)return esc(full);
+  return `<span class="team-given-name team-weight-300">${esc(name.slice(0,breakAt))} </span><strong class="team-surname team-weight-900">${esc(name.slice(breakAt+1))}</strong>${esc(suffix)}`;
 }
 function teamCard(t){
   return `<article class="team-person"><a class="team-profile-link" href="${esc(teamPath(t))}" aria-labelledby="team-name-${esc(t.id)}"><div class="team-portrait">${t.image?`<img class="team-photo" src="${esc(optimizedImage(t.image))}" alt="" loading="lazy" decoding="async" width="360" height="360">`:'<div class="team-no-photo" aria-hidden="true">CP</div>'}</div><div class="team-card-copy">${t.id==='isabella-casny'?`<span class="team-lead-label">${I18n.language==='en'?'Practice director':'Praxisleitung'}</span>`:''}<h3 id="team-name-${esc(t.id)}">${teamCardName(t)}</h3><p class="team-role">${esc(t.role).replaceAll(' / ','<br>').replaceAll(' · ','<br>')}</p><span class="team-profile-prompt">${I18n.language==='en'?'View profile':'Profil ansehen'} ${arrow}</span></div></a></article>`;
