@@ -8,7 +8,7 @@ const fields={
   pages:[['title','Überschrift'],['subtitle','Zweite Zeile'],['eyebrow','Dachzeile'],['intro','Einleitung','textarea'],['body','Inhalt','textarea'],['image','Bildpfad']],
   symptoms:[['title','Name'],['subtitle','Kurzzeile'],['intro','Einleitung','textarea'],['body','Beschreibung','textarea'],['service','Leistung (URL-Kürzel)'],['icon','Symbol','select',['jaw','head','ear','balance','movement']]],
   services:[['title','Name'],['tag','Dachzeile'],['intro','Einleitung','textarea'],['body','Beschreibung (## Überschrift, - Aufzählung)','textarea'],['methods','Methoden (pro Zeile: Titel|Beschreibung)','textarea'],['image','Therapiefoto / Kartenbild','media-image'],['related','Verwandte Leistungen (URL-Kürzel, mit Komma getrennt)']],
-  team:[['title','Name'],['role','Fachrichtung'],['bookable','Buchungsanfragen über dieses Profil aktivieren','checkbox'],['qualifications','Qualifikationen','textarea'],['body','Persönliche Vorstellung','textarea'],['specialties','Behandlungsschwerpunkte (eine Zeile mit - pro Punkt)','textarea'],['methods','Angebot & Methoden (eine Zeile mit - pro Punkt)','textarea'],['career','Beruflicher Werdegang (eine Zeile mit - pro Station)','textarea'],['phone','Telefon'],['email','E-Mail','email'],['image','Teamfoto (leere Auswahl entfernt das Foto)','media-image']],
+  team:[['title','Vollständiger Name (Profil und Buchung)'],['teamCardTypography','Name auf der Teamkarte','team-card-type'],['role','Fachrichtung'],['bookable','Buchungsanfragen über dieses Profil aktivieren','checkbox'],['qualifications','Qualifikationen','textarea'],['body','Persönliche Vorstellung','textarea'],['specialties','Behandlungsschwerpunkte (eine Zeile mit - pro Punkt)','textarea'],['methods','Angebot & Methoden (eine Zeile mit - pro Punkt)','textarea'],['career','Beruflicher Werdegang (eine Zeile mit - pro Station)','textarea'],['phone','Telefon'],['email','E-Mail','email'],['image','Teamfoto (leere Auswahl entfernt das Foto)','media-image']],
   reviews:[['title','Anzeigename'],['body','Freigegebene Bewertung (Originalwortlaut)','textarea'],['rating','Sterne','rating'],['source','Quelle (z. B. Google oder direktes Feedback)'],['sourceUrl','Link zur Originalbewertung (optional)','url']],
   faqs:[['title','Frage'],['body','Antwort','textarea']],
   prices:[['category','Kategorie'],['title','Behandlung / Preisposition'],['duration','Terminart oder Dauer'],['amount','Preis in Euro','number'],['details','Zusatzinformation','textarea']],
@@ -217,6 +217,11 @@ async function render(){
   }
 }
 function fieldHtml([name,label,type='text',options],record){
+  if(type==='team-card-type'){
+    const weights=[['300','Leicht · 300'],['400','Normal · 400'],['500','Mittel · 500'],['600','Halbfett · 600'],['700','Fett · 700'],['800','Extra fett · 800'],['900','Schwarz · 900']];
+    const weightSelect=(field,fallback)=>`<select name="${field}">${weights.map(([value,text])=>`<option value="${value}" ${String(record[field]||fallback)===value?'selected':''}>${text}</option>`).join('')}</select>`;
+    return `<fieldset class="team-card-type" data-team-card-type><legend>${label}</legend><p>Leer lassen, um Vor- und Nachnamen automatisch aus dem vollständigen Namen zu übernehmen. Diese Felder ändern nur die Teamkarte.</p><div class="team-card-type-grid"><label>Vorname auf Karte<input name="cardGivenName" value="${esc(record.cardGivenName)}" maxlength="100" placeholder="Automatisch aus vollständigem Namen"></label><label>Stärke Vorname${weightSelect('cardGivenWeight',300)}</label><label>Nachname auf Karte<input name="cardSurname" value="${esc(record.cardSurname)}" maxlength="100" placeholder="Automatisch aus vollständigem Namen"></label><label>Stärke Nachname${weightSelect('cardSurnameWeight',900)}</label></div><div class="team-card-type-preview" aria-live="polite"><span class="team-given-name"></span> <strong class="team-surname"></strong><span class="team-name-suffix"></span></div></fieldset>`;
+  }
   if(type==='social-list'){
     const items=Array.isArray(record[name])?record[name]:[];
     return `<fieldset class="social-list-field" data-social-editor><legend>${label}</legend><p>Instagram oder Facebook auswählen und den vollständigen Profil-Link eintragen. Veröffentlichen, damit das Symbol im Footer erscheint.</p><input type="hidden" name="${name}" value="${esc(JSON.stringify(items))}"><div class="social-editor-rows">${items.map(socialRow).join('')}</div><button type="button" class="button button-outline add-social">+ Plattform hinzufügen</button></fieldset>`;
@@ -278,6 +283,20 @@ function editContent(collection,record={}){
   const editableFields=[...baseFields,...englishFields];
   dialog.innerHTML=`<div class="editor-heading"><div><span class="eyebrow">${labels[collection]}</span><h2 id="editor-title">${record.id?'Eintrag bearbeiten':'Neuer Eintrag'}</h2></div><div class="editor-heading-actions">${record.id&&!protectedContent(collection,record.id)?'<button class="delete-entry" id="delete-content">Eintrag löschen</button>':''}<button class="close-dialog" aria-label="Schließen">×</button></div></div><form id="content-form"><label>${collection==='team'?'URL-Kürzel (wird aus dem Namen erstellt)':'URL-Kürzel'}<input name="id" pattern="[a-z0-9-]+" value="${esc(record.id)}" ${record.id?'readonly':''} required placeholder="zum-beispiel-kiefer"></label><h3>Deutsch · Originaltext</h3>${baseFields.map(f=>fieldHtml(f,record)).join('')}<section class="translation-fields"><h3>Englische Übersetzung</h3><p>Leere englische Felder verwenden den deutschen Originaltext. Namen, Preise und Medien gelten für beide Sprachen.</p>${englishFields.map(f=>fieldHtml(f,record)).join('')}</section>${fieldHtml(['order','Reihenfolge','number'],record)}<div class="editor-actions"><button type="submit" class="button button-outline" name="action" value="draft">Entwurf speichern</button><button type="submit" class="button" name="action" value="publish">Veröffentlichen ↗</button></div><p class="editor-message" role="alert"></p></form>${record.id?`<details id="revisions"><summary>Vorherige Versionen</summary><div id="revision-list">Versionen werden geladen …</div></details>`:''}`;
   const close=()=>dialog.close();$('.close-dialog',dialog).onclick=close;dialog.showModal();
+  if(collection==='team'){
+    const form=$('#content-form'),preview=$('.team-card-type-preview',dialog);
+    const updateCardPreview=()=>{
+      const full=form.elements.title.value.trim(),comma=full.indexOf(','),name=comma<0?full:full.slice(0,comma),breakAt=name.lastIndexOf(' ');
+      const given=form.elements.cardGivenName.value.trim()||(breakAt<0?name:name.slice(0,breakAt));
+      const surname=form.elements.cardSurname.value.trim()||(breakAt<0?'':name.slice(breakAt+1));
+      const givenEl=$('.team-given-name',preview),surnameEl=$('.team-surname',preview);
+      givenEl.textContent=given;surnameEl.textContent=surname;$('.team-name-suffix',preview).textContent=comma<0?'':full.slice(comma);
+      givenEl.style.fontWeight=form.elements.cardGivenWeight.value;surnameEl.style.fontWeight=form.elements.cardSurnameWeight.value;
+      surnameEl.hidden=!surname;
+    };
+    ['title','cardGivenName','cardSurname','cardGivenWeight','cardSurnameWeight'].forEach(name=>form.elements[name].addEventListener('input',updateCardPreview));
+    updateCardPreview();
+  }
   if(collection==='reviews'){
     const idInput=$('#content-form').elements.id;idInput.value=entryId;idInput.closest('label').style.display='none';
     if(isNew)$('#content-form').elements.order.value=Math.max(-1,...(content.reviews||[]).map(item=>Number(item.order)||0))+1;
