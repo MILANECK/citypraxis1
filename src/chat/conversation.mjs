@@ -148,7 +148,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
   const sessions=new Map(),limit=makeLimiter();
   const prune=()=>{for(const [id,s] of sessions)if(s.expires<Date.now())sessions.delete(id);};
   async function handle(req,path,body,json){
-    if(!['/api/chat/turn','/api/chat/edit','/api/chat/review-choice','/api/chat/finish'].includes(path))return false;
+    if(!['/api/chat/turn','/api/chat/edit','/api/chat/cancel-edit','/api/chat/review-choice','/api/chat/finish'].includes(path))return false;
     let locked;
     try{
       if(req.method!=='POST')throw new ChatError('not_found',404);
@@ -172,9 +172,17 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         if(s.submitted)throw new ChatError('already_submitted',409);
         if(s.turns>=CONVERSATION_LIMIT)throw new ChatError('conversation_limit',429);
         if(nextSlot(s.draft)!=='review'||!['reason','name','email','phone','availability'].includes(body.field))throw new ChatError('invalid_request');
+        s.editSnapshot={field:body.field,draft:{...s.draft}};
         if(body.field==='name'){delete s.draft.first_name;delete s.draft.last_name;}else delete s.draft[body.field];
         s.editing=body.field==='availability'?'availability':null;
         s.lastTurn=null;const message=question(body.field,lang);s.messages.push({role:'assistant',text:message});json(200,{message,ready:false,turnsRemaining:CONVERSATION_LIMIT-s.turns});return true;
+      }
+      if(path==='/api/chat/cancel-edit'){
+        if(s.submitted)throw new ChatError('already_submitted',409);
+        const snapshot=s.editSnapshot;if(!snapshot)throw new ChatError('invalid_request');
+        s.draft={...snapshot.draft};s.editing=null;s.editSnapshot=null;s.lastTurn=null;
+        if(s.messages.at(-1)?.role==='assistant'&&s.messages.at(-1)?.text===question(snapshot.field,lang))s.messages.pop();
+        json(200,{ready:true,summary:summaryRows(makeIntake(s,lang),lang),turnsRemaining:CONVERSATION_LIMIT-s.turns});return true;
       }
       if(path==='/api/chat/finish'){
         if(s.submitted){json(200,{id:s.submitted,received:true,duplicate:true});return true;}
@@ -254,6 +262,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         else if(!answer&&['email','phone','availability'].includes(stage))answer=contactAcknowledgement(stage,lang);
       }
       if(['appointment','practice_question','medical'].includes(kind)||stage==='phone'&&draft.phone)s.draft=draft;
+      if(s.editSnapshot&&nextSlot(s.draft)==='review'){s.editSnapshot=null;s.editing=null;}
       if(!answer&&kind==='appointment')answer=localized(lang,'Perfekt, vielen Dank.','Perfect, thank you.');
       const slot=nextSlot(s.draft),ready=slot==='review';
       const followUp=['greeting','off_topic'].includes(kind)?'':ready?localized(lang,'Vielen Dank. Ihre Anfrage ist vorbereitet. Bitte prüfen Sie die Angaben unten. Nach dem Absenden meldet sich unser Sekretariat zur Terminvereinbarung.','Your request is ready to review below. Once you send it, our reception team will contact you to arrange an appointment. Thank you!'):s.draft.bookingDeclined||s.draft.refusedContact===slot?'':kind==='practice_question'&&!s.draft.reason?'':question(slot,lang);

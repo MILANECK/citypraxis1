@@ -129,6 +129,13 @@ test('conversational reception validates, reviews, edits and submits exactly onc
     const withAvailability=await turn('Afternoons');assert.equal(withAvailability.ready,true);assert.deepEqual(withAvailability.summary.find(([key])=>key==='Availability note'),['Availability note','Afternoons']);
     assert.equal((await call('finish')).code,'consent_required');
     assert.match((await call('edit',{field:'email'})).message,/email address/);
+    const unchangedEmail=await turn('test@example.test');assert.equal(unchangedEmail.ready,true);assert.deepEqual(unchangedEmail.summary.find(([key])=>key==='Email'),['Email','test@example.test']);
+    assert.match((await call('edit',{field:'phone'})).message,/phone number/);
+    const cancelled=await call('cancel-edit');assert.equal(cancelled.ready,true);assert.deepEqual(cancelled.summary.find(([key])=>key==='Phone'),['Phone','+4369912682157']);
+    assert.equal((await call('cancel-edit')).code,'invalid_request');
+    assert.match((await call('edit',{field:'phone'})).message,/phone number/);
+    const unchangedPhone=await turn('+43 699 12682157');assert.equal(unchangedPhone.ready,true);assert.deepEqual(unchangedPhone.summary.find(([key])=>key==='Phone'),['Phone','+4369912682157']);
+    assert.match((await call('edit',{field:'email'})).message,/email address/);
     assert.equal((await turn('corrected@example.test')).ready,true);
     assert.equal((await call('finish',{confirmed:true})).status,201);
     assert.equal((await call('finish',{confirmed:true})).duplicate,true);assert.equal(saved.length,1);assert.equal(saved[0].email,'corrected@example.test');assert.equal(saved[0].intake.patient_status_claimed,'existing');assert.equal(saved[0].intake.preferred_contact,'email');assert.equal(saved[0].intake.conversation_version,2);assert.ok(saved[0].intake.transcript.length>5);

@@ -58,6 +58,8 @@
 .conversation-compose button{display:grid;place-items:center;width:44px;height:44px;flex-shrink:0;border:0;border-radius:50%;background:var(--chat-blue);color:white;margin-bottom:3px;transition:background .2s}
 .conversation-compose button:hover{background:#006d8d}
 #cp-chat .conversation-meta{font-size:10px;color:var(--chat-muted);margin:9px 0 0}
+.conversation-edit-cancel{display:block;margin:9px 0 0;padding:7px 12px;border:1px solid #dbe5e9;border-radius:999px;background:#fff;color:#52616f;font-size:12px;cursor:pointer;transition:background .2s ease,border-color .2s ease,color .2s ease}
+.conversation-edit-cancel:hover,.conversation-edit-cancel:focus-visible{background:#eaf5f8;border-color:var(--chat-blue);color:var(--chat-ink)}
 .conversation-review{border-top:1px solid #e3e9ec;padding-top:20px}
 .conversation-review-hint{font-size:12px!important;color:var(--chat-muted);margin:2px 0 12px!important}
 .conversation-summary{display:grid;gap:6px;margin-bottom:18px}
