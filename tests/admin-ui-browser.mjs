@@ -122,12 +122,10 @@ try{
   const teamGrid=page.locator('.team-directory .team-profiles');
   assert.equal(await teamGrid.locator('.team-person').first().locator('h3').innerText(),'Isabella Casny');
   const businessCardType=await teamGrid.locator('.team-person').first().evaluate(card=>({
-    given:getComputedStyle(card.querySelector('.team-given-name')).fontWeight,
-    surname:getComputedStyle(card.querySelector('.team-surname')).fontWeight,
+    name:getComputedStyle(card.querySelector('h3')).fontWeight,
     role:Number.parseFloat(getComputedStyle(card.querySelector('.team-role')).fontSize)
   }));
-  assert.ok(Number(businessCardType.given)<Number(businessCardType.surname));
-  assert.equal(businessCardType.surname,'900');
+  assert.equal(businessCardType.name,'500');
   assert.ok(businessCardType.role<13);
   assert.equal(await page.locator('.team-featured').count(),1);
   assert.equal(await page.locator('.team-directory h2').count(),0);
