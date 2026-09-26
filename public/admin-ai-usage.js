@@ -1,3 +1,5 @@
+import {progressMeter} from './progress-meter.js?v=1';
+
 export function showAIUsage(panel,data,language='de'){
   const en=language==='en',t=(a,b)=>en?a:b;
   panel.innerHTML=`<h2>${t('AI Chatbot Usage','KI-Chatbot-Nutzung')}</h2>`;
@@ -21,8 +23,8 @@ export function showAIUsage(panel,data,language='de'){
   panel.append(metrics);
   if(costAvailable&&Number.isFinite(data.budget)){
     const percent=data.budget>0?Math.min(100,100*data.cost/data.budget):data.cost>0?100:0;
-    const bar=document.createElement('div');bar.className='ai-usage-track';bar.setAttribute('role','progressbar');bar.setAttribute('aria-label',t('OpenAI reported monthly project cost versus budget','Von OpenAI gemeldete monatliche Projektkosten im Verhältnis zum Budget'));bar.setAttribute('aria-valuemin','0');bar.setAttribute('aria-valuemax','100');bar.setAttribute('aria-valuenow',String(Math.round(percent)));
-    const fill=document.createElement('span');fill.style.width=`${percent}%`;fill.className=data.exceeded?'over':percent>=80?'near':'';bar.append(fill);panel.append(bar);
+    const bar=document.createElement('div');bar.className='ai-usage-track';bar.setAttribute('role','progressbar');bar.setAttribute('aria-label',t('OpenAI reported monthly project cost versus budget','Von OpenAI gemeldete monatliche Projektkosten im Verhältnis zum Budget'));bar.setAttribute('aria-valuemin','0');bar.setAttribute('aria-valuemax','100');bar.setAttribute('aria-valuenow',percent.toFixed(1));
+    bar.append(progressMeter(percent,'ai-usage-meter',data.exceeded?'over':percent>=80?'near':''));panel.append(bar);
     if(data.exceeded)note(t('Monthly budget exceeded.','Monatsbudget überschritten.'));
   }
   if(!costAvailable){

@@ -22,13 +22,14 @@ try{
   await page.locator('#booking-form [name=consent]').check();
   await page.locator('#booking-form button[type=submit]').click();
   await page.locator('.request-confirmation').waitFor();
+  await page.route('**/api/admin/capacity',route=>route.fulfill({json:{available:true,databaseBytes:12_400_000,storageBytes:3_000_000,databaseLimitBytes:500_000_000,storageLimitBytes:1_000_000_000}}));
   await page.goto(origin+'/admin');
   await page.locator('#login-form [name=email]').fill('preview@example.test');
   await page.locator('#login-form [name=password]').fill('local-preview-only-2026');
   await page.locator('#login-form button').first().click();
   await page.locator('#capacity-panel').waitFor();
-  await page.waitForFunction(()=>document.querySelector('.capacity-content')?.textContent.includes('Migration'));
-  assert.equal(await page.locator('#capacity-panel .capacity-track').count(),0);
+  await page.waitForFunction(()=>document.querySelectorAll('.capacity-meter rect').length===2);
+  assert.deepEqual(await page.locator('.capacity-meter rect').evaluateAll(rects=>rects.map(rect=>Number(rect.getAttribute('width')))),[2.48,0.3]);
   await page.locator('[data-view=social]').click();
   if(await page.locator('[data-social-url]').count()===0)await page.locator('.add-social').click();
   await page.locator('[data-social-url]').first().fill('https://www.instagram.com/citypraxis.test/');

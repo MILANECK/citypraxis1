@@ -1,6 +1,7 @@
-import {showAIUsage} from './admin-ai-usage.js?v=3';
+import {showAIUsage} from './admin-ai-usage.js?v=4';
 import {renderChatIntake,chatIntake} from './admin-chat.js?v=conversation-2';
 import {requestSource,normalizeAppointmentConcerns} from './request-summary.js?v=team-capacity-1';
+import {progressMeter} from './progress-meter.js?v=1';
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={pages:'Seiten',symptoms:'Schwerpunkte',services:'Therapien',team:'Team',reviews:'Bewertungen',faqs:'Häufige Fragen',prices:'Praxispreise',reimbursements:'Rückerstattung',settings:'Praxisdaten'};
@@ -46,7 +47,7 @@ function capacityRow(label,used,limit){
   const amount=bytes=>`${new Intl.NumberFormat(I18n.language==='en'?'en-GB':'de-AT',{maximumFractionDigits:1}).format(bytes/1_000_000)} MB`;
   const remaining=Math.max(0,limit-used);
   const detail=I18n.language==='en'?`${amount(used)} used · ${amount(remaining)} remaining of ${amount(limit)}`:`${amount(used)} belegt · ${amount(remaining)} frei von ${amount(limit)}`;
-  return `<div class="capacity-row"><div class="capacity-label"><strong>${label}</strong><span>${detail}</span></div><div class="capacity-track" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(percent)}"><span class="capacity-fill ${state}" style="width:${percent}%"></span></div></div>`;
+  return `<div class="capacity-row"><div class="capacity-label"><strong>${label}</strong><span>${detail}</span></div><div class="capacity-track ${state}" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent.toFixed(1)}">${progressMeter(percent,'capacity-meter',state).outerHTML}</div></div>`;
 }
 function showCapacity(panel,data){
   if(!panel?.isConnected)return;

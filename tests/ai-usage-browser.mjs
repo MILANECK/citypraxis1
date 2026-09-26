@@ -15,6 +15,7 @@ await page.locator('#login-form [name=password]').fill('local-preview-only-2026'
 await page.locator('#login-form button').first().click();
 const card=page.locator('#ai-usage-panel');await card.getByText('284',{exact:true}).waitFor();
 assert.equal(await card.locator('[role=progressbar]').getAttribute('aria-valuenow'),'16');
+assert.equal(await card.locator('.ai-usage-meter rect').evaluate(rect=>Number(rect.getAttribute('width'))),16);
 await mkdir('test-results',{recursive:true});await card.screenshot({path:'test-results/ai-usage-desktop.png'});
 await page.setViewportSize({width:390,height:844});await card.screenshot({path:'test-results/ai-usage-mobile.png'});
 assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
