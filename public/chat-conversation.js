@@ -37,10 +37,10 @@ async function revealReply(){
     let start,nextWord=0,elapsed=0;
     const pauses=words.map(word=>{
       const token=word.trim();
-      const punctuation=/[,;:—–]$/u.test(token)?95:/[.!?…]$/u.test(token)?150:0;
-      return 46+Math.min(30,token.length*4)+punctuation;
+      const punctuation=/[,;:—–]$/u.test(token)?80:/[.!?…]$/u.test(token)?125:0;
+      return 42+Math.min(28,token.length*3.5)+punctuation;
     });
-    const pacingScale=Math.min(1,3800/pauses.reduce((total,pause)=>total+pause,0));
+    const pacingScale=Math.min(1,3600/pauses.reduce((total,pause)=>total+pause,0));
     const revealAt=pauses.map(pause=>(elapsed+=pause*pacingScale));
     function frame(now){
       start??=now;
