@@ -37,6 +37,8 @@ p { font-size: 18px; line-height: 1.8; }
 .hero-quick-strip .quick-links>a:focus-visible{outline:2px solid #fff;outline-offset:5px;border-radius:8px}
 .hero-immersive:has(.hero-quick-strip) .hero-stage{min-height:max(560px,calc(100svh - 245px));padding-bottom:70px}
 @media(max-width:767px){.hero-quick-strip .quick-links{padding-block:18px;gap:15px 16px}.hero-quick-strip .quick-links>a{gap:7px;padding-block:7px}.hero-quick-strip .quick-links strong{font-size:12px}.hero-immersive:has(.hero-quick-strip) .hero-stage{min-height:620px;padding-bottom:48px}}
+/* Keep the mobile links on a stable surface instead of blurring the moving hero video. */
+@media(max-width:767px){.hero-quick-strip{background:#414248;-webkit-backdrop-filter:none;backdrop-filter:none}.hero-quick-strip .quick-links>a,.hero-quick-strip .quick-links>a .quick-icon{transition:none}}
 .therapy-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 22px; }
 .therapy-card { display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; background: white; box-shadow: 0 8px 30px #22234405; }
 .therapy-card-media { width: 100%; aspect-ratio: 5 / 4; overflow: hidden; isolation: isolate; }
@@ -500,10 +502,10 @@ footer{background:#f6f4f1;color:var(--ink)}
   .mobile-booking .mobile-call img{display:block;width:25px;height:25px}
   .mobile-booking .mobile-appointment{background:var(--pink);color:#fff}
   .mobile-booking .mobile-appointment svg{display:block}
-  .mobile-booking>a:hover{transform:translateY(-2px);box-shadow:0 9px 28px #22234432}
   .mobile-booking>a:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
   body:has(#booking-form :is(input,textarea,select):focus) .mobile-booking,body:has(#booking-form :is(input,textarea,select):focus) #cp-chat .chat-launch{opacity:0;pointer-events:none}
 }
+@media(max-width:767px) and (hover:hover) and (pointer:fine){.mobile-booking>a:hover{transform:translateY(-2px);box-shadow:0 9px 28px #22234432}}
 @media(prefers-reduced-motion:reduce){.mobile-booking>a{transition:none}.mobile-booking>a:hover{transform:none}}
 .admin-preview-highlight{outline:2px solid #951b81!important;outline-offset:5px;border-radius:4px;box-shadow:none;scroll-margin-top:110px}body[data-editor-preview-page="true"] [data-copy-key]{cursor:pointer;animation:none!important;transition:none!important;transform:none!important;opacity:1!important}body[data-editor-preview-page="true"] [data-copy-key]:hover{outline:2px dashed #008daf;outline-offset:4px}.article-body h4,.clinical-card h4{font-size:1.15rem;font-weight:700;margin:1.4em 0 .5em}.article-body h5,.clinical-card h5{font-size:1rem;font-weight:700;margin:1.3em 0 .45em}.article-body h6,.clinical-card h6{font-size:.9rem;font-weight:700;letter-spacing:.02em;margin:1.2em 0 .4em}
 .editor-preview-embedded a:not([data-copy-key]),.editor-preview-embedded button:not([data-copy-key]),.editor-preview-embedded summary:not([data-copy-key]),.editor-preview-embedded input:not([data-copy-key]),.editor-preview-embedded label:not([data-copy-key]),.editor-preview-embedded select:not([data-copy-key]),.editor-preview-embedded textarea:not([data-copy-key]),.editor-preview-embedded iframe,.editor-preview-embedded video,.editor-preview-embedded .review-card,.editor-preview-embedded .team-person{pointer-events:none!important;cursor:default!important}

@@ -5,12 +5,12 @@ body{background:var(--beige)}
 .topline{background:var(--pale);border:0}.topline .container{color:var(--ink)}
 .header{background:#f6f4f1f5;border:0;box-shadow:0 3px 25px #22234405}.header-inner{height:90px}
 .brand>span{color:var(--ink)}.desktop-nav a{font-size:14px}.mobile-nav{background:var(--beige);border:0}
-.button{border:0;border-radius:14px;background:var(--blue);box-shadow:none}.button:hover{background:var(--ink);border:0}
+.button{border:0;border-radius:14px;background:var(--blue);box-shadow:none}
 .header-cta{background:var(--pink);transition:transform .3s cubic-bezier(.22,1,.36,1),background .3s,box-shadow .3s}
 .header-cta .arrow-symbol{transition:transform .3s cubic-bezier(.22,1,.36,1)}
-.header-cta:hover{background:#b12499}
-@media(hover:hover) and (pointer:fine){.header-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px #951b8140}.header-cta:hover .arrow-symbol{transform:translate(2px,-2px)}}
-.button-outline{background:var(--pale);color:var(--ink)}.button-outline:hover{background:var(--blue);color:white}
+@media(hover:hover) and (pointer:fine){.button:hover{background:var(--ink);border:0}.header-cta:hover{background:#b12499;transform:translateY(-2px);box-shadow:0 8px 24px #951b8140}.header-cta:hover .arrow-symbol{transform:translate(2px,-2px)}}
+.button-outline{background:var(--pale);color:var(--ink)}
+@media(hover:hover) and (pointer:fine){.button-outline:hover{background:var(--blue);color:white}}
 .text-link{border:0;color:var(--blue)}.eyebrow{color:var(--blue)}
 /* Media fills the first screen; content can grow when text zoom requires it. */
 .hero.hero-immersive{position:relative;isolation:isolate;display:block;width:100%;margin:0;padding:0;overflow:hidden;background:var(--ink);color:white}
@@ -32,8 +32,7 @@ body{background:var(--beige)}
 .hero-immersive .hero-actions{margin-top:32px;gap:28px;flex-direction:row;align-items:center}
 .hero-immersive .hero-actions .button{background:var(--pink);font-size:15px;padding:19px 26px;transition:transform .3s cubic-bezier(.2,.8,.2,1),background .3s,box-shadow .3s,filter .3s}
 .hero-immersive .hero-actions .button .arrow-symbol{transition:transform .3s cubic-bezier(.2,.8,.2,1)}
-.hero-immersive .hero-actions .button:hover{background:#b12499}
-@media(hover:hover) and (pointer:fine){.hero-immersive .hero-actions .button:hover{transform:translateY(-2px);box-shadow:0 8px 24px #951b8140}.hero-immersive .hero-actions .button:hover .arrow-symbol{transform:translate(2px,-2px)}}
+@media(hover:hover) and (pointer:fine){.hero-immersive .hero-actions .button:hover{background:#b12499;transform:translateY(-2px);box-shadow:0 8px 24px #951b8140}.hero-immersive .hero-actions .button:hover .arrow-symbol{transform:translate(2px,-2px)}}
 .hero-immersive .subtle-link{color:white;font-size:14px}.hero-immersive .availability{background:#e6a1db}
 .hero-bottom{position:absolute;bottom:30px;left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:25px}
 .hero-scroll{display:flex;align-items:center;gap:15px;font-size:12px}.hero-scroll>span{display:grid;place-items:center;width:42px;height:42px;background:#ffffff1c;border-radius:50%;font-size:20px}
