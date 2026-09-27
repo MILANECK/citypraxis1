@@ -27,6 +27,48 @@ test('a greeting stays welcoming and a direct appointment request starts with th
     assert.equal(calls,0);
   }finally{process.env=old;}
 });
+test('chat follows clear German or English input independently of the website language',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const service=createConversationService({fetcher:async(_,options)=>{
+    const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
+    const german=raw.startsWith('Mein Nacken');
+    const value=answer({input_language:german?'de':'en',booking_intent:'unspecified',reason:german?'Nackenbeschwerden':'Neck concern',answer:german?'Unser Team kann Ihr Anliegen persönlich besprechen.':'Our team can discuss your concern in person.'});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const turn=async(token,language,message)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const fromEnglish=newSession();
+    const german=await turn(fromEnglish,'en','Mein Nacken tut weh.');
+    assert.equal(german.language,'de');assert.match(german.message,/Möchten Sie, dass ich eine Terminanfrage/);
+    const next=await turn(fromEnglish,'en','ja');
+    assert.equal(next.language,'de');assert.match(next.message,/Vor- und Nachnamen/);
+    const fromGerman=newSession();
+    const english=await turn(fromGerman,'de','My neck hurts.');
+    assert.equal(english.language,'en');assert.match(english.message,/Would you like me to prepare an appointment request/);
+    const greeting=await turn(newSession(),'en','Hallo');
+    assert.equal(greeting.language,'de');assert.match(greeting.message,/Hallo! Wie kann ich Ihnen helfen/);
+  }finally{process.env=old;}
+});
+test('mixed or unsupported messages ask for German or English before intake',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let calls=0;
+  const service=createConversationService({fetcher:async(_,options)=>{
+    calls++;const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
+    const value=answer({input_language:raw.startsWith('Dzień')?'other':'mixed',reason:'Must not be saved yet',answer:''});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const turn=async(token,message)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const mixed=newSession();
+    const question=await turn(mixed,'Hallo. What are your hours? Ahoj.');
+    assert.match(question.message,/German or English/);assert.equal(question.language,'en');assert.equal(question.ready,false);
+    const selected=await turn(mixed,'Deutsch bitte');
+    assert.equal(selected.language,'de');assert.match(selected.message,/Bitte wiederholen Sie Ihre Frage/);assert.equal(calls,1);
+    const resumed=await turn(mixed,'Hallo');assert.equal(resumed.language,'de');assert.match(resumed.message,/Hallo! Wie kann ich Ihnen helfen/);
+    const unsupported=await turn(newSession(),'Dzień dobry, kiedy mogę przyjść?');
+    assert.match(unsupported.message,/German or English/);assert.equal(unsupported.ready,false);
+  }finally{process.env=old;}
+});
 test('a short concern can receive a natural acknowledgement without a scripted thank-you',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   const service=createConversationService({fetcher:async()=>({ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({booking_intent:'unspecified',reason:'Tinnitus',answer:'I see. Our team can discuss tinnitus with you.'}))}]}]})})});
@@ -196,6 +238,10 @@ test('AI errors, malformed output, boundaries, limits and concurrent requests ar
     value=answer({kind:'compliment',answer:'Das freut uns sehr!'});
     assert.equal((await call(newSession(),'Euer Team ist sehr freundlich.',{language:'de'})).message,'Danke.\n\nWobei dürfen wir Ihnen in der Citypraxis helfen?');
     const aiCallsBeforeEmergency=calls;assert.equal((await call(token,'I cannot breathe')).emergency,true);assert.equal(calls,aiCallsBeforeEmergency);
+    const germanEmergency=await call(newSession(),'Ich habe Atemnot',{language:'en'});
+    assert.equal(germanEmergency.emergency,true);assert.equal(germanEmergency.language,'de');assert.match(germanEmergency.message,/Dieser Chat ist kein Notfalldienst/);
+    const englishEmergency=await call(newSession(),'I have chest pain',{language:'de'});
+    assert.equal(englishEmergency.emergency,true);assert.equal(englishEmergency.language,'en');assert.match(englishEmergency.message,/This chat is not an emergency service/);
     value=answer({first_name:{bad:true}});assert.equal((await call(token,'A normal message')).code,'ai_unavailable');
     value=answer({kind:'medical'});const fallback=(await call(token,'What exercises should I do?')).message;assert.match(fallback,/One of our physiotherapists can assess this in person and recommend next steps\./);assert.doesNotMatch(fallback,/can't|cannot|unable|diagnos/i);
     value=answer({kind:'medical',answer:"I can't assess what may be causing this. Our reception team can clarify the next step."});assert.match((await call(token,'What could be causing this?')).message,/^I'm sorry, but I can't assess/);
