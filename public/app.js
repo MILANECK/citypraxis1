@@ -527,5 +527,14 @@ if(new URLSearchParams(location.search).has('preview'))document.addEventListener
   const marker=event.target.closest('[data-copy-key]');
   if(marker&&document.body.dataset.editorPreviewPage==='true'&&window.parent!==window){event.preventDefault();window.parent.postMessage({type:'citypraxis-editor-select',pagePath:location.pathname,key:marker.dataset.copyKey},location.origin);}
 },true);
+if(new URLSearchParams(location.search).has('preview'))document.addEventListener('mouseup',()=>{
+  if(window.parent===window||document.body.dataset.editorPreviewPage!=='true')return;
+  const selection=window.getSelection();
+  if(!selection?.toString().trim())return;
+  const markerFor=node=>(node?.nodeType===Node.ELEMENT_NODE?node:node?.parentElement)?.closest('[data-copy-key]');
+  const anchor=markerFor(selection.anchorNode);
+  const focus=markerFor(selection.focusNode);
+  if(anchor&&anchor===focus)window.parent.postMessage({type:'citypraxis-editor-select',pagePath:location.pathname,key:anchor.dataset.copyKey},location.origin);
+},true);
 if(new URLSearchParams(location.search).has('preview'))document.addEventListener('submit',event=>{if(window.parent!==window){event.preventDefault();event.stopImmediatePropagation();}},true);
 boot();
