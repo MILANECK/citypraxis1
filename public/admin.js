@@ -295,19 +295,21 @@ function editContent(collection,record={},openPreview=false){
     $('.editor-heading-actions',dialog).prepend(toggle);
     const form=$('#content-form'),workspace=document.createElement('div'),panel=document.createElement('aside');
     workspace.className='editor-workspace';panel.className='editor-preview-panel';panel.hidden=true;
-    panel.innerHTML='<div class="editor-preview-label"><strong>Live-Vorschau</strong><span>Markierung zeigt das aktuelle Textfeld.</span></div><div class="editor-preview-viewport"><iframe title="Vorschau der bearbeiteten Seite"></iframe></div>';
+    panel.innerHTML='<div class="editor-preview-label"><strong>Live-Vorschau</strong><span>Hier scrollen und Text zum Bearbeiten auswählen.</span></div><div class="editor-preview-viewport"><iframe title="Vorschau der bearbeiteten Seite"></iframe></div>';
     form.before(workspace);workspace.append(form,panel);
     const frame=$('iframe',panel);let selectedKey='title',previewTimer;
-    const update=()=>{if(!frame.contentWindow||!frame.src||frame.src==='about:blank')return;frame.contentWindow.postMessage({type:'citypraxis-editor-preview',pageId:record.id,values:Object.fromEntries(new FormData(form)),key:selectedKey},location.origin);};
+    const update=()=>{if(!frame.contentWindow||!frame.getAttribute('src'))return;frame.contentWindow.postMessage({type:'citypraxis-editor-preview',pageId:record.id,pagePath:route,values:Object.fromEntries(new FormData(form)),key:selectedKey},location.origin);};
+    const markField=field=>{form.querySelectorAll('.editor-field-selected').forEach(node=>node.classList.remove('editor-field-selected'));if(field){field.closest('label')?.classList.add('editor-field-selected');field.classList.add('editor-field-selected');}};
     toggle.onclick=()=>{panel.hidden=!panel.hidden;dialog.classList.toggle('with-preview',!panel.hidden);toggle.setAttribute('aria-pressed',String(!panel.hidden));if(!panel.hidden){if(!frame.getAttribute('src'))frame.src=`${route}?preview=1&lang=${I18n.language}`;else update();}};
     frame.addEventListener('load',update);
     form.addEventListener('input',()=>{clearTimeout(previewTimer);previewTimer=setTimeout(update,350);});
-    form.addEventListener('focusin',event=>{if(event.target.name){selectedKey=event.target.name.replace(/En$/,'');update();}});
+    form.addEventListener('focusin',event=>{if(event.target.name){selectedKey=event.target.name.replace(/En$/,'');markField(event.target);update();}});
     const navigate=event=>{
       if(!dialog.open){window.removeEventListener('message',navigate);return;}
-      if(event.origin!==location.origin||event.source!==frame.contentWindow||event.data?.type!=='citypraxis-editor-select')return;
+      if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
+      if(event.data?.type!=='citypraxis-editor-select'||event.data.pagePath!==route)return;
       const field=form.elements[event.data.key+(I18n.language==='en'?'En':'')]||form.elements[event.data.key];
-      if(field){field.scrollIntoView({block:'center',behavior:'smooth'});field.focus({preventScroll:true});}
+      if(field){selectedKey=event.data.key;markField(field);field.scrollIntoView({block:'center',behavior:'smooth'});field.focus({preventScroll:true});}
     };
     window.addEventListener('message',navigate);
     dialog.addEventListener('close',()=>window.removeEventListener('message',navigate),{once:true});

@@ -21,6 +21,18 @@ try{
   await frame.locator('[data-copy-key=title].admin-preview-highlight').filter({hasText:'Test Therapien Überschrift'}).waitFor();
   assert.equal(await frame.locator('[data-copy-key=title]').textContent(),'Test Therapien Überschrift');
   await frame.locator('[data-copy-key=title]').click();
+  await page.waitForFunction(()=>document.activeElement===document.querySelector('#content-form [name=title]'));
+  assert.equal(await page.locator('#content-form [name=title]').evaluate(element=>document.activeElement===element),true);
+  assert.equal(await page.locator('#content-form [name=title]').evaluate(element=>element.classList.contains('editor-field-selected')),true);
+  assert.equal(await frame.locator('.breadcrumb').evaluate(element=>getComputedStyle(element).pointerEvents),'none');
+  await frame.locator('.breadcrumb').dispatchEvent('click');
+  assert.equal(await page.locator('.editor-preview-viewport iframe').evaluate(element=>element.contentWindow.location.pathname),'/leistungen');
+  assert.equal(await frame.locator('.listing-card').first().evaluate(element=>getComputedStyle(element).pointerEvents),'none');
+  await frame.locator('.listing-card').first().dispatchEvent('click');
+  assert.equal(await page.locator('.editor-preview-viewport iframe').evaluate(element=>element.contentWindow.location.pathname),'/leistungen');
+  await frame.locator('[data-copy-key=title].admin-preview-highlight').filter({hasText:'Test Therapien Überschrift'}).waitFor();
+  await frame.locator('[data-copy-key=title]').click();
+  await page.waitForFunction(()=>document.activeElement===document.querySelector('#content-form [name=title]'));
   assert.equal(await page.locator('#content-form [name=title]').evaluate(element=>document.activeElement===element),true);
   await page.locator('#content-form button[value=draft]').click();
   const publicPage=await browser.newPage();

@@ -474,6 +474,7 @@ const contentCacheKey='citypraxis-public-content-v4',contentCacheLifetime=5*60*1
 let previewSourceContent;
 function renderApp(content,preview){
   data=I18n.localizeContent(content);
+  document.body.classList.toggle('editor-preview-embedded',preview&&window.parent!==window);
   $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+`<main id="main">${route()}</main>`+footer()+cookiePanel();
   if(preview)$('.cookie-panel')?.setAttribute('hidden','');
   I18n.apply();const title=$('h1')?.textContent;document.title=(title?`${title} · `:'')+'Citypraxis Wien';bind();
@@ -504,8 +505,11 @@ async function boot(){
 }
 if(new URLSearchParams(location.search).has('preview'))window.addEventListener('message',event=>{
   if(event.origin!==location.origin||event.data?.type!=='citypraxis-editor-preview'||!previewSourceContent)return;
-  const {pageId,values,key}=event.data;
-  if(typeof pageId!=='string'||!/^[a-z0-9-]+$/.test(pageId)||!values||typeof values!=='object')return;
+  const {pageId,pagePath,values,key}=event.data;
+  if(typeof pageId!=='string'||!/^[a-z0-9-]+$/.test(pageId)||typeof pagePath!=='string'||!pagePath.startsWith('/')||!values||typeof values!=='object')return;
+  const onEditedPage=(location.pathname.replace(/\/$/,'')||'/')===(pagePath.replace(/\/$/,'')||'/');
+  document.body.dataset.editorPreviewPage=String(onEditedPage);
+  if(!onEditedPage)return;
   const source=structuredClone(previewSourceContent);
   source.pages||=[];
   let page=source.pages.find(item=>item.id===pageId);
@@ -516,7 +520,10 @@ if(new URLSearchParams(location.search).has('preview'))window.addEventListener('
   if(marker){marker.classList.add('admin-preview-highlight');marker.closest('details')?.setAttribute('open','');marker.scrollIntoView({block:'center',behavior:'instant'});}
 });
 if(new URLSearchParams(location.search).has('preview'))document.addEventListener('click',event=>{
+  if(window.parent===window)return;
+  event.preventDefault();event.stopImmediatePropagation();
   const marker=event.target.closest('[data-copy-key]');
-  if(marker&&window.parent!==window){event.preventDefault();window.parent.postMessage({type:'citypraxis-editor-select',key:marker.dataset.copyKey},location.origin);}
-});
+  if(marker&&document.body.dataset.editorPreviewPage==='true'&&window.parent!==window){event.preventDefault();window.parent.postMessage({type:'citypraxis-editor-select',pagePath:location.pathname,key:marker.dataset.copyKey},location.origin);}
+},true);
+if(new URLSearchParams(location.search).has('preview'))document.addEventListener('submit',event=>{if(window.parent!==window){event.preventDefault();event.stopImmediatePropagation();}},true);
 boot();
