@@ -68,7 +68,7 @@ p { font-size: 18px; line-height: 1.8; }
 .review-stars { color: var(--blue); letter-spacing: 3px; }
 .review-placeholder p { font-size: 17px; color: var(--muted); }
 .reviews-section + .first-visit { padding-top: 10px; }
-.review-card { box-shadow: 0 12px 38px #22234406; padding: 23px; min-height: 220px; }
+.review-card { box-shadow: 0 12px 38px #22234406; padding: 23px 23px 19px; min-height: 220px; }
 .review-card blockquote{margin:3px 0 10px}
 .review-card.review-reveal{opacity:0;transform:translateY(22px);transition:opacity .75s cubic-bezier(.22,1,.36,1),transform .75s cubic-bezier(.22,1,.36,1),box-shadow .32s ease;transition-delay:var(--review-delay,0ms)}
 .review-card.review-reveal.is-visible{opacity:1;transform:translateY(0)}
@@ -121,6 +121,7 @@ p { font-size: 18px; line-height: 1.8; }
 .first-visit .process-grid h3 { font-size: 21px; }
 .first-visit .process-grid p { font-size: 17px; }
 .first-visit .step-top > span:first-child { width: 44px; height: 44px; font-size: 15px; }
+.first-visit .step-arrow { position: relative; top: -17px; }
 .cost-overview { display: grid; grid-template-columns: 1fr 1.25fr; gap: 70px; padding: 48px; border-radius: 28px; background: var(--beige); align-items: start; }
 .cost-overview h2, .home-contact h2 { margin-top: 16px; }
 .cost-overview > div > p { margin-block: 22px 28px; max-width: 38ch; }
