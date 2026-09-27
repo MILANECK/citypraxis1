@@ -19,6 +19,12 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     assert.equal((await call('admin/capacity')).status,401);
     assert.equal((await call('admin/ai-usage')).status,401);
     const owner=await login('owner'),editor=await login('editor'),reception=await login('reception');
+    const pageCopy={title:'Preview heading',intro:'Preview introduction',step1Title:'Editable step',step1Body:'Editable paragraph'};
+    assert.equal((await call('admin/content/pages/editorial-preview-test','PUT',{data:pageCopy,createOnly:true},editor)).status,200);
+    assert.equal((await call('admin/content','GET',null,editor)).data.pages.find(page=>page.id==='editorial-preview-test').step1Title,'Editable step');
+    assert.equal((await call('content')).data.pages.some(page=>page.id==='editorial-preview-test'),false);
+    assert.equal((await call('admin/content/pages/editorial-preview-test','PUT',{data:pageCopy,publish:true},editor)).status,200);
+    assert.equal((await call('content')).data.pages.find(page=>page.id==='editorial-preview-test').step1Body,'Editable paragraph');
     assert.deepEqual((await call('admin/capacity','GET',null,owner)).data,{available:false});
     const usage=(await call('admin/ai-usage','GET',null,owner)).data;assert.equal(usage.available,true);assert.equal(usage.conversations,0);assert.equal(usage.cost,null);assert.equal(usage.budget,null);assert.equal(usage.remaining,null);
     const originalTeam=(await call('admin/content','GET',null,editor)).data.team;

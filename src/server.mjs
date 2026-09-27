@@ -44,9 +44,9 @@ export function createApp(db = openDatabase()) {
   return http.createServer(async (req,res) => {
     res.setHeader('X-Content-Type-Options','nosniff');
     res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
-    res.setHeader('X-Frame-Options','DENY');
+    res.setHeader('X-Frame-Options','SAMEORIGIN');
     if(process.env.NODE_ENV==='production')res.setHeader('Strict-Transport-Security','max-age=31536000; includeSubDomains');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; frame-src https://www.google.com https://maps.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; frame-src 'self' https://www.google.com https://maps.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'");
     const json = (status, data) => { let payload=Buffer.from(JSON.stringify(data));const headers={ 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store' };if(payload.length>1024&&/\bgzip\b/.test(req.headers['accept-encoding']||'')){payload=gzipSync(payload);headers['Content-Encoding']='gzip';headers.Vary='Accept-Encoding';}headers['Content-Length']=payload.length;res.writeHead(status,headers);res.end(payload); };
     try {
       const url = new URL(req.url, 'http://localhost');
@@ -166,7 +166,7 @@ export function createApp(db = openDatabase()) {
           if(collection==='reviews'&&!row&&db.prepare('SELECT COUNT(*) AS total FROM content WHERE collection=?').get('reviews').total>=3)return json(409,{error:'All three review slots are filled. Please edit or delete an existing review.'});
           if (!body.data || typeof body.data !== 'object' || Array.isArray(body.data)) return json(400,{error:'Inhalt fehlt.'});
           const data = { id };
-          for (const [key,value] of Object.entries(body.data)) if (/^[a-zA-Z]+$/.test(key) && !['published','dirty','id','__proto__','constructor','prototype'].includes(key) && ['string','number','boolean'].includes(typeof value)) data[key] = typeof value === 'string' ? value.slice(0,20000) : value;
+          for (const [key,value] of Object.entries(body.data)) if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(key) && !['published','dirty','id','__proto__','constructor','prototype'].includes(key) && ['string','number','boolean'].includes(typeof value)) data[key] = typeof value === 'string' ? value.slice(0,20000) : value;
           if(collection==='settings'&&Array.isArray(body.data.appointmentConcerns))data.appointmentConcerns=body.data.appointmentConcerns.slice(0,20).map(item=>({title:clean(item?.title,60),titleEn:clean(item?.titleEn,60),...(item?.custom?{custom:true}:{})})).filter(item=>item.title&&item.titleEn);
           if(collection==='settings'&&body.data.socialLinks!==undefined){try{data.socialLinks=normalizeSocialLinks(body.data.socialLinks);}catch{return json(400,{error:'Bitte gültige Instagram- oder Facebook-Profillinks verwenden (https://).'});}}
           if (!clean(data.title)) return json(400,{error:'Titel erforderlich.'});

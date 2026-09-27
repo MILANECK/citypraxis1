@@ -2,13 +2,14 @@ import {showAIUsage} from './admin-ai-usage.js?v=4';
 import {renderChatIntake,chatIntake} from './admin-chat.js?v=conversation-2';
 import {requestSource,normalizeAppointmentConcerns} from './request-summary.js?v=team-capacity-1';
 import {progressMeter} from './progress-meter.js?v=1';
+import {editorialPages} from './page-copy.js';
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={pages:'Seiten',symptoms:'Schwerpunkte',services:'Therapien',team:'Team',reviews:'Bewertungen',faqs:'Häufige Fragen',prices:'Praxispreise',reimbursements:'Rückerstattung',settings:'Praxisdaten'};
 const fields={
-  pages:[['title','Überschrift'],['subtitle','Zweite Zeile'],['eyebrow','Dachzeile'],['intro','Einleitung','textarea'],['body','Inhalt','textarea'],['image','Bildpfad']],
+  pages:[['title','H1 · Überschrift'],['subtitle','Zweite Zeile'],['eyebrow','Dachzeile'],['intro','Einleitung','textarea'],['body','Weitere Überschriften (## bis ######) und Absätze','textarea'],['image','Bildpfad']],
   symptoms:[['title','Name'],['subtitle','Kurzzeile'],['intro','Einleitung','textarea'],['body','Beschreibung','textarea'],['service','Leistung (URL-Kürzel)'],['icon','Symbol','select',['jaw','head','ear','balance','movement']]],
-  services:[['title','Name'],['tag','Dachzeile'],['intro','Einleitung','textarea'],['body','Beschreibung (## Überschrift, - Aufzählung)','textarea'],['methods','Methoden (pro Zeile: Titel|Beschreibung)','textarea'],['image','Therapiefoto / Kartenbild','media-image'],['related','Verwandte Leistungen (URL-Kürzel, mit Komma getrennt)']],
+  services:[['title','Name'],['tag','Dachzeile'],['intro','Einleitung','textarea'],['body','Beschreibung (## bis ###### Überschriften, - Aufzählung)','textarea'],['methods','Methoden (pro Zeile: Titel|Beschreibung)','textarea'],['image','Therapiefoto / Kartenbild','media-image'],['related','Verwandte Leistungen (URL-Kürzel, mit Komma getrennt)']],
   team:[['title','Name'],['role','Fachrichtung'],['bookable','Buchungsanfragen über dieses Profil aktivieren','checkbox'],['qualifications','Qualifikationen','textarea'],['body','Persönliche Vorstellung','textarea'],['specialties','Behandlungsschwerpunkte (eine Zeile mit - pro Punkt)','textarea'],['methods','Angebot & Methoden (eine Zeile mit - pro Punkt)','textarea'],['career','Beruflicher Werdegang (eine Zeile mit - pro Station)','textarea'],['phone','Telefon'],['email','E-Mail','email'],['image','Teamfoto (leere Auswahl entfernt das Foto)','media-image']],
   reviews:[['title','Anzeigename'],['body','Freigegebene Bewertung (Originalwortlaut)','textarea'],['rating','Sterne','rating'],['source','Quelle (z. B. Google oder direktes Feedback)'],['sourceUrl','Link zur Originalbewertung (optional)','url']],
   faqs:[['title','Frage'],['body','Antwort','textarea']],
@@ -20,7 +21,7 @@ const defaultAppointmentConcerns=[{title:'Kiefer',titleEn:'Jaw'},{title:'Kopf & 
 fields.settings.push(['chatEmergency','Chat: Notfallhinweis','textarea']);
 let user,content={},view='overview',requests=[],staff=[],recoveryAccessToken='';
 const heroFields=[['heroMedia','Hintergrund','select',[['video','Video'],['image','Foto']]],['image','Foto / Video-Standbild','media-image'],['video','Hintergrundvideo','media-video'],['heroAlt','Medienbeschreibung'],['heroHeight','Höhe','select',[['fullscreen','Bildschirmfüllend'],['large','Groß (kompakter)']]],['heroPosition','Bildausschnitt Desktop','select',[['left','Links'],['center','Mitte'],['right','Rechts']]],['heroMobilePosition','Bildausschnitt Mobil','select',[['left','Links'],['center','Mitte'],['right','Rechts']]],['heroOverlay','Abdunklung für lesbaren Text','select',[['soft','Leicht'],['balanced','Ausgewogen'],['strong','Stark']]]];
-function recordFields(collection,record){if(collection==='pages'&&record.id==='home')return [...fields.pages.filter(f=>f[0]!=='image'),...heroFields,['teamImage','Gruppenfoto auf der Startseite','media-image'],['teamImageAlt','Beschreibung des Gruppenfotos']];if(collection==='services'&&record.id==='kindergesundheit')return fields.services.filter(field=>field[0]!=='methods');return fields[collection];}
+function recordFields(collection,record){if(collection==='pages'){const extras=editorialPages[record.id]?.fields||[];if(record.id==='home')return [...fields.pages.filter(f=>f[0]!=='image'),...extras,...heroFields,['teamImage','Gruppenfoto auf der Startseite','media-image'],['teamImageAlt','Beschreibung des Gruppenfotos']];return [...fields.pages,...extras];}if(collection==='services'&&record.id==='kindergesundheit')return fields.services.filter(field=>field[0]!=='methods');return fields[collection];}
 function uploadMedia(file,alt,onProgress=()=>{}){
   const max=file.type==='video/mp4'?60_000_000:10_000_000;
   if(file.size>max)return Promise.reject(new Error('Video maximal 60 MB, Bild maximal 10 MB.'));
@@ -72,7 +73,7 @@ function showRecoveryForm(message=''){
   $('#back-to-login').onclick=()=>{recoveryAccessToken='';login();};
   $('#recovery-password-form').onsubmit=async event=>{event.preventDefault();const form=event.currentTarget,button=$('button[type=submit]',form),password=form.elements.password.value;if(password!==form.elements.confirm.value){$('.recovery-message',form).textContent=en?'The passwords do not match.':'Die Passwörter stimmen nicht überein.';return;}button.disabled=true;try{await api('recovery/password','POST',{accessToken:recoveryAccessToken,password});recoveryAccessToken='';form.reset();form.innerHTML=`<span class="eyebrow">${en?'DONE':'FERTIG'}</span><h2>${en?'Password changed':'Passwort geändert'}</h2><p>${en?'You can now sign in with your new password.':'Sie können sich jetzt mit Ihrem neuen Passwort anmelden.'}</p><button class="button" type="button" id="return-to-login">${en?'Sign in':'Zur Anmeldung'}</button>`;$('#return-to-login').onclick=login;}catch(error){$('.recovery-message',form).textContent=error.message;button.disabled=false;}};
 }
-async function refresh(){if(canEdit())content=await api('admin/content');if(canRequests()){requests=await api('admin/requests');staff=await api('admin/staff');}}
+async function refresh(){if(canEdit()){content=await api('admin/content');content.pages||=[];for(const [id,definition] of Object.entries(editorialPages)){let page=content.pages.find(entry=>entry.id===id);if(!page){page={id,title:definition.defaults.title||definition.title,...definition.defaults,virtual:true};content.pages.push(page);}else for(const [key,value] of Object.entries(definition.defaults))if(page[key]===undefined)page[key]=value;}}if(canRequests()){requests=await api('admin/requests');staff=await api('admin/staff');}}
 function exportRequestsCsv(rows){
   const columns=['id','created_at','status','name','email','phone','acute','preference','notification_status','intake'];
   const cell=value=>`"${String(value??'').replace(/^([=+@-])/,'\t$1').replaceAll('"','""')}"`;
@@ -128,6 +129,15 @@ async function render(){
     const collection=view,records=content[view]||[];
     if(collection==='team')records.sort((a,b)=>Number(b.id==='isabella-casny')-Number(a.id==='isabella-casny')||(Number(a.order)||0)-(Number(b.order)||0));
     w.innerHTML=`<div class="toolbar"><p>${collection==='team'?`Teamprofile: ${records.length} / 20. Neue URL-Kürzel werden automatisch aus dem Namen erstellt.`:'Entwürfe bleiben intern, bis Sie sie veröffentlichen.'}</p>${view!=='settings'?'<button class="button" id="new-content">+ Neuer Eintrag</button>':''}</div><div class="admin-panel table-wrap"><table><thead><tr><th>Inhalt</th><th>Status</th><th>Reihenfolge</th><th>Aktion</th></tr></thead><tbody>${records.map(r=>`<tr><td><strong>${esc(I18n.language==='en'&&r.titleEn?r.titleEn:r.title)}</strong><small>${esc(r.id)}</small></td><td><span class="status ${r.dirty?'draft':'live'}">${r.dirty?'Entwurf':r.published?'Veröffentlicht':'Entwurf'}</span></td><td>${r.order||0}</td><td><div class="row-actions"><button class="table-action" data-edit="${esc(r.id)}">Bearbeiten ↗</button>${protectedContent(view,r.id)?'<span class="protected-entry">Basisinhalt</span>':`<button class="delete-entry" data-remove="${esc(r.id)}" aria-label="${esc(I18n.translate('Eintrag löschen')+': '+(I18n.language==='en'&&r.titleEn?r.titleEn:r.title))}">Löschen</button>`}</div></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Noch keine Einträge. Legen Sie den ersten an.</td></tr>'}</tbody></table></div>`;
+    if(collection==='pages'){
+      [...$('tbody',w).rows].forEach((row,index)=>{
+        const record=records[index];
+        const button=document.createElement('button');button.type='button';button.className='page-overview-button';button.innerHTML='<span aria-hidden="true">▧</span> Übersicht';
+        button.setAttribute('aria-label',`Seitenübersicht für ${record.title} öffnen`);
+        $('.row-actions',row).append(button);
+        button.onclick=()=>editContent('pages',record,true);
+      });
+    }
     if(collection==='team'){
       const tbody=$('tbody',w),rows=[...tbody.querySelectorAll('tr')].slice(0,records.length),pinned=records[0]?.id==='isabella-casny';
       $('.toolbar p',w).textContent=`Teamprofile: ${records.length} / 20. Isabella bleibt oben hervorgehoben; die übrigen Profile können Sie hier sortieren.`;
@@ -246,7 +256,7 @@ function wireSocialEditor(editor){
   add.onclick=()=>{if(rows.children.length>=2)return;const wrapper=document.createElement('div');wrapper.innerHTML=socialRow();const row=wrapper.firstElementChild;rows.append(row);wire(row);sync();$('[data-social-url]',row).focus();};
   sync();
 }
-const protectedContent=(collection,id)=>collection==='settings'||(collection==='pages'&&['home','about'].includes(id));
+const protectedContent=(collection,id)=>collection==='settings'||(collection==='pages'&&Boolean(editorialPages[id]));
 async function removeContent(collection,record){
   const name=I18n.language==='en'&&record.titleEn?record.titleEn:record.title;
   const accepted=await new Promise(resolve=>{
@@ -265,19 +275,44 @@ async function removeContent(collection,record){
     $('#editor-dialog').close();await refresh();await render();toast('Eintrag gelöscht.');
   }catch(error){toast(error.message);}
 }
-function editContent(collection,record={}){
+function editContent(collection,record={},openPreview=false){
   if(collection==='team')record={...record,bookable:typeof record.bookable==='boolean'?record.bookable:!(/\b(?:lisa|petra)\b/i.test(`${record.id||''} ${record.title||''}`)||/\b(?:secretary|receptionist|sekretär(?:in)?|sekretaer(?:in)?|rezeption(?:ist(?:in)?)?)\b/i.test(record.role||''))};
-  const isNew=!record.id;
+  const isNew=!record.id||Boolean(record.virtual);
   if(collection==='reviews'&&isNew&&(content.reviews||[]).length>=3){toast(I18n.language==='en'?'All three review slots are filled. Edit or delete an existing review.':'Alle drei Bewertungsplätze sind belegt. Bitte bearbeiten oder löschen Sie eine bestehende Bewertung.');return;}
   if(collection==='team'&&isNew&&(content.team||[]).length>=20){toast('Es können höchstens 20 Teamprofile angelegt werden.');return;}
   const entryId=record.id||(collection==='reviews'?`review-${crypto.randomUUID()}`:'');
   const dialog=$('#editor-dialog');
+  dialog.classList.remove('with-preview');
   const baseFields=recordFields(collection,record);
-  const translatable=new Set(['title','subtitle','eyebrow','intro','body','tag','methods','role','specialties','career','qualifications','details','category','duration','reviewsTitle','reviewsIntro','city','hours','saturday','payment','acute','heroAlt','teamImageAlt','source','monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday']);
+  const translatable=new Set(['title','subtitle','eyebrow','intro','body','tag','methods','role','specialties','career','qualifications','details','category','duration','reviewsTitle','reviewsIntro','city','hours','saturday','payment','acute','heroAlt','teamImageAlt','source','monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday',...Object.values(editorialPages).flatMap(page=>page.fields.map(field=>field[0]))]);
   translatable.add('chatEmergency');
   const englishFields=baseFields.filter(f=>translatable.has(f[0]) && !(f[0]==='title'&&['team','reviews'].includes(collection))).map(([name,label,type])=>[name+'En',label,type]);
   const editableFields=[...baseFields,...englishFields];
-  dialog.innerHTML=`<div class="editor-heading"><div><span class="eyebrow">${labels[collection]}</span><h2 id="editor-title">${record.id?'Eintrag bearbeiten':'Neuer Eintrag'}</h2></div><div class="editor-heading-actions">${record.id&&!protectedContent(collection,record.id)?'<button class="delete-entry" id="delete-content">Eintrag löschen</button>':''}<button class="close-dialog" aria-label="Schließen">×</button></div></div><form id="content-form"><label>${collection==='team'?'URL-Kürzel (wird aus dem Namen erstellt)':'URL-Kürzel'}<input name="id" pattern="[a-z0-9-]+" value="${esc(record.id)}" ${record.id?'readonly':''} required placeholder="zum-beispiel-kiefer"></label><h3>Deutsch · Originaltext</h3>${baseFields.map(f=>fieldHtml(f,record)).join('')}<section class="translation-fields"><h3>Englische Übersetzung</h3><p>Leere englische Felder verwenden den deutschen Originaltext. Namen, Preise und Medien gelten für beide Sprachen.</p>${englishFields.map(f=>fieldHtml(f,record)).join('')}</section>${fieldHtml(['order','Reihenfolge','number'],record)}<div class="editor-actions"><button type="submit" class="button button-outline" name="action" value="draft">Entwurf speichern</button><button type="submit" class="button" name="action" value="publish">Veröffentlichen ↗</button></div><p class="editor-message" role="alert"></p></form>${record.id?`<details id="revisions"><summary>Vorherige Versionen</summary><div id="revision-list">Versionen werden geladen …</div></details>`:''}`;
+  dialog.innerHTML=`<div class="editor-heading"><div><span class="eyebrow">${labels[collection]}</span><h2 id="editor-title">${record.id?'Eintrag bearbeiten':'Neuer Eintrag'}</h2></div><div class="editor-heading-actions">${record.id&&!protectedContent(collection,record.id)?'<button class="delete-entry" id="delete-content">Eintrag löschen</button>':''}<button class="close-dialog" aria-label="Schließen">×</button></div></div><form id="content-form"><label>${collection==='team'?'URL-Kürzel (wird aus dem Namen erstellt)':'URL-Kürzel'}<input name="id" pattern="[a-z0-9-]+" value="${esc(record.id)}" ${record.id?'readonly':''} required placeholder="zum-beispiel-kiefer"></label><h3>Deutsch · Originaltext</h3>${baseFields.map(f=>fieldHtml(f,record)).join('')}<section class="translation-fields"><h3>Englische Übersetzung</h3><p>Leere englische Felder verwenden den deutschen Originaltext. Namen, Preise und Medien gelten für beide Sprachen.</p>${englishFields.map(f=>fieldHtml(f,record)).join('')}</section>${fieldHtml(['order','Reihenfolge','number'],record)}<div class="editor-actions"><button type="submit" class="button button-outline" name="action" value="draft">Entwurf speichern</button><button type="submit" class="button" name="action" value="publish">Veröffentlichen ↗</button></div><p class="editor-message" role="alert"></p></form>${record.id&&!record.virtual?`<details id="revisions"><summary>Vorherige Versionen</summary><div id="revision-list">Versionen werden geladen …</div></details>`:''}`;
+  if(collection==='pages'&&record.id){
+    const route=editorialPages[record.id]?.route||'/'+record.id;
+    const toggle=document.createElement('button');toggle.type='button';toggle.className='editor-preview-toggle';toggle.textContent='Seitenvorschau ↗';
+    $('.editor-heading-actions',dialog).prepend(toggle);
+    const form=$('#content-form'),workspace=document.createElement('div'),panel=document.createElement('aside');
+    workspace.className='editor-workspace';panel.className='editor-preview-panel';panel.hidden=true;
+    panel.innerHTML='<div class="editor-preview-label"><strong>Live-Vorschau</strong><span>Markierung zeigt das aktuelle Textfeld.</span></div><div class="editor-preview-viewport"><iframe title="Vorschau der bearbeiteten Seite"></iframe></div>';
+    form.before(workspace);workspace.append(form,panel);
+    const frame=$('iframe',panel);let selectedKey='title',previewTimer;
+    const update=()=>{if(!frame.contentWindow||!frame.src||frame.src==='about:blank')return;frame.contentWindow.postMessage({type:'citypraxis-editor-preview',pageId:record.id,values:Object.fromEntries(new FormData(form)),key:selectedKey},location.origin);};
+    toggle.onclick=()=>{panel.hidden=!panel.hidden;dialog.classList.toggle('with-preview',!panel.hidden);toggle.setAttribute('aria-pressed',String(!panel.hidden));if(!panel.hidden){if(!frame.getAttribute('src'))frame.src=`${route}?preview=1&lang=${I18n.language}`;else update();}};
+    frame.addEventListener('load',update);
+    form.addEventListener('input',()=>{clearTimeout(previewTimer);previewTimer=setTimeout(update,350);});
+    form.addEventListener('focusin',event=>{if(event.target.name){selectedKey=event.target.name.replace(/En$/,'');update();}});
+    const navigate=event=>{
+      if(!dialog.open){window.removeEventListener('message',navigate);return;}
+      if(event.origin!==location.origin||event.source!==frame.contentWindow||event.data?.type!=='citypraxis-editor-select')return;
+      const field=form.elements[event.data.key+(I18n.language==='en'?'En':'')]||form.elements[event.data.key];
+      if(field){field.scrollIntoView({block:'center',behavior:'smooth'});field.focus({preventScroll:true});}
+    };
+    window.addEventListener('message',navigate);
+    dialog.addEventListener('close',()=>window.removeEventListener('message',navigate),{once:true});
+    if(openPreview)toggle.click();
+  }
   const close=()=>dialog.close();$('.close-dialog',dialog).onclick=close;dialog.showModal();
   if(collection==='reviews'){
     const idInput=$('#content-form').elements.id;idInput.value=entryId;idInput.closest('label').style.display='none';
@@ -310,7 +345,7 @@ function editContent(collection,record={}){
     const update=value=>{input.value=value||'';buttons.forEach(button=>{const active=Number(button.dataset.rating)<=value;button.textContent=active?'★':'☆';button.setAttribute('aria-pressed',String(active));});};
     picker.querySelectorAll('[data-rating]').forEach(button=>button.onclick=()=>update(Number(button.dataset.rating)));
   });
-  $('#content-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,values={...record,...Object.fromEntries(new FormData(form))};for(const f of editableFields)if(f[2]==='checkbox')values[f[0]]=form.elements[f[0]].checked;for(const f of editableFields)if(['concern-list','social-list'].includes(f[2])){try{values[f[0]]=JSON.parse(values[f[0]]||'[]');}catch{values[f[0]]=[];}}values.order=Number(values.order||0);try{await api(`admin/content/${collection}/${values.id}`,'PUT',{data:values,createOnly:isNew,publish:e.submitter?.value==='publish'});dialog.close();await refresh();await render();toast(e.submitter?.value==='publish'?'Inhalt veröffentlicht.':'Entwurf gespeichert.');}catch(error){$('.editor-message').textContent=error.message;}};
+  $('#content-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,values={...record,...Object.fromEntries(new FormData(form))};delete values.virtual;for(const f of editableFields)if(f[2]==='checkbox')values[f[0]]=form.elements[f[0]].checked;for(const f of editableFields)if(['concern-list','social-list'].includes(f[2])){try{values[f[0]]=JSON.parse(values[f[0]]||'[]');}catch{values[f[0]]=[];}}values.order=Number(values.order||0);try{await api(`admin/content/${collection}/${values.id}`,'PUT',{data:values,createOnly:isNew,publish:e.submitter?.value==='publish'});dialog.close();await refresh();await render();toast(e.submitter?.value==='publish'?'Inhalt veröffentlicht.':'Entwurf gespeichert.');}catch(error){$('.editor-message').textContent=error.message;}};
   if(dialog.querySelector('[data-media-select]')){
     api('admin/media').then(media=>{
       if(!dialog.open)return;
@@ -329,7 +364,7 @@ function editContent(collection,record={}){
       try{const result=await uploadMedia(file,$('#content-form').elements.heroAlt?.value||$('#content-form').elements.title.value||file.name,p=>message.textContent=`Upload: ${p} %`);const select=$('#content-form').elements[input.dataset.uploadTarget];select.add(new Option(file.name,result.path));select.value=result.path;message.textContent='Hochgeladen. Entwurf speichern oder veröffentlichen, um die Auswahl zu übernehmen.';}catch(error){message.textContent=error.message;}finally{uploads--;input.disabled=false;if(!uploads)dialog.querySelectorAll('button[type=submit]').forEach(b=>b.disabled=false);}
     });
   }
-  if(record.id){
+  if(record.id&&!record.virtual){
     const previewPath=collection==='pages'?(record.id==='home'?'/':record.id==='about'?'/ueber-uns':'/'+record.id):collection==='symptoms'?'/schwerpunkte/'+record.id:collection==='services'?'/leistungen/'+record.id:collection==='team'?'/team/'+encodeURIComponent(record.id):collection==='prices'?'/ablauf-wahltherapie':'/';
     $('#revisions').insertAdjacentHTML('beforebegin',`<p><a class="text-link" href="${previewPath}?preview=1" target="_blank" rel="noopener">Gespeicherten Entwurf ansehen ↗</a></p><button type="button" class="danger-text" id="unpublish">Veröffentlichung zurücknehmen</button>`);
     $('#unpublish').onclick=async()=>{try{await api(`admin/content/${collection}/${record.id}`,'PATCH',{});dialog.close();await refresh();await render();toast('Veröffentlichung zurückgenommen.');}catch(error){$('.editor-message').textContent=error.message;}};
