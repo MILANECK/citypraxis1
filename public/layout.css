@@ -228,7 +228,7 @@ p { font-size: 18px; line-height: 1.8; }
 .team-feature-copy{padding:clamp(28px,4vw,58px)}
 .team-feature-copy h2{font-size:clamp(30px,3.3vw,46px);line-height:1.12;margin:20px 0}
 .team-feature-copy p{font-size:17px;line-height:1.75;margin:0 0 28px;color:var(--muted)}
-.team-feature-copy .text-link{gap:20px}
+.team-feature-copy .text-link{gap:20px;font-size:14px}
 .cost-overview{margin-bottom:90px}
 .hero-bottom{justify-content:flex-end}
 .hero-immersive .hero-actions{gap:18px;flex-wrap:wrap}
