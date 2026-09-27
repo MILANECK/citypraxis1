@@ -21,7 +21,7 @@ body{background:var(--beige)}
 .overlay-strong .hero-shade{background:linear-gradient(90deg,#172a50f2,#1b3150c9 45%,#1b315060),linear-gradient(0deg,#18283dcc,transparent 40%)}
 .hero-backdrop,.hero-background-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;max-width:none}
 .hero-video-parallax .hero-backdrop,.hero-video-parallax .hero-background-video{transform:scale(1.06) translate3d(0,var(--hero-video-y,0px),0);transform-origin:center;will-change:transform}
-.hero-background-video{opacity:0;transition:opacity .45s}.hero-background-video.is-playing{opacity:1}
+.hero-background-video{opacity:0;transition:opacity .65s cubic-bezier(.22,.8,.3,1)}.hero-background-video.is-playing{opacity:1}
 .focus-left .hero-media>*{object-position:left center}.focus-right .hero-media>*{object-position:right center}
 .hero-immersive .hero-copy{max-width:810px;padding:0}
 .hero-immersive .hero-copy>.eyebrow{color:#fff;font-size:12px;letter-spacing:.15em;gap:12px}

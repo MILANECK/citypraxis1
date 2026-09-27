@@ -62,8 +62,10 @@ function processBlock() {
 function faqs() { return `<div class="faq-list">${data.faqs.map(f=>`<details><summary>${esc(f.title)}<span aria-hidden="true">+</span></summary><div>${paragraph(f.body)}</div></details>`).join('')}</div>`; }
 function heroMarkup(h,s,quickLinks='') {
   const video=h.heroMedia==='video' && h.video;
+  const openingFrame=video==='/assets/hero-film.mp4' && h.image==='/assets/hero-video-poster.jpg';
+  const poster=`${optimizedImage(h.image)}${openingFrame?'?v=opening-frame-1':''}`;
   return `<section class="hero hero-immersive${video?' hero-video-parallax':''} hero-${esc(h.heroHeight||'fullscreen')} overlay-${esc(h.heroOverlay||'balanced')} focus-${esc(h.heroPosition||'center')} mobile-focus-${esc(h.heroMobilePosition||'center')}" aria-label="Willkommen in der Citypraxis">
-    <div class="hero-media"><img class="hero-backdrop" src="${esc(optimizedImage(h.image))}" alt="${esc(h.heroAlt||'Einblicke in die Citypraxis Wien')}" fetchpriority="high" decoding="async">${video?`<video id="hero-video" class="hero-background-video" data-src="${esc(h.video)}" poster="${esc(optimizedImage(h.image))}" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>`:''}</div>
+    <div class="hero-media"><img class="hero-backdrop" src="${esc(poster)}" alt="${esc(h.heroAlt||'Einblicke in die Citypraxis Wien')}" fetchpriority="high" decoding="sync">${video?`<video id="hero-video" class="hero-background-video" data-src="${esc(h.video)}" data-start-time="${openingFrame?'1':'0'}" poster="${esc(poster)}" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>`:''}</div>
     <div class="hero-shade"></div><div class="container hero-stage"><div class="hero-copy"><span class="eyebrow" data-copy-key="eyebrow"><span class="tiny-line"></span>${esc(h.eyebrow)}</span><h1><span data-copy-key="title">${esc(h.title)}</span><br><span data-copy-key="subtitle">${esc(h.subtitle)}</span></h1><p data-copy-key="intro">${esc(h.intro)}</p><div class="hero-actions"><a class="button" href="/termin">Ersttermin buchen ${arrow}</a><a class="urgent-button" href="/termin?akut=1"><span class="availability ${s.acuteAvailable?'is-available':''}"></span>Akuttermin anfragen ${arrow}</a></div></div></div>${quickLinks}
   </section>`;
 }
@@ -404,11 +406,39 @@ function bind() {
       });
     };
     if(parallaxHero){window.addEventListener('scroll',updateVideoParallax,{passive:true});window.addEventListener('resize',updateVideoParallax,{passive:true});motion.addEventListener('change',()=>{if(motion.matches)parallaxHero.style.removeProperty('--hero-video-y');else updateVideoParallax();});updateVideoParallax();}
-    async function play(){if(!video.getAttribute('src'))video.src=video.dataset.src;video.muted=true;try{await video.play();}catch{}}
-    video.addEventListener('playing',()=>video.classList.add('is-playing'));
+    let inView=false,preparePromise,framePending=false;
+    const prepare=()=>new Promise(resolve=>{
+      if(!video.getAttribute('src')){
+        video.preload='auto';
+        video.src=video.dataset.src;
+        video.load();
+      }
+      video.muted=true;
+      const finish=()=>{
+        const start=Number(video.dataset.startTime)||0;
+        if(!start||!Number.isFinite(video.duration)||video.duration<=start){resolve(true);return;}
+        video.addEventListener('seeked',()=>resolve(true),{once:true});
+        video.currentTime=start;
+      };
+      if(video.readyState>=video.HAVE_METADATA)finish();
+      else video.addEventListener('loadedmetadata',finish,{once:true});
+      video.addEventListener('error',()=>resolve(false),{once:true});
+    });
+    async function play(){
+      if(!preparePromise)preparePromise=prepare();
+      if(!await preparePromise||!inView||motion.matches||navigator.connection?.saveData)return;
+      try{
+        await video.play();
+        if(video.classList.contains('is-playing')||framePending)return;
+        framePending=true;
+        const reveal=()=>{framePending=false;if(!video.paused&&video.readyState>=video.HAVE_CURRENT_DATA)video.classList.add('is-playing');};
+        if(video.requestVideoFrameCallback)video.requestVideoFrameCallback(reveal);
+        else video.addEventListener('timeupdate',reveal,{once:true});
+      }catch{}
+    }
     video.addEventListener('error',()=>video.classList.remove('is-playing'));
-    motion.addEventListener('change',()=>{if(motion.matches)video.pause();else if(!navigator.connection?.saveData)play();});
-    new IntersectionObserver(entries=>{if(!entries[0].isIntersecting)video.pause();else if(!motion.matches&&!navigator.connection?.saveData)play();},{threshold:.1}).observe(video);
+    motion.addEventListener('change',()=>{if(motion.matches){video.pause();video.classList.remove('is-playing');}else if(inView&&!navigator.connection?.saveData)play();});
+    new IntersectionObserver(entries=>{inView=entries[0].isIntersecting;if(!inView)video.pause();else if(!motion.matches&&!navigator.connection?.saveData)play();},{threshold:.1}).observe(video);
   }
   const toggle=$('.menu-toggle'), nav=$('#mobile-nav');
   const setMenu=open=>{nav.classList.toggle('is-open',open);nav.inert=!open;nav.setAttribute('aria-hidden',String(!open));toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Menü schließen':'Menü öffnen');};
