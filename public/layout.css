@@ -156,7 +156,7 @@ p { font-size: 18px; line-height: 1.8; }
 .listing-card { padding: 36px; display: flex; flex-direction: column; align-items: flex-start; }
 .listing-card h2 { font-size: 28px; }
 .listing-card p { font-size: 17px; line-height: 1.8; }
-.listing-card .text-link { margin-top: auto; width: 100%; justify-content: space-between; padding-bottom: 0; }
+.listing-card .text-link { margin-top: auto; width: 100%; justify-content: space-between; padding-bottom: 0; font-size: 14px; }
 .listing-card svg { width: 44px; height: 44px; margin-bottom: 12px; }
 
 @media (max-width: 1150px) {
