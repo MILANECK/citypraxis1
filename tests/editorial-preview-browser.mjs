@@ -17,6 +17,9 @@ try{
   await row.locator('.page-overview-button').click();
   const frame=page.frameLocator('.editor-preview-viewport iframe');
   await frame.locator('[data-copy-key=title]').waitFor();
+  await frame.locator('[data-copy-key=title]').click();
+  await page.waitForFunction(()=>document.activeElement===document.querySelector('#content-form [name=title]'));
+  assert.equal(await page.locator('#content-form [name=title]').evaluate(element=>element.classList.contains('editor-field-selected')),true);
   await page.locator('#content-form [name=title]').fill('Test Therapien Überschrift');
   await frame.locator('[data-copy-key=title].admin-preview-highlight').filter({hasText:'Test Therapien Überschrift'}).waitFor();
   assert.equal(await frame.locator('[data-copy-key=title]').textContent(),'Test Therapien Überschrift');
@@ -42,6 +45,11 @@ try{
   await page.locator('#content-form button[value=publish]').click();
   await publicPage.reload();
   assert.equal(await publicPage.locator('h1').textContent(),'Test Therapien Überschrift');
+  const homeRow=page.locator('tr').filter({has:page.locator('small',{hasText:'home'})}).first();
+  await homeRow.locator('.page-overview-button').click();
+  await frame.locator('[data-copy-key=therapiesHeading]').click();
+  await page.waitForFunction(()=>document.activeElement===document.querySelector('#content-form [name=therapiesHeading]'));
+  assert.equal(await page.locator('#content-form [name=therapiesHeading]').evaluate(element=>element.classList.contains('editor-field-selected')),true);
   assert.deepEqual(errors,[]);
   console.log('Editorial preview and draft/publish browser flow passed.');
 }finally{await browser.close();}

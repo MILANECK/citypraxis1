@@ -307,6 +307,7 @@ function editContent(collection,record={},openPreview=false){
     const navigate=event=>{
       if(!dialog.open){window.removeEventListener('message',navigate);return;}
       if(event.origin!==location.origin||event.source!==frame.contentWindow)return;
+      if(event.data?.type==='citypraxis-editor-ready'){update();return;}
       if(event.data?.type!=='citypraxis-editor-select'||event.data.pagePath!==route)return;
       const field=form.elements[event.data.key+(I18n.language==='en'?'En':'')]||form.elements[event.data.key];
       if(field){selectedKey=event.data.key;markField(field);field.scrollIntoView({block:'center',behavior:'smooth'});field.focus({preventScroll:true});}

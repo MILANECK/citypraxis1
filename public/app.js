@@ -475,6 +475,7 @@ let previewSourceContent;
 function renderApp(content,preview){
   data=I18n.localizeContent(content);
   document.body.classList.toggle('editor-preview-embedded',preview&&window.parent!==window);
+  if(preview&&window.parent!==window&&!document.body.dataset.editorPreviewPage)document.body.dataset.editorPreviewPage='true';
   $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+`<main id="main">${route()}</main>`+footer()+cookiePanel();
   if(preview)$('.cookie-panel')?.setAttribute('hidden','');
   I18n.apply();const title=$('h1')?.textContent;document.title=(title?`${title} · `:'')+'Citypraxis Wien';bind();
@@ -501,6 +502,7 @@ async function boot(){
     if(preview)previewSourceContent=content;
     if(!preview)try{sessionStorage.setItem(contentCacheKey,JSON.stringify({savedAt:Date.now(),content}));}catch{}
     renderApp(content,preview);
+    if(preview&&window.parent!==window)window.parent.postMessage({type:'citypraxis-editor-ready',pagePath:location.pathname},location.origin);
   }catch(error){$('#app').innerHTML=`<main class="loading"><h1>Wir sind gleich wieder für Sie da.</h1><p>${esc(error.message)}</p><a href="/">Erneut versuchen</a></main>`;}
 }
 if(new URLSearchParams(location.search).has('preview'))window.addEventListener('message',event=>{
