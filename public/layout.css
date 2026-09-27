@@ -45,7 +45,7 @@ p { font-size: 18px; line-height: 1.8; }
 .therapy-card-media--symbol > img{width:84px;height:84px;object-fit:contain}
 .therapy-card > .therapy-card-copy { padding: 18px 18px 13px; flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .therapy-card h3 { font-size: 23px; }
-.therapy-card .text-link { margin-top: auto; width: 100%; justify-content: space-between; padding-bottom: 0; font-size: 14px; gap: 12px; }
+.therapy-card .text-link { position: relative; top: -4px; margin-top: auto; width: 100%; justify-content: space-between; padding-bottom: 0; font-size: 14px; gap: 12px; }
 .specialty-links { display: grid; grid-template-columns: 1fr 1.7fr; gap: 30px; align-items: center; margin-top: 42px; padding: 30px; background: #f0f2f3; border-radius: 22px; }
 .specialty-links h3 { font-size: 22px; }
 .specialty-links p { font-size: 15px; margin-bottom: 0; }
@@ -156,7 +156,8 @@ p { font-size: 18px; line-height: 1.8; }
 .listing-card { padding: 36px; display: flex; flex-direction: column; align-items: flex-start; }
 .listing-card h2 { font-size: 28px; }
 .listing-card p { font-size: 17px; line-height: 1.8; }
-.listing-card .text-link { position: relative; top: 3px; margin-top: auto; width: 100%; justify-content: space-between; padding-bottom: 0; font-size: 14px; }
+.listing-card .text-link { position: relative; top: 4px; margin-top: auto; width: 100%; justify-content: space-between; padding-bottom: 0; font-size: 14px; }
+.listing-card .text-link .arrow-symbol { transform: translateY(-3px); }
 .listing-card svg { width: 44px; height: 44px; margin-bottom: 12px; }
 
 @media (max-width: 1150px) {
@@ -184,7 +185,7 @@ p { font-size: 18px; line-height: 1.8; }
   .therapy-grid { gap: 18px; }
   .therapy-card > .therapy-card-copy { padding: 16px 16px 13px; }
   .therapy-card h3 { font-size: 22px; }
-  .therapy-card .text-link { font-size: 14px; }
+  .therapy-card .text-link { top: -2px; font-size: 14px; }
   .specialty-links { grid-template-columns: 1fr; gap: 18px; padding: 26px; margin-top: 28px; }
   .specialty-links > div:last-child { gap: 5px 20px; }
   .team-profiles, .team-preview .team-profiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
