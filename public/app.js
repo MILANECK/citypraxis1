@@ -210,19 +210,26 @@ function bind() {
   const bookingNote=document.querySelector('#main .booking-note');
   if(bookingNote&&matchMedia('(hover: hover) and (pointer: fine)').matches&&!reducedMotion.matches){
     let x=50,y=50,targetX=50,targetY=50,frame=0;
+    const pointerPosition=event=>{
+      const rect=bookingNote.getBoundingClientRect();
+      return [Math.max(0,Math.min(100,(event.clientX-rect.left)/rect.width*100)),Math.max(0,Math.min(100,(event.clientY-rect.top)/rect.height*100))];
+    };
     const paint=()=>{
       x+=(targetX-x)*.18;y+=(targetY-y)*.18;
       bookingNote.style.setProperty('--glow-x',`${x}%`);bookingNote.style.setProperty('--glow-y',`${y}%`);
       if(Math.abs(targetX-x)>.15||Math.abs(targetY-y)>.15)frame=requestAnimationFrame(paint);
       else{x=targetX;y=targetY;bookingNote.style.setProperty('--glow-x',`${x}%`);bookingNote.style.setProperty('--glow-y',`${y}%`);frame=0;}
     };
+    bookingNote.addEventListener('pointerenter',event=>{
+      if(frame)cancelAnimationFrame(frame);
+      frame=0;[x,y]=pointerPosition(event);targetX=x;targetY=y;
+      bookingNote.style.setProperty('--glow-x',`${x}%`);bookingNote.style.setProperty('--glow-y',`${y}%`);
+    });
     bookingNote.addEventListener('pointermove',event=>{
-      const rect=bookingNote.getBoundingClientRect();
-      targetX=Math.max(0,Math.min(100,(event.clientX-rect.left)/rect.width*100));
-      targetY=Math.max(0,Math.min(100,(event.clientY-rect.top)/rect.height*100));
+      [targetX,targetY]=pointerPosition(event);
       if(!frame)frame=requestAnimationFrame(paint);
     });
-    bookingNote.addEventListener('pointerleave',()=>{targetX=50;targetY=50;if(!frame)frame=requestAnimationFrame(paint);});
+    bookingNote.addEventListener('pointerleave',()=>{if(frame)cancelAnimationFrame(frame);frame=0;targetX=x;targetY=y;});
   }
   const panel=$('.cookie-panel');
   const acknowledgePrivacy=()=>{
