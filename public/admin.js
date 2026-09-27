@@ -84,7 +84,7 @@ function exportRequestsCsv(rows){
 function requestCard(row){
   const intake=chatIntake(row),en=I18n.language==='en';
   const source=({chatbot:'Chat',therapist_profile:en?'Form · therapist':'Formular · Therapeut:in',first_appointment:en?'Form':'Formular'})[requestSource(intake)];
-  return `<details class="admin-panel request-card request-disclosure" data-request-id="${esc(row.id)}"><summary><span class="request-number">#${esc(row.id)}${row.acute?' · AKUT':''}</span><time>${esc(formatDate(row.created_at))}</time><strong>${esc(row.name)}</strong><span class="request-source">${esc(source)}</span><span class="request-toggle" aria-hidden="true">⌄</span></summary><div class="request-detail"><p class="request-contact"><a href="mailto:${esc(row.email)}">${esc(row.email)}</a>${row.phone?' · '+esc(row.phone):''}</p>${renderChatIntake(row,I18n.language)}${intake?'':`<p class="request-notes">${esc(row.preference)||'Keine bevorzugte Kontaktzeit angegeben.'}</p>`}<form data-request="${row.id}" class="request-actions"><label>Status<select name="status">${Object.entries({new:'Neu',contacted:'Kontaktiert',...(intake?.kind!=='digital_reception'?{confirmed:'Bestätigt'}:{}),closed:'Abgeschlossen'}).map(([key,label])=>`<option value="${key}" ${key===row.status?'selected':''}>${label}</option>`).join('')}</select></label><label>Zuständig<select name="assignee"><option value="">Nicht zugewiesen</option>${staff.map(member=>`<option value="${member.id}" ${member.id===row.assignee?'selected':''}>${esc(member.name)}</option>`).join('')}</select></label><button class="button">Speichern</button>${user.role==='owner'?`<button type="button" class="danger-text" data-delete-request="${row.id}">Löschen</button>`:''}</form></div></details>`;
+  return `<details class="admin-panel request-card request-disclosure" data-request-id="${esc(row.id)}"><summary><span class="request-number">#${esc(row.id)}${row.acute?' · AKUT':''}</span><time>${esc(formatDate(row.created_at))}</time><strong>${esc(row.name)}</strong><span class="request-source">${esc(source)}</span><span class="request-toggle" aria-hidden="true"></span></summary><div class="request-detail"><p class="request-contact"><a href="mailto:${esc(row.email)}">${esc(row.email)}</a>${row.phone?' · '+esc(row.phone):''}</p>${renderChatIntake(row,I18n.language)}${intake?'':`<p class="request-notes">${esc(row.preference)||'Keine bevorzugte Kontaktzeit angegeben.'}</p>`}<form data-request="${row.id}" class="request-actions"><label>Status<select name="status">${Object.entries({new:'Neu',contacted:'Kontaktiert',...(intake?.kind!=='digital_reception'?{confirmed:'Bestätigt'}:{}),closed:'Abgeschlossen'}).map(([key,label])=>`<option value="${key}" ${key===row.status?'selected':''}>${label}</option>`).join('')}</select></label><label>Zuständig<select name="assignee"><option value="">Nicht zugewiesen</option>${staff.map(member=>`<option value="${member.id}" ${member.id===row.assignee?'selected':''}>${esc(member.name)}</option>`).join('')}</select></label><button class="button">Speichern</button>${user.role==='owner'?`<button type="button" class="danger-text" data-delete-request="${row.id}">Löschen</button>`:''}</form></div></details>`;
 }
 function animateRequestDisclosure(details){
   const summary=details.querySelector(':scope > summary'),body=details.querySelector(':scope > .request-detail');
@@ -289,6 +289,7 @@ function editContent(collection,record={},openPreview=false){
   const englishFields=baseFields.filter(f=>translatable.has(f[0]) && !(f[0]==='title'&&['team','reviews'].includes(collection))).map(([name,label,type])=>[name+'En',label,type]);
   const editableFields=[...baseFields,...englishFields];
   dialog.innerHTML=`<div class="editor-heading"><div><span class="eyebrow">${labels[collection]}</span><h2 id="editor-title">${record.id?'Eintrag bearbeiten':'Neuer Eintrag'}</h2></div><div class="editor-heading-actions">${record.id&&!protectedContent(collection,record.id)?'<button class="delete-entry" id="delete-content">Eintrag löschen</button>':''}<button class="close-dialog" aria-label="Schließen">×</button></div></div><form id="content-form"><label>${collection==='team'?'URL-Kürzel (wird aus dem Namen erstellt)':'URL-Kürzel'}<input name="id" pattern="[a-z0-9-]+" value="${esc(record.id)}" ${record.id?'readonly':''} required placeholder="zum-beispiel-kiefer"></label><h3>Deutsch · Originaltext</h3>${baseFields.map(f=>fieldHtml(f,record)).join('')}<section class="translation-fields"><h3>Englische Übersetzung</h3><p>Leere englische Felder verwenden den deutschen Originaltext. Namen, Preise und Medien gelten für beide Sprachen.</p>${englishFields.map(f=>fieldHtml(f,record)).join('')}</section>${fieldHtml(['order','Reihenfolge','number'],record)}<div class="editor-actions"><button type="submit" class="button button-outline" name="action" value="draft">Entwurf speichern</button><button type="submit" class="button" name="action" value="publish">Veröffentlichen ↗</button></div><p class="editor-message" role="alert"></p></form>${record.id&&!record.virtual?`<details id="revisions"><summary>Vorherige Versionen</summary><div id="revision-list">Versionen werden geladen …</div></details>`:''}`;
+  let activatePagePreview;
   if(collection==='pages'&&record.id){
     const route=editorialPages[record.id]?.route||'/'+record.id;
     const toggle=document.createElement('button');toggle.type='button';toggle.className='editor-preview-toggle';toggle.textContent='Seitenvorschau ↗';
@@ -300,7 +301,15 @@ function editContent(collection,record={},openPreview=false){
     const frame=$('iframe',panel);let selectedKey='title',previewTimer;
     const update=()=>{if(!frame.contentWindow||!frame.getAttribute('src'))return;frame.contentWindow.postMessage({type:'citypraxis-editor-preview',pageId:record.id,pagePath:route,values:Object.fromEntries(new FormData(form)),key:selectedKey},location.origin);};
     const markField=field=>{form.querySelectorAll('.editor-field-selected').forEach(node=>node.classList.remove('editor-field-selected'));field?.classList.add('editor-field-selected');};
-    toggle.onclick=()=>{panel.hidden=!panel.hidden;dialog.classList.toggle('with-preview',!panel.hidden);toggle.setAttribute('aria-pressed',String(!panel.hidden));if(!panel.hidden){if(!frame.getAttribute('src'))frame.src=`${route}?preview=1&lang=${I18n.language}`;else update();}};
+    const setPreviewVisible=visible=>{panel.hidden=!visible;dialog.classList.toggle('with-preview',visible);toggle.setAttribute('aria-pressed',String(visible));if(visible){if(!frame.getAttribute('src'))frame.src=`${route}?preview=1&lang=${I18n.language}`;else update();}};
+    activatePagePreview=()=>{
+      if(isMobileAdmin())showMobilePreviewNotice(()=>setPreviewVisible(true),()=>dialog.close());
+      else setPreviewVisible(true);
+    };
+    toggle.onclick=()=>{
+      if(!panel.hidden){setPreviewVisible(false);return;}
+      activatePagePreview();
+    };
     frame.addEventListener('load',update);
     form.addEventListener('input',()=>{clearTimeout(previewTimer);previewTimer=setTimeout(update,350);});
     form.addEventListener('focusin',event=>{if(event.target.name){selectedKey=event.target.name.replace(/En$/,'');markField(event.target);update();}});
@@ -317,9 +326,8 @@ function editContent(collection,record={},openPreview=false){
     };
     window.addEventListener('message',navigate);
     dialog.addEventListener('close',()=>window.removeEventListener('message',navigate),{once:true});
-    if(openPreview)toggle.click();
   }
-  const close=()=>dialog.close();$('.close-dialog',dialog).onclick=close;dialog.showModal();
+  const close=()=>dialog.close();$('.close-dialog',dialog).onclick=close;dialog.showModal();if(openPreview)activatePagePreview?.();
   if(collection==='reviews'){
     const idInput=$('#content-form').elements.id;idInput.value=entryId;idInput.closest('label').style.display='none';
     if(isNew)$('#content-form').elements.order.value=Math.max(-1,...(content.reviews||[]).map(item=>Number(item.order)||0))+1;
@@ -378,7 +386,23 @@ function editContent(collection,record={},openPreview=false){
     $('#revisions').addEventListener('toggle',async e=>{if(!e.target.open)return;try{const revisions=await api(`admin/revisions?collection=${collection}&id=${record.id}`);$('#revision-list').innerHTML=revisions.map(r=>`<div class="revision-row"><span>${formatDate(r.created_at)} · ${esc(r.actor)}</span><button type="button" data-restore="${r.id}">In Editor laden</button></div>`).join('')||'<p>Noch keine früheren Versionen.</p>';document.querySelectorAll('[data-restore]').forEach(b=>b.onclick=()=>{const snapshot=JSON.parse(revisions.find(r=>r.id===Number(b.dataset.restore)).snapshot);for(const [key,value]of Object.entries(snapshot)){const input=$('#content-form').elements[key];if(input){if(input.type==='checkbox')input.checked=Boolean(value);else input.value=value;}}toast('Version geladen. Speichern oder veröffentlichen Sie die Änderung.');});}catch(error){$('#revision-list').textContent=error.message;}});
   }
 }
-async function init(){try{user=await api('me');await refresh();shell();await render();}catch(error){user=null;login();}}
+function isMobileAdmin(){return window.matchMedia('(max-width: 767px)').matches;}
+function showMobileEntryNotice(){
+  if(!isMobileAdmin())return;
+  try{if(sessionStorage.getItem('citypraxis-mobile-admin-notice-v1'))return;}catch{}
+  const en=I18n.language==='en',notice=$('#mobile-entry-notice');
+  notice.innerHTML=`<div class="mobile-warning-content"><span class="mobile-warning-icon" aria-hidden="true">!</span><span class="eyebrow">${en?'MOBILE ADMIN':'ADMIN AUF DEM HANDY'}</span><h2 id="mobile-entry-title">${en?'Best used for an overview':'Am besten zur Übersicht'}</h2><div class="mobile-warning-alert"><strong>${en?'Editing on a phone is not recommended':'Bearbeiten am Handy wird nicht empfohlen'}</strong><p>${en?'The small screen makes it harder to see which content you are editing, and some editing controls may not work as expected. Please use a computer for editing; the mobile admin is best for reviewing the site and requests.':'Auf dem kleinen Bildschirm ist schwer zu erkennen, welchen Inhalt Sie gerade bearbeiten. Manche Bearbeitungsfunktionen arbeiten möglicherweise nicht wie erwartet. Bitte bearbeiten Sie Inhalte am Computer; die mobile Verwaltung eignet sich am besten zum Überblick über Website und Anfragen.'}</p></div><div class="mobile-warning-actions"><a class="button button-outline" href="/?lang=${I18n.language}">${en?'Back to website':'Zurück zur Website'}</a><button class="button" type="button" data-mobile-entry-continue>${en?'OK, continue to admin':'OK, weiter zur Verwaltung'}</button></div></div>`;
+  notice.querySelector('[data-mobile-entry-continue]').onclick=()=>{try{sessionStorage.setItem('citypraxis-mobile-admin-notice-v1','seen');}catch{}notice.close();};
+  notice.showModal();
+}
+function showMobilePreviewNotice(onContinue,onBack){
+  const en=I18n.language==='en',notice=$('#mobile-preview-notice');
+  notice.innerHTML=`<div class="mobile-warning-content"><span class="mobile-warning-icon" aria-hidden="true">!</span><span class="eyebrow">${en?'PAGE PREVIEW':'SEITENVORSCHAU'}</span><h2 id="mobile-preview-title">${en?'For editing, use a computer':'Zum Bearbeiten bitte einen Computer verwenden'}</h2><div class="mobile-warning-alert"><strong>${en?'This preview is not recommended on a phone':'Diese Vorschau ist am Handy nicht empfehlenswert'}</strong><p>${en?'The narrow screen makes it difficult to see the preview and the matching edit field together. Some editing features may also be difficult to use. We strongly recommend continuing on a computer.':'Auf dem schmalen Bildschirm sehen Sie Vorschau und zugehöriges Bearbeitungsfeld nicht gut gleichzeitig. Auch manche Bearbeitungsfunktionen sind schwer zu bedienen. Wir empfehlen dringend, am Computer weiterzuarbeiten.'}</p></div><div class="mobile-warning-actions"><button class="button button-outline" type="button" data-mobile-preview-back>${en?'Back to admin':'Zurück zur Verwaltung'}</button><button class="button" type="button" data-mobile-preview-continue>${en?'OK, open preview':'OK, Vorschau öffnen'}</button></div></div>`;
+  notice.querySelector('[data-mobile-preview-back]').onclick=()=>{notice.close();onBack();};
+  notice.querySelector('[data-mobile-preview-continue]').onclick=()=>{notice.close();onContinue();};
+  notice.showModal();
+}
+async function init(){try{user=await api('me');await refresh();shell();await render();showMobileEntryNotice();}catch(error){user=null;login();}}
 async function bootAdmin(){
   const fragment=new URLSearchParams(location.hash.slice(1)),query=new URLSearchParams(location.search);
   const recovery=fragment.get('type')==='recovery'||query.get('type')==='recovery'||fragment.has('error')||query.has('error');

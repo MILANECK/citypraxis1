@@ -89,3 +89,6 @@ body{background:#fafaf9}.topline{background:#f0f1f2}.header{background:#fafaf9f5
 @media(max-width:1000px){.team-profiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.team-profiles{grid-template-columns:1fr}.team-person{padding:26px}}
 @media(prefers-reduced-motion:reduce){.hero-background-video{transition:none}.hero-video-parallax .hero-backdrop,.hero-video-parallax .hero-background-video{transform:none;will-change:auto}.header-cta:hover{transform:none}}
+
+.booking-note{position:relative;isolation:isolate;overflow:hidden}.booking-note::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;background:radial-gradient(circle 430px at var(--glow-x,50%) var(--glow-y,50%),rgb(192 11 145 / .24) 0%,rgb(192 11 145 / .15) 38%,rgb(192 11 145 / .07) 62%,transparent 82%);transition:opacity .42s cubic-bezier(.22,1,.36,1)}.booking-note:hover::before,.booking-note:focus-within::before{opacity:1}.booking-note>*{position:relative;z-index:1}
+@media(prefers-reduced-motion:reduce){.booking-note::before{transition:none}}
