@@ -85,11 +85,11 @@
 .interior-page .weekly-hours{font-size:14px}
 .interior-page .faq-list details{border-radius:16px;background:#ffffffeb}
 .interior-page .faq-list summary{font-size:15px}
-.interior-page .booking-gradient-stage::before{display:block;background:radial-gradient(circle 500px at 112% 38%,#951b81b0 0%,#951b8160 35%,transparent 78%),linear-gradient(90deg,#fffffffc 0%,#fffffff0 28%,#ffffff96 62%,#ffffff40 100%)}
+.interior-page .booking-gradient-stage::before{display:block;background:radial-gradient(ellipse 560px 450px at 100% 0%,#951b8170 0%,#951b8138 42%,transparent 100%),linear-gradient(90deg,#fff 0%,#fff 28%,#ffffffd9 48%,#ffffff3d 76%,transparent 100%)}
 .interior-page .booking-gradient-stage>.booking-layout{padding-block:32px 96px;gap:64px}
 .interior-page[data-page="/termin"] #main{padding-top:0}
 .interior-page[data-page="/termin"] .booking-gradient-stage>.booking-layout{padding-top:172px}
-.interior-page[data-page="/termin"] .booking-gradient-stage::after{content:"";position:absolute;inset:auto 0 0;height:170px;z-index:1;pointer-events:none;background:linear-gradient(180deg,transparent,#fff)}
+.interior-page[data-page="/termin"] #booking-form{scroll-margin-top:16px}
 .interior-page .booking-layout h1{font-size:clamp(36px,4vw,54px);line-height:1.12}
 .interior-page .booking-layout .article-intro{font-size:16px;margin-bottom:24px}
 .interior-page .booking-layout .booking-note{background:#ffffffcc}
@@ -143,7 +143,7 @@
   .interior-page .info-card h2{font-size:29px}
   .interior-page .booking-gradient-stage>.booking-layout{padding-block:20px 72px;gap:26px}
   .interior-page[data-page="/termin"] .booking-gradient-stage>.booking-layout{padding-top:120px}
-  .interior-page .booking-gradient-stage::before{background:radial-gradient(circle 310px at 115% 35%,#951b81b0 0%,#951b8160 35%,transparent 78%),linear-gradient(180deg,#ffffffed 0%,#ffffffad 28%,#ffffff73 72%,#ffffffd1 100%)}
+  .interior-page .booking-gradient-stage::before{background:radial-gradient(ellipse 300px 480px at 115% 0%,#951b816b 0%,#951b812b 48%,transparent 100%),linear-gradient(90deg,#fff 0%,#ffffffee 27%,#ffffff80 70%,transparent 100%)}
   .interior-page .booking-layout h1{font-size:36px}
   .interior-page #booking-form.compact-booking{padding:24px 20px;border-radius:22px}
 }
