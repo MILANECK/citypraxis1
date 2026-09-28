@@ -20,9 +20,32 @@ export function enhanceLanding({preview=false}={}){
     '.team-feature-copy>.eyebrow','.team-feature-copy>h2','.team-feature-copy>p','.team-feature-copy>.text-link',
     '.home-people .section-heading>div>*','.home-people .review-quote','.home-people .review-card blockquote','.home-people .review-card figcaption',
     '.home-price-copy>*','.home-price-figure>*','.home-faq-intro>*','.home-faq .faq-list>details',
-    '.home-scroll-line','.footer-top>div','.footer-bottom','.home-footer-watermark>img'
+    '.home-scroll-line','.footer-top>div','.footer-bottom'
   ].join(','))];
-  let observer,frame;
+  const watermark=document.querySelector('.home-footer-watermark');
+  const priceValues=[...document.querySelectorAll('.home-price-value')].map((node,index)=>({node,final:Number(node.dataset.priceValue),text:node.textContent,duration:index===1?640:880}));
+  let observer,watermarkObserver,frame,priceFrame;
+  const finishPrices=()=>{
+    if(priceFrame)cancelAnimationFrame(priceFrame);
+    priceFrame=null;
+    priceValues.forEach(({node,text})=>{node.textContent=text;});
+  };
+  const animatePrices=delay=>{
+    if(!priceValues.length)return;
+    let started;
+    const tick=now=>{
+      started??=now;
+      const elapsed=Math.max(0,now-started-delay);
+      priceValues.forEach(({node,final,text,duration})=>{
+        const progress=Math.min(1,elapsed/duration);
+        const extra=Math.max(24,Math.round(final*.6));
+        node.textContent=progress===1?text:String(Math.ceil(final+extra*(1-progress)**3));
+      });
+      if(elapsed<880)priceFrame=requestAnimationFrame(tick);
+      else finishPrices();
+    };
+    priceFrame=requestAnimationFrame(tick);
+  };
   const onRevealEnd=event=>{
     if(['translate','scale'].includes(event.propertyName)&&event.target.classList.contains('home-reveal-visible')){
       event.target.classList.remove('home-reveal-ready','home-reveal-visible');
@@ -31,7 +54,8 @@ export function enhanceLanding({preview=false}={}){
   };
   document.addEventListener('transitionend',onRevealEnd);
   const updateScroll=()=>{
-    header.classList.toggle('header-is-scrolled',window.scrollY>64||preview);
+    const scrolled=header.classList.contains('header-is-scrolled');
+    header.classList.toggle('header-is-scrolled',preview||window.scrollY>(scrolled?96:180));
     if(atmosphere){
       atmosphere.style.setProperty('--home-background-top',`${hero?.offsetHeight||0}px`);
       const rect=background.getBoundingClientRect();
@@ -45,6 +69,9 @@ export function enhanceLanding({preview=false}={}){
   const onScroll=()=>{if(!frame)frame=requestAnimationFrame(updateScroll);};
   const showAll=()=>{
     observer?.disconnect();
+    watermarkObserver?.disconnect();
+    watermark?.classList.remove('watermark-waiting','watermark-visible');
+    finishPrices();
     targets.forEach(node=>node.classList.remove('home-reveal-ready','home-reveal-visible'));
     animations.forEach(animation=>animation.cancel());
   };
@@ -63,10 +90,22 @@ export function enhanceLanding({preview=false}={}){
         const node=entry.target;
         node.style.setProperty('--home-reveal-delay',`${Math.min(index,4)*90}ms`);
         node.classList.add('home-reveal-visible');
+        if(node.matches('.home-price-range'))animatePrices(Math.min(index,4)*90+100);
         observer.unobserve(node);
       });
     },{threshold:.12,rootMargin:'0px 0px -28px 0px'});
     targets.forEach(node=>observer.observe(node));
+    if(watermark){
+      watermark.classList.add('watermark-waiting');
+      // Observe the stationary parent so the upward entrance cannot shift its trigger.
+      watermarkObserver=new IntersectionObserver(entries=>{
+        if(entries.some(entry=>entry.isIntersecting&&entry.intersectionRatio>=.55)){
+          watermark.classList.add('watermark-visible');
+          watermarkObserver.disconnect();
+        }
+      },{threshold:.55});
+      watermarkObserver.observe(watermark);
+    }
     const intro=[
       ['.hero-copy>.eyebrow',0],
       ['.hero-copy h1>span:first-of-type',100],

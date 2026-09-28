@@ -17,7 +17,7 @@
 .home-page .topline{display:none}
 
 /* A floating rounded rectangle: white identity over the film, light surface on scroll. */
-.home-page .header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:min(1380px,calc(100% - 48px));border-radius:14px;background:#ffffff30;backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);color:#fff;border:0;box-shadow:0 8px 35px #15272b0a;transition:background .35s ease,box-shadow .35s ease,border-color .35s ease,color .35s ease;z-index:40}
+.home-page .header{position:fixed;top:20px;left:50%;transform:translateX(-50%);width:min(1380px,calc(100% - 48px));border-radius:20px;background:#ffffff30;backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);color:#fff;border:0;box-shadow:0 8px 35px #15272b0a;transition:background .45s ease,box-shadow .45s ease,border-color .45s ease,color .45s ease;z-index:40}
 .home-page .header-inner{width:100%;height:76px;padding-inline:24px;gap:20px}
 .home-page .header .brand{gap:8px}
 .home-page .header .brand .brand-wordmark{width:172px}
@@ -96,7 +96,7 @@
 .home-page .reviews-section .section-heading h2{font-size:36px;margin:14px 0 0;line-height:1.1}
 .home-page .reviews-section .section-heading p{font-size:14px}
 .home-page .reviews-grid{gap:22px}
-.home-page .review-card{background:#ffffffb3;box-shadow:none;border-radius:18px;padding:24px;min-height:225px;margin:0;display:flex;flex-direction:column}
+.home-page .review-card{transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s ease,background .4s ease;background:#ffffffb3;box-shadow:none;border-radius:18px;padding:24px;min-height:225px;margin:0;display:flex;flex-direction:column}
 .home-page .review-top{margin:0;height:46px}
 .home-page .review-quote{display:inline-flex;align-items:flex-start;color:var(--pink);line-height:1}
 .home-page .review-quote svg{display:block;width:40px;height:32px}
@@ -109,14 +109,15 @@
 
 /* A single, legible pricing panel followed by a compact FAQ. */
 .home-page .home-price-wrap{padding-block:20px 86px}
-.home-page .home-price-panel{position:relative;display:grid;grid-template-columns:1.1fr 1fr;align-items:center;gap:64px;padding:55px 64px;border-radius:26px;overflow:hidden;background:#ffffffb8;box-shadow:0 12px 50px #25313805}
-.home-page .home-price-panel .eyebrow{color:var(--pink)}
+.home-page .home-price-panel{position:relative;display:grid;grid-template-columns:1.1fr 1fr;align-items:start;gap:64px;padding:55px 64px;border-radius:26px;overflow:hidden;background:#ffffffb8;box-shadow:0 12px 50px #25313805}
+.home-page .home-price-panel .eyebrow{display:block;color:var(--pink)}
 .home-page .home-price-copy h2{font-size:50px;line-height:1.08;margin:20px 0}
 .home-page .home-price-copy p{font-size:14px;max-width:390px;margin:0 0 20px}
 .home-page .home-price-figure{position:relative;border-left:0;padding-left:60px}
 .home-page .home-price-figure>.home-scroll-line{width:1px;height:100%;transform-origin:center top}
-.home-page .home-price-label{font-size:10px;letter-spacing:.15em;font-weight:600;color:#66665e}
+.home-page .home-price-label{display:block;line-height:1.6;font-size:10px;letter-spacing:.15em;font-weight:600;color:#66665e}
 .home-page .home-price-range{display:flex;align-items:baseline;gap:10px;white-space:nowrap;font:400 clamp(54px,5.8vw,82px)/1.15 Rubik,Arial,sans-serif;letter-spacing:-.04em;color:var(--blue);margin:16px 0 5px}
+.home-page .home-price-value{font:inherit;font-variant-numeric:tabular-nums}
 .home-page .home-price-range>span{font-size:.6em;align-self:center;font-weight:400}
 .home-page .home-price-range>small{font-size:.45em;margin-left:4px}
 .home-page .home-price-figure p{font-size:12px;margin:0 0 24px}
@@ -142,6 +143,8 @@
 .home-page .footer-bottom a,.home-page .cookie-settings-link{font-size:10px;color:var(--home-muted)}
 .home-page .home-footer-watermark{position:absolute;bottom:-2.5vw;left:4%;width:92%;opacity:.055;pointer-events:none;z-index:0}
 .home-page .home-footer-watermark img{width:100%;height:auto;filter:sepia(.3)}
+.home-page .home-footer-watermark.watermark-waiting img{opacity:0;translate:0 64px;transition:opacity 1.3s ease .16s,translate 1.45s cubic-bezier(.22,1,.36,1) .16s}
+.home-page .home-footer-watermark.watermark-visible img{opacity:1;translate:0 0}
 
 /* Keep watermark opacity on its parent; only the image participates in reveals. */
 .home-page :is(h2,.team-feature-copy,.footer-top)> .home-reveal-ready,.home-page h2.home-reveal-ready{--home-reveal-distance:36px}
@@ -156,6 +159,9 @@
 .home-page.editor-preview-embedded .home-reveal-ready{opacity:1;translate:none}
 .home-page.editor-preview-embedded .header{position:absolute;top:12px}
 @media(hover:hover) and (pointer:fine){
+  .home-page .review-card:hover{transform:translateY(-5px);background:#fffffff2;box-shadow:0 18px 42px #25313812}
+  .home-page .review-quote{transition:color .45s ease}
+  .home-page .review-card:hover .review-quote{color:var(--blue)}
   .home-page .header .header-cta:hover{background:#b12499}
   .home-page .hero-immersive .urgent-button:hover{background:#ffffff2b;transform:translateY(-2px)}
   .home-page .hero-quick-strip .quick-links>a:hover{transform:translateY(-2px)}
@@ -273,6 +279,9 @@
   .home-page .home-price-range{font-size:60px}
 }
 @media(prefers-reduced-motion:reduce){
+  .home-page .home-footer-watermark.watermark-waiting img{opacity:1;translate:none;transition:none}
+  .home-page .review-card{transition:none}
+  .home-page .review-card:hover{transform:none}
   .home-page .home-reveal-ready{opacity:1;translate:none;transition:none}
   .home-page .home-scroll-line.home-reveal-ready,.home-page .home-price-figure>.home-scroll-line.home-reveal-ready{scale:1;transition:none}
   .home-page .home-atmosphere-colors{transform:none;will-change:auto}
