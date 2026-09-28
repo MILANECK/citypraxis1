@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=19';
+import {enhanceLanding} from './landing.js?v=21';
 let landingCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -75,6 +75,15 @@ function therapyCard(s) {
   const visual=s.image?`<img src="${esc(optimizedImage(s.image))}" alt="" loading="lazy" decoding="async">`:'<img src="/assets/icons/lotus.svg" alt="" loading="lazy" decoding="async">';
   return `<a class="therapy-card" href="/leistungen/${esc(s.id)}"><div class="therapy-card-media${s.image?'':' therapy-card-media--symbol'}">${visual}</div><span class="therapy-card-mark" aria-hidden="true"></span><div class="therapy-card-copy"><h3>${esc(s.title)}</h3><p class="therapy-card-detail">${esc(s.intro||'')}</p></div></a>`;
 }
+function homeDistinction(about,en){
+  if(!about.distinction?.items.length)return '';
+  const title=about.distinction.title;
+  const titleLines=title.replace(/^What makes Citypraxis special$/i,'What makes\nCitypraxis special').replace(/^Was die Citypraxis auszeichnet$/i,'Was die Citypraxis\nauszeichnet');
+  const heading=lines(titleLines);
+  const eyebrow=en?'WHY CITYPRAXIS':'WARUM CITYPRAXIS';
+  const copy=`<span class="eyebrow">${eyebrow}</span><h2 id="home-distinction-title">${heading}</h2>`;
+  return `<section class="container home-distinction" aria-labelledby="home-distinction-title" tabindex="0"><div class="home-distinction-copy">${copy}</div><div class="home-distinction-copy-white" aria-hidden="true"><div class="home-distinction-copy-white-inner"><span class="eyebrow">${eyebrow}</span><span class="home-distinction-white-heading">${heading}</span></div></div><div class="home-distinction-benefits"><ul>${about.distinction.items.map((item,index)=>`<li style="--benefit-delay:${210+index*45}ms">${esc(item)}</li>`).join('')}</ul></div><div class="home-distinction-visual" aria-hidden="true"><div class="home-distinction-logo"><img class="home-distinction-symbol" src="/assets/logo-symbol.png" alt="" width="58" height="76"><img class="home-distinction-wordmark" src="/assets/wordmark-black.png" alt="" width="296" height="40"></div><span class="home-distinction-plus"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="1.5"/></svg></span></div></section>`;
+}
 function home() {
   const h = pageText('home'), s = data.settings[0];
   const therapies = ['physiotherapie','osteopathie','logopaedie','kindergesundheit','heilmassage'].map(id=>data.services.find(item=>item.id===id)).filter(Boolean);
@@ -85,6 +94,7 @@ function home() {
     <a href="/kontakt"><img class="quick-icon" src="/assets/icons/pin.svg" alt="" width="48" height="48"><div><strong>1010 Wien</strong><span>${esc(s.address)}</span></div></a>
   </nav></div>`;
   const en=I18n.language==='en';
+  const about=aboutBodySections(data.pages.find(page=>page.id==='about')?.body);
   const amounts=(data.prices||[]).map(item=>Number(String(item.amount??'').replace(',','.'))).filter(value=>Number.isFinite(value)&&value>0);
   const formatPrice=value=>new Intl.NumberFormat(en?'en-AT':'de-AT',{maximumFractionDigits:2}).format(value);
   const priceRange=amounts.length?`<b class="home-price-value" data-price-value="${Math.min(...amounts)}" aria-hidden="true">${formatPrice(Math.min(...amounts))}</b><span aria-hidden="true">—</span><b class="home-price-value" data-price-value="${Math.max(...amounts)}" aria-hidden="true">${formatPrice(Math.max(...amounts))}</b><small aria-hidden="true">€</small>`:'';
@@ -92,6 +102,7 @@ function home() {
   <div class="home-atmosphere"><section class="home-therapies" id="therapien"><div class="container"><div class="home-section-intro" data-home-reveal><span class="eyebrow" data-copy-key="therapiesEyebrow">${esc(h.therapiesEyebrow)}</span><h2 data-copy-key="therapiesHeading">${lines(String(h.therapiesHeading).replace(/\. ?(?=[A-ZÄÖÜ])/g,'.\n'))}</h2><p data-copy-key="therapiesIntro">${esc(h.therapiesIntro)}</p></div><div class="therapy-grid">${therapies.map(therapyCard).join('')}</div><div class="home-section-link" data-home-reveal><a class="text-link" href="/leistungen">Alle Behandlungen ${arrow}</a></div></div></section>
   <div class="home-people">${h.teamImage?`<section class="container team-feature" aria-labelledby="team-feature-title"><div class="home-team-photo" data-home-reveal><div class="home-team-visual"><img class="team-group-photo" src="${esc(optimizedImage(h.teamImage))}" alt="${esc(h.teamImageAlt||'Team-Gruppenfoto')}" loading="lazy" decoding="async" width="1299" height="870"><span class="home-photo-caption">CITYPRAXIS · 1010 WIEN</span></div></div><nav class="home-team-roster" aria-label="${en?'Our team':'Unser Team'}"><ul>${(data.team||[]).map(person=>`<li><a href="${esc(teamPath(person))}"><span>${esc(String(person.title||'').trim().replace(/\s+/g,' '))}</span>${arrow}</a></li>`).join('')}</ul></nav><div class="team-feature-copy" data-home-reveal><span class="eyebrow" data-copy-key="teamEyebrow">${esc(h.teamEyebrow)}</span><h2 id="team-feature-title" data-copy-key="teamHeading">${esc(h.teamHeading)}</h2><p data-copy-key="teamIntro">${esc(h.teamIntro)}</p><a class="text-link" href="/ueber-uns">Das gesamte Team ${arrow}</a></div><span class="home-team-plus" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="1.5"/></svg></span></section>`:''}
   ${reviewsSection()}</div>
+  ${homeDistinction(about,en)}
   <section class="container home-price-wrap" aria-labelledby="home-price-title"><div class="home-price-panel" data-home-reveal><div class="home-price-copy"><span class="eyebrow" data-copy-key="pricesEyebrow">${esc(h.pricesEyebrow)}</span><h2 id="home-price-title" data-copy-key="pricesHeading">${lines(String(h.pricesHeading).replace('What doesmy treatment cost?','What does my treatment cost?').replace('Was kostetmeine Behandlung?','Was kostet meine Behandlung?'))}</h2><p data-copy-key="pricesIntro">${esc(h.pricesIntro)}</p><a class="text-link" href="/preise">Preise & Rückerstattung ${arrow}</a></div><div class="home-price-figure">${priceRange?`<span class="home-price-label">${en?'TREATMENT PRICES':'BEHANDLUNGSPREISE'}</span><div class="home-price-range" role="img" aria-label="${esc(en?`From ${formatPrice(Math.min(...amounts))} to ${formatPrice(Math.max(...amounts))} euros`:`Von ${formatPrice(Math.min(...amounts))} bis ${formatPrice(Math.max(...amounts))} Euro`)}">${priceRange}</div><p>${en?'Depending on treatment and appointment duration.':'Je nach Behandlung und Termindauer.'}</p>`:''}<span class="home-price-note">${en?'Private treatment · Reimbursement information in the price list':'Wahltherapie · Informationen zur Rückerstattung in der Preisliste'}</span></div></div></section>
   <section class="container home-faq" aria-labelledby="home-faq-title"><div class="home-faq-intro" data-home-reveal><span class="eyebrow">${en?'GOOD TO KNOW':'GUT ZU WISSEN'}</span><h2 id="home-faq-title" data-copy-key="faqHeading">${esc(h.faqHeading)}</h2><p data-copy-key="faqIntro">${esc(h.faqIntro)}</p><a class="text-link" href="/ablauf-wahltherapie">${en?'Your first visit':'Ihr erster Besuch'} ${arrow}</a></div><div data-home-reveal>${faqs()}</div></section></div>
   `;
@@ -103,13 +114,16 @@ function aboutBodySections(body){
   const sectionTitle=part=>/^## ([^\n]+)/.exec(part)?.[1]||'';
   const specialisationIndex=sections.findIndex(part=>/specialisation|spezialisierung/i.test(sectionTitle(part)));
   const aimIndex=sections.findIndex(part=>/^(?:Our aim|Unser Ziel)$/i.test(sectionTitle(part)));
-  if(specialisationIndex<1||aimIndex<0)return {aim:'',reading:clinicalBody(body)};
+  const distinctionIndex=sections.findIndex((part,index)=>index!==specialisationIndex&&index!==aimIndex&&/^## [^\n]+\n\n- /m.test(part));
+  if(specialisationIndex<1||aimIndex<0)return {aim:'',distinction:null,reading:clinicalBody(body)};
   const compact=text=>text.trim().split(/\n\n+/).map(item=>item.trim()).filter(item=>item&&!/^(?:In short,|Kurzum gesagt,)/i.test(item)).join(' ');
   const specialisation=sections[specialisationIndex].replace(/^## [^\n]+\n*/, '');
   const summary=[compact(sections.slice(0,specialisationIndex).join('\n\n')),compact(specialisation)].filter(Boolean).join('\n\n');
+  const distinctionItems=distinctionIndex<0?[]:[...sections[distinctionIndex].matchAll(/^- (.+)$/gm)].map(match=>match[1]);
+  const items=distinctionItems.reduce((result,item)=>{if(/^\(=/.test(item)&&result.length)result[result.length-1]+=` ${item}`;else result.push(item);return result;},[]);
   const reading=`<section class="clinical-card about-specialisation" id="abschnitt-${specialisationIndex}"><h2 id="${headingId(sectionTitle(sections[specialisationIndex]))}">${esc(sectionTitle(sections[specialisationIndex]))}</h2><div class="about-specialisation-copy">${paragraph(summary)}</div></section>`+
-    sections.map((part,index)=>index!==specialisationIndex&&index!==aimIndex&&index>specialisationIndex?`<section class="clinical-card about-distinction" id="abschnitt-${index}">${paragraph(part)}</section>`:'').join('');
-  return {aim:paragraph(sections[aimIndex]),reading};
+    sections.map((part,index)=>index!==specialisationIndex&&index!==aimIndex&&index!==distinctionIndex&&index>specialisationIndex?`<section class="clinical-card" id="abschnitt-${index}">${paragraph(part)}</section>`:'').join('');
+  return {aim:paragraph(sections[aimIndex]),distinction:distinctionIndex<0?null:{title:sectionTitle(sections[distinctionIndex]),items},reading};
 }
 function clinicalContents(body){
   const sections=String(body||'').split(/\n\n(?=## )/).map((part,i)=>({title:part.startsWith('## ')?part.split('\n')[0].slice(3):'Über die Behandlung',id:'abschnitt-'+i}));
