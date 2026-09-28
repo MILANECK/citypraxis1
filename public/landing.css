@@ -140,7 +140,7 @@
   .public-page .home-distinction-visual{display:grid;place-items:center;position:absolute;z-index:2;top:0;bottom:0;left:50%;right:0;overflow:hidden;border-radius:24px;background:#fff;box-shadow:0 14px 42px #2531380e;transition:left var(--distinction-duration) var(--distinction-ease),right var(--distinction-duration) var(--distinction-ease) 100ms,border-radius var(--distinction-duration) var(--distinction-ease)}
   .public-page .home-distinction-visual::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 95% 88% at 54% 50%,#ad238f 0%,#951b81 68%,#891976 100%);opacity:0;transition:opacity 900ms var(--distinction-ease)}
   .public-page .home-distinction-benefits li{opacity:0;transform:translateX(18px);transition:opacity 700ms cubic-bezier(.22,1,.36,1) var(--benefit-delay),transform 850ms cubic-bezier(.22,1,.36,1) var(--benefit-delay)}
-  .public-page .home-distinction-logo{position:relative;z-index:1;display:grid;place-items:center;width:100%;opacity:1;transition:opacity 1ms linear var(--distinction-duration)}
+  .public-page .home-distinction-logo{position:relative;z-index:1;display:grid;place-items:center;width:100%;opacity:1;transition:opacity 360ms ease var(--distinction-duration)}
   .public-page .home-distinction-symbol{width:96px;height:auto}
   .public-page .home-distinction-plus{position:absolute;z-index:1;right:26px;top:26px;color:var(--pink)}
   .public-page .home-distinction-plus svg{display:block;width:24px;height:24px;transform-origin:center;transition:transform var(--distinction-duration) var(--distinction-ease),color 700ms ease}
@@ -149,7 +149,7 @@
   .public-page .home-distinction-copy-white .eyebrow,.public-page .home-distinction-copy-white .home-distinction-white-heading{color:#fff}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-visual{left:0;right:55%;border-radius:24px 0 0 24px}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-visual::before{opacity:1}
-  .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-logo{opacity:0;transition:opacity 1ms}
+  .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-logo{opacity:0;transition:opacity 280ms ease}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-benefits li{opacity:1;transform:none}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-plus{color:#fff}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-plus svg{transform:rotate(720deg)}
