@@ -209,7 +209,7 @@ function enhanceTeamHover(){
     panel.style.setProperty('--team-photo-shift',`${panelWidth*.44}px`);
     // Cover both frame endpoints plus its brief elastic stretch and blur bleed.
     // The fixed canvas prevents object-fit from zooming in and out during the slide.
-    panel.style.setProperty('--team-image-width',`${Math.max(photoWidth,panelWidth*.56)+24}px`);
+    panel.style.setProperty('--team-image-width',`${Math.max(photoWidth,panelWidth*.56)+panelWidth*.05+16}px`);
     panel.style.setProperty('--team-photo-width',`${photoWidth}px`);
     panel.style.setProperty('--team-uncovered',`${panelWidth-photoWidth}px`);
   };
