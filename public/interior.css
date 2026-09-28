@@ -96,7 +96,6 @@
 .interior-page .weekly-hours{font-size:14px}
 .interior-page .faq-list details{border-radius:16px;background:#ffffffeb}
 .interior-page .faq-list summary{font-size:15px}
-.interior-page .booking-gradient-stage::before{display:block;background:radial-gradient(ellipse 560px 450px at 100% 0%,#951b8170 0%,#951b8138 42%,transparent 100%),linear-gradient(90deg,#fff 0%,#fff 28%,#ffffffd9 48%,#ffffff3d 76%,transparent 100%)}
 .interior-page .booking-gradient-stage>.booking-layout{padding-block:32px 96px;gap:64px}
 .interior-page[data-page="/termin"] #main{padding-top:0}
 .interior-page[data-page="/termin"] .booking-gradient-stage>.booking-layout{padding-top:172px}
@@ -156,7 +155,6 @@
   .interior-page .info-card h2{font-size:29px}
   .interior-page .booking-gradient-stage>.booking-layout{padding-block:20px 72px;gap:26px}
   .interior-page[data-page="/termin"] .booking-gradient-stage>.booking-layout{padding-top:120px}
-  .interior-page .booking-gradient-stage::before{background:radial-gradient(ellipse 300px 480px at 115% 0%,#951b816b 0%,#951b812b 48%,transparent 100%),linear-gradient(90deg,#fff 0%,#ffffffee 27%,#ffffff80 70%,transparent 100%)}
   .interior-page .booking-layout h1{font-size:36px}
   .interior-page #booking-form.compact-booking{padding:24px 20px;border-radius:22px}
 }
