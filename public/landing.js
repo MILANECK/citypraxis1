@@ -22,6 +22,7 @@ export function enhanceLanding({preview=false}={}){
     '.home-price-copy>*','.home-price-figure>*','.home-faq-intro>*','.home-faq .faq-list>details',
     '.home-scroll-line','.footer-top>div','.footer-bottom'
   ].join(','))];
+  const cleanTeamHover=enhanceTeamHover();
   const watermark=document.querySelector('.home-footer-watermark');
   const priceValues=[...document.querySelectorAll('.home-price-value')].map((node,index)=>({node,final:Number(node.dataset.priceValue),text:node.textContent,duration:index===1?640:880}));
   let observer,watermarkObserver,frame,priceFrame;
@@ -132,6 +133,7 @@ export function enhanceLanding({preview=false}={}){
   document.addEventListener('focusin',onFocus);
   return ()=>{
     showAll();
+    cleanTeamHover();
     sizeObserver.disconnect();
     if(frame)cancelAnimationFrame(frame);
     window.removeEventListener('scroll',onScroll);
@@ -142,5 +144,35 @@ export function enhanceLanding({preview=false}={}){
     decorativeLines.forEach(line=>line.remove());
     atmosphere?.style.removeProperty('--home-atmosphere-shift');
     atmosphere?.style.removeProperty('--home-background-top');
+  };
+}
+
+// A white, inert copy is wiped by exactly the same edge as the expanding photo.
+// The original remains the only accessible and interactive text/link.
+function enhanceTeamHover(){
+  const panel=document.querySelector('.team-feature');
+  const photo=panel?.querySelector('.home-team-photo');
+  const copy=panel?.querySelector('.team-feature-copy');
+  if(!photo||!copy)return ()=>{};
+  const whiteCopy=copy.cloneNode(true);
+  whiteCopy.classList.add('team-feature-white');
+  whiteCopy.setAttribute('aria-hidden','true');
+  whiteCopy.inert=true;
+  [whiteCopy,...whiteCopy.querySelectorAll('*')].forEach(node=>{
+    ['id','data-copy-key','data-home-reveal'].forEach(attribute=>node.removeAttribute(attribute));
+  });
+  copy.append(whiteCopy);
+  const measure=()=>{
+    panel.style.setProperty('--team-width',`${panel.clientWidth}px`);
+    panel.style.setProperty('--team-photo-width',`${photo.clientWidth}px`);
+    panel.style.setProperty('--team-uncovered',`${panel.clientWidth-photo.clientWidth}px`);
+  };
+  const observer=new ResizeObserver(measure);
+  observer.observe(panel);observer.observe(photo);
+  measure();
+  panel.classList.add('team-hover-ready');
+  return ()=>{
+    observer.disconnect();whiteCopy.remove();panel.classList.remove('team-hover-ready');
+    ['--team-width','--team-photo-width','--team-uncovered'].forEach(name=>panel.style.removeProperty(name));
   };
 }
