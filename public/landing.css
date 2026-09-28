@@ -76,11 +76,8 @@
 /* One continuous atmosphere, underneath every interactive/content surface. */
 .home-page .home-atmosphere{position:relative;isolation:isolate;background:#fff}
 .home-page .home-atmosphere-background{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;mask-image:linear-gradient(transparent,#000 7%,#000 93%,transparent)}
-.home-page .home-atmosphere-colors{position:absolute;inset:-180px 0;transform:translate3d(0,var(--home-atmosphere-shift,0px),0);will-change:transform}
-.home-page .home-glow{position:absolute;display:block;width:clamp(520px,68vw,980px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle closest-side,rgb(var(--glow-color) / .13) 0%,rgb(var(--glow-color) / .08) 28%,rgb(var(--glow-color) / .025) 52%,rgb(var(--glow-color) / 0) 74%);pointer-events:none}
-.home-page .home-glow-blue-top{--glow-color:0 133 172;right:clamp(-300px,-20vw,-160px);top:7%}
-.home-page .home-glow-magenta{--glow-color:149 27 129;left:clamp(-340px,-23vw,-180px);top:39%}
-.home-page .home-glow-blue-bottom{--glow-color:0 133 172;right:clamp(-320px,-22vw,-170px);bottom:3%}
+/* A single flowing mist starts white and gains colour lower down the page. */
+.home-page .home-atmosphere-colors{position:absolute;inset:-180px 0;background:url('/assets/home-mist.svg?v=2') center/100% 100% no-repeat;transform:translate3d(0,var(--home-atmosphere-shift,0px),0);will-change:transform}
 .home-page .home-atmosphere-grain{position:absolute;inset:0;background:url('/assets/grain.svg') repeat;opacity:.065;mix-blend-mode:multiply}
 .home-page .home-atmosphere>.home-therapies,.home-page .home-atmosphere>.home-people,.home-page .home-atmosphere>.home-price-wrap,.home-page .home-atmosphere>.home-faq{position:relative;z-index:1}
 .home-page .home-people{padding:88px 0 68px;background:transparent}

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="2560" viewBox="0 0 1440 2560" preserveAspectRatio="none">
+  <defs>
+    <filter id="fog" x="-60%" y="-40%" width="220%" height="180%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="85"/>
+    </filter>
+    <filter id="haze" x="-60%" y="-40%" width="220%" height="180%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="145"/>
+    </filter>
+    <linearGradient id="arrival" x1="0" y1="0" x2="0" y2="2560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="black"/>
+      <stop offset=".18" stop-color="black"/>
+      <stop offset=".43" stop-color="white"/>
+      <stop offset="1" stop-color="white"/>
+    </linearGradient>
+    <mask id="fade"><rect width="1440" height="2560" fill="url(#arrival)"/></mask>
+  </defs>
+  <rect width="1440" height="2560" fill="white"/>
+  <g mask="url(#fade)" fill="none" stroke-linecap="round">
+    <g filter="url(#haze)">
+      <path d="M-190 970C90 1090 230 1370 70 1680S-10 2180 430 2460" stroke="#008fd0" stroke-opacity=".19" stroke-width="410"/>
+      <path d="M1490 810C1030 650 680 950 830 1290S1300 1660 1240 2110 1000 2450 1340 2710" stroke="#008fd0" stroke-opacity=".17" stroke-width="470"/>
+      <path d="M530 1000C260 1220 350 1520 790 1520S1250 1830 910 2160 310 2430 140 2700" stroke="#ad288e" stroke-opacity=".16" stroke-width="370"/>
+    </g>
+    <g filter="url(#fog)">
+      <path d="M1530 800C1290 760 1110 940 1170 1160S1480 1530 1180 1810 770 2040 870 2310" stroke="#008fd0" stroke-opacity=".24" stroke-width="190"/>
+      <path d="M480 970C260 1210 560 1430 840 1390S1190 1660 930 1880" stroke="#c53aa5" stroke-opacity=".17" stroke-width="180"/>
+      <path d="M-120 2210C240 2060 430 2290 690 2520" stroke="#008fd0" stroke-opacity=".16" stroke-width="270"/>
+      <path d="M610 1120C830 1320 400 1510 460 1780S730 2070 460 2290" stroke="white" stroke-opacity=".85" stroke-width="260"/>
+    </g>
+  </g>
+</svg>
