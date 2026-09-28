@@ -90,22 +90,31 @@
 .home-page .team-feature-copy h2{font-size:clamp(36px,3.8vw,54px);line-height:1.05;margin:20px 0 25px;max-width:450px}
 .home-page .team-feature-copy p{font-size:15px;max-width:380px;margin:0 0 25px}
 .home-page .team-feature-copy .text-link{font-size:13px}
-/* The photo grows independently of the grid; the copy never shifts. */
+/* The right edge leads; the left edge and directory follow 120ms later.
+   The image keeps its proportions while the window briefly stretches. */
 .home-page .home-team-visual{position:absolute;inset:0;border-radius:inherit;overflow:hidden}
-.home-page .home-team-plus,.home-page .team-feature-white{display:none}
+.home-page .home-team-plus,.home-page .team-feature-white,.home-page .home-team-roster{display:none}
 @media(min-width:1001px) and (hover:hover) and (pointer:fine){
-  .home-page .team-feature.team-hover-ready{position:relative;isolation:isolate;--team-ease:cubic-bezier(.65,0,.25,1);--team-duration:1100ms}
-  .home-page .team-hover-ready .home-team-photo{overflow:visible;box-shadow:none}
-  .home-page .team-hover-ready .home-team-visual{right:auto;width:var(--team-photo-width);box-shadow:0 15px 45px #53473b10;transition:width var(--team-duration) var(--team-ease)}
-  .home-page .team-hover-ready .team-group-photo{transition:filter var(--team-duration) var(--team-ease),transform var(--team-duration) var(--team-ease);transform-origin:left center}
+  .home-page .team-feature.team-hover-ready{position:relative;isolation:isolate;--team-ease:cubic-bezier(.65,0,.25,1);--team-duration:1350ms;--team-follow-delay:120ms}
+  .home-page .team-hover-ready .home-team-photo{overflow:visible;box-shadow:none;min-height:380px;z-index:1;pointer-events:none}
+  .home-page .team-hover-ready .home-team-visual{left:0;right:0;width:auto;pointer-events:auto;box-shadow:0 15px 45px #53473b10;transition:right var(--team-duration) var(--team-ease),left var(--team-duration) var(--team-ease) var(--team-follow-delay),border-radius var(--team-duration) var(--team-ease)}
+  .home-page .team-hover-ready .team-group-photo{position:absolute;top:0;left:50%;width:var(--team-image-width);min-width:100%;max-width:none;translate:-50% 0;transition:filter var(--team-duration) var(--team-ease),transform var(--team-duration) var(--team-ease);transform-origin:center}
   .home-page .team-hover-ready .home-team-visual::after{content:"";position:absolute;inset:0;opacity:0;background:radial-gradient(ellipse at 110% 70%,#a2178299 0%,#96137544 35%,transparent 70%),linear-gradient(90deg,transparent 20%,#202b3299 65%,#263138b8);transition:opacity var(--team-duration) var(--team-ease)}
+  .home-page .team-hover-ready .home-team-roster{display:flex;align-items:center;position:absolute;inset:0 auto 0 0;width:var(--team-photo-shift);padding:20px 32px;border-radius:24px 0 0 24px;background:linear-gradient(130deg,#e8f2f5f5,#f1f7f9e6);clip-path:inset(0 100% 0 0 round 24px 0 0 24px);transition:clip-path var(--team-duration) var(--team-ease) var(--team-follow-delay);overflow:auto}
+  .home-page .home-team-roster ul{list-style:none;padding:0;margin:0;width:100%}
+  .home-page .home-team-roster li{margin:0;padding:0}
+  .home-page .home-team-roster a{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:24px;padding:2px 0;font-size:14px;line-height:20px;font-weight:400;color:var(--home-ink);transition:color .25s ease,transform .35s cubic-bezier(.22,1,.36,1)}
+  .home-page .home-team-roster a>.arrow-symbol{font-size:15px;opacity:0;translate:-5px 0;transition:opacity .25s ease,translate .35s cubic-bezier(.22,1,.36,1)}
+  .home-page .home-team-roster a:is(:hover,:focus-visible){color:var(--pink);transform:translateX(5px)}
+  .home-page .home-team-roster a:is(:hover,:focus-visible)>.arrow-symbol{opacity:1;translate:0 0}
+  .home-page .team-hover-ready:is(:hover,:focus-within) .home-team-roster{clip-path:inset(0 0 0 0 round 24px 0 0 24px)}
   .home-page .team-hover-ready>.team-feature-copy{position:relative;z-index:1;padding-right:30px}
   .home-page .team-hover-ready .team-feature-white{display:block;position:absolute;inset:0;padding:16px 30px 16px 0;pointer-events:none;clip-path:inset(-20px var(--team-uncovered) -20px 0);transition:clip-path var(--team-duration) var(--team-ease)}
   .home-page .team-hover-ready .team-feature-white,.home-page .team-hover-ready .team-feature-white *{color:#fff}
   .home-page .team-hover-ready .home-team-plus{display:grid;place-items:center;position:absolute;z-index:2;right:22px;bottom:22px;width:24px;height:24px;color:var(--blue);pointer-events:none;transition:color var(--team-duration) var(--team-ease)}
   .home-page .home-team-plus svg{display:block;width:24px;height:24px;transform-origin:50% 50%;transition:transform var(--team-duration) var(--team-ease)}
-  .home-page .team-hover-ready:is(:hover,:focus-within) .home-team-visual{width:var(--team-width)}
-  .home-page .team-hover-ready:is(:hover,:focus-within) .team-group-photo{filter:blur(3px);transform:scale(1.025)}
+  .home-page .team-hover-ready:is(:hover,:focus-within) .home-team-visual{left:var(--team-photo-shift);right:calc(var(--team-photo-width) - var(--team-width));border-radius:0 24px 24px 0}
+  .home-page .team-hover-ready:is(:hover,:focus-within) .team-group-photo{filter:blur(2px);transform:translateX(-6px) scale(1.025)}
   .home-page .team-hover-ready:is(:hover,:focus-within) .home-team-visual::after{opacity:1}
   .home-page .team-hover-ready:is(:hover,:focus-within) .team-feature-white{clip-path:inset(-20px 0 -20px 0)}
   .home-page .team-hover-ready:is(:hover,:focus-within) .home-team-plus{color:#fff}
@@ -148,9 +157,9 @@
 .home-page .home-faq-intro p{font-size:14px;max-width:330px;margin:0 0 22px}
 .home-page .home-faq .faq-list details{padding:0;border-radius:0;background:transparent;border-bottom:0;margin:0;position:relative}
 /* FAQ rules draw across separately, without moving their text sideways. */
-.home-page .home-faq .faq-list details::after{content:"";position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--home-line);transform-origin:left center;pointer-events:none}
-.home-page .home-faq .faq-line-waiting::after{scale:0 1;transition:scale 1.5s cubic-bezier(.65,0,.25,1) var(--detail-delay,0ms)}
-.home-page .home-faq .faq-line-visible::after{scale:1}
+.home-page .home-faq .faq-list details>summary::after{content:"";position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--home-line);transform-origin:left center;pointer-events:none}
+.home-page .home-faq .faq-line-waiting>summary::after{scale:0 1;transition:scale 1.5s cubic-bezier(.65,0,.25,1) var(--detail-delay,0ms)}
+.home-page .home-faq .faq-line-visible>summary::after{scale:1}
 .home-page .review-star{display:inline-block}
 .home-page .review-star:nth-child(2){--star-delay:150ms}
 .home-page .review-star:nth-child(3){--star-delay:300ms}
@@ -158,7 +167,7 @@
 .home-page .review-star:nth-child(5){--star-delay:600ms}
 .home-page .stars-waiting .review-star{opacity:0;translate:0 5px;transition:opacity .65s ease calc(var(--stars-delay,0ms) + var(--star-delay,0ms)),translate .65s cubic-bezier(.25,.1,.25,1) calc(var(--stars-delay,0ms) + var(--star-delay,0ms))}
 .home-page .stars-visible .review-star{opacity:1;translate:0 0}
-.home-page .home-faq .faq-list summary{padding:23px 0;gap:28px;font-size:14px;font-weight:600;line-height:1.55;align-items:center}
+.home-page .home-faq .faq-list summary{position:static;padding:23px 0;gap:28px;font-size:14px;font-weight:600;line-height:1.55;align-items:center}
 .home-page .home-faq .faq-list summary>span{font-weight:400;font-size:22px;flex-shrink:0;color:var(--pink)}
 .home-page .home-faq .faq-list details>div{padding:0 28px 24px 0}
 .home-page .home-faq .faq-list p{font-size:14px;line-height:1.8;margin:0}
@@ -309,9 +318,9 @@
   .home-page .home-price-range{font-size:60px}
 }
 @media(prefers-reduced-motion:reduce){
-  .home-page .home-faq .faq-line-waiting::after{scale:1;transition:none}
+  .home-page .home-faq .faq-line-waiting>summary::after{scale:1;transition:none}
   .home-page .stars-waiting .review-star{opacity:1;translate:none;transition:none}
-  .home-page .team-hover-ready .home-team-visual,.home-page .team-hover-ready .team-group-photo,.home-page .team-hover-ready .home-team-visual::after,.home-page .team-hover-ready .team-feature-white,.home-page .team-hover-ready .home-team-plus,.home-page .team-hover-ready .home-team-plus svg{transition:none}
+  .home-page .team-hover-ready .home-team-visual,.home-page .team-hover-ready .team-group-photo,.home-page .team-hover-ready .home-team-visual::after,.home-page .team-hover-ready .team-feature-white,.home-page .team-hover-ready .home-team-plus,.home-page .team-hover-ready .home-team-plus svg,.home-page .team-hover-ready .home-team-roster,.home-page .home-team-roster a,.home-page .home-team-roster a>.arrow-symbol{transition:none}
   .home-page .team-hover-ready:is(:hover,:focus-within) .home-team-plus svg{transform:none}
   .home-page .home-footer-watermark.watermark-waiting img{opacity:1;translate:none;transition:none}
   .home-page .review-card{transition:none}
