@@ -41,17 +41,17 @@ p { font-size: 18px; line-height: 1.8; }
 @media(max-width:767px){.hero-quick-strip{background:#414248;-webkit-backdrop-filter:none;backdrop-filter:none}.hero-quick-strip .quick-links>a,.hero-quick-strip .quick-links>a .quick-icon{transition:none}}
 .therapy-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
 .therapy-card { position: relative; display: block; aspect-ratio: .7; border-radius: 18px; overflow: hidden; isolation: isolate; background: #fff; color: #222344; box-shadow: 0 8px 30px #2223440b; }
-.therapy-card-media { position: absolute; inset: 0 0 auto; height: calc(100% - 108px); overflow: hidden; transition: height .72s cubic-bezier(.22,1,.36,1); }
-.therapy-card-media > img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.01); transform-origin: center; backface-visibility: hidden; transition: transform .85s cubic-bezier(.22,1,.36,1),filter .65s ease; }
+.therapy-card-media { position: absolute; inset: 0 0 auto; height: calc(100% - 108px); overflow: hidden; }
+.therapy-card-media > img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.01); transform-origin: center; backface-visibility: hidden; }
 .therapy-card-media--symbol{display:grid;place-items:center;background:linear-gradient(145deg,#e9f4f8,#f7f8fb)}
 .therapy-card-media--symbol > img{width:84px;height:84px;object-fit:contain}
 .therapy-card-mark,.therapy-card-copy{position:absolute;z-index:2;color:#222344}
-.therapy-card-mark{z-index:3;left:18px;bottom:18px;display:block;width:20px;height:20px;transition:transform .8s cubic-bezier(.22,1,.36,1)}
+.therapy-card-mark{z-index:3;right:18px;bottom:18px;display:block;width:20px;height:20px;transition:transform .72s cubic-bezier(.4,0,.2,1)}
 .therapy-card-mark::before,.therapy-card-mark::after{content:"";position:absolute;top:50%;left:50%;width:12px;height:2px;border-radius:2px;background:currentColor;transform:translate(-50%,-50%)}
 .therapy-card-mark::after{transform:translate(-50%,-50%) rotate(90deg)}
-.therapy-card > .therapy-card-copy {inset:auto 0 0;box-sizing:border-box;height:108px;display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:14px 18px 16px;background:#fff;transition:height .72s cubic-bezier(.22,1,.36,1)}
+.therapy-card > .therapy-card-copy {inset:auto 0 -18px;box-sizing:border-box;height:126px;display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:14px 18px 16px;background:#fff;transition:transform .7s cubic-bezier(.4,0,.2,1)}
 .therapy-card h3 {font-size:clamp(19px,1.8vw,23px);line-height:1.18;letter-spacing:-.04em;color:#222344}
-.therapy-card .therapy-card-detail{max-height:0;margin:0;overflow:hidden;opacity:0;transform:translateY(8px);font-size:12px;line-height:1.45;color:#222344;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;transition:max-height .65s cubic-bezier(.22,1,.36,1),opacity .45s ease,transform .65s cubic-bezier(.22,1,.36,1)}
+.therapy-card .therapy-card-detail{max-height:3.1em;margin:0;overflow:hidden;opacity:0;transform:translateY(6px);font-size:12px;line-height:1.45;color:#222344;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;transition:opacity .55s ease,transform .7s cubic-bezier(.4,0,.2,1)}
 .specialty-links { display: grid; grid-template-columns: 1fr 1.7fr; gap: 30px; align-items: center; margin-top: 42px; padding: 30px; background: #f0f2f3; border-radius: 22px; }
 .specialty-links h3 { font-size: 22px; }
 .specialty-links p { font-size: 15px; margin-bottom: 0; }
@@ -194,7 +194,7 @@ p { font-size: 18px; line-height: 1.8; }
   .therapy-card { aspect-ratio: .68; }
   .therapy-card > .therapy-card-copy { padding: 14px 14px 15px; }
   .therapy-card h3 { font-size: 19px; }
-  .therapy-card-mark { left:14px;bottom:14px; }
+  .therapy-card-mark { right:14px;bottom:14px; }
   .specialty-links { grid-template-columns: 1fr; gap: 18px; padding: 26px; margin-top: 28px; }
   .specialty-links > div:last-child { gap: 5px 20px; }
   .team-profiles, .team-preview .team-profiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
@@ -294,7 +294,7 @@ footer{background:#f6f4f1;color:var(--ink)}
 :where(.text-link,.quick-links>a,.specialty-links a,.clinical-contents a,.related-links a,.breadcrumb,.course-link a,.footer-top a,.footer-bottom a,.desktop-nav a,.mobile-nav a:not(.button)){
   transition:color .3s ease,transform .35s cubic-bezier(.22,1,.36,1),opacity .3s ease;
 }
-.therapy-card{transition:transform .42s cubic-bezier(.22,1,.36,1),box-shadow .42s ease}
+.therapy-card{transition:box-shadow .5s ease}
 .map-details{width:100%;padding:22px 25px 25px}
 .map-details details{margin:0}
 .map-details summary{display:flex;align-items:center;justify-content:space-between;gap:18px;list-style:none;padding-block:20px;font-weight:600}
@@ -306,9 +306,8 @@ footer{background:#f6f4f1;color:var(--ink)}
 .map-details-copy .map-details-address{margin-top:18px}
 .map-details-copy .button{margin-top:4px}
 @media(max-width:767px){.map-details{padding:16px 18px 18px}.map-details summary{font-size:15px}}
-.therapy-card:focus-visible .therapy-card-media{height:calc(100% - 126px)}
-.therapy-card:focus-visible .therapy-card-copy{height:126px}
-.therapy-card:focus-visible .therapy-card-detail{max-height:3.1em;opacity:1;transform:translateY(0)}
+.therapy-card:focus-visible .therapy-card-copy{transform:translateY(-18px)}
+.therapy-card:focus-visible .therapy-card-detail{opacity:1;transform:translateY(0)}
 .therapy-card:focus-visible .therapy-card-mark{transform:rotate(45deg)}
 .quick-links>a{position:relative;border-radius:16px;transition:color .3s ease,transform .4s cubic-bezier(.22,1,.36,1),background-color .35s ease,box-shadow .4s ease}
 .quick-links>a .quick-icon{transition:transform .5s cubic-bezier(.22,1,.36,1),filter .35s ease}
@@ -322,10 +321,9 @@ footer{background:#f6f4f1;color:var(--ink)}
   .quick-links>a:hover{color:var(--blue);transform:translateY(-2px);background:transparent;box-shadow:none}
   .quick-links>a:hover .quick-icon{transform:translateY(-2px) scale(1.06);filter:saturate(1.08)}
   .quick-links>a:nth-child(2):hover .quick-icon{transform:translateY(-2px) scale(1.08)}
-  .therapy-card:hover{transform:translateY(-4px);box-shadow:0 20px 48px #22234420}
-  .therapy-card:hover .therapy-card-media{height:calc(100% - 126px)}
-  .therapy-card:hover .therapy-card-copy{height:126px}
-  .therapy-card:hover .therapy-card-detail{max-height:3.1em;opacity:1;transform:translateY(0)}
+  .therapy-card:hover{box-shadow:0 16px 40px #22234416}
+  .therapy-card:hover .therapy-card-copy{transform:translateY(-18px)}
+  .therapy-card:hover .therapy-card-detail{opacity:1;transform:translateY(0)}
   .therapy-card:hover .therapy-card-mark{transform:rotate(45deg)}
 }
 
@@ -451,8 +449,8 @@ footer{background:#f6f4f1;color:var(--ink)}
 @media(hover:hover){.listing-grid .listing-card.listing-reveal.is-visible:hover{transform:translate3d(0,-4px,0) scale(1)}}
 .therapy-grid .therapy-card.therapy-reveal{opacity:0;transform:translateY(20px) scale(.985);transition:opacity 1.25s cubic-bezier(.22,.61,.36,1),transform 1.25s cubic-bezier(.22,.61,.36,1);transition-delay:var(--therapy-delay,0ms)}
 .therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;transform:translateY(0) scale(1)}
-.therapy-grid .therapy-card.therapy-reveal.therapy-revealed{transition:transform .34s cubic-bezier(.22,1,.36,1),box-shadow .34s cubic-bezier(.22,1,.36,1);transition-delay:0s}
-@media(hover:hover) and (pointer:fine){.therapy-grid .therapy-card.therapy-reveal.therapy-revealed:hover{transform:translateY(-4px);box-shadow:0 20px 48px #22234420}}
+.therapy-grid .therapy-card.therapy-reveal.therapy-revealed{transition:box-shadow .5s ease;transition-delay:0s}
+@media(hover:hover) and (pointer:fine){.therapy-grid .therapy-card.therapy-reveal.therapy-revealed:hover{box-shadow:0 16px 40px #22234416}}
 @media(prefers-reduced-motion:reduce){
   .booking-layout #booking-form.booking-form-reveal,.booking-layout #booking-form.booking-form-reveal.is-visible,.weekly-hours>div.hours-row-reveal,.weekly-hours>div.hours-row-reveal.is-visible,.price-table .price-amount.price-amount-reveal,.price-table .price-amount.price-amount-reveal.is-visible,.listing-grid .listing-card.listing-reveal,.listing-grid .listing-card.listing-reveal.is-visible,.therapy-grid .therapy-card.therapy-reveal,.therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;filter:none;transform:none;transition:none;will-change:auto}
   .contact-map iframe{opacity:1;transition:none}
