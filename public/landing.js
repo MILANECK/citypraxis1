@@ -1,6 +1,7 @@
 // Text and detail entrances stay separate from hover and background parallax.
 export function enhanceLanding({preview=false}={}){
-  if(!document.body.classList.contains('home-page'))return;
+  if(!document.body.classList.contains('public-page'))return;
+  const isHome=document.body.classList.contains('home-page');
   const header=document.querySelector('.header');
   const motion=matchMedia('(prefers-reduced-motion: reduce)');
   const animations=[];
@@ -20,7 +21,20 @@ export function enhanceLanding({preview=false}={}){
     '.team-feature-copy>.eyebrow','.team-feature-copy>h2','.team-feature-copy>p','.team-feature-copy>.text-link',
     '.home-people .section-heading>div>*','.home-people .review-quote','.home-people .review-card blockquote','.home-people .review-card figcaption',
     '.home-price-copy>*','.home-price-figure>*','.home-faq-intro>*','.home-faq .faq-list>details',
-    '.home-scroll-line','.footer-top>div','.footer-bottom'
+    '.home-scroll-line','.footer-top>div','.footer-bottom',
+    // Interior templates share the rhythm, while forms and dense tables stay ready to use.
+    '.interior-page .article>.eyebrow','.interior-page .article>h1','.interior-page .article>.article-intro',
+    '.interior-page .article>.article-body>*','.interior-page .listing-card',
+    '.interior-page .service-intro>div>*','.interior-page .service-intro>img',
+    '.interior-page .clinical-card>h2','.interior-page .clinical-card>h3','.interior-page .clinical-card>p','.interior-page .clinical-card>ul',
+    '.interior-page .clinical-aside>.eyebrow','.interior-page .clinical-aside>h2','.interior-page .clinical-aside>p',
+    '.interior-page .team-person','.interior-page .process-grid>li',
+    '.interior-page .therapist-photo-frame','.interior-page .therapist-intro>*',
+    '.interior-page .therapist-section>h2','.interior-page .therapist-section>p','.interior-page .therapist-section>ul',
+    '.interior-page .info-card>.eyebrow','.interior-page .info-card>h2','.interior-page .info-card>h3',
+    '.interior-page .info-card>p','.interior-page .weekly-hours>div',
+    '.interior-page .booking-layout>div:first-child>*'
+
   ].join(','))];
   const cleanTeamHover=enhanceTeamHover();
   const watermark=document.querySelector('.home-footer-watermark');
@@ -59,7 +73,10 @@ export function enhanceLanding({preview=false}={}){
   document.addEventListener('transitionend',onRevealEnd);
   const updateScroll=()=>{
     const scrolled=header.classList.contains('header-is-scrolled');
-    header.classList.toggle('header-is-scrolled',preview||window.scrollY>(scrolled?96:180));
+    // Switch where the hero's bottom approaches the floating header, independent of screen size.
+    const heroEnd=hero?.getBoundingClientRect().bottom??0;
+    const headerEnd=header.getBoundingClientRect().bottom;
+    header.classList.toggle('header-is-scrolled',preview||!isHome||heroEnd<=headerEnd+(scrolled?72:48));
     if(atmosphere){
       atmosphere.style.setProperty('--home-background-top',`${hero?.offsetHeight||0}px`);
       const rect=background.getBoundingClientRect();
@@ -96,7 +113,7 @@ export function enhanceLanding({preview=false}={}){
       const now=performance.now();
       entries.filter(entry=>entry.isIntersecting).forEach(entry=>{
         const node=entry.target;
-        const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-price-panel,.home-faq-intro,.faq-list,.footer-top')||node.parentElement;
+        const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-price-panel,.home-faq-intro,.faq-list,.footer-top,.listing-grid,.team-roster,.team-profiles,.process-grid,.service-intro,.therapist-intro,.therapist-section,.clinical-card,.info-card,.weekly-hours')||node.parentElement;
         const delay=Math.min(800,Math.max(140,(groupTimings.get(group)||0)-now));
         groupTimings.set(group,now+delay+(node.matches('details')?220:170));
         node.style.setProperty('--home-reveal-delay',`${delay}ms`);

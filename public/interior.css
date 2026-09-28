@@ -1,0 +1,150 @@
+/* Public interior pages share the homepage identity, with layouts suited to their content. */
+.interior-page{--ink:#253138;--muted:#626b70;--pale:#eef5f7;--beige:#f5f2ed}
+.interior-page #main{padding-top:140px}
+.interior-page :is(.article,.therapist-profile){padding-block:32px 96px}
+.interior-page .breadcrumb,.interior-page .profile-breadcrumb{font-size:12px;margin-bottom:32px;color:var(--muted)}
+.interior-page .article>.eyebrow{display:block;margin-bottom:20px}
+.interior-page h1{font:400 clamp(40px,4.8vw,66px)/1.08 Rubik,Arial,sans-serif;letter-spacing:-.04em;text-wrap:balance;margin:0 0 24px;max-width:1000px}
+.interior-page .article-intro{font-size:17px;line-height:1.8;max-width:680px;margin:0 0 60px;color:var(--muted)}
+.interior-page :is(.article-body,.clinical-reading){max-width:850px}
+.interior-page :is(.article-body,.clinical-card,.therapist-section) :is(p,li){font-size:16px;line-height:1.85}
+.interior-page :is(.article-body,.clinical-card) h2{font-size:clamp(27px,2.8vw,36px);line-height:1.2;font-weight:400}
+.interior-page :is(.article-body,.clinical-card) h3{font-size:21px;font-weight:500}
+.interior-page .article-body{margin-bottom:48px}
+.interior-page :is(h2,h3,[id]){scroll-margin-top:125px}
+.interior-page .home-atmosphere-colors{background:radial-gradient(circle 520px at -12% 30%,#a5dbee3d,transparent 75%),radial-gradient(circle 500px at 110% 43%,#bd549426,transparent 76%),radial-gradient(circle 600px at -12% 76%,#d7c4a959,transparent 78%),radial-gradient(circle 570px at 112% 88%,#78c5e040,transparent 78%),radial-gradient(circle 490px at 4% 106%,#cd8caf24,transparent 80%)}
+
+/* Directory and overview pages have a centred introduction and airy, solid cards. */
+.interior-page:is([data-page="/leistungen"],[data-page="/schwerpunkte"],[data-page="/ueber-uns"],[data-page="/preise"],[data-page="/ablauf-wahltherapie"]) .article>:is(.eyebrow,h1,.article-intro){text-align:center;margin-inline:auto}
+.interior-page .listing-grid{gap:26px;margin-top:48px}
+.interior-page .listing-card{padding:38px;border-radius:24px;background:#ffffffed;box-shadow:0 14px 45px #25313807;min-width:0;transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s ease}
+.interior-page .listing-card h2{font-size:30px;line-height:1.16;margin:17px 0 22px}
+.interior-page .listing-card p{font-size:16px;line-height:1.8;margin-top:0;margin-bottom:28px}
+.interior-page .listing-card .text-link{padding-top:12px;font-size:13px}
+.interior-page .listing-card .health-icon{height:58px;width:64px;margin-bottom:12px}
+.interior-page .team-directory{margin-block:52px 80px}
+.interior-page .team-directory-label{display:block;margin-bottom:26px}
+.interior-page .team-directory .team-profiles{grid-template-columns:repeat(5,minmax(0,1fr));gap:22px}
+.interior-page .team-directory .team-roster{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
+.interior-page .team-directory .team-person{border-radius:22px;box-shadow:0 14px 38px #25313808}
+.interior-page .team-directory .team-profile-link{border-radius:22px;outline:0;box-shadow:none}
+.interior-page .team-directory .team-profile-link:focus-visible{outline:3px solid var(--pink);outline-offset:-4px}
+.interior-page .team-directory .team-card-copy{padding:20px 17px 18px}
+.interior-page .team-directory .team-person h3{font-family:Rubik,Arial,sans-serif;font-size:18px;font-weight:400;line-height:1.35}
+.interior-page .team-directory .team-role{font-size:13px;line-height:1.6;overflow-wrap:normal;hyphens:none}
+.interior-page .team-directory .team-profile-prompt{font-size:12px;padding-top:20px}
+
+/* Treatment pages: image-led introductions, readable text, a quiet practical sidebar. */
+.interior-page .service-intro{grid-template-columns:1.1fr 1fr;gap:72px;margin:28px 0 80px;align-items:center}
+.interior-page .service-intro h1{margin:20px 0 24px;font-size:clamp(38px,4.5vw,62px)}
+.interior-page .service-intro p{max-width:58ch;font-size:17px;line-height:1.8}
+.interior-page .service-intro>img{height:420px;border-radius:24px;box-shadow:0 18px 45px #2531380a}
+.interior-page .clinical-layout{grid-template-columns:minmax(0,1fr) 320px;gap:80px}
+.interior-page .clinical-text>.clinical-card{padding:0 0 42px;margin-bottom:24px;background:none;border-radius:0}
+.interior-page .clinical-card>p{max-width:72ch}
+.interior-page .clinical-aside{top:120px;border-radius:24px;padding:30px;background:#fffffff0;box-shadow:0 14px 45px #25313808}
+.interior-page .clinical-aside h2{font-size:29px;line-height:1.15;margin:18px 0}
+.interior-page .clinical-aside p{font-size:14px;line-height:1.8}
+.interior-page .clinical-contents{gap:14px}
+.interior-page .clinical-contents strong{font-size:12px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.interior-page .clinical-contents a{font-size:13px;line-height:1.5}
+.interior-page :is(.clinical-reading>.clinical-card,.article>.clinical-card,.therapist-section,.info-card,.map-card){background:#ffffffed;border:0;border-radius:24px;box-shadow:0 14px 45px #25313807}
+.interior-page .clinical-reading{margin-block:48px}
+.interior-page .clinical-reading>.clinical-card{padding:38px;margin-bottom:24px}
+.interior-page .related-links a,.interior-page .related-links .related-info{border:0;border-radius:12px;background:#edf4f6;font-size:14px;padding:16px 20px}
+.interior-page .therapist-hero{gap:clamp(40px,7vw,100px);margin-block:36px 72px}
+.interior-page .therapist-photo-frame{max-width:480px;border-radius:24px;box-shadow:0 18px 45px #2531380b}
+.interior-page .therapist-intro h1{font-size:clamp(36px,4.5vw,62px);margin:20px 0 24px;overflow-wrap:normal}
+.interior-page .therapist-intro .therapist-role{font-size:20px;color:var(--blue)}
+.interior-page .therapist-intro .therapist-book-note{font-size:12px}
+.interior-page .therapist-section{padding:36px}
+.interior-page .therapist-section h2{font-size:29px;line-height:1.2}
+
+/* Pricing and practical information remain easy to scan and operate. */
+.interior-page .article>.clinical-card{padding:40px;margin-bottom:32px}
+.interior-page .price-category-tabs{gap:8px;margin-block:28px 24px}
+.interior-page .price-category-tabs button{border:0;border-radius:12px;background:#eef4f6;font-family:inherit;font-size:13px;font-weight:500;padding:13px 18px}
+.interior-page .price-category-tabs button[aria-selected="true"]{background:var(--blue);color:#fff}
+.interior-page .price-table :is(th,td){padding-block:20px;font-size:15px}
+.interior-page .private-practice-note{border:0;border-radius:14px;background:#f5f2ed;padding:20px 24px}
+.interior-page .source-date{background:#eef4f6;font-size:13px}
+.interior-page .process-grid{gap:22px;margin-block:56px 72px}
+.interior-page .process-grid li{padding:28px;border-radius:24px;background:#fffffff0;box-shadow:0 14px 38px #25313806}
+.interior-page .process-grid h3{font-size:22px;font-weight:500;margin-top:24px}
+.interior-page .process-grid p{font-size:14px;line-height:1.8}
+.interior-page .process-grid .step-top>span:first-child{background:#edf5f8;color:var(--blue)}
+.interior-page .contact-grid{gap:32px;margin-block:48px 16px}
+.interior-page .info-card{padding:40px}
+.interior-page .info-card h2{font-size:34px;margin-top:18px}
+.interior-page .info-card h3{font-size:22px;margin-top:32px}
+.interior-page .contact-map iframe{opacity:1}
+.interior-page .map-card{overflow:hidden}
+.interior-page .weekly-hours{font-size:14px}
+.interior-page .faq-list details{border-radius:16px;background:#ffffffeb}
+.interior-page .faq-list summary{font-size:15px}
+.interior-page .booking-gradient-stage::before{display:none}
+.interior-page .booking-gradient-stage>.booking-layout{padding-block:32px 96px;gap:64px}
+.interior-page .booking-layout h1{font-size:clamp(36px,4vw,54px);line-height:1.12}
+.interior-page .booking-layout .article-intro{font-size:16px;margin-bottom:24px}
+.interior-page .booking-layout .booking-note{background:#ffffffcc}
+.interior-page #booking-form.compact-booking{background:#fff;border-radius:24px;box-shadow:0 18px 60px #2531380c}
+.interior-page[data-page="/datenschutz"] .article,.interior-page[data-page="/impressum"] .article{max-width:960px}
+
+@media(hover:hover) and (pointer:fine){
+  .interior-page .listing-card:hover{transform:translateY(-5px);box-shadow:0 20px 48px #25313810}
+}
+@media(max-width:1100px){
+  .interior-page .team-directory .team-profiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .interior-page .team-directory .team-featured,.interior-page .team-directory .team-roster{display:contents}
+  .interior-page .clinical-layout{gap:36px;grid-template-columns:minmax(0,1fr) 290px}
+  .interior-page .service-intro{gap:38px}
+}
+@media(max-width:900px){
+  .interior-page .team-directory .team-profiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .interior-page .clinical-layout{grid-template-columns:1fr}
+  .interior-page .clinical-aside{position:static;max-height:none}
+  .interior-page .clinical-aside .clinical-contents{display:none}
+  .interior-page .process-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:767px){
+  .interior-page #main{padding-top:100px}
+  .interior-page :is(.article,.therapist-profile){padding-block:20px 58px}
+  .interior-page .breadcrumb,.interior-page .profile-breadcrumb{margin-bottom:26px;font-size:11px}
+  .interior-page h1{font-size:38px;line-height:1.12;overflow-wrap:anywhere}
+  .interior-page .article-intro{font-size:15px;margin-bottom:38px}
+  .interior-page .home-atmosphere-colors{background:radial-gradient(circle 290px at -45% 25%,#a5dbee32,transparent 80%),radial-gradient(circle 310px at 140% 50%,#bd54942a,transparent 80%),radial-gradient(circle 350px at -45% 80%,#d7c4a95c,transparent 80%),radial-gradient(circle 340px at 145% 96%,#78c5e04a,transparent 80%)}
+  .interior-page .listing-grid{gap:18px;margin-top:32px}
+  .interior-page .listing-card{padding:28px;border-radius:22px}
+  .interior-page .listing-card h2{font-size:27px}
+  .interior-page .listing-card p{font-size:15px}
+  .interior-page .service-intro{grid-template-columns:1fr;gap:26px;margin-block:18px 46px}
+  .interior-page .service-intro h1{font-size:38px}
+  .interior-page .service-intro p{font-size:15px}
+  .interior-page .service-intro>img{height:280px;border-radius:22px}
+  .interior-page :is(.article-body,.clinical-card,.therapist-section) :is(p,li){font-size:15px}
+  .interior-page :is(.clinical-reading>.clinical-card,.article>.clinical-card,.therapist-section,.info-card){padding:26px;border-radius:22px}
+  .interior-page .therapist-hero{gap:30px;margin-block:24px 44px}
+  .interior-page .therapist-intro h1{font-size:37px}
+  .interior-page .therapist-photo-frame{max-width:100%;border-radius:22px}
+  .interior-page .clinical-reading{margin-block:36px}
+  .interior-page .clinical-aside{padding:26px}
+  .interior-page .process-grid{grid-template-columns:1fr;gap:16px;margin-block:36px}
+  .interior-page .process-grid li{padding:26px 26px 26px 84px;min-height:130px}
+  .interior-page .process-grid li::before{display:none}
+  .interior-page .process-grid .step-top{top:26px;left:24px}
+  .interior-page .process-grid h3{margin-top:0}
+  .interior-page .contact-grid{gap:22px;margin-top:32px}
+  .interior-page .info-card h2{font-size:29px}
+  .interior-page .booking-gradient-stage>.booking-layout{padding-block:20px 72px;gap:26px}
+  .interior-page .booking-layout h1{font-size:36px}
+  .interior-page #booking-form.compact-booking{padding:24px 20px;border-radius:22px}
+}
+@media(max-width:600px){
+  .interior-page .team-directory .team-profiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .interior-page .team-directory .team-card-copy{padding:16px 12px}
+  .interior-page .team-directory .team-person h3{font-size:16px}
+  .interior-page .team-directory .team-role{font-size:12px}
+  .interior-page .team-directory .team-profile-prompt{font-size:11px}
+}
+@media(max-width:360px){.interior-page .team-directory .team-profiles{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.interior-page .listing-card{transition:none}.interior-page .listing-card:hover{transform:none}}

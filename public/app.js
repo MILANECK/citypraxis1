@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=10';
+import {enhanceLanding} from './landing.js?v=11';
 let landingCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -39,7 +39,7 @@ function icon(name) {
 function header() {
   const links = [['/leistungen','Therapien'],['/schwerpunkte','Schwerpunkte'],['/ueber-uns','Team'],['/preise','Preise'],['/ablauf-wahltherapie','Ersttermin'],['/kontakt','Kontakt']].map(([url,label])=>`<a href="${url}"${location.pathname===url?' aria-current="page"':url==='/ueber-uns'&&location.pathname.startsWith('/team/')?' aria-current="location"':''}>${label}</a>`).join('');
   return `<div class="topline"><div class="container"><span>Mitten in Wien. Ganz bei Ihnen.</span><a href="/kontakt">Stubenbastei 12 · 1010 Wien ${arrow}</a></div></div>
-  <header class="header"><div class="container header-inner"><a href="/" class="brand" aria-label="Citypraxis Startseite"><img class="brand-symbol" src="/assets/logo-symbol.png" alt="" width="31" height="40"><img class="brand-wordmark" src="/assets/wordmark-black.png" alt="Citypraxis" width="218" height="29"></a><nav class="desktop-nav" aria-label="Hauptnavigation">${links}</nav><a class="button header-cta" href="/termin">Ersttermin buchen ${arrow}</a>${I18n.toggle()}<button class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Menü öffnen"><span></span><span></span></button></div><nav id="mobile-nav" class="mobile-nav" aria-label="Mobile Navigation" aria-hidden="true" inert><div class="mobile-nav-inner">${links}<a href="/termin">Ersttermin buchen ${arrow}</a></div></nav></header>`;
+  <header class="header${location.pathname==='/'?'':' header-is-scrolled'}"><div class="container header-inner"><a href="/" class="brand" aria-label="Citypraxis Startseite"><img class="brand-symbol" src="/assets/logo-symbol.png" alt="" width="31" height="40"><img class="brand-wordmark" src="/assets/wordmark-black.png" alt="Citypraxis" width="218" height="29"></a><nav class="desktop-nav" aria-label="Hauptnavigation">${links}</nav><a class="button header-cta" href="/termin">Ersttermin buchen ${arrow}</a>${I18n.toggle()}<button class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Menü öffnen"><span></span><span></span></button></div><nav id="mobile-nav" class="mobile-nav" aria-label="Mobile Navigation" aria-hidden="true" inert><div class="mobile-nav-inner">${links}<a href="/termin">Ersttermin buchen ${arrow}</a></div></nav></header>`;
 }
 function socialLinksMarkup(settings){
   const icons={
@@ -55,7 +55,7 @@ function socialLinksMarkup(settings){
 function footer() {
   const s = data.settings[0];
   const c=privacyCopy();
-  return `<footer>${location.pathname==='/'?'<div class="home-footer-watermark" aria-hidden="true"><img src="/assets/wordmark-black.png" alt="" width="1200" height="160"></div>':''}<div class="container footer-top"><div><div class="footer-identity"><img class="footer-logo" src="/assets/wordmark-black.png" alt="Citypraxis" width="250" height="34"><img class="footer-symbol" src="/assets/logo-symbol.png" alt="" width="38" height="49"></div><p>Gemeinsam weiterkommen.<br>Mitten in Wien.</p>${socialLinksMarkup(s)}</div><div><h3>Besuchen Sie uns</h3><p>${esc(s.address)}<br>${esc(s.city)}</p><a href="https://www.google.com/maps/search/?api=1&query=Stubenbastei+12+1010+Wien" target="_blank" rel="noopener">Route planen ↗︎</a></div><div><h3>Wir sind für Sie da</h3><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><p><a href="/kontakt#oeffnungszeiten"><strong>${I18n.language==='en'?'Opening hours':'Öffnungszeiten'}</strong></a><br>${esc(s.hours)}</p></div><div><h3>Gut zu wissen</h3><a href="/ablauf-wahltherapie">Ersttermin & Wahltherapie</a><a href="/leistungen">Unsere Leistungen</a><p>${esc(s.payment)}</p></div></div><div class="container footer-bottom"><span>© ${new Date().getFullYear()} Citypraxis Wien</span><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><button class="cookie-settings-link" type="button">${c.settings}</button><a href="/admin">Praxis-Login ↗︎</a></div></div></footer><nav class="mobile-booking" aria-label="${I18n.language==='en'?'Quick contact':'Schnellkontakt'}"><a class="mobile-call" href="tel:${esc(s.phone.replaceAll(' ',''))}" aria-label="${I18n.language==='en'?'Call us':'Anrufen'}" title="${I18n.language==='en'?'Call us':'Anrufen'}"><img src="/assets/icons/phone.svg" width="27" height="27" alt=""></a><a class="mobile-appointment" href="/termin" aria-label="${I18n.language==='en'?'Book first appointment':'Ersttermin buchen'}" title="${I18n.language==='en'?'Book first appointment':'Ersttermin buchen'}"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7.5 3v4M16.5 3v4M3.5 10h17M8 15h8M12 12v6"/></svg></a></nav>`;
+  return `<footer><div class="home-footer-watermark" aria-hidden="true"><img src="/assets/wordmark-black.png" alt="" width="1200" height="160"></div><div class="container footer-top"><div><div class="footer-identity"><img class="footer-logo" src="/assets/wordmark-black.png" alt="Citypraxis" width="250" height="34"><img class="footer-symbol" src="/assets/logo-symbol.png" alt="" width="38" height="49"></div><p>Gemeinsam weiterkommen.<br>Mitten in Wien.</p>${socialLinksMarkup(s)}</div><div><h3>Besuchen Sie uns</h3><p>${esc(s.address)}<br>${esc(s.city)}</p><a href="https://www.google.com/maps/search/?api=1&query=Stubenbastei+12+1010+Wien" target="_blank" rel="noopener">Route planen ↗︎</a></div><div><h3>Wir sind für Sie da</h3><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><p><a href="/kontakt#oeffnungszeiten"><strong>${I18n.language==='en'?'Opening hours':'Öffnungszeiten'}</strong></a><br>${esc(s.hours)}</p></div><div><h3>Gut zu wissen</h3><a href="/ablauf-wahltherapie">Ersttermin & Wahltherapie</a><a href="/leistungen">Unsere Leistungen</a><p>${esc(s.payment)}</p></div></div><div class="container footer-bottom"><span>© ${new Date().getFullYear()} Citypraxis Wien</span><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><button class="cookie-settings-link" type="button">${c.settings}</button><a href="/admin">Praxis-Login ↗︎</a></div></div></footer><nav class="mobile-booking" aria-label="${I18n.language==='en'?'Quick contact':'Schnellkontakt'}"><a class="mobile-call" href="tel:${esc(s.phone.replaceAll(' ',''))}" aria-label="${I18n.language==='en'?'Call us':'Anrufen'}" title="${I18n.language==='en'?'Call us':'Anrufen'}"><img src="/assets/icons/phone.svg" width="27" height="27" alt=""></a><a class="mobile-appointment" href="/termin" aria-label="${I18n.language==='en'?'Book first appointment':'Ersttermin buchen'}" title="${I18n.language==='en'?'Book first appointment':'Ersttermin buchen'}"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7.5 3v4M16.5 3v4M3.5 10h17M8 15h8M12 12v6"/></svg></a></nav>`;
 }
 function processBlock() {
   const page=pageText('ablauf-wahltherapie');
@@ -188,7 +188,7 @@ function contact() {
 function route() {
   const path=location.pathname.replace(/\/$/,'')||'/';
   if(path==='/') return home();
-  if(path==='/termin') return `<div class="booking-gradient-stage"><canvas id="booking-gradient" class="booking-gradient-canvas" aria-hidden="true"></canvas>${appointment()}</div>`;
+  if(path==='/termin') return `<div class="booking-gradient-stage">${appointment()}</div>`;
   if(path.startsWith('/team/')){
     const therapist=data.team.find(t=>path===`/team/${encodeURIComponent(t.id)}`);
     if(therapist)return therapistPage(therapist);
@@ -271,113 +271,6 @@ function bind() {
     amounts.forEach((amount,index)=>{amount.classList.add('price-amount-reveal');amount.style.setProperty('--price-delay',`${index*95}ms`);});
     const pricesObserver=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){revealPriceAmounts(firstPricePanel);pricesObserver.disconnect();}},{threshold:.18,rootMargin:'0px 0px -4% 0px'});
     pricesObserver.observe(priceSection);
-  }
-  if(!reducedMotion.matches){
-    const headlines=document.body.classList.contains('home-page')?[]:[...document.querySelectorAll('#main h1, #main h2')];
-    const revealObserver=new IntersectionObserver(entries=>{
-      entries.forEach(entry=>{
-        if(!entry.isIntersecting)return;
-        entry.target.classList.add('is-visible');
-        revealObserver.unobserve(entry.target);
-      });
-    },{threshold:.18,rootMargin:'0px 0px -8% 0px'});
-    headlines.forEach((headline,index)=>{
-      headline.classList.add('headline-reveal');
-      headline.style.setProperty('--reveal-delay',`${Math.min(index,3)*45}ms`);
-      revealObserver.observe(headline);
-    });
-    const reviewCards=document.body.classList.contains('home-page')?[]:[...document.querySelectorAll('.reviews-grid .review-card')];
-    if(reviewCards.length){
-      const reviewObserver=new IntersectionObserver(entries=>{
-        entries.forEach(entry=>{if(entry.isIntersecting){
-          const card=entry.target;
-          const finishReveal=event=>{if(event.target!==card||event.propertyName!=='transform')return;card.classList.add('review-revealed');card.removeEventListener('transitionend',finishReveal);};
-          card.addEventListener('transitionend',finishReveal);
-          card.classList.add('is-visible');reviewObserver.unobserve(card);
-        }});
-      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
-      reviewCards.forEach((card,index)=>{card.classList.add('review-reveal');card.style.setProperty('--review-delay',`${index*135}ms`);reviewObserver.observe(card);});
-    }
-    const teamCards=[...document.querySelectorAll('.team-directory .team-person')];
-    if(teamCards.length){
-      const teamObserver=new IntersectionObserver(entries=>{
-        entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');teamObserver.unobserve(entry.target);}});
-      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
-      const positions=new Map();
-      teamCards.forEach(card=>{const row=Math.round(card.getBoundingClientRect().top),position=positions.get(row)||0;positions.set(row,position+1);card.classList.add('team-reveal');card.style.setProperty('--team-delay',`${position*85}ms`);teamObserver.observe(card);});
-    }
-    const mapFrame=document.querySelector('#main .contact-grid .contact-map iframe');
-    if(mapFrame){
-      const mapSurface=mapFrame.closest('.contact-map');
-      mapFrame.addEventListener('load',()=>mapSurface?.classList.add('is-loaded'),{once:true});
-    }
-    const bookingForm=document.querySelector('#main #booking-form');
-    if(bookingForm){
-      bookingForm.classList.add('booking-form-reveal');
-      const bookingObserver=new IntersectionObserver(entries=>{
-        if(!entries.some(entry=>entry.isIntersecting))return;
-        bookingForm.classList.add('is-visible');
-        bookingObserver.disconnect();
-      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
-      bookingObserver.observe(bookingForm);
-    }
-    const hours=document.querySelector('#main .weekly-hours');
-    if(hours){
-      const rows=[...hours.querySelectorAll(':scope > div')];
-      rows.forEach((row,index)=>{
-        row.classList.add('hours-row-reveal');
-        row.style.setProperty('--hours-delay',`${index*105}ms`);
-      });
-      const hoursObserver=new IntersectionObserver(entries=>{
-        if(!entries.some(entry=>entry.isIntersecting))return;
-        rows.forEach(row=>row.classList.add('is-visible'));
-        hoursObserver.disconnect();
-      },{threshold:.18,rootMargin:'0px 0px -4% 0px'});
-      hoursObserver.observe(hours);
-    }
-    const listingCards=[...document.querySelectorAll('#main .service-listing .listing-card, #main .symptom-listing .listing-card')];
-    if(listingCards.length){
-      // Shuffle the stagger slots so each visit gets a natural, varied cascade.
-      const delays=listingCards.map((_,index)=>index*115);
-      for(let index=delays.length-1;index>0;index--){
-        const swap=Math.floor(Math.random()*(index+1));
-        [delays[index],delays[swap]]=[delays[swap],delays[index]];
-      }
-      const cardsObserver=new IntersectionObserver(entries=>{
-        entries.forEach(entry=>{
-          if(!entry.isIntersecting)return;
-          entry.target.classList.add('is-visible');
-          cardsObserver.unobserve(entry.target);
-        });
-      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
-      listingCards.forEach((card,index)=>{
-        card.classList.add('listing-reveal');
-        card.style.setProperty('--listing-delay',`${delays[index]}ms`);
-        cardsObserver.observe(card);
-      });
-    }
-    const therapyCards=document.body.classList.contains('home-page')?[]:[...document.querySelectorAll('#main .therapy-grid .therapy-card')];
-    if(therapyCards.length){
-      const therapyObserver=new IntersectionObserver(entries=>{
-        entries.forEach(entry=>{if(entry.isIntersecting){
-          const card=entry.target;
-          const finishReveal=event=>{if(event.target!==card||event.propertyName!=='transform')return;card.classList.add('therapy-revealed');card.removeEventListener('transitionend',finishReveal);};
-          card.addEventListener('transitionend',finishReveal);
-          card.classList.add('is-visible');therapyObserver.unobserve(card);
-        }});
-      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
-      therapyCards.forEach((card,index)=>{card.classList.add('therapy-reveal');card.style.setProperty('--therapy-delay',`${index*145}ms`);therapyObserver.observe(card);});
-    }
-    document.querySelectorAll('.process-grid').forEach(grid=>{
-      grid.classList.add('process-sequence-ready');
-      grid.querySelectorAll(':scope > li').forEach((step,index)=>step.style.setProperty('--step-delay',`${index*130}ms`));
-      const processObserver=new IntersectionObserver(entries=>{
-        if(!entries[0].isIntersecting)return;
-        grid.classList.add('is-visible');
-        processObserver.disconnect();
-      },{threshold:.2,rootMargin:'0px 0px -6% 0px'});
-      processObserver.observe(grid);
-    });
   }
   document.querySelectorAll('.faq-list details').forEach(details=>{
     const summary=details.querySelector(':scope > summary'),content=details.querySelector(':scope > div');
@@ -486,7 +379,6 @@ function bind() {
   }
   const bookingForm=$('#booking-form');
   if(bookingForm){
-    import('/booking-gradient.js?v=booking-gradient-flicker-1').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
     const nameInput=bookingForm.elements.namedItem('name');
     const folder=document.createElement('div');
     folder.className='booking-folder';
@@ -521,12 +413,14 @@ const contentCacheKey='citypraxis-public-content-v4',contentCacheLifetime=5*60*1
 let previewSourceContent;
 function renderApp(content,preview){
   landingCleanup?.();
+  document.body.classList.add('public-page');
   document.body.classList.toggle('home-page',location.pathname==='/');
+  document.body.classList.toggle('interior-page',location.pathname!=='/');
+  document.body.dataset.page=location.pathname;
   data=I18n.localizeContent(content);
   document.body.classList.toggle('editor-preview-embedded',preview&&window.parent!==window);
   if(preview&&window.parent!==window&&!document.body.dataset.editorPreviewPage)document.body.dataset.editorPreviewPage='true';
-  const homeSurface=location.pathname==='/';
-  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+(homeSurface?'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div><div class="home-atmosphere-grain"></div></div>':'')+`<main id="main">${route()}</main>`+footer()+(homeSurface?'</div>':'')+cookiePanel();
+  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div><div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+footer()+'</div>'+cookiePanel();
   if(preview)$('.cookie-panel')?.setAttribute('hidden','');
   I18n.apply();const title=$('h1')?.textContent;document.title=(title?`${title} · `:'')+'Citypraxis Wien';bind();
   landingCleanup=enhanceLanding({preview});
