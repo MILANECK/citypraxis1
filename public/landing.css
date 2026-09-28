@@ -141,22 +141,24 @@
   .public-page .home-distinction{--distinction-duration:1375ms;--distinction-follow-delay:110ms;--distinction-ease:cubic-bezier(.4,0,.25,1);cursor:default}
   .public-page .home-distinction:is(:hover,:focus-visible){--distinction-duration:1125ms;--distinction-follow-delay:90ms}
   .public-page .home-distinction-visual{display:grid;place-items:center;position:absolute;z-index:2;top:0;bottom:0;left:50%;right:0;overflow:hidden;border-radius:24px;background:#fff;box-shadow:0 14px 42px #2531380e;transition:right var(--distinction-duration) var(--distinction-ease),left var(--distinction-duration) var(--distinction-ease) var(--distinction-follow-delay),border-radius var(--distinction-duration) var(--distinction-ease)}
-  .public-page .home-distinction-visual::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 95% 88% at 54% 50%,#ad238f 0%,#951b81 68%,#891976 100%);opacity:0;transition:opacity 450ms var(--distinction-ease) 900ms}
+  .public-page .home-distinction-visual::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 95% 88% at 54% 50%,#ad238f 0%,#951b81 68%,#891976 100%);opacity:0;transition:opacity var(--distinction-duration) var(--distinction-ease)}
   .public-page .home-distinction-benefits li{opacity:0;transform:translateX(18px);transition:opacity 700ms cubic-bezier(.22,1,.36,1) var(--benefit-delay),transform 850ms cubic-bezier(.22,1,.36,1) var(--benefit-delay)}
   .public-page .home-distinction-logo{position:relative;z-index:1;display:grid;place-items:center;width:100%;opacity:1;transition:opacity 360ms ease 550ms}
   .public-page .home-distinction-symbol{width:96px;height:auto}
   .public-page .home-distinction-plus{position:absolute;z-index:1;right:26px;top:26px;color:var(--pink)}
   .public-page .home-distinction-plus svg{display:block;width:24px;height:24px;transform-origin:center;transition:transform var(--distinction-duration) var(--distinction-ease),color 700ms ease}
-  .public-page .home-distinction-copy-white{display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;position:absolute;z-index:4;inset:0;padding:var(--distinction-padding);pointer-events:none;clip-path:inset(0 0 0 50%);transition:clip-path var(--distinction-duration) var(--distinction-ease)}
+  .public-page .home-distinction-copy-white{display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;position:absolute;z-index:4;inset:0;padding:var(--distinction-padding);pointer-events:none;clip-path:inset(0 0 0 50%);transition:clip-path var(--distinction-duration) var(--distinction-ease) var(--distinction-follow-delay)}
   .public-page .home-distinction-copy-white-inner{grid-column:1;max-width:460px;padding-right:26px}
-  .public-page .home-distinction-copy-white .eyebrow,.public-page .home-distinction-copy-white .home-distinction-white-heading{color:#fff}
+  .public-page .home-distinction-copy-white .eyebrow{color:var(--blue);transition:color var(--distinction-duration) var(--distinction-ease)}
+  .public-page .home-distinction-copy-white .home-distinction-white-heading{color:var(--home-ink);transition:color var(--distinction-duration) var(--distinction-ease)}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-visual{left:0;right:55%;border-radius:24px 0 0 24px;transition:left var(--distinction-duration) var(--distinction-ease),right var(--distinction-duration) var(--distinction-ease) var(--distinction-follow-delay),border-radius var(--distinction-duration) var(--distinction-ease)}
-  .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-visual::before{opacity:1;transition:opacity 810ms var(--distinction-ease)}
+  .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-visual::before{opacity:1}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-logo{opacity:0;transition:opacity 250ms ease}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-benefits li{opacity:1;transform:none}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-plus{color:#fff}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-plus svg{transform:rotate(720deg)}
-  .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-copy-white{clip-path:inset(0)}
+  .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-copy-white{clip-path:inset(0);transition:clip-path var(--distinction-duration) var(--distinction-ease)}
+  .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-copy-white .eyebrow,.public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-copy-white .home-distinction-white-heading{color:#fff}
 }
 .public-page .reviews-section{padding:64px 0 0}
 .public-page .reviews-section .section-heading{position:relative;display:flex;align-items:end;margin-bottom:28px;padding-top:40px;border-top:0}
