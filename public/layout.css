@@ -449,7 +449,7 @@ footer{background:#f6f4f1;color:var(--ink)}
 .price-table .price-amount.price-amount-reveal.is-visible{opacity:1;transform:translate3d(0,0,0)}
 .listing-grid .listing-card.listing-reveal{opacity:0;filter:blur(3px);transform:translate3d(0,18px,0) scale(.99);transition:opacity .82s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),filter .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),transform .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms);will-change:opacity,filter,transform}
 .listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
-@media(hover:hover){.listing-grid .listing-card.listing-reveal.is-visible:hover{transform:translate3d(0,-4px,0) scale(1)}}
+@media(hover:hover) and (pointer:fine){.listing-grid .listing-card.listing-reveal.is-visible:hover{transform:translate3d(0,-4px,0) scale(1);transition:transform .24s cubic-bezier(.22,1,.36,1),box-shadow .24s ease;transition-delay:0s}}
 .therapy-grid .therapy-card.therapy-reveal{opacity:0;transform:translateY(20px) scale(.985);transition:opacity 1.25s cubic-bezier(.22,.61,.36,1),transform 1.25s cubic-bezier(.22,.61,.36,1);transition-delay:var(--therapy-delay,0ms)}
 .therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;transform:translateY(0) scale(1)}
 .therapy-grid .therapy-card.therapy-reveal.therapy-revealed{transition:box-shadow .5s ease;transition-delay:0s}
