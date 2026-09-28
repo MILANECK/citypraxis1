@@ -124,6 +124,7 @@ function bind(){
 }
 $('.chat-launch').onclick=()=>setOpen(!opened);
 $('.chat-close').onclick=()=>setOpen(false);
+root.addEventListener('click',event=>{if(event.target instanceof Element&&event.target.closest('a[href*="#booking-form"]'))setOpen(false);});
 root.addEventListener('keydown',event=>{if(event.key==='Escape'&&opened){event.preventDefault();setOpen(false);}});
 $('[data-reset]').onclick=()=>{if(busy)return;if(state.started&&!state.sent&&!confirm(t('Diesen Entwurf verwerfen und neu beginnen?','Discard this draft and start again?')))return;clear();lang=siteLang;en=lang==='en';state=blank();syncLanguage({language:lang});status.textContent='';render();};
 render();
