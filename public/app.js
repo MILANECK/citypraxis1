@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=14';
+import {enhanceLanding} from './landing.js?v=15';
 let landingCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -188,7 +188,7 @@ function contact() {
 function route() {
   const path=location.pathname.replace(/\/$/,'')||'/';
   if(path==='/') return home();
-  if(path==='/termin') return `<div class="booking-gradient-stage">${appointment()}</div>`;
+  if(path==='/termin') return `<div class="booking-gradient-stage"><canvas id="booking-gradient" class="booking-gradient-canvas" aria-hidden="true"></canvas>${appointment()}</div>`;
   if(path.startsWith('/team/')){
     const therapist=data.team.find(t=>path===`/team/${encodeURIComponent(t.id)}`);
     if(therapist)return therapistPage(therapist);
@@ -421,6 +421,7 @@ function renderApp(content,preview){
   document.body.classList.toggle('editor-preview-embedded',preview&&window.parent!==window);
   if(preview&&window.parent!==window&&!document.body.dataset.editorPreviewPage)document.body.dataset.editorPreviewPage='true';
   $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div><div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+footer()+'</div>'+cookiePanel();
+  if(location.pathname==='/termin'&&!preview)import('/booking-gradient.js?v=booking-light-1').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
   if(preview)$('.cookie-panel')?.setAttribute('hidden','');
   I18n.apply();const title=$('h1')?.textContent;document.title=(title?`${title} · `:'')+'Citypraxis Wien';bind();
   landingCleanup=enhanceLanding({preview});

@@ -196,11 +196,17 @@
 /* Scroll reveals have their own properties, so hover never inherits a stagger. */
 .public-page .home-reveal-ready{opacity:0;translate:0 var(--home-reveal-distance,28px);transition:opacity 1.3s cubic-bezier(.25,.1,.25,1) var(--home-reveal-delay,0ms),translate 1.3s cubic-bezier(.25,.1,.25,1) var(--home-reveal-delay,0ms)}
 .public-page .home-reveal-ready.home-reveal-visible{opacity:1;translate:0 0}
+.public-page :is(h1,h2,h3,.article-intro).home-reveal-ready,.interior-page .article-body>p.home-reveal-ready{filter:blur(8px);transition:opacity 1.35s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms),translate 1.35s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms),filter 1.35s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms)}
+.public-page :is(h1,h2,h3,.article-intro).home-reveal-ready.home-reveal-visible,.interior-page .article-body>p.home-reveal-ready.home-reveal-visible{filter:blur(0)}
+.interior-page .team-directory .team-person.home-reveal-ready{opacity:0;filter:blur(5px);translate:0 24px;scale:.985;transition:opacity 1.05s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms),filter 1.1s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms),translate 1.15s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms),scale 1.15s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms)}
+.interior-page .team-directory .team-person.home-reveal-ready.home-reveal-visible{opacity:1;filter:blur(0);translate:0 0;scale:1}
+.interior-page #booking-form.home-reveal-ready{opacity:0;filter:blur(8px);translate:0 30px;transition:opacity 1.2s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms),filter 1.25s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms),translate 1.25s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms)}
+.interior-page #booking-form.home-reveal-ready.home-reveal-visible{opacity:1;filter:blur(0);translate:0 0}
 .public-page .home-scroll-line.home-reveal-ready{translate:none;scale:0 1;transition:opacity 1.2s ease var(--home-reveal-delay,0ms),scale 1.5s cubic-bezier(.65,0,.25,1) var(--home-reveal-delay,0ms)}
 .public-page .home-price-figure>.home-scroll-line.home-reveal-ready{scale:1 0}
 .public-page .home-scroll-line.home-reveal-visible,.public-page .home-price-figure>.home-scroll-line.home-reveal-visible{scale:1}
 .public-page .home-reveal-ready:focus-within{opacity:1;translate:0 0;transition-delay:0s}
-.public-page.editor-preview-embedded .home-reveal-ready{opacity:1;translate:none}
+.public-page.editor-preview-embedded .home-reveal-ready,.public-page.editor-preview-embedded .team-person.home-reveal-ready,.public-page.editor-preview-embedded #booking-form.home-reveal-ready{opacity:1;translate:none;scale:1;filter:none;transition:none}
 .public-page.editor-preview-embedded .header{position:absolute;top:12px}
 @media(hover:hover) and (pointer:fine){
   .public-page .review-card:hover{transform:translateY(-5px);background:#fffffff2;box-shadow:0 18px 42px #25313812}
@@ -330,7 +336,7 @@
   .public-page .home-footer-watermark.watermark-waiting img{opacity:1;translate:none;transition:none}
   .public-page .review-card{transition:none}
   .public-page .review-card:hover{transform:none}
-  .public-page .home-reveal-ready{opacity:1;translate:none;transition:none}
+  .public-page .home-reveal-ready,.public-page :is(h1,h2,h3,.article-intro).home-reveal-ready,.interior-page .article-body>p.home-reveal-ready,.interior-page .team-directory .team-person.home-reveal-ready,.interior-page #booking-form.home-reveal-ready{opacity:1;translate:none;scale:1;filter:none;transition:none}
   .public-page .home-scroll-line.home-reveal-ready,.public-page .home-price-figure>.home-scroll-line.home-reveal-ready{scale:1;transition:none}
   .public-page .home-atmosphere-colors{transform:none;will-change:auto}
   .public-page .header,.public-page .header img{transition:none}

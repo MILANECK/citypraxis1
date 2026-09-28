@@ -33,7 +33,8 @@ export function enhanceLanding({preview=false}={}){
     '.interior-page .therapist-section>h2','.interior-page .therapist-section>p','.interior-page .therapist-section>ul',
     '.interior-page .info-card>.eyebrow','.interior-page .info-card>h2','.interior-page .info-card>h3',
     '.interior-page .info-card>p','.interior-page .weekly-hours>div',
-    '.interior-page .booking-layout>div:first-child>*'
+    '.interior-page .booking-layout>div:first-child>*',
+    '.interior-page #booking-form'
 
   ].join(','))];
   const cleanTeamHover=enhanceTeamHover();
@@ -113,7 +114,7 @@ export function enhanceLanding({preview=false}={}){
       const now=performance.now();
       entries.filter(entry=>entry.isIntersecting).forEach(entry=>{
         const node=entry.target;
-        const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-price-panel,.home-faq-intro,.faq-list,.footer-top,.listing-grid,.team-roster,.team-profiles,.process-grid,.service-intro,.therapist-intro,.therapist-section,.clinical-card,.info-card,.weekly-hours')||node.parentElement;
+        const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-price-panel,.home-faq-intro,.faq-list,.footer-top,.listing-grid,.team-roster,.team-profiles,.process-grid,.service-intro,.therapist-intro,.therapist-section,.clinical-card,.info-card,.weekly-hours,.booking-layout')||node.parentElement;
         const delay=Math.min(800,Math.max(140,(groupTimings.get(group)||0)-now));
         groupTimings.set(group,now+delay+(node.matches('details')?220:170));
         node.style.setProperty('--home-reveal-delay',`${delay}ms`);

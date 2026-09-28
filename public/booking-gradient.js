@@ -17,14 +17,14 @@ export async function initBookingGradient(){
     activeGradient=new NeatGradient({
       ref:canvas,
       colors:[
-        {color:'#0b3954',enabled:true},
-        {color:'#3EA1C7',enabled:true},
-        {color:'#bfd7ea',enabled:true},
-        {color:'#691169',enabled:true},
-        {color:'#741B75',enabled:true},
-        {color:'#F9F3E8',enabled:false}
+        {color:'#dceff5',enabled:true},
+        {color:'#62b8d8',enabled:true},
+        {color:'#b9ddeb',enabled:true},
+        {color:'#c44c9e',enabled:true},
+        {color:'#e5a9cd',enabled:true},
+        {color:'#f2e8dc',enabled:true}
       ],
-      speed:reduceMotion?0:1.5,
+      speed:reduceMotion?0:1,
       horizontalPressure:4,
       verticalPressure:3,
       waveFrequencyX:0,
@@ -43,7 +43,7 @@ export async function initBookingGradient(){
       wireframe:false,
       antialias:false,
       colorBlending:5,
-      backgroundColor:'#FF0000',
+      backgroundColor:'#f5f1ed',
       backgroundAlpha:1,
       grainScale:3,
       grainSparsity:0,
