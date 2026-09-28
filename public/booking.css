@@ -1,0 +1,75 @@
+/* Compact, single-entry appointment form. Keep all submitted field names intact. */
+.booking-gradient-stage>.booking-layout{width:min(1120px,calc(100% - 80px));grid-template-columns:.85fr 1.15fr;gap:64px;padding-block:64px 80px;align-items:start}
+.booking-layout>div:first-child{padding-top:12px}
+.booking-layout h1{font-size:clamp(34px,3.8vw,52px)}
+.booking-layout .article-intro{font-size:17px;line-height:1.7;margin-block:22px}
+.booking-layout .booking-note{padding:24px;margin-top:30px;border-radius:18px}
+.booking-layout .booking-note h3{font-size:18px}
+.booking-layout .booking-note p{font-size:14px;margin-block:12px}
+.booking-layout .fine-print{font-size:11px}
+#booking-form.compact-booking{padding:30px;border-radius:22px;box-shadow:0 18px 60px #2531380b}
+#booking-form.compact-booking h2{font-size:25px;line-height:1.25;margin:0 0 22px}
+#booking-form.compact-booking label{font-size:12px;font-weight:500;margin-bottom:0;line-height:1.5}
+#booking-form.compact-booking input:not([type=checkbox]):not([type=radio]),#booking-form.compact-booking textarea{width:100%;min-height:43px;padding:11px 12px;margin:6px 0 0;background:#f2f5f6;border:0;border-radius:9px;box-shadow:none;font-size:14px;color:var(--ink)}
+#booking-form.compact-booking input:focus-visible,#booking-form.compact-booking textarea:focus-visible{outline:2px solid var(--blue);outline-offset:2px;background:#edf6f9}
+#booking-form.compact-booking textarea{resize:vertical;min-height:70px}
+.booking-contact-fields{display:grid;grid-template-columns:1fr 1fr;gap:13px 12px}
+.booking-name{grid-column:1/-1}
+.booking-preferences{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-block:18px 22px}
+#booking-form .booking-question-fieldset{border:0;padding:0;margin:0;min-width:0}
+#booking-form .booking-question-fieldset legend{font-size:11px;font-weight:500;margin-bottom:8px;padding:0}
+#booking-form .booking-choice-options{display:flex;gap:4px;flex-wrap:wrap}
+#booking-form .booking-choice>span{font-size:10px;min-height:36px;padding:8px;border-radius:7px;background:#f0f3f4}
+#booking-form .booking-choice input:checked+span{background:var(--blue);color:#fff}
+#booking-form .booking-choice input:focus-visible+span{outline:2px solid var(--blue);outline-offset:2px}
+#booking-form .concern-fieldset{border:0;padding:18px 0 0;margin:0 0 18px;border-top:1px solid #edf0f1}
+#booking-form .concern-fieldset legend{float:left;width:100%;font-size:13px;font-weight:500;padding:0;margin:0 0 4px}
+#booking-form .concern-fieldset legend>span{font-size:11px;font-weight:400;color:var(--muted)}
+#booking-form .concern-fieldset>p{clear:both;font-size:11px;margin:0 0 10px;line-height:1.5}
+#booking-form .concern-options{gap:6px}
+#booking-form .concern-chip>span{padding:8px 10px;min-height:35px;border:0;border-radius:8px;background:#f0f3f4;font-size:11px}
+#booking-form .concern-chip input:checked+span{background:var(--blue);color:#fff;box-shadow:none}
+#booking-form .custom-symptoms{margin-top:12px}
+#booking-form .check-label{display:flex;align-items:flex-start;gap:10px;font-size:11px;font-weight:400;line-height:1.65;margin:14px 0}
+#booking-form .check-label input{flex:0 0 16px;width:16px;height:16px;min-height:0;margin:2px 0 0;accent-color:var(--pink)}
+.booking-optional{margin:16px 0 18px;background:#f5f7f8;border-radius:11px}
+.booking-optional>summary{display:flex;justify-content:space-between;gap:12px;align-items:center;cursor:pointer;padding:13px 14px;list-style:none;font-size:12px;font-weight:500}
+.booking-optional>summary::-webkit-details-marker{display:none}
+.booking-optional-status{display:block;font-size:10px;font-weight:400;color:var(--muted);margin-top:3px}
+.booking-optional-mark{font-size:22px;font-weight:300;color:var(--blue);transition:transform .25s ease}
+.booking-optional[open] .booking-optional-mark{transform:rotate(45deg)}
+.booking-optional-content{padding:0 14px 14px;display:grid;gap:12px}
+#booking-form .booking-optional-content input,#booking-form .booking-optional-content textarea{background:#fff}
+.booking-optional-actions{display:flex;gap:8px}
+.booking-optional-actions button{border:0;border-radius:7px;padding:9px 12px;font-size:11px;min-height:36px;background:#e6edf0;color:var(--ink)}
+.booking-optional-actions button:first-child{background:var(--blue);color:#fff}
+#booking-form .form-notice{font-size:11px;line-height:1.6;margin:12px 0 17px}
+#booking-form button[type=submit]{width:100%;min-height:46px;padding:13px 18px;font-size:13px;border-radius:11px}
+#booking-form .form-message:empty{display:none}
+#booking-form .therapist-picker{padding-bottom:16px;margin-bottom:18px}
+#booking-form .therapist-choice-note{font-size:11px;margin:8px 0 0}
+#booking-form .therapist-choice-portrait{width:46px;flex-basis:46px;height:54px}
+#booking-form .therapist-choice-control strong{font-size:14px}
+@media(max-width:1000px){
+  .booking-gradient-stage>.booking-layout{width:calc(100% - 48px);gap:30px;grid-template-columns:.8fr 1.2fr}
+  #booking-form.compact-booking{padding:24px}
+  .booking-preferences{grid-template-columns:1fr;gap:14px}
+}
+@media(max-width:767px){
+  .booking-gradient-stage>.booking-layout{width:calc(100% - 32px);grid-template-columns:1fr;gap:26px;padding-block:28px 110px}
+  .booking-layout>div:first-child{padding:0 4px}
+  .booking-layout h1{font-size:34px}
+  .booking-layout .article-intro{font-size:15px;margin:14px 0}
+  .booking-layout .booking-note{padding:18px;margin-top:18px}
+  .booking-layout .booking-note p{display:none}
+  .booking-layout .booking-note .text-link{padding:5px 0;font-size:13px;margin-top:5px}
+  #booking-form.compact-booking{padding:22px 20px;border-radius:18px}
+  #booking-form.compact-booking h2{font-size:23px;margin-bottom:18px}
+  #booking-form.compact-booking input:not([type=checkbox]):not([type=radio]),#booking-form.compact-booking textarea{font-size:16px}
+  .booking-contact-fields{grid-template-columns:1fr}
+  .booking-preferences{grid-template-columns:1fr;gap:14px;margin-block:18px}
+  #booking-form .booking-choice>span{font-size:11px;padding:9px 13px;min-height:38px}
+  #booking-form .concern-chip>span{min-height:38px}
+  #booking-form::before,#booking-form::after,#booking-form .booking-folder{display:none}
+}
+@media(prefers-reduced-motion:reduce){.booking-optional-mark{transition:none}}
