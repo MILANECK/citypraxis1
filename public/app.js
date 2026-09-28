@@ -503,7 +503,7 @@ function bind() {
     nameInput.addEventListener('change',updateFolder);
     window.addEventListener('resize',updateFolder);
     updateFolder();
-    import('/booking-review.js?v=booking-review-2').then(({initBookingReview})=>initBookingReview(bookingForm,{english:I18n.language==='en'})).catch(()=>{});
+    import('/booking-review.js?v=booking-review-3').then(({initBookingReview})=>initBookingReview(bookingForm,{english:I18n.language==='en'})).catch(()=>{});
   }
   bookingForm?.addEventListener('submit',async e=>{
     e.preventDefault();const form=e.currentTarget,button=$('button[type=submit]',form),message=$('.form-message',form),fields=new FormData(form);form.dataset.submissionKey||=crypto.randomUUID();button.disabled=true;message.textContent=I18n.language==='en'?'Saving your request…':'Anfrage wird gespeichert …';

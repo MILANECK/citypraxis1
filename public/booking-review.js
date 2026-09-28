@@ -62,8 +62,10 @@ export function initBookingReview(form,{english=false}={}){
     return form.elements.namedItem(field)?.value?.trim()||noValue;
   };
   const rows=[
-    ...Object.entries(textFields).slice(0,3).map(([field,config])=>({field,...config})),
+    {field:'name',...textFields.name},
     {field:'patient_status_claimed',label:lang==='en'?'Patient status (self-reported)':'Patientenstatus (eigene Angabe)',choices:tr.patient_status_claimed},
+    {field:'email',...textFields.email},
+    {field:'phone',...textFields.phone},
     {field:'preferred_contact',label:lang==='en'?'Preferred contact':'Bevorzugter Kontakt',choices:tr.preferred_contact},
     {field:'description',...textFields.description},
     {field:'availability',...textFields.availability}
