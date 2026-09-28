@@ -26,9 +26,11 @@
 .interior-page .team-directory-label{display:block;margin-bottom:26px}
 .interior-page .team-directory .team-profiles{grid-template-columns:repeat(5,minmax(0,1fr));gap:22px}
 .interior-page .team-directory .team-roster{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
-.interior-page .team-directory .team-person{border-radius:22px;background:linear-gradient(155deg,#fff 28%,#f2f8fa 72%,#f8edf4 100%);box-shadow:0 14px 38px #25313808}
+.interior-page .team-directory{position:relative;isolation:isolate}
+.interior-page .team-directory::before{content:"";position:absolute;z-index:-1;inset:-60px -8vw -85px;pointer-events:none;background:radial-gradient(circle 410px at 2% 30%,#8ecde365,transparent 78%),radial-gradient(circle 460px at 98% 65%,#951b8138,transparent 80%),radial-gradient(circle 330px at 54% 95%,#cfb99b45,transparent 85%);filter:blur(32px);-webkit-mask-image:linear-gradient(180deg,transparent,#000 18% 82%,transparent);mask-image:linear-gradient(180deg,transparent,#000 18% 82%,transparent)}
+.interior-page .team-directory .team-person{border-radius:22px;background:#fff;box-shadow:0 14px 38px #25313808}
 .interior-page .team-directory .team-profile-link{border-radius:22px;outline:0;box-shadow:none}
-.interior-page .team-directory .team-portrait{background:linear-gradient(135deg,#e8f3f7,#f7eaf2)}
+.interior-page .team-directory .team-portrait{background:#edf3f5}
 .interior-page .team-directory .team-profile-link:focus-visible{outline:3px solid var(--pink);outline-offset:-4px}
 .interior-page .team-directory .team-card-copy{padding:20px 17px 18px}
 .interior-page .team-directory .team-person h3{font-family:Rubik,Arial,sans-serif;font-size:18px;font-weight:400;line-height:1.35}
@@ -83,8 +85,11 @@
 .interior-page .weekly-hours{font-size:14px}
 .interior-page .faq-list details{border-radius:16px;background:#ffffffeb}
 .interior-page .faq-list summary{font-size:15px}
-.interior-page .booking-gradient-stage::before{display:block;background:linear-gradient(90deg,#fffffffc 0%,#fffffff0 32%,#ffffffa8 72%,#ffffffb8 100%)}
+.interior-page .booking-gradient-stage::before{display:block;background:radial-gradient(circle 540px at 110% 38%,#951b815c,transparent 78%),linear-gradient(90deg,#fffffffc 0%,#fffffff0 28%,#ffffff96 62%,#ffffff40 100%)}
 .interior-page .booking-gradient-stage>.booking-layout{padding-block:32px 96px;gap:64px}
+.interior-page[data-page="/termin"] #main{padding-top:0}
+.interior-page[data-page="/termin"] .booking-gradient-stage>.booking-layout{padding-top:172px}
+.interior-page[data-page="/termin"] .booking-gradient-stage::after{content:"";position:absolute;inset:auto 0 0;height:170px;z-index:1;pointer-events:none;background:linear-gradient(180deg,transparent,#fff)}
 .interior-page .booking-layout h1{font-size:clamp(36px,4vw,54px);line-height:1.12}
 .interior-page .booking-layout .article-intro{font-size:16px;margin-bottom:24px}
 .interior-page .booking-layout .booking-note{background:#ffffffcc}
@@ -137,6 +142,8 @@
   .interior-page .contact-grid{gap:22px;margin-top:32px}
   .interior-page .info-card h2{font-size:29px}
   .interior-page .booking-gradient-stage>.booking-layout{padding-block:20px 72px;gap:26px}
+  .interior-page[data-page="/termin"] .booking-gradient-stage>.booking-layout{padding-top:120px}
+  .interior-page .booking-gradient-stage::before{background:radial-gradient(circle 320px at 115% 35%,#951b8145,transparent 78%),linear-gradient(180deg,#ffffffed 0%,#ffffffad 28%,#ffffff73 72%,#ffffffd1 100%)}
   .interior-page .booking-layout h1{font-size:36px}
   .interior-page #booking-form.compact-booking{padding:24px 20px;border-radius:22px}
 }

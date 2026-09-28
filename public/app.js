@@ -421,7 +421,7 @@ function renderApp(content,preview){
   document.body.classList.toggle('editor-preview-embedded',preview&&window.parent!==window);
   if(preview&&window.parent!==window&&!document.body.dataset.editorPreviewPage)document.body.dataset.editorPreviewPage='true';
   $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div><div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+footer()+'</div>'+cookiePanel();
-  if(location.pathname==='/termin'&&!preview)import('/booking-gradient.js?v=booking-light-1').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
+  if(location.pathname==='/termin'&&!preview)import('/booking-gradient.js?v=booking-light-4').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
   if(preview)$('.cookie-panel')?.setAttribute('hidden','');
   I18n.apply();const title=$('h1')?.textContent;document.title=(title?`${title} · `:'')+'Citypraxis Wien';bind();
   landingCleanup=enhanceLanding({preview});

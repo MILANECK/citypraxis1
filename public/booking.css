@@ -77,8 +77,8 @@
 
 /* The form uses the header button radius and quiet ruled fields. */
 .interior-page .booking-gradient-stage{background:#fff}
-.interior-page .booking-gradient-canvas{inset:var(--booking-gradient-top,0px) 0 0 18%;width:82%;height:calc(100% - var(--booking-gradient-top,0px));background:radial-gradient(circle 380px at 82% 25%,#a3d9ee,transparent 80%),radial-gradient(circle 420px at 95% 68%,#e8a8cf,transparent 78%),radial-gradient(circle 500px at 65% 94%,#eee5d7,transparent 78%);filter:blur(22px);-webkit-mask-image:linear-gradient(90deg,transparent,#000 27%);mask-image:linear-gradient(90deg,transparent,#000 27%)}
-.interior-page .booking-gradient-canvas.is-ready,.interior-page .booking-gradient-canvas.is-fallback{opacity:.72}
+.interior-page .booking-gradient-canvas{inset:0 0 0 18%;width:82%;height:100%;background:radial-gradient(circle 380px at 82% 25%,#a3d9ee,transparent 80%),radial-gradient(circle 420px at 95% 68%,#88637f,transparent 78%),radial-gradient(circle 500px at 65% 94%,#eee5d7,transparent 78%);filter:blur(22px);-webkit-mask-image:linear-gradient(90deg,transparent,#000 27%);mask-image:linear-gradient(90deg,transparent,#000 27%)}
+.interior-page .booking-gradient-canvas.is-ready,.interior-page .booking-gradient-canvas.is-fallback{opacity:.83}
 #booking-form.compact-booking{padding:34px 36px}
 #booking-form.compact-booking h2{padding-bottom:19px;border-bottom:1px solid #dbe4e6;margin-bottom:23px}
 #booking-form.compact-booking input:not([type=checkbox]):not([type=radio]),#booking-form.compact-booking textarea,#booking-form.compact-booking .booking-optional-content input:not([type]){min-height:43px;padding:10px 0 9px;margin-top:4px;background:transparent;border:0;border-bottom:1px solid #c9d7dc;border-radius:0;box-shadow:none;color:var(--ink)}
@@ -91,10 +91,12 @@
 #booking-form .booking-optional>summary{padding:14px 0}
 #booking-form .booking-optional-content{padding:0 0 18px}
 #booking-form .booking-optional-actions button,#booking-form .booking-review-actions button,#booking-form .booking-review-choices button,#booking-form .booking-review-toggle,#booking-form button[type=submit]{border-radius:14px}
+#booking-form.compact-booking>button.button[type=submit]{background:linear-gradient(105deg,var(--blue) 0%,var(--blue) 40%,var(--pink) 82%,var(--pink) 100%);transition:transform .3s cubic-bezier(.22,1,.36,1),filter .3s ease,box-shadow .3s ease}
+#booking-form.compact-booking>button.button[type=submit]::before{display:none}
+@media(hover:hover) and (pointer:fine){#booking-form.compact-booking>button.button[type=submit]:hover{filter:brightness(1.06);transform:translateY(-2px);box-shadow:0 10px 24px #951b8130}}
 #booking-form .booking-review{background:#f1f6f8;border-radius:14px}
 @media(max-width:767px){
-  .interior-page .booking-gradient-stage::before{display:block;background:linear-gradient(180deg,#fff 0%,#ffffffbd 34%,#ffffffa8 74%,#fff 100%)}
-  .interior-page .booking-gradient-canvas{inset-inline:0;width:100%;filter:blur(16px);-webkit-mask-image:linear-gradient(180deg,transparent,#000 18%);mask-image:linear-gradient(180deg,transparent,#000 18%)}
+  .interior-page .booking-gradient-canvas{inset:0;width:100%;height:100%;filter:blur(16px);-webkit-mask-image:linear-gradient(180deg,transparent,#000 18%);mask-image:linear-gradient(180deg,transparent,#000 18%)}
   #booking-form.compact-booking{padding:24px 22px}
 }
 @media(prefers-reduced-motion:reduce){.interior-page .booking-gradient-canvas{filter:none}}

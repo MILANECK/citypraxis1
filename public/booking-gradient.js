@@ -3,14 +3,6 @@ let activeGradient;
 export async function initBookingGradient(){
   const canvas=document.getElementById('booking-gradient');
   if(!canvas||activeGradient)return;
-  const stage=canvas.closest('.booking-gradient-stage');
-  const form=document.getElementById('booking-form');
-  const syncCanvasStart=()=>{
-    if(!stage||!form)return;
-    stage.style.setProperty('--booking-gradient-top',innerWidth<=767?`${Math.max(0,form.offsetTop-72)}px`:'0px');
-  };
-  syncCanvasStart();
-  addEventListener('resize',syncCanvasStart);
   const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
   try{
     const {NeatGradient}=await import('/vendor/neat.js?v=1');
@@ -18,11 +10,11 @@ export async function initBookingGradient(){
       ref:canvas,
       colors:[
         {color:'#dceff5',enabled:true},
-        {color:'#62b8d8',enabled:true},
+        {color:'#6aa7c2',enabled:true},
         {color:'#b9ddeb',enabled:true},
-        {color:'#c44c9e',enabled:true},
-        {color:'#e5a9cd',enabled:true},
-        {color:'#f2e8dc',enabled:true}
+        {color:'#751966',enabled:true},
+        {color:'#d8c3ad',enabled:true},
+        {color:'#e9dfd2',enabled:true}
       ],
       speed:reduceMotion?0:1,
       horizontalPressure:4,
@@ -36,13 +28,13 @@ export async function initBookingGradient(){
       secondaryWaveAmplitude:5,
       secondaryWaveSpeed:0.6,
       secondaryWaveAngle:1,
-      shadows:2,
-      highlights:7,
-      colorBrightness:1,
-      colorSaturation:8,
+      shadows:3,
+      highlights:5,
+      colorBrightness:0.9,
+      colorSaturation:3.5,
       wireframe:false,
       antialias:false,
-      colorBlending:5,
+      colorBlending:2.5,
       backgroundColor:'#f5f1ed',
       backgroundAlpha:1,
       grainScale:3,
@@ -134,13 +126,11 @@ export async function initBookingGradient(){
     addEventListener('scroll',syncScroll,{passive:true});
     addEventListener('pagehide',()=>{
       removeEventListener('scroll',syncScroll);
-      removeEventListener('resize',syncCanvasStart);
       if(scrollFrame)cancelAnimationFrame(scrollFrame);
       activeGradient?.destroy();
       activeGradient=undefined;
     },{once:true});
   }catch{
-    removeEventListener('resize',syncCanvasStart);
     canvas.classList.add('is-fallback');
   }
 }
