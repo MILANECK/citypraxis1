@@ -9,7 +9,7 @@
     <linearGradient id="arrival" x1="0" y1="0" x2="0" y2="2560" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="black"/>
       <stop offset=".18" stop-color="black"/>
-      <stop offset=".43" stop-color="white"/>
+      <stop offset=".48" stop-color="#a0a0a0"/>
       <stop offset="1" stop-color="white"/>
     </linearGradient>
     <mask id="fade"><rect width="1440" height="2560" fill="url(#arrival)"/></mask>
@@ -17,15 +17,19 @@
   <rect width="1440" height="2560" fill="white"/>
   <g mask="url(#fade)" fill="none" stroke-linecap="round">
     <g filter="url(#haze)">
-      <path d="M-190 970C90 1090 230 1370 70 1680S-10 2180 430 2460" stroke="#008fd0" stroke-opacity=".19" stroke-width="410"/>
-      <path d="M1490 810C1030 650 680 950 830 1290S1300 1660 1240 2110 1000 2450 1340 2710" stroke="#008fd0" stroke-opacity=".17" stroke-width="470"/>
-      <path d="M530 1000C260 1220 350 1520 790 1520S1250 1830 910 2160 310 2430 140 2700" stroke="#ad288e" stroke-opacity=".16" stroke-width="370"/>
+      <!-- Broad warm shapes enter from beyond the edges, leaving a white corridor. -->
+      <path d="M-310 850C40 1030 210 1310 30 1630S-50 2180 100 2820" stroke="#c7ae89" stroke-opacity=".34" stroke-width="650"/>
+      <path d="M1780 1060C1340 1280 1350 1650 1520 1880S1460 2380 1340 2830" stroke="#c7ae89" stroke-opacity=".38" stroke-width="640"/>
+      <path d="M-260 670C110 880 270 1120 70 1440S-120 1920 70 2170" stroke="#008fd0" stroke-opacity=".22" stroke-width="370"/>
+      <path d="M1710 630C1380 920 1120 1080 1290 1420S1620 1650 1650 1810" stroke="#008fd0" stroke-opacity=".23" stroke-width="410"/>
+      <path d="M-280 1400C90 1570 300 1890 60 2250S-110 2630 100 2840" stroke="#ad288e" stroke-opacity=".21" stroke-width="350"/>
     </g>
     <g filter="url(#fog)">
-      <path d="M1530 800C1290 760 1110 940 1170 1160S1480 1530 1180 1810 770 2040 870 2310" stroke="#008fd0" stroke-opacity=".24" stroke-width="190"/>
-      <path d="M480 970C260 1210 560 1430 840 1390S1190 1660 930 1880" stroke="#c53aa5" stroke-opacity=".17" stroke-width="180"/>
-      <path d="M-120 2210C240 2060 430 2290 690 2520" stroke="#008fd0" stroke-opacity=".16" stroke-width="270"/>
-      <path d="M610 1120C830 1320 400 1510 460 1780S730 2070 460 2290" stroke="white" stroke-opacity=".85" stroke-width="260"/>
+      <path d="M1550 910C1330 1080 1260 1220 1400 1500S1580 1700 1670 1840" stroke="#008fd0" stroke-opacity=".16" stroke-width="180"/>
+      <path d="M-100 1740C160 1870 270 2150 50 2410" stroke="#c53aa5" stroke-opacity=".15" stroke-width="180"/>
+      <path d="M1470 2140C1190 2350 1430 2640 1580 2820" stroke="#c7ae89" stroke-opacity=".3" stroke-width="360"/>
+      <!-- A soft, uneven clearing keeps text in the middle calm and readable. -->
+      <path d="M690 620C550 1000 910 1220 760 1530S540 2070 770 2820" stroke="white" stroke-opacity=".9" stroke-width="480"/>
     </g>
   </g>
 </svg>

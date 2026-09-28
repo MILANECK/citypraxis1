@@ -4,7 +4,9 @@ export function enhanceLanding({preview=false}={}){
   const header=document.querySelector('.header');
   const motion=matchMedia('(prefers-reduced-motion: reduce)');
   const animations=[];
-  const atmosphere=document.querySelector('.home-atmosphere');
+  const atmosphere=document.querySelector('.home-surface');
+  const background=document.querySelector('.home-atmosphere-background');
+  const hero=document.querySelector('.hero');
   const decorativeLines=[];
   document.querySelectorAll('.home-people .reviews-section .section-heading,.home-price-figure').forEach(parent=>{
     const line=document.createElement('span');
@@ -31,9 +33,11 @@ export function enhanceLanding({preview=false}={}){
   const updateScroll=()=>{
     header.classList.toggle('header-is-scrolled',window.scrollY>64||preview);
     if(atmosphere){
-      const rect=atmosphere.getBoundingClientRect();
+      atmosphere.style.setProperty('--home-background-top',`${hero?.offsetHeight||0}px`);
+      const rect=background.getBoundingClientRect();
       // A bounded, slower background drift. The UI and team photo never move with it.
-      const shift=preview||motion.matches?0:Math.max(-180,Math.min(180,(innerHeight/2-rect.top-rect.height/2)*.12));
+      const progress=Math.max(0,Math.min(1,(innerHeight-rect.top)/(innerHeight+rect.height)));
+      const shift=preview||motion.matches?0:(progress-.5)*360;
       atmosphere.style.setProperty('--home-atmosphere-shift',`${shift.toFixed(2)}px`);
     }
     frame=null;
@@ -47,6 +51,9 @@ export function enhanceLanding({preview=false}={}){
   updateScroll();
   window.addEventListener('scroll',onScroll,{passive:true});
   window.addEventListener('resize',onScroll,{passive:true});
+  const sizeObserver=new ResizeObserver(onScroll);
+  if(hero)sizeObserver.observe(hero);
+  if(atmosphere)sizeObserver.observe(atmosphere);
   if(!preview&&!motion.matches){
     targets.forEach(node=>node.classList.add('home-reveal-ready'));
     observer=new IntersectionObserver(entries=>{
@@ -86,6 +93,7 @@ export function enhanceLanding({preview=false}={}){
   document.addEventListener('focusin',onFocus);
   return ()=>{
     showAll();
+    sizeObserver.disconnect();
     if(frame)cancelAnimationFrame(frame);
     window.removeEventListener('scroll',onScroll);
     window.removeEventListener('resize',onScroll);
@@ -94,5 +102,6 @@ export function enhanceLanding({preview=false}={}){
     document.removeEventListener('transitionend',onRevealEnd);
     decorativeLines.forEach(line=>line.remove());
     atmosphere?.style.removeProperty('--home-atmosphere-shift');
+    atmosphere?.style.removeProperty('--home-background-top');
   };
 }

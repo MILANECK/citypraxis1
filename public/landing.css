@@ -4,7 +4,8 @@
 @font-face{font-family:Rubik;src:url('/assets/fonts/rubik-latin.woff2') format('woff2');font-weight:300 700;font-style:normal;font-display:swap}
 @font-face{font-family:Rubik;src:url('/assets/fonts/rubik-latin-ext.woff2') format('woff2');font-weight:300 700;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1E00-1E9F}
 .home-page{background:#fff;font-family:Rubik,Arial,sans-serif;--home-ink:#253138;--home-muted:#626b70;--home-sand:#f5f2ed;--home-line:#dedfdc;color:var(--home-ink)}
-.home-page #main{position:relative;isolation:isolate;overflow:clip;background:#fff}
+.home-page .home-surface{position:relative;isolation:isolate;background:#fff}
+.home-page #main{position:relative;z-index:1;isolation:isolate;overflow:clip;background:transparent}
 .home-page footer::after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;background:url('/assets/grain.svg') repeat;opacity:.035}
 .home-page .container{width:min(1320px,calc(100% - 96px))}
 .home-page h1,.home-page h2{font-family:Rubik,Arial,sans-serif;font-weight:400;letter-spacing:-.035em;font-optical-sizing:auto;color:var(--home-ink);text-wrap:balance}
@@ -74,10 +75,10 @@
 .home-page .therapy-card-mark::before,.home-page .therapy-card-mark::after{height:1.5px}
 .home-page .home-section-link{text-align:center;margin-top:30px}
 /* One continuous atmosphere, underneath every interactive/content surface. */
-.home-page .home-atmosphere{position:relative;isolation:isolate;background:#fff}
-.home-page .home-atmosphere-background{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;mask-image:linear-gradient(transparent,#000 7%,#000 93%,transparent)}
+.home-page .home-atmosphere{position:relative;isolation:isolate;background:transparent}
+.home-page .home-atmosphere-background{position:absolute;inset:var(--home-background-top,100svh) 0 0;z-index:0;overflow:hidden;pointer-events:none;mask-image:linear-gradient(transparent,#000 6%)}
 /* A single flowing mist starts white and gains colour lower down the page. */
-.home-page .home-atmosphere-colors{position:absolute;inset:-180px 0;background:url('/assets/home-mist.svg?v=2') center/100% 100% no-repeat;transform:translate3d(0,var(--home-atmosphere-shift,0px),0);will-change:transform}
+.home-page .home-atmosphere-colors{position:absolute;inset:-180px 0;background:url('/assets/home-mist.svg?v=4') center/100% 100% no-repeat;transform:translate3d(0,var(--home-atmosphere-shift,0px),0);will-change:transform}
 .home-page .home-atmosphere-grain{position:absolute;inset:0;background:url('/assets/grain.svg') repeat;opacity:.065;mix-blend-mode:multiply}
 .home-page .home-atmosphere>.home-therapies,.home-page .home-atmosphere>.home-people,.home-page .home-atmosphere>.home-price-wrap,.home-page .home-atmosphere>.home-faq{position:relative;z-index:1}
 .home-page .home-people{padding:88px 0 68px;background:transparent}
@@ -129,7 +130,7 @@
 .home-page .home-faq .faq-list details>div{padding:0 28px 24px 0}
 .home-page .home-faq .faq-list p{font-size:14px;line-height:1.8;margin:0}
 
-.home-page footer{position:relative;isolation:isolate;overflow:hidden;background:#f3f0eb;padding:72px 0 140px;color:var(--home-ink)}
+.home-page footer{position:relative;isolation:isolate;overflow:hidden;z-index:1;background:transparent;padding:72px 0 140px;color:var(--home-ink)}
 .home-page .footer-top{position:relative;z-index:1;padding-block:0 44px;gap:40px}
 .home-page .footer-top h3{font-family:Rubik,Arial,sans-serif;font-size:12px;font-weight:600;margin-bottom:18px;color:var(--home-ink)}
 .home-page .footer-top p,.home-page .footer-top a{font-size:12px;line-height:1.85;color:var(--home-muted)}
