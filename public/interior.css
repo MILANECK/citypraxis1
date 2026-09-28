@@ -14,6 +14,11 @@
 .interior-page :is(h2,h3,[id]){scroll-margin-top:125px}
 .interior-page .home-atmosphere-colors{background:radial-gradient(circle 520px at -12% 30%,#a5dbee3d,transparent 75%),radial-gradient(circle 500px at 110% 43%,#bd549426,transparent 76%),radial-gradient(circle 600px at -12% 76%,#d7c4a959,transparent 78%),radial-gradient(circle 570px at 112% 88%,#78c5e040,transparent 78%),radial-gradient(circle 490px at 4% 106%,#cd8caf24,transparent 80%)}
 .interior-page[data-page="/ueber-uns"] .home-atmosphere-colors{background:radial-gradient(ellipse 43% 34% at 34% 48%,#b4d8e287 0%,transparent 100%),radial-gradient(ellipse 42% 34% at 68% 62%,#e3d2bca3 0%,transparent 100%)}
+.interior-page[data-page="/kontakt"] .home-atmosphere-colors{display:none}
+.interior-page[data-page="/kontakt"] .home-atmosphere-grain{opacity:.025}
+.interior-page .contact-shader-canvas{position:fixed;inset:0;display:block;width:100vw;height:100svh;pointer-events:none;opacity:0;background:radial-gradient(ellipse 70% 55% at 75% 26%,#f7d797 0%,transparent 85%),radial-gradient(ellipse 65% 60% at 22% 75%,#f7c098 0%,transparent 85%),#fafafa;transition:opacity 1.4s cubic-bezier(.22,1,.36,1)}
+.interior-page .contact-shader-canvas:is(.is-ready,.is-fallback),.interior-page.editor-preview-embedded .contact-shader-canvas{opacity:.8}
+@media(prefers-reduced-motion:reduce){.interior-page .contact-shader-canvas{transition:none}}
 
 /* Directory and overview pages have a centred introduction and airy, solid cards. */
 .interior-page:is([data-page="/leistungen"],[data-page="/schwerpunkte"],[data-page="/ueber-uns"],[data-page="/preise"],[data-page="/ablauf-wahltherapie"]) .article>:is(.eyebrow,h1,.article-intro){text-align:center;margin-inline:auto}

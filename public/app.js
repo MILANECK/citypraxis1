@@ -1,6 +1,6 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
 import {enhanceLanding} from './landing.js?v=23';
-let landingCleanup;
+let landingCleanup,contactShaderCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const externalUrl=value=>{try{const url=new URL(value);return ['https:','http:'].includes(url.protocol)?url.href:'';}catch{return '';}};
@@ -450,6 +450,7 @@ const contentCacheKey='citypraxis-public-content-v4',contentCacheLifetime=5*60*1
 let previewSourceContent;
 function renderApp(content,preview){
   landingCleanup?.();
+  contactShaderCleanup?.();contactShaderCleanup=null;
   document.body.classList.add('public-page');
   document.body.classList.toggle('home-page',location.pathname==='/');
   document.body.classList.toggle('interior-page',location.pathname!=='/');
@@ -458,8 +459,15 @@ function renderApp(content,preview){
   data=I18n.localizeContent(content);
   document.body.classList.toggle('editor-preview-embedded',preview&&window.parent!==window);
   if(preview&&window.parent!==window&&!document.body.dataset.editorPreviewPage)document.body.dataset.editorPreviewPage='true';
-  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div><div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+footer()+'</div>'+cookiePanel();
+  const contactShader=location.pathname==='/kontakt'?'<canvas id="contact-shader" class="contact-shader-canvas" aria-hidden="true"></canvas>':'';
+  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div>'+contactShader+'<div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+footer()+'</div>'+cookiePanel();
   if(location.pathname==='/termin'&&!preview)import('/booking-gradient.js?v=booking-restored-1').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
+  if(location.pathname==='/kontakt'&&!preview){
+    const canvas=$('#contact-shader');
+    import('/contact-shader.js?v=1').then(({initContactShader})=>{
+      if(canvas.isConnected)contactShaderCleanup=initContactShader(canvas);
+    }).catch(()=>canvas.classList.add('is-fallback'));
+  }
   if(preview)$('.cookie-panel')?.setAttribute('hidden','');
   I18n.apply();const title=$('h1')?.textContent;document.title=(title?`${title} · `:'')+'Citypraxis Wien';bind();
   landingCleanup=enhanceLanding({preview});
