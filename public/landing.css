@@ -95,11 +95,11 @@
 .public-page .home-team-visual{position:absolute;inset:0;border-radius:inherit;overflow:hidden}
 .public-page .home-team-plus,.public-page .team-feature-white,.public-page .home-team-roster{display:none}
 @media(min-width:1001px) and (hover:hover) and (pointer:fine){
-  .public-page .team-feature.team-hover-ready{position:relative;isolation:isolate;--team-ease:cubic-bezier(.4,0,.25,1);--team-duration:1120ms;--team-follow-delay:65ms}
+  .public-page .team-feature.team-hover-ready{position:relative;isolation:isolate;--team-ease:cubic-bezier(.4,0,.25,1);--team-duration:1250ms;--team-follow-delay:100ms}
   .public-page .team-hover-ready .home-team-photo{overflow:visible;box-shadow:none;min-height:380px;z-index:1;pointer-events:none}
-  .public-page .team-hover-ready .home-team-visual{left:0;right:0;width:auto;pointer-events:auto;isolation:isolate;transform:translateZ(0);clip-path:inset(0 round 24px);box-shadow:0 15px 45px #53473b10;transition:right var(--team-duration) var(--team-ease),left var(--team-duration) var(--team-ease) var(--team-follow-delay),border-radius var(--team-duration) var(--team-ease),clip-path var(--team-duration) var(--team-ease)}
+  .public-page .team-hover-ready .home-team-visual{left:0;right:0;width:auto;pointer-events:auto;isolation:isolate;transform:translateZ(0);clip-path:inset(0 round 24px);box-shadow:0 15px 45px #53473b10;transition:right var(--team-duration) var(--team-ease),left var(--team-duration) var(--team-ease) var(--team-follow-delay),border-radius 0s linear var(--team-duration),clip-path 0s linear var(--team-duration)}
   .public-page .team-hover-ready .team-group-photo{position:absolute;top:-8px;left:50%;width:var(--team-image-width);height:calc(100% + 16px);min-width:0;max-width:none;translate:-50% 0;transition:filter var(--team-duration) var(--team-ease),transform var(--team-duration) var(--team-ease);transform-origin:center}
-  .public-page .team-hover-ready .home-team-visual::after{content:"";position:absolute;inset:0;opacity:0;background:radial-gradient(ellipse at 110% 65%,#d625adb3 0%,#c3219a80 38%,#bd20922e 68%,transparent 90%);transition:opacity var(--team-duration) var(--team-ease)}
+  .public-page .team-hover-ready .home-team-visual::after{content:"";position:absolute;inset:0;opacity:0;background:radial-gradient(ellipse 90% 115% at 58% 54%,color-mix(in srgb,var(--pink) 80%,transparent) 0%,color-mix(in srgb,var(--pink) 63%,transparent) 52%,color-mix(in srgb,var(--pink) 26%,transparent) 82%,transparent 100%);transition:opacity var(--team-duration) var(--team-ease)}
   .public-page .team-hover-ready .home-team-roster{display:flex;align-items:center;position:absolute;inset:0 auto 0 0;width:var(--team-photo-shift);padding:20px 32px;border-radius:24px 0 0 24px;background:linear-gradient(130deg,#e8f2f5f5,#f1f7f9e6);clip-path:inset(0 100% 0 0 round 24px 0 0 24px);transition:clip-path var(--team-duration) var(--team-ease) var(--team-follow-delay);overflow:auto}
   .public-page .home-team-roster ul{list-style:none;padding:0;margin:0;width:100%}
   .public-page .home-team-roster li{margin:0;padding:0}
@@ -116,8 +116,8 @@
   .public-page .team-hover-ready>.team-feature-copy>.text-link:focus-visible{transform:translateY(-2px)}
   .public-page .team-hover-ready .home-team-plus{display:grid;place-items:center;position:absolute;z-index:2;right:22px;bottom:22px;width:24px;height:24px;color:var(--blue);pointer-events:none;transition:color var(--team-duration) var(--team-ease)}
   .public-page .home-team-plus svg{display:block;width:24px;height:24px;transform-origin:50% 50%;transition:transform var(--team-duration) var(--team-ease)}
-  .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-visual{left:var(--team-photo-shift);right:calc(var(--team-photo-width) - var(--team-width));border-radius:0 24px 24px 0;clip-path:inset(0 round 0 24px 24px 0)}
-  .public-page .team-hover-ready:is(:hover,:focus-within) .team-group-photo{filter:blur(1.5px);transform:scale(1.01)}
+  .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-visual{left:var(--team-photo-shift);right:calc(var(--team-photo-width) - var(--team-width));border-radius:0 24px 24px 0;clip-path:inset(0 round 0 24px 24px 0);transition:right var(--team-duration) var(--team-ease),left var(--team-duration) var(--team-ease) var(--team-follow-delay),border-radius 0s,clip-path 0s}
+  .public-page .team-hover-ready:is(:hover,:focus-within) .team-group-photo{filter:blur(4px);transform:scale(1.01)}
   .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-visual::after{opacity:1}
   .public-page .team-hover-ready:is(:hover,:focus-within) .team-feature-white{clip-path:polygon(0 -20px,100% -20px,100% calc(100% + 20px),0 calc(100% + 20px))}
   .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-plus{color:#fff}
@@ -129,7 +129,7 @@
 .public-page .reviews-section .section-heading h2{font-size:36px;margin:14px 0 0;line-height:1.1}
 .public-page .reviews-section .section-heading p{font-size:14px}
 .public-page .reviews-grid{gap:22px}
-.public-page .review-card{transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s ease,background .4s ease;background:#ffffffb3;box-shadow:none;border-radius:18px;padding:24px;min-height:225px;margin:0;display:flex;flex-direction:column}
+.public-page .review-card{transition:transform .4s cubic-bezier(.22,1,.36,1),box-shadow .4s ease,background .4s ease;background:#ffffffb3;box-shadow:none;border-radius:18px;padding:32px;min-height:225px;margin:0;display:flex;flex-direction:column}
 .public-page .review-top{margin:0;height:46px}
 .public-page .review-quote{display:inline-flex;align-items:flex-start;color:var(--pink);line-height:1}
 .public-page .review-quote svg{display:block;width:40px;height:32px}
@@ -142,7 +142,7 @@
 
 /* A single, legible pricing panel followed by a compact FAQ. */
 .public-page .home-price-wrap{padding-block:20px 86px}
-.public-page .home-price-panel{position:relative;display:grid;grid-template-columns:1.1fr 1fr;align-items:start;gap:64px;padding:55px 64px;border-radius:26px;overflow:hidden;background:#ffffffb8;box-shadow:0 12px 50px #25313805}
+.public-page .home-price-panel{position:relative;display:grid;grid-template-columns:1.1fr 1fr;align-items:start;gap:64px;padding:55px 32px;border-radius:26px;overflow:hidden;background:#ffffffb8;box-shadow:0 12px 50px #25313805}
 .public-page .home-price-panel .eyebrow{display:block;color:var(--pink)}
 .public-page .home-price-copy h2{font-size:50px;line-height:1.08;margin:20px 0}
 .public-page .home-price-copy p{font-size:14px;max-width:390px;margin:0 0 20px}
@@ -227,7 +227,7 @@
   .public-page .therapy-card{scroll-snap-align:start;aspect-ratio:.7}
   .public-page .therapy-card h3{font-size:18px}
   .public-page .team-feature{gap:40px;grid-template-columns:1.15fr 1fr}
-  .public-page .home-price-panel{padding:44px;gap:35px}
+  .public-page .home-price-panel{padding:44px 32px;gap:35px}
   .public-page .home-price-figure{padding-left:35px}
   .public-page .home-price-range{font-size:64px}
   .public-page .home-faq{gap:55px}
@@ -295,7 +295,7 @@
   .public-page .review-card{min-height:0;padding:24px}
   .public-page .review-card blockquote{margin-bottom:20px}
   .public-page .home-price-wrap{padding-block:12px 52px}
-  .public-page .home-price-panel{grid-template-columns:1fr;padding:32px 27px;gap:30px;border-radius:22px}
+  .public-page .home-price-panel{grid-template-columns:1fr;padding:32px 24px;gap:30px;border-radius:22px}
   .public-page .home-price-copy h2{font-size:36px;margin:16px 0}
   .public-page .home-price-copy p{font-size:13px}
   .public-page .home-price-figure{border:0;padding:26px 0 0}
