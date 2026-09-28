@@ -46,12 +46,12 @@ p { font-size: 18px; line-height: 1.8; }
 .therapy-card-media--symbol{display:grid;place-items:center;background:linear-gradient(145deg,#e9f4f8,#f7f8fb)}
 .therapy-card-media--symbol > img{width:84px;height:84px;object-fit:contain}
 .therapy-card-mark,.therapy-card-copy{position:absolute;z-index:2;color:#222344}
-.therapy-card-mark{top:19px;left:18px;display:grid;place-items:center;width:20px;height:20px;font:500 20px/1 Arial,sans-serif;text-shadow:0 1px 7px #fff;transition:transform .55s cubic-bezier(.22,1,.36,1)}
+.therapy-card-mark{z-index:3;left:18px;bottom:18px;display:block;width:20px;height:20px;transition:transform .8s cubic-bezier(.22,1,.36,1)}
+.therapy-card-mark::before,.therapy-card-mark::after{content:"";position:absolute;top:50%;left:50%;width:12px;height:2px;border-radius:2px;background:currentColor;transform:translate(-50%,-50%)}
+.therapy-card-mark::after{transform:translate(-50%,-50%) rotate(90deg)}
 .therapy-card > .therapy-card-copy {inset:auto 0 0;box-sizing:border-box;height:108px;display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:14px 18px 16px;background:#fff;transition:height .72s cubic-bezier(.22,1,.36,1)}
 .therapy-card h3 {font-size:clamp(19px,1.8vw,23px);line-height:1.18;letter-spacing:-.04em;color:#222344}
 .therapy-card .therapy-card-detail{max-height:0;margin:0;overflow:hidden;opacity:0;transform:translateY(8px);font-size:12px;line-height:1.45;color:#222344;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;transition:max-height .65s cubic-bezier(.22,1,.36,1),opacity .45s ease,transform .65s cubic-bezier(.22,1,.36,1)}
-.therapy-card .text-link {width:100%;justify-content:flex-end;gap:12px;margin-top:auto;padding:0;border:0;font-size:12px;font-weight:500;color:var(--blue);line-height:1.4}
-.therapy-card .text-link .arrow-symbol{width:16px;height:16px;flex-basis:16px}
 .specialty-links { display: grid; grid-template-columns: 1fr 1.7fr; gap: 30px; align-items: center; margin-top: 42px; padding: 30px; background: #f0f2f3; border-radius: 22px; }
 .specialty-links h3 { font-size: 22px; }
 .specialty-links p { font-size: 15px; margin-bottom: 0; }
@@ -194,7 +194,7 @@ p { font-size: 18px; line-height: 1.8; }
   .therapy-card { aspect-ratio: .68; }
   .therapy-card > .therapy-card-copy { padding: 14px 14px 15px; }
   .therapy-card h3 { font-size: 19px; }
-  .therapy-card .text-link { font-size: 11px; }
+  .therapy-card-mark { left:14px;bottom:14px; }
   .specialty-links { grid-template-columns: 1fr; gap: 18px; padding: 26px; margin-top: 28px; }
   .specialty-links > div:last-child { gap: 5px 20px; }
   .team-profiles, .team-preview .team-profiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
@@ -328,8 +328,6 @@ footer{background:#f6f4f1;color:var(--ink)}
   .therapy-card:hover .therapy-card-detail{max-height:3.1em;opacity:1;transform:translateY(0)}
   .therapy-card:hover .therapy-card-mark{transform:rotate(45deg)}
 }
-
-@media(hover:none),(pointer:coarse){.therapy-card-mark{display:none}}
 
 @media(prefers-reduced-motion:reduce){
   .faq-list summary,.faq-list summary>span,.therapy-card,.therapy-card-media,.therapy-card-media>img,.therapy-card-copy,.therapy-card-mark,.therapy-card-detail,.quick-links>a,.quick-links>a .quick-icon{transition:none}
