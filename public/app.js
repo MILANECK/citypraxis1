@@ -125,7 +125,13 @@ function reviewsSection(){
 const teamPath=t=>`/team/${encodeURIComponent(t.id)}${new URLSearchParams(location.search).has('preview')?'?preview=1':''}`;
 const teamMemberBookable=t=>typeof t.bookable==='boolean'?t.bookable:!(/\b(?:lisa|petra)\b/i.test(`${t.id||''} ${t.title||''}`)||/\b(?:secretary|receptionist|sekretär(?:in)?|sekretaer(?:in)?|rezeption(?:ist(?:in)?)?)\b/i.test(t.role||''));
 function teamCardName(t){
-  return esc(String(t.title||'').trim());
+  const name=String(t.title||'').trim().replace(/\s+/g,' ');
+  if(t.id==='kornelia-komander'){
+    const surnameEnd=name.indexOf(',')<0?name.length:name.indexOf(',');
+    const breakAt=name.lastIndexOf(' ',surnameEnd);
+    if(breakAt>0)return `${esc(name.slice(0,breakAt))}<br>${esc(name.slice(breakAt+1))}`;
+  }
+  return esc(name);
 }
 function teamCard(t){
   const cardLabel=String(t.cardLabel??(t.id==='isabella-casny'?(I18n.language==='en'?'Practice director':'Praxisleitung'):'')).trim();

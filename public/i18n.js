@@ -22,7 +22,7 @@
     if (language !== 'en') return content;
     return Object.fromEntries(Object.entries(content).map(([collection, records]) => [collection, records.map(record => {
       const result = {...record};
-      for (const [key, value] of Object.entries(record)) if (key.endsWith('En') && typeof value === 'string' && value.trim()) result[key.slice(0,-2)] = value;
+      for (const [key, value] of Object.entries(record)) if (key.endsWith('En') && !(collection === 'team' && key === 'titleEn') && typeof value === 'string' && value.trim()) result[key.slice(0,-2)] = value;
       return result;
     })]));
   }

@@ -32,6 +32,10 @@ test('language selection, navigation and UI translation keep form values separat
  assert.equal(translated.pages[0].image,original.pages[0].image);
  assert.equal(original.pages[0].title,'Deutsch');
  assert.equal(client('?lang=de').I18n.localizeContent(original),original);
+ const team={team:[{title:'Edited shared name',titleEn:'Old English name',role:'Physiotherapeutin',roleEn:'Physiotherapist'}]};
+ const translatedTeam=en.I18n.localizeContent(team).team[0];
+ assert.equal(translatedTeam.title,'Edited shared name');
+ assert.equal(translatedTeam.role,'Physiotherapist');
 });
 test('English migration preserves original clinical text and publication state; does not overwrite edits on reopen',()=>{
  const dir=mkdtempSync(join(tmpdir(),'citypraxis-en-')),file=join(dir,'test.sqlite');
