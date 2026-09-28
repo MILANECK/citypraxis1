@@ -124,7 +124,7 @@
   .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-plus{color:#fff}
   .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-plus svg{transform:rotate(720deg)}
 }
-.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;min-height:560px;margin-block:58px 92px;padding:var(--distinction-padding);overflow:hidden;border-radius:24px;background:linear-gradient(125deg,#e9f4f7 0%,#f1f6f7 51%,#f5eee7 100%);box-shadow:0 18px 46px #25313810}
+.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;min-height:560px;margin-block:0;padding:var(--distinction-padding);overflow:hidden;border-radius:24px;background:linear-gradient(125deg,#e9f4f7 0%,#f1f6f7 51%,#f5eee7 100%);box-shadow:0 18px 46px #25313810}
 .public-page .home-distinction-copy{position:relative;z-index:3;align-self:center;max-width:460px;padding-right:26px}
 .public-page .home-distinction-copy .eyebrow,.public-page .home-distinction-copy-white .eyebrow{font-size:11px;letter-spacing:.16em}
 .public-page .home-distinction-copy .eyebrow{color:var(--blue)}
@@ -325,7 +325,7 @@
   .public-page .team-feature-copy{padding:0 6px}
   .public-page .team-feature-copy h2{font-size:38px;max-width:360px;margin:17px 0 21px}
   .public-page .team-feature-copy p{font-size:14px}
-  .public-page .home-distinction{grid-template-columns:1fr;grid-template-areas:"copy" "visual" "benefits";min-height:0;margin-block:38px 60px;padding:26px 24px 30px;gap:25px;border-radius:22px}
+  .public-page .home-distinction{grid-template-columns:1fr;grid-template-areas:"copy" "visual" "benefits";min-height:0;padding:26px 24px 30px;gap:25px;border-radius:22px}
   .public-page .home-distinction-copy{grid-area:copy;padding:0}
   .public-page .home-distinction-copy h2{font-size:clamp(34px,8vw,42px);margin-top:15px}
   .public-page .home-distinction-visual{grid-area:visual;display:grid;place-items:center;position:relative;height:185px;border-radius:18px;background:#fff}
