@@ -464,7 +464,7 @@ function renderApp(content,preview){
   if(location.pathname==='/termin'&&!preview)import('/booking-gradient.js?v=booking-restored-1').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
   if(location.pathname==='/kontakt'&&!preview){
     const canvas=$('#contact-shader');
-    import('/contact-shader.js?v=1').then(({initContactShader})=>{
+    import('/contact-shader.js?v=mobile-static-1').then(({initContactShader})=>{
       if(canvas.isConnected)contactShaderCleanup=initContactShader(canvas);
     }).catch(()=>canvas.classList.add('is-fallback'));
   }

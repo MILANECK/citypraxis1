@@ -21,7 +21,8 @@ const settings={
 
 export function initContactShader(canvas){
   if(!canvas)return ()=>{};
-  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Render one still frame on phones, tablets, and for reduced-motion users.
+  const staticScene=matchMedia('(prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse)').matches;
   const gl=canvas.getContext('webgl',{antialias:false,alpha:false});
   if(!gl){canvas.classList.add('is-fallback');return ()=>{};}
 
@@ -80,7 +81,7 @@ export function initContactShader(canvas){
     let frame=0,lastNow=null,disposed=false,firstFrame=true;
     let visible=document.visibilityState==='visible',inView=true;
     const start=performance.now();
-    const animateTime=!reducedMotion&&Math.abs(settings.timeScale)>.0001;
+    const animateTime=!staticScene&&Math.abs(settings.timeScale)>.0001;
 
     const resizeCanvas=()=>{
       const dpr=Math.min(devicePixelRatio||1,2);
@@ -137,7 +138,7 @@ export function initContactShader(canvas){
       resizeCanvas();
       gl.uniform4f(uni.scene,canvas.width,canvas.height,animateTime?(now-start)/1000*settings.timeScale:0,settings.colorCount);
       gl.uniform4f(uni.space,settings.offsetX,settings.offsetY,mouseX,mouseY);
-      gl.uniform4f(uni.cursor,reducedMotion?0:cursorPresence,settings.cursorEffect,settings.cursorStrength,settings.cursorRadius);
+      gl.uniform4f(uni.cursor,staticScene?0:cursorPresence,settings.cursorEffect,settings.cursorStrength,settings.cursorRadius);
       gl.drawArrays(gl.TRIANGLES,0,3);
       if(firstFrame){firstFrame=false;canvas.classList.add('is-ready');}
       const pointerSettling=Math.abs(targetX-mouseX)>.001||Math.abs(targetY-mouseY)>.001||Math.abs(targetPresence-cursorPresence)>.001;
@@ -146,7 +147,7 @@ export function initContactShader(canvas){
     }
 
     addEventListener('resize',updateLayout);
-    if(!reducedMotion){
+    if(!staticScene){
       addEventListener('pointermove',onPointerMove,{passive:true});
       addEventListener('pointercancel',onPointerLeave);
       addEventListener('scroll',updateLayout,true);
@@ -172,7 +173,7 @@ export function initContactShader(canvas){
       removeEventListener('resize',updateLayout);
       document.removeEventListener('visibilitychange',onVisibilityChange);
       canvas.removeEventListener('webglcontextlost',onContextLost);
-      if(!reducedMotion){
+      if(!staticScene){
         removeEventListener('pointermove',onPointerMove);
         removeEventListener('pointercancel',onPointerLeave);
         removeEventListener('scroll',updateLayout,true);
