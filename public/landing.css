@@ -90,15 +90,15 @@
 .public-page .team-feature-copy h2{font-size:clamp(36px,3.8vw,54px);line-height:1.05;margin:20px 0 25px;max-width:450px}
 .public-page .team-feature-copy p{font-size:15px;max-width:380px;margin:0 0 25px}
 .public-page .team-feature-copy .text-link{font-size:13px}
-/* The right edge leads; the left edge and directory follow 120ms later.
-   The image keeps its proportions while the window briefly stretches. */
+/* The frame stretches slightly; its fixed-size photo never resizes with it.
+   A small bleed keeps the blurred image edges outside the rounded window. */
 .public-page .home-team-visual{position:absolute;inset:0;border-radius:inherit;overflow:hidden}
 .public-page .home-team-plus,.public-page .team-feature-white,.public-page .home-team-roster{display:none}
 @media(min-width:1001px) and (hover:hover) and (pointer:fine){
-  .public-page .team-feature.team-hover-ready{position:relative;isolation:isolate;--team-ease:cubic-bezier(.65,0,.25,1);--team-duration:1350ms;--team-follow-delay:120ms}
+  .public-page .team-feature.team-hover-ready{position:relative;isolation:isolate;--team-ease:cubic-bezier(.25,.46,.45,.94);--team-duration:760ms;--team-follow-delay:28ms}
   .public-page .team-hover-ready .home-team-photo{overflow:visible;box-shadow:none;min-height:380px;z-index:1;pointer-events:none}
-  .public-page .team-hover-ready .home-team-visual{left:0;right:0;width:auto;pointer-events:auto;box-shadow:0 15px 45px #53473b10;transition:right var(--team-duration) var(--team-ease),left var(--team-duration) var(--team-ease) var(--team-follow-delay),border-radius var(--team-duration) var(--team-ease)}
-  .public-page .team-hover-ready .team-group-photo{position:absolute;top:0;left:50%;width:var(--team-image-width);min-width:100%;max-width:none;translate:-50% 0;transition:filter var(--team-duration) var(--team-ease),transform var(--team-duration) var(--team-ease);transform-origin:center}
+  .public-page .team-hover-ready .home-team-visual{left:0;right:0;width:auto;pointer-events:auto;isolation:isolate;transform:translateZ(0);clip-path:inset(0 round 24px);box-shadow:0 15px 45px #53473b10;transition:right var(--team-duration) var(--team-ease),left var(--team-duration) var(--team-ease) var(--team-follow-delay),border-radius var(--team-duration) var(--team-ease),clip-path var(--team-duration) var(--team-ease)}
+  .public-page .team-hover-ready .team-group-photo{position:absolute;top:-8px;left:50%;width:var(--team-image-width);height:calc(100% + 16px);min-width:0;max-width:none;translate:-50% 0;transition:filter var(--team-duration) var(--team-ease),transform var(--team-duration) var(--team-ease);transform-origin:center}
   .public-page .team-hover-ready .home-team-visual::after{content:"";position:absolute;inset:0;opacity:0;background:radial-gradient(ellipse at 110% 70%,#a2178299 0%,#96137544 35%,transparent 70%),linear-gradient(90deg,transparent 20%,#202b3299 65%,#263138b8);transition:opacity var(--team-duration) var(--team-ease)}
   .public-page .team-hover-ready .home-team-roster{display:flex;align-items:center;position:absolute;inset:0 auto 0 0;width:var(--team-photo-shift);padding:20px 32px;border-radius:24px 0 0 24px;background:linear-gradient(130deg,#e8f2f5f5,#f1f7f9e6);clip-path:inset(0 100% 0 0 round 24px 0 0 24px);transition:clip-path var(--team-duration) var(--team-ease) var(--team-follow-delay);overflow:auto}
   .public-page .home-team-roster ul{list-style:none;padding:0;margin:0;width:100%}
@@ -109,14 +109,14 @@
   .public-page .home-team-roster a:is(:hover,:focus-visible)>.arrow-symbol{opacity:1;translate:0 0}
   .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-roster{clip-path:inset(0 0 0 0 round 24px 0 0 24px)}
   .public-page .team-hover-ready>.team-feature-copy{position:relative;z-index:1;padding-right:30px}
-  .public-page .team-hover-ready .team-feature-white{display:block;position:absolute;inset:0;padding:16px 30px 16px 0;pointer-events:none;clip-path:inset(-20px var(--team-uncovered) -20px 0);transition:clip-path var(--team-duration) var(--team-ease)}
+  .public-page .team-hover-ready .team-feature-white{display:block;position:absolute;inset:0;padding:16px 30px 16px 0;pointer-events:none;clip-path:polygon(0 -20px,calc(100% - var(--team-uncovered)) -20px,calc(100% - var(--team-uncovered)) calc(100% + 20px),0 calc(100% + 20px));transition:clip-path var(--team-duration) var(--team-ease)}
   .public-page .team-hover-ready .team-feature-white,.public-page .team-hover-ready .team-feature-white *{color:#fff}
   .public-page .team-hover-ready .home-team-plus{display:grid;place-items:center;position:absolute;z-index:2;right:22px;bottom:22px;width:24px;height:24px;color:var(--blue);pointer-events:none;transition:color var(--team-duration) var(--team-ease)}
   .public-page .home-team-plus svg{display:block;width:24px;height:24px;transform-origin:50% 50%;transition:transform var(--team-duration) var(--team-ease)}
-  .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-visual{left:var(--team-photo-shift);right:calc(var(--team-photo-width) - var(--team-width));border-radius:0 24px 24px 0}
-  .public-page .team-hover-ready:is(:hover,:focus-within) .team-group-photo{filter:blur(2px);transform:translateX(-6px) scale(1.025)}
+  .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-visual{left:var(--team-photo-shift);right:calc(var(--team-photo-width) - var(--team-width));border-radius:0 24px 24px 0;clip-path:inset(0 round 0 24px 24px 0)}
+  .public-page .team-hover-ready:is(:hover,:focus-within) .team-group-photo{filter:blur(1.5px);transform:scale(1.01)}
   .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-visual::after{opacity:1}
-  .public-page .team-hover-ready:is(:hover,:focus-within) .team-feature-white{clip-path:inset(-20px 0 -20px 0)}
+  .public-page .team-hover-ready:is(:hover,:focus-within) .team-feature-white{clip-path:polygon(0 -20px,100% -20px,100% calc(100% + 20px),0 calc(100% + 20px))}
   .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-plus{color:#fff}
   .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-plus svg{transform:rotate(720deg)}
 }
