@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=8';
+import {enhanceLanding} from './landing.js?v=9';
 let landingCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -122,7 +122,7 @@ function teamThumbnail(t){
 }
 function reviewStars(value){
   const rating=Number(value);
-  return Number.isInteger(rating)&&rating>=1&&rating<=5?`<div class="review-stars" role="img" aria-label="${rating} von 5 Sternen"><span aria-hidden="true">${'★'.repeat(rating)}<span class="review-stars-empty">${'☆'.repeat(5-rating)}</span></span></div>`:'';
+  return Number.isInteger(rating)&&rating>=1&&rating<=5?`<div class="review-stars" role="img" aria-label="${rating} von 5 Sternen"><span aria-hidden="true">${Array.from({length:5},(_,index)=>`<span class="review-star${index<rating?'':' review-stars-empty'}">${index<rating?'★':'☆'}</span>`).join('')}</span></div>`:'';
 }
 function reviewsSection(){
   const reviews=(data.reviews||[]).filter(r=>r.body?.trim()).slice(0,3),settings=data.settings[0];

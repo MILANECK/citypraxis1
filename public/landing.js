@@ -24,7 +24,10 @@ export function enhanceLanding({preview=false}={}){
   ].join(','))];
   const cleanTeamHover=enhanceTeamHover();
   const watermark=document.querySelector('.home-footer-watermark');
-  const priceValues=[...document.querySelectorAll('.home-price-value')].map((node,index)=>({node,final:Number(node.dataset.priceValue),text:node.textContent,duration:index===1?640:880}));
+  const priceValues=[...document.querySelectorAll('.home-price-value')].map((node,index)=>({node,final:Number(node.dataset.priceValue),text:node.textContent,duration:index===1?940:1000}));
+  const faqRows=[...document.querySelectorAll('.home-faq .faq-list>details')];
+  const starGroups=[...document.querySelectorAll('.home-people .review-stars')];
+  const groupTimings=new WeakMap();
   let observer,watermarkObserver,frame,priceFrame;
   const finishPrices=()=>{
     if(priceFrame)cancelAnimationFrame(priceFrame);
@@ -40,9 +43,9 @@ export function enhanceLanding({preview=false}={}){
       priceValues.forEach(({node,final,text,duration})=>{
         const progress=Math.min(1,elapsed/duration);
         const extra=Math.max(24,Math.round(final*.6));
-        node.textContent=progress===1?text:String(Math.ceil(final+extra*(1-progress)**3));
+        node.textContent=progress===1?text:String(Math.round(final+extra*(1-progress)**1.5));
       });
-      if(elapsed<880)priceFrame=requestAnimationFrame(tick);
+      if(elapsed<1000)priceFrame=requestAnimationFrame(tick);
       else finishPrices();
     };
     priceFrame=requestAnimationFrame(tick);
@@ -73,6 +76,8 @@ export function enhanceLanding({preview=false}={}){
     watermarkObserver?.disconnect();
     watermark?.classList.remove('watermark-waiting','watermark-visible');
     finishPrices();
+    faqRows.forEach(node=>{node.classList.remove('faq-line-waiting','faq-line-visible');node.style.removeProperty('--detail-delay');});
+    starGroups.forEach(node=>{node.classList.remove('stars-waiting','stars-visible');node.style.removeProperty('--stars-delay');});
     targets.forEach(node=>node.classList.remove('home-reveal-ready','home-reveal-visible'));
     animations.forEach(animation=>animation.cancel());
   };
@@ -84,17 +89,31 @@ export function enhanceLanding({preview=false}={}){
   if(atmosphere)sizeObserver.observe(atmosphere);
   if(!preview&&!motion.matches){
     targets.forEach(node=>node.classList.add('home-reveal-ready'));
+    faqRows.forEach(node=>node.classList.add('faq-line-waiting'));
+    starGroups.forEach(node=>node.classList.add('stars-waiting'));
     observer=new IntersectionObserver(entries=>{
-      // Stagger only neighbours entering together, so a single card never waits.
-      const entering=entries.filter(entry=>entry.isIntersecting);
-      entering.forEach((entry,index)=>{
+      // Keep a local rhythm across observer callbacks, including slow scrolling.
+      const now=performance.now();
+      entries.filter(entry=>entry.isIntersecting).forEach(entry=>{
         const node=entry.target;
-        node.style.setProperty('--home-reveal-delay',`${Math.min(index,4)*90}ms`);
+        const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-price-panel,.home-faq-intro,.faq-list,.footer-top')||node.parentElement;
+        const delay=Math.min(800,Math.max(140,(groupTimings.get(group)||0)-now));
+        groupTimings.set(group,now+delay+(node.matches('details')?220:170));
+        node.style.setProperty('--home-reveal-delay',`${delay}ms`);
         node.classList.add('home-reveal-visible');
-        if(node.matches('.home-price-range'))animatePrices(Math.min(index,4)*90+100);
+        if(node.matches('.home-price-range'))animatePrices(delay+240);
+        if(node.matches('.home-faq details')){
+          node.style.setProperty('--detail-delay',`${delay+180}ms`);
+          node.classList.add('faq-line-visible');
+        }
+        if(node.matches('.review-card figcaption')){
+          const stars=node.querySelector('.review-stars');
+          stars?.style.setProperty('--stars-delay',`${delay+300}ms`);
+          stars?.classList.add('stars-visible');
+        }
         observer.unobserve(node);
       });
-    },{threshold:.12,rootMargin:'0px 0px -28px 0px'});
+    },{threshold:.18,rootMargin:`0px 0px -${Math.min(140,Math.max(90,innerHeight*.18))}px 0px`});
     targets.forEach(node=>observer.observe(node));
     if(watermark){
       watermark.classList.add('watermark-waiting');
@@ -109,24 +128,29 @@ export function enhanceLanding({preview=false}={}){
     }
     const intro=[
       ['.hero-copy>.eyebrow',0],
-      ['.hero-copy h1>span:first-of-type',100],
-      ['.hero-copy h1>span:last-of-type',260],
-      ['.hero-copy>p',430],
-      ['.hero-actions>a:first-child',560],
-      ['.hero-actions>a:last-child',680],
-      ['.home-hero-divider',760],
-      ...[1,2,3,4].map((n,i)=>[`.hero-quick-strip .quick-links>a:nth-child(${n})`,820+i*90])
+      ['.hero-copy h1>span:first-of-type',180],
+      ['.hero-copy h1>span:last-of-type',400],
+      ['.hero-copy>p',650],
+      ['.hero-actions>a:first-child',850],
+      ['.hero-actions>a:last-child',1040],
+      ['.home-hero-divider',1200],
+      ...[1,2,3,4].map((n,i)=>[`.hero-quick-strip .quick-links>a:nth-child(${n})`,1350+i*170])
     ];
     // Start from the poster too: a slow or blocked video never holds up reading.
     intro.forEach(([selector,delay])=>{
       const node=document.querySelector(selector);
       const line=selector==='.home-hero-divider';
-      if(node)animations.push(node.animate([{opacity:0,transform:line?'scaleX(0)':'translateY(18px)'},{opacity:1,transform:line?'scaleX(1)':'translateY(0)'}],{duration:line?1100:820,delay,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}));
+      if(node)animations.push(node.animate([{opacity:0,transform:line?'scaleX(0)':'translateY(18px)'},{opacity:1,transform:line?'scaleX(1)':'translateY(0)'}],{duration:line?1500:1150,delay,easing:'cubic-bezier(.25,.1,.25,1)',fill:'backwards'}));
     });
   }
   const onMotion=()=>{if(motion.matches)showAll();updateScroll();};
   const onFocus=event=>{
-    event.target.closest('.home-reveal-ready')?.classList.add('home-reveal-visible');
+    const focused=event.target.closest('.home-reveal-ready');
+    focused?.classList.add('home-reveal-visible');
+    const row=event.target.closest('.faq-line-waiting');
+    if(row){row.style.setProperty('--detail-delay','0ms');row.classList.add('faq-line-visible');}
+    const stars=event.target.closest('figcaption')?.querySelector('.review-stars');
+    if(stars){stars.style.setProperty('--stars-delay','0ms');stars.classList.add('stars-visible');}
     animations.forEach(animation=>{if(animation.effect?.target?.contains(event.target))animation.finish();});
   };
   motion.addEventListener('change',onMotion);
