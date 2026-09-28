@@ -1,4 +1,6 @@
-import {editorialPage,editorialPages} from './page-copy.js';
+import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
+import {enhanceLanding} from './landing.js?v=2';
+let landingCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const externalUrl=value=>{try{const url=new URL(value);return ['https:','http:'].includes(url.protocol)?url.href:'';}catch{return '';}};
@@ -53,7 +55,7 @@ function socialLinksMarkup(settings){
 function footer() {
   const s = data.settings[0];
   const c=privacyCopy();
-  return `<footer><div class="container footer-top"><div><img class="footer-logo" src="/assets/wordmark-black.png" alt="Citypraxis" width="250" height="34"><img class="footer-symbol" src="/assets/logo-symbol.png" alt="" width="38" height="49"><p>Gemeinsam weiterkommen.<br>Mitten in Wien.</p>${socialLinksMarkup(s)}</div><div><h3>Besuchen Sie uns</h3><p>${esc(s.address)}<br>${esc(s.city)}</p><a href="https://www.google.com/maps/search/?api=1&query=Stubenbastei+12+1010+Wien" target="_blank" rel="noopener">Route planen ↗︎</a></div><div><h3>Wir sind für Sie da</h3><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><p><a href="/kontakt#oeffnungszeiten"><strong>${I18n.language==='en'?'Opening hours':'Öffnungszeiten'}</strong></a><br>${esc(s.hours)}</p></div><div><h3>Gut zu wissen</h3><a href="/ablauf-wahltherapie">Ersttermin & Wahltherapie</a><a href="/leistungen">Unsere Leistungen</a><p>${esc(s.payment)}</p></div></div><div class="container footer-bottom"><span>© ${new Date().getFullYear()} Citypraxis Wien</span><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><button class="cookie-settings-link" type="button">${c.settings}</button><a href="/admin">Praxis-Login ↗︎</a></div></div></footer><nav class="mobile-booking" aria-label="${I18n.language==='en'?'Quick contact':'Schnellkontakt'}"><a class="mobile-call" href="tel:${esc(s.phone.replaceAll(' ',''))}" aria-label="${I18n.language==='en'?'Call us':'Anrufen'}" title="${I18n.language==='en'?'Call us':'Anrufen'}"><img src="/assets/icons/phone.svg" width="27" height="27" alt=""></a><a class="mobile-appointment" href="/termin" aria-label="${I18n.language==='en'?'Book first appointment':'Ersttermin buchen'}" title="${I18n.language==='en'?'Book first appointment':'Ersttermin buchen'}"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7.5 3v4M16.5 3v4M3.5 10h17M8 15h8M12 12v6"/></svg></a></nav>`;
+  return `<footer>${location.pathname==='/'?'<div class="home-footer-watermark" aria-hidden="true"><img src="/assets/wordmark-black.png" alt="" width="1200" height="160"></div>':''}<div class="container footer-top"><div><img class="footer-logo" src="/assets/wordmark-black.png" alt="Citypraxis" width="250" height="34"><img class="footer-symbol" src="/assets/logo-symbol.png" alt="" width="38" height="49"><p>Gemeinsam weiterkommen.<br>Mitten in Wien.</p>${socialLinksMarkup(s)}</div><div><h3>Besuchen Sie uns</h3><p>${esc(s.address)}<br>${esc(s.city)}</p><a href="https://www.google.com/maps/search/?api=1&query=Stubenbastei+12+1010+Wien" target="_blank" rel="noopener">Route planen ↗︎</a></div><div><h3>Wir sind für Sie da</h3><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><p><a href="/kontakt#oeffnungszeiten"><strong>${I18n.language==='en'?'Opening hours':'Öffnungszeiten'}</strong></a><br>${esc(s.hours)}</p></div><div><h3>Gut zu wissen</h3><a href="/ablauf-wahltherapie">Ersttermin & Wahltherapie</a><a href="/leistungen">Unsere Leistungen</a><p>${esc(s.payment)}</p></div></div><div class="container footer-bottom"><span>© ${new Date().getFullYear()} Citypraxis Wien</span><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><button class="cookie-settings-link" type="button">${c.settings}</button><a href="/admin">Praxis-Login ↗︎</a></div></div></footer><nav class="mobile-booking" aria-label="${I18n.language==='en'?'Quick contact':'Schnellkontakt'}"><a class="mobile-call" href="tel:${esc(s.phone.replaceAll(' ',''))}" aria-label="${I18n.language==='en'?'Call us':'Anrufen'}" title="${I18n.language==='en'?'Call us':'Anrufen'}"><img src="/assets/icons/phone.svg" width="27" height="27" alt=""></a><a class="mobile-appointment" href="/termin" aria-label="${I18n.language==='en'?'Book first appointment':'Ersttermin buchen'}" title="${I18n.language==='en'?'Book first appointment':'Ersttermin buchen'}"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7.5 3v4M16.5 3v4M3.5 10h17M8 15h8M12 12v6"/></svg></a></nav>`;
 }
 function processBlock() {
   const page=pageText('ablauf-wahltherapie');
@@ -76,17 +78,22 @@ function therapyCard(s) {
 function home() {
   const h = pageText('home'), s = data.settings[0];
   const therapies = ['physiotherapie','osteopathie','logopaedie','kindergesundheit','heilmassage'].map(id=>data.services.find(item=>item.id===id)).filter(Boolean);
-  const quickLinks=`<div class="hero-quick-strip"><nav class="quick-links container" aria-label="Direkt zum Anliegen">
+  const quickLinks=`<div class="hero-quick-strip"><div class="home-hero-divider" aria-hidden="true"></div><nav class="quick-links container" aria-label="Direkt zum Anliegen">
     <a href="tel:${esc(s.phone.replaceAll(' ',''))}"><img class="quick-icon" src="/assets/icons/phone.svg" alt="" width="48" height="48"><div><strong>${esc(s.phone)}</strong><span>Persönlich für Sie da</span></div></a>
     <a href="/leistungen"><img class="quick-icon" src="/assets/icons/lotus.svg" alt="" width="48" height="48"><div><strong>Unsere Therapien</strong><span>Die passende Behandlung finden</span></div></a>
     <a href="/preise"><img class="quick-icon" src="/assets/icons/euro.svg" alt="" width="48" height="48"><div><strong>Preise & Rückerstattung</strong><span>Kosten verständlich erklärt</span></div></a>
     <a href="/kontakt"><img class="quick-icon" src="/assets/icons/pin.svg" alt="" width="48" height="48"><div><strong>1010 Wien</strong><span>${esc(s.address)}</span></div></a>
   </nav></div>`;
+  const en=I18n.language==='en';
+  const amounts=(data.prices||[]).map(item=>Number(String(item.amount??'').replace(',','.'))).filter(value=>Number.isFinite(value)&&value>0);
+  const formatPrice=value=>new Intl.NumberFormat(en?'en-AT':'de-AT',{maximumFractionDigits:2}).format(value);
+  const priceRange=amounts.length?`${formatPrice(Math.min(...amounts))}<span aria-hidden="true">—</span>${formatPrice(Math.max(...amounts))}<small>€</small>`:'';
   return `${heroMarkup(h,s,quickLinks)}${h.body?`<section class="section container article-body" data-copy-key="body">${paragraph(h.body)}</section>`:''}
-  <section class="section container" id="therapien"><div class="section-heading"><div><span class="eyebrow" data-copy-key="therapiesEyebrow">${esc(h.therapiesEyebrow)}</span><h2 data-copy-key="therapiesHeading">${lines(h.therapiesHeading)}</h2></div><a class="text-link" href="/leistungen">Alle Behandlungen ${arrow}</a></div><div class="therapy-grid">${therapies.map(therapyCard).join('')}</div></section>
-  ${h.teamImage?`<section class="container team-feature" aria-labelledby="team-feature-title"><img class="team-group-photo" src="${esc(optimizedImage(h.teamImage))}" alt="${esc(h.teamImageAlt||'Team-Gruppenfoto')}" loading="lazy" decoding="async" width="1299" height="870"><div class="team-feature-copy"><span class="eyebrow" data-copy-key="teamEyebrow">${esc(h.teamEyebrow)}</span><h2 id="team-feature-title" data-copy-key="teamHeading">${esc(h.teamHeading)}</h2><p data-copy-key="teamIntro">${esc(h.teamIntro)}</p><a class="text-link" href="/ueber-uns">Das gesamte Team ${arrow}</a></div></section>`:''}
-  ${reviewsSection()}
-  <section class="container cost-overview"><div><span class="eyebrow" data-copy-key="pricesEyebrow">${esc(h.pricesEyebrow)}</span><h2 data-copy-key="pricesHeading">${lines(h.pricesHeading)}</h2><p data-copy-key="pricesIntro">${esc(h.pricesIntro)}</p><a class="button button-outline" href="/preise">Preise & Rückerstattung ${arrow}</a></div><div><h3 data-copy-key="faqHeading">${esc(h.faqHeading)}</h3>${faqs()}</div></section>
+  <section class="home-therapies" id="therapien"><div class="container"><div class="home-section-intro" data-home-reveal><span class="eyebrow" data-copy-key="therapiesEyebrow">${esc(h.therapiesEyebrow)}</span><h2 data-copy-key="therapiesHeading">${lines(String(h.therapiesHeading).replace(/\. ?(?=[A-ZÄÖÜ])/g,'.\n'))}</h2><p data-copy-key="therapiesIntro">${esc(h.therapiesIntro)}</p></div><div class="therapy-grid">${therapies.map(therapyCard).join('')}</div><div class="home-section-link" data-home-reveal><a class="text-link" href="/leistungen">Alle Behandlungen ${arrow}</a></div></div></section>
+  <div class="home-people">${h.teamImage?`<section class="container team-feature" aria-labelledby="team-feature-title"><div class="home-team-photo" data-home-reveal><img class="team-group-photo" src="${esc(optimizedImage(h.teamImage))}" alt="${esc(h.teamImageAlt||'Team-Gruppenfoto')}" loading="lazy" decoding="async" width="1299" height="870"><span class="home-photo-caption">CITYPRAXIS · 1010 WIEN</span></div><div class="team-feature-copy" data-home-reveal><span class="eyebrow" data-copy-key="teamEyebrow">${esc(h.teamEyebrow)}</span><h2 id="team-feature-title" data-copy-key="teamHeading">${esc(h.teamHeading)}</h2><p data-copy-key="teamIntro">${esc(h.teamIntro)}</p><a class="text-link" href="/ueber-uns">Das gesamte Team ${arrow}</a></div></section>`:''}
+  ${reviewsSection()}</div>
+  <section class="container home-price-wrap" aria-labelledby="home-price-title"><div class="home-price-panel" data-home-reveal><div class="home-price-copy"><span class="eyebrow" data-copy-key="pricesEyebrow">${esc(h.pricesEyebrow)}</span><h2 id="home-price-title" data-copy-key="pricesHeading">${lines(String(h.pricesHeading).replace('What doesmy treatment cost?','What does my treatment cost?').replace('Was kostetmeine Behandlung?','Was kostet meine Behandlung?'))}</h2><p data-copy-key="pricesIntro">${esc(h.pricesIntro)}</p><a class="text-link" href="/preise">Preise & Rückerstattung ${arrow}</a></div><div class="home-price-figure">${priceRange?`<span class="home-price-label">${en?'TREATMENT PRICES':'BEHANDLUNGSPREISE'}</span><div class="home-price-range" aria-label="${esc(en?`From ${formatPrice(Math.min(...amounts))} to ${formatPrice(Math.max(...amounts))} euros`:`Von ${formatPrice(Math.min(...amounts))} bis ${formatPrice(Math.max(...amounts))} Euro`)}">${priceRange}</div><p>${en?'Depending on treatment and appointment duration.':'Je nach Behandlung und Termindauer.'}</p>`:''}<span class="home-price-note">${en?'Private treatment · Reimbursement information in the price list':'Wahltherapie · Informationen zur Rückerstattung in der Preisliste'}</span></div></div></section>
+  <section class="container home-faq" aria-labelledby="home-faq-title"><div class="home-faq-intro" data-home-reveal><span class="eyebrow">${en?'GOOD TO KNOW':'GUT ZU WISSEN'}</span><h2 id="home-faq-title" data-copy-key="faqHeading">${esc(h.faqHeading)}</h2><p data-copy-key="faqIntro">${esc(h.faqIntro)}</p><a class="text-link" href="/ablauf-wahltherapie">${en?'Your first visit':'Ihr erster Besuch'} ${arrow}</a></div><div data-home-reveal>${faqs()}</div></section>
   `;
 }
 function article(title,intro,body,extra='') { return `<section class="container article"><a class="breadcrumb" href="/">Startseite /</a><span class="eyebrow">CITYPRAXIS WIEN</span><h1 data-copy-key="title">${esc(title)}</h1><p class="article-intro" data-copy-key="intro">${esc(intro)}</p>${body?`<div class="article-body" data-copy-key="body">${paragraph(body)}</div>`:''}${extra}</section>`; }
@@ -266,7 +273,7 @@ function bind() {
     pricesObserver.observe(priceSection);
   }
   if(!reducedMotion.matches){
-    const headlines=[...document.querySelectorAll('#main h1, #main h2')];
+    const headlines=document.body.classList.contains('home-page')?[]:[...document.querySelectorAll('#main h1, #main h2')];
     const revealObserver=new IntersectionObserver(entries=>{
       entries.forEach(entry=>{
         if(!entry.isIntersecting)return;
@@ -279,7 +286,7 @@ function bind() {
       headline.style.setProperty('--reveal-delay',`${Math.min(index,3)*45}ms`);
       revealObserver.observe(headline);
     });
-    const reviewCards=[...document.querySelectorAll('.reviews-grid .review-card')];
+    const reviewCards=document.body.classList.contains('home-page')?[]:[...document.querySelectorAll('.reviews-grid .review-card')];
     if(reviewCards.length){
       const reviewObserver=new IntersectionObserver(entries=>{
         entries.forEach(entry=>{if(entry.isIntersecting){
@@ -349,7 +356,7 @@ function bind() {
         cardsObserver.observe(card);
       });
     }
-    const therapyCards=[...document.querySelectorAll('#main .therapy-grid .therapy-card')];
+    const therapyCards=document.body.classList.contains('home-page')?[]:[...document.querySelectorAll('#main .therapy-grid .therapy-card')];
     if(therapyCards.length){
       const therapyObserver=new IntersectionObserver(entries=>{
         entries.forEach(entry=>{if(entry.isIntersecting){
@@ -401,7 +408,7 @@ function bind() {
   const video=$('#hero-video');
   if(video) {
     const motion=reducedMotion;
-    const parallaxHero=$('.hero-video-parallax');
+    const parallaxHero=document.body.classList.contains('home-page')?null:$('.hero-video-parallax');
     let parallaxFrame=0;
     const updateVideoParallax=()=>{
       if(parallaxFrame||motion.matches)return;
@@ -513,12 +520,15 @@ function bind() {
 const contentCacheKey='citypraxis-public-content-v4',contentCacheLifetime=5*60*1000;
 let previewSourceContent;
 function renderApp(content,preview){
+  landingCleanup?.();
+  document.body.classList.toggle('home-page',location.pathname==='/');
   data=I18n.localizeContent(content);
   document.body.classList.toggle('editor-preview-embedded',preview&&window.parent!==window);
   if(preview&&window.parent!==window&&!document.body.dataset.editorPreviewPage)document.body.dataset.editorPreviewPage='true';
   $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+`<main id="main">${route()}</main>`+footer()+cookiePanel();
   if(preview)$('.cookie-panel')?.setAttribute('hidden','');
   I18n.apply();const title=$('h1')?.textContent;document.title=(title?`${title} · `:'')+'Citypraxis Wien';bind();
+  landingCleanup=enhanceLanding({preview});
   if(['#team','#oeffnungszeiten'].includes(location.hash))requestAnimationFrame(()=>$(location.hash)?.scrollIntoView({block:'center'}));
 }
 async function loadContent(preview){

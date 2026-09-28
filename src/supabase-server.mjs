@@ -18,7 +18,7 @@ import {isTeamMemberBookable} from './team-booking.mjs';
 import {normalizeAppointmentConcerns} from '../public/request-summary.js';
 
 const root = resolve('public');
-const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.mp4':'video/mp4' };
+const mime = { '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'text/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.mp4':'video/mp4', '.woff2':'font/woff2' };
 const clean = (value, max = 200) => typeof value === 'string' ? value.trim().slice(0,max) : '';
 const emailValid = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 const filter = value => encodeURIComponent(`eq.${value}`);
