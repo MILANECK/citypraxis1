@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=18';
+import {enhanceLanding} from './landing.js?v=19';
 let landingCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -98,6 +98,19 @@ function home() {
 }
 function article(title,intro,body,extra='') { return `<section class="container article"><a class="breadcrumb" href="/">Startseite /</a><span class="eyebrow">CITYPRAXIS WIEN</span><h1 data-copy-key="title">${esc(title)}</h1><p class="article-intro" data-copy-key="intro">${esc(intro)}</p>${body?`<div class="article-body" data-copy-key="body">${paragraph(body)}</div>`:''}${extra}</section>`; }
 function clinicalBody(body,serviceId=''){return String(body||'').split(/\n\n(?=## )/).map((part,i)=>{const content=serviceId==='heilmassage'?part.split('\n\n').map(block=>/^(?:We expressly point out that our massage services|Wir weisen ausdrücklich darauf hin, dass unsere Angebote bei den Massagen)/.test(block.trim())?`<aside class="clinical-highlight">${paragraph(block)}</aside>`:paragraph(block)).join(''):paragraph(part);return `<section class="clinical-card" id="abschnitt-${i}">${content}</section>`;}).join('');}
+function aboutBodySections(body){
+  const sections=String(body||'').trim().split(/\n\n(?=## )/);
+  const sectionTitle=part=>/^## ([^\n]+)/.exec(part)?.[1]||'';
+  const specialisationIndex=sections.findIndex(part=>/specialisation|spezialisierung/i.test(sectionTitle(part)));
+  const aimIndex=sections.findIndex(part=>/^(?:Our aim|Unser Ziel)$/i.test(sectionTitle(part)));
+  if(specialisationIndex<1||aimIndex<0)return {aim:'',reading:clinicalBody(body)};
+  const compact=text=>text.trim().split(/\n\n+/).map(item=>item.trim()).filter(item=>item&&!/^(?:In short,|Kurzum gesagt,)/i.test(item)).join(' ');
+  const specialisation=sections[specialisationIndex].replace(/^## [^\n]+\n*/, '');
+  const summary=[compact(sections.slice(0,specialisationIndex).join('\n\n')),compact(specialisation)].filter(Boolean).join('\n\n');
+  const reading=`<section class="clinical-card about-specialisation" id="abschnitt-${specialisationIndex}"><h2 id="${headingId(sectionTitle(sections[specialisationIndex]))}">${esc(sectionTitle(sections[specialisationIndex]))}</h2><div class="about-specialisation-copy">${paragraph(summary)}</div></section>`+
+    sections.map((part,index)=>index!==specialisationIndex&&index!==aimIndex&&index>specialisationIndex?`<section class="clinical-card about-distinction" id="abschnitt-${index}">${paragraph(part)}</section>`:'').join('');
+  return {aim:paragraph(sections[aimIndex]),reading};
+}
 function clinicalContents(body){
   const sections=String(body||'').split(/\n\n(?=## )/).map((part,i)=>({title:part.startsWith('## ')?part.split('\n')[0].slice(3):'Über die Behandlung',id:'abschnitt-'+i}));
   return sections.length>1?'<nav class="clinical-contents" aria-label="Auf dieser Seite"><strong>Auf dieser Seite</strong>'+sections.map(section=>'<a href="#'+section.id+'">'+esc(section.title)+'</a>').join('')+'</nav>':'';
@@ -142,7 +155,7 @@ function teamCardName(t){
 }
 function teamCard(t){
   const cardLabel=String(t.cardLabel??(t.id==='isabella-casny'?(I18n.language==='en'?'Practice director':'Praxisleitung'):'')).trim();
-  return `<article class="team-person"><a class="team-profile-link" href="${esc(teamPath(t))}" aria-labelledby="team-name-${esc(t.id)}"><div class="team-portrait">${t.image?`<img class="team-photo" src="${esc(optimizedImage(t.image))}" alt="" loading="lazy" decoding="async" width="360" height="360">`:'<div class="team-no-photo" aria-hidden="true">CP</div>'}</div><div class="team-card-copy"><h3 id="team-name-${esc(t.id)}">${teamCardName(t)}</h3>${cardLabel?`<span class="team-lead-label">${esc(cardLabel)}</span>`:''}<p class="team-role">${esc(t.role).replaceAll(' / ','<br>').replaceAll(' · ','<br>')}</p><span class="team-profile-prompt">${I18n.language==='en'?'View profile':'Profil ansehen'} ${arrow}</span></div></a></article>`;
+  return `<article class="team-person${t.id==='sophia-shivarova'?' team-card-sophia':''}" data-team-id="${esc(t.id)}"><a class="team-profile-link" href="${esc(teamPath(t))}" aria-labelledby="team-name-${esc(t.id)}"><div class="team-portrait">${t.image?`<img class="team-photo" src="${esc(optimizedImage(t.image))}" alt="" loading="lazy" decoding="async" width="360" height="360">`:'<div class="team-no-photo" aria-hidden="true">CP</div>'}</div><div class="team-card-copy"><h3 id="team-name-${esc(t.id)}">${teamCardName(t)}</h3>${cardLabel?`<span class="team-lead-label">${esc(cardLabel)}</span>`:''}<p class="team-role">${esc(t.role).replaceAll(' / ','<br>').replaceAll(' · ','<br>')}</p><span class="team-profile-prompt">${I18n.language==='en'?'View profile':'Profil ansehen'} ${arrow}</span></div></a></article>`;
 }
 function therapistPage(t){
   const en=I18n.language==='en';
@@ -210,7 +223,17 @@ function route() {
   }
   const pageId=path==='/ueber-uns'?'about':parts[1];
   const page=data.pages.find(p=>p.id===pageId);
-  if(pageId==='about' && page){const team=data.team||[],lead=team.find(person=>person.id==='isabella-casny'),roster=team.filter(person=>person.id!=='isabella-casny'),copy=pageText('about');return article(page.title,page.intro,'',`<section class="team-directory" id="team" aria-label="${I18n.language==='en'?'Citypraxis team':'Citypraxis Team'}"><p class="eyebrow team-directory-label" data-copy-key="teamEyebrow">${esc(copy.teamEyebrow)}</p><div class="team-profiles">${lead?`<div class="team-featured">${teamCard(lead)}</div>`:''}<div class="team-roster">${roster.map(teamCard).join('')}</div></div></section><div class="clinical-reading" data-copy-key="body">${clinicalBody(page.body)}</div>`);}
+  if(pageId==='about' && page){
+    const team=data.team||[];
+    const lead=team.find(person=>person.id==='isabella-casny');
+    const amanda=team.find(person=>person.id==='amanda-voeltl');
+    const sophia=team.find(person=>person.id==='sophia-shivarova');
+    const office=team.filter(person=>['team-2','petra'].includes(person.id)||/assistant of the ceo|sekretariat|empfang|reception|secretary/i.test(person.role||''));
+    const clinicians=team.filter(person=>person!==lead&&person!==amanda&&person!==sophia&&!office.includes(person));
+    const roster=[...clinicians.slice(0,4),...(amanda?[amanda]:[]),...clinicians.slice(4,8),...(sophia?[sophia]:[]),...clinicians.slice(8),...office];
+    const copy=pageText('about'),about=aboutBodySections(page.body);
+    return article(page.title,page.intro,'',`<section class="team-directory" id="team" aria-label="${I18n.language==='en'?'Citypraxis team':'Citypraxis Team'}"><p class="eyebrow team-directory-label" data-copy-key="teamEyebrow">${esc(copy.teamEyebrow)}</p><div class="team-profiles">${lead?`<div class="team-featured">${teamCard(lead)}</div>`:''}<div class="team-roster">${roster.map(teamCard).join('')}${about.aim?`<section class="team-aim-card">${about.aim}</section>`:''}</div></div></section><div class="clinical-reading about-reading" data-copy-key="body">${about.reading}</div>`);
+  }
   if(page) return article(page.title,page.intro,page.body,pageId==='datenschutz'?chatPrivacyInfo():'');
   if(['impressum','datenschutz'].includes(pageId)) return article(pageId==='impressum'?'Impressum':'Datenschutz','Diese Seite wird vor Veröffentlichung vervollständigt.','Dies ist eine lokale Entwicklungsvorschau. Bitte verwenden Sie keine echten Patientendaten.');
   return article('Seite nicht gefunden','Hier geht es zurück zu Ihrer Citypraxis.','', '<a class="button" href="/">Zur Startseite</a>');

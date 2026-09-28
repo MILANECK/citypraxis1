@@ -41,7 +41,7 @@ export function enhanceLanding({preview=false}={}){
   const priceValues=[...document.querySelectorAll('.home-price-value')].map((node,index)=>({node,final:Number(node.dataset.priceValue),text:node.textContent,duration:index===1?940:1000}));
   const faqRows=[...document.querySelectorAll('.home-faq .faq-list>details')];
   const starGroups=[...document.querySelectorAll('.home-people .review-stars')];
-  const teamCards=[...document.querySelectorAll('.interior-page[data-page="/ueber-uns"] .team-directory .team-person')];
+  const teamCards=[...document.querySelectorAll('.interior-page[data-page="/ueber-uns"] .team-directory :is(.team-person,.team-aim-card)')];
   const journeyGrid=document.querySelector('.interior-page[data-page="/ablauf-wahltherapie"] .process-grid');
   const groupTimings=new WeakMap();
   let observer,watermarkObserver,teamObserver,journeyObserver,frame,priceFrame;
