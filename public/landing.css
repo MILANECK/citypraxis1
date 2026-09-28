@@ -179,6 +179,22 @@
   .home-page .home-faq{gap:55px}
 }
 @media(max-width:767px){
+  /* Phone pages are much taller: size each mist cloud from the viewport width,
+     never stretch the desktop artwork to the full document height. */
+  .home-page .home-atmosphere-colors{
+    --mobile-mist-radius:clamp(240px,76vw,520px);
+    background-image:
+      radial-gradient(circle var(--mobile-mist-radius) at -18% 19%,#008fd021 0%,#008fd012 35%,#008fd003 66%,transparent 82%),
+      radial-gradient(circle var(--mobile-mist-radius) at 115% 31%,#008fd02c 0%,#008fd017 35%,#008fd005 66%,transparent 82%),
+      radial-gradient(circle var(--mobile-mist-radius) at -12% 45%,#ad288e30 0%,#ad288e19 34%,#ad288e05 65%,transparent 84%),
+      radial-gradient(circle var(--mobile-mist-radius) at 110% 54%,#c7ae894d 0%,#c7ae8929 36%,#c7ae8906 67%,transparent 88%),
+      radial-gradient(circle var(--mobile-mist-radius) at -16% 66%,#008fd032 0%,#008fd019 35%,#008fd004 67%,transparent 85%),
+      radial-gradient(circle var(--mobile-mist-radius) at 112% 76%,#ad288e36 0%,#ad288e1b 35%,#ad288e05 66%,transparent 86%),
+      radial-gradient(circle var(--mobile-mist-radius) at -14% 87%,#c7ae895e 0%,#c7ae8933 38%,#c7ae8908 69%,transparent 91%),
+      radial-gradient(circle var(--mobile-mist-radius) at 114% 99%,#c7ae8963 0%,#c7ae8936 38%,#c7ae890a 70%,transparent 92%);
+    background-size:auto;
+  }
+
   .home-page .container,.home-page .hero-quick-strip{width:calc(100% - 40px)}
   .home-page .header{top:12px;width:calc(100% - 24px)}
   .home-page .header-inner{height:62px;padding-inline:15px;gap:12px}
