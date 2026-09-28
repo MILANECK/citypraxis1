@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=16';
+import {enhanceLanding} from './landing.js?v=18';
 let landingCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

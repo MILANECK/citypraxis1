@@ -28,7 +28,6 @@ export function enhanceLanding({preview=false}={}){
     '.interior-page .service-intro>div>*','.interior-page .service-intro>img',
     '.interior-page .clinical-card>h2','.interior-page .clinical-card>h3','.interior-page .clinical-card>p','.interior-page .clinical-card>ul',
     '.interior-page .clinical-aside>.eyebrow','.interior-page .clinical-aside>h2','.interior-page .clinical-aside>p',
-    '.interior-page .team-person','.interior-page .process-grid>li',
     '.interior-page .therapist-photo-frame','.interior-page .therapist-intro>*',
     '.interior-page .therapist-section>h2','.interior-page .therapist-section>p','.interior-page .therapist-section>ul',
     '.interior-page .info-card>.eyebrow','.interior-page .info-card>h2','.interior-page .info-card>h3',
@@ -42,8 +41,10 @@ export function enhanceLanding({preview=false}={}){
   const priceValues=[...document.querySelectorAll('.home-price-value')].map((node,index)=>({node,final:Number(node.dataset.priceValue),text:node.textContent,duration:index===1?940:1000}));
   const faqRows=[...document.querySelectorAll('.home-faq .faq-list>details')];
   const starGroups=[...document.querySelectorAll('.home-people .review-stars')];
+  const teamCards=[...document.querySelectorAll('.interior-page[data-page="/ueber-uns"] .team-directory .team-person')];
+  const journeyGrid=document.querySelector('.interior-page[data-page="/ablauf-wahltherapie"] .process-grid');
   const groupTimings=new WeakMap();
-  let observer,watermarkObserver,frame,priceFrame;
+  let observer,watermarkObserver,teamObserver,journeyObserver,frame,priceFrame;
   const finishPrices=()=>{
     if(priceFrame)cancelAnimationFrame(priceFrame);
     priceFrame=null;
@@ -92,10 +93,15 @@ export function enhanceLanding({preview=false}={}){
   const showAll=()=>{
     observer?.disconnect();
     watermarkObserver?.disconnect();
+    teamObserver?.disconnect();
+    journeyObserver?.disconnect();
     watermark?.classList.remove('watermark-waiting','watermark-visible');
     finishPrices();
     faqRows.forEach(node=>{node.classList.remove('faq-line-waiting','faq-line-visible');node.style.removeProperty('--detail-delay');});
     starGroups.forEach(node=>{node.classList.remove('stars-waiting','stars-visible');node.style.removeProperty('--stars-delay');});
+    teamCards.forEach(node=>{node.classList.remove('team-card-waiting','team-card-visible');node.style.removeProperty('--team-card-delay');});
+    journeyGrid?.classList.remove('journey-waiting','journey-visible');
+    journeyGrid?.querySelectorAll(':scope>li').forEach(node=>node.style.removeProperty('--journey-delay'));
     targets.forEach(node=>node.classList.remove('home-reveal-ready','home-reveal-visible'));
     animations.forEach(animation=>animation.cancel());
   };
@@ -133,6 +139,34 @@ export function enhanceLanding({preview=false}={}){
       });
     },{threshold:.18,rootMargin:`0px 0px -${Math.min(140,Math.max(90,innerHeight*.18))}px 0px`});
     targets.forEach(node=>observer.observe(node));
+    if(teamCards.length){
+      teamCards.forEach((card,index)=>{
+        card.style.setProperty('--team-card-delay',`${100+(index%5)*115}ms`);
+        card.classList.add('team-card-waiting');
+      });
+      teamObserver=new IntersectionObserver(entries=>{
+        entries.filter(entry=>entry.isIntersecting).forEach(entry=>{
+          entry.target.classList.add('team-card-visible');
+          teamObserver.unobserve(entry.target);
+        });
+      },{threshold:.16,rootMargin:'0px 0px -12% 0px'});
+      requestAnimationFrame(()=>requestAnimationFrame(()=>teamCards.forEach(card=>{
+        if(card.isConnected&&card.classList.contains('team-card-waiting'))teamObserver.observe(card);
+      })));
+    }
+    if(journeyGrid){
+      journeyGrid.querySelectorAll(':scope>li').forEach((step,index)=>step.style.setProperty('--journey-delay',`${120+index*430}ms`));
+      journeyGrid.classList.add('journey-waiting');
+      journeyObserver=new IntersectionObserver(entries=>{
+        if(entries.some(entry=>entry.isIntersecting)){
+          journeyGrid.classList.add('journey-visible');
+          journeyObserver.disconnect();
+        }
+      },{threshold:.25,rootMargin:'0px 0px -80px 0px'});
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        if(journeyGrid.isConnected&&journeyGrid.classList.contains('journey-waiting'))journeyObserver.observe(journeyGrid);
+      }));
+    }
     if(watermark){
       watermark.classList.add('watermark-waiting');
       // Observe the stationary parent so the upward entrance cannot shift its trigger.
@@ -165,6 +199,7 @@ export function enhanceLanding({preview=false}={}){
   const onFocus=event=>{
     const focused=event.target.closest('.home-reveal-ready');
     focused?.classList.add('home-reveal-visible');
+    event.target.closest('.team-card-waiting')?.classList.add('team-card-visible');
     const row=event.target.closest('.faq-line-waiting');
     if(row){row.style.setProperty('--detail-delay','0ms');row.classList.add('faq-line-visible');}
     const stars=event.target.closest('figcaption')?.querySelector('.review-stars');
