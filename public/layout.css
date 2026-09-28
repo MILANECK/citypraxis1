@@ -39,15 +39,23 @@ p { font-size: 18px; line-height: 1.8; }
 @media(max-width:767px){.hero-quick-strip .quick-links{padding-block:18px;gap:15px 16px}.hero-quick-strip .quick-links>a{gap:7px;padding-block:7px}.hero-quick-strip .quick-links strong{font-size:12px}.hero-immersive:has(.hero-quick-strip) .hero-stage{min-height:620px;padding-bottom:48px}}
 /* Keep the mobile links on a stable surface instead of blurring the moving hero video. */
 @media(max-width:767px){.hero-quick-strip{background:#414248;-webkit-backdrop-filter:none;backdrop-filter:none}.hero-quick-strip .quick-links>a,.hero-quick-strip .quick-links>a .quick-icon{transition:none}}
-.therapy-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 22px; }
-.therapy-card { display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; background: white; box-shadow: 0 8px 30px #22234405; }
-.therapy-card-media { width: 100%; aspect-ratio: 5 / 4; overflow: hidden; isolation: isolate; }
-.therapy-card-media > img { width: 100%; height: 100%; object-fit: cover; transform: translate3d(0,0,0) scale(1.001); transform-origin: 50% 50%; backface-visibility: hidden; will-change: transform; }
-.therapy-card-media--symbol{display:grid;place-items:center;background:linear-gradient(145deg,#e9f4f8,#f7f8fb)}
-.therapy-card-media--symbol > img{width:84px;height:84px;object-fit:contain}
-.therapy-card > .therapy-card-copy { padding: 14px 18px 13px; flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
-.therapy-card h3 { font-size: 23px; }
-.therapy-card .text-link { position: relative; top: -4px; margin-top: auto; width: 100%; justify-content: space-between; padding-bottom: 0; font-size: 14px; gap: 12px; }
+.therapy-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.therapy-card { position: relative; display: block; aspect-ratio: .7; border-radius: 18px; overflow: hidden; isolation: isolate; background: #222344; color: #fff; box-shadow: 0 8px 30px #2223440b; }
+.therapy-card-media { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; }
+.therapy-card-media > img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.01); transform-origin: center; backface-visibility: hidden; transition: transform .85s cubic-bezier(.22,1,.36,1),filter .65s ease; }
+.therapy-card-media--symbol{display:grid;place-items:center;background:linear-gradient(145deg,#25384d,#4d2347)}
+.therapy-card-media--symbol > img{width:84px;height:84px;object-fit:contain;filter:brightness(0) invert(1)}
+.therapy-card::before,.therapy-card::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1}
+.therapy-card::before{background:linear-gradient(180deg,#11132268 0%,transparent 30%,#11132226 52%,#111322d9 100%)}
+.therapy-card::after{background:#11132272;opacity:0;transition:opacity .65s ease}
+.therapy-card-mark,.therapy-card-kicker,.therapy-card-copy{position:absolute;z-index:2;color:#fff}
+.therapy-card-mark{top:16px;left:16px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#ffffff29;font:500 20px/1 Arial,sans-serif;transition:background .45s ease,transform .55s cubic-bezier(.22,1,.36,1)}
+.therapy-card-kicker{top:19px;right:17px;max-width:65%;font-size:10px;font-weight:600;line-height:1.3;letter-spacing:.04em;text-align:right;text-transform:uppercase;text-shadow:0 1px 7px #111322b8;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.therapy-card > .therapy-card-copy {inset:auto 0 0;display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:20px 18px 18px}
+.therapy-card h3 {font-size:clamp(19px,1.8vw,23px);line-height:1.18;letter-spacing:-.04em;color:#fff;text-shadow:0 1px 8px #11132288}
+.therapy-card .therapy-card-detail{max-height:0;margin:0;overflow:hidden;opacity:0;transform:translateY(8px);font-size:12px;line-height:1.45;color:#fff;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;transition:max-height .65s cubic-bezier(.22,1,.36,1),opacity .45s ease,transform .65s cubic-bezier(.22,1,.36,1)}
+.therapy-card .text-link {width:100%;justify-content:space-between;gap:12px;padding:0;border:0;font-size:12px;font-weight:500;color:#fff;line-height:1.4}
+.therapy-card .text-link .arrow-symbol{width:16px;height:16px;flex-basis:16px}
 .specialty-links { display: grid; grid-template-columns: 1fr 1.7fr; gap: 30px; align-items: center; margin-top: 42px; padding: 30px; background: #f0f2f3; border-radius: 22px; }
 .specialty-links h3 { font-size: 22px; }
 .specialty-links p { font-size: 15px; margin-bottom: 0; }
@@ -166,7 +174,8 @@ p { font-size: 18px; line-height: 1.8; }
 @media (max-width: 1150px) {
   .team-thumbnails { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .quick-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 30px; }
-  .therapy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .therapy-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .therapy-card { aspect-ratio: .74; }
   .team-profiles, .team-preview .team-profiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .specialty-links { grid-template-columns: 1fr 1.3fr; }
   .cost-overview { gap: 35px; padding: 35px; }
@@ -185,10 +194,11 @@ p { font-size: 18px; line-height: 1.8; }
   .quick-links strong { font-size: 14px; }
   .quick-links div > span { font-size: 13px; }
   .quick-links + .section { padding-top: 28px; }
-  .therapy-grid { gap: 18px; }
-  .therapy-card > .therapy-card-copy { padding: 12px 16px 13px; }
-  .therapy-card h3 { font-size: 22px; }
-  .therapy-card .text-link { top: -2px; font-size: 14px; }
+  .therapy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .therapy-card { aspect-ratio: .68; }
+  .therapy-card > .therapy-card-copy { padding: 16px 14px 15px; }
+  .therapy-card h3 { font-size: 19px; }
+  .therapy-card .text-link { font-size: 11px; }
   .specialty-links { grid-template-columns: 1fr; gap: 18px; padding: 26px; margin-top: 28px; }
   .specialty-links > div:last-child { gap: 5px 20px; }
   .team-profiles, .team-preview .team-profiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
@@ -219,8 +229,8 @@ p { font-size: 18px; line-height: 1.8; }
 }
 @media (max-width: 600px) {
   .therapy-grid { grid-template-columns: 1fr; }
+  .therapy-card { aspect-ratio: .8; max-height: 470px; }
   .team-profiles, .team-preview .team-profiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .therapy-card-media { aspect-ratio: 3 / 2; }
   .team-card-copy { padding: 12px; }
 }
 
@@ -300,7 +310,10 @@ footer{background:#f6f4f1;color:var(--ink)}
 .map-details-copy .map-details-address{margin-top:18px}
 .map-details-copy .button{margin-top:4px}
 @media(max-width:767px){.map-details{padding:16px 18px 18px}.map-details summary{font-size:15px}}
-.therapy-card img{transition:transform .55s cubic-bezier(.4,0,.2,1),filter .45s ease}
+.therapy-card:focus-visible::after{opacity:1}
+.therapy-card:focus-visible .therapy-card-media>img{transform:scale(1.06);filter:blur(3px) saturate(.9)}
+.therapy-card:focus-visible .therapy-card-detail{max-height:5.3em;opacity:1;transform:translateY(0)}
+.therapy-card:focus-visible .therapy-card-mark{background:var(--pink);transform:rotate(45deg)}
 .quick-links>a{position:relative;border-radius:16px;transition:color .3s ease,transform .4s cubic-bezier(.22,1,.36,1),background-color .35s ease,box-shadow .4s ease}
 .quick-links>a .quick-icon{transition:transform .5s cubic-bezier(.22,1,.36,1),filter .35s ease}
 
@@ -313,13 +326,17 @@ footer{background:#f6f4f1;color:var(--ink)}
   .quick-links>a:hover{color:var(--blue);transform:translateY(-2px);background:transparent;box-shadow:none}
   .quick-links>a:hover .quick-icon{transform:translateY(-2px) scale(1.06);filter:saturate(1.08)}
   .quick-links>a:nth-child(2):hover .quick-icon{transform:translateY(-2px) scale(1.08)}
-  .therapy-card:hover{transform:translateY(-6px);box-shadow:0 20px 48px #22234412}
-  .therapy-card:hover img{transform:translate3d(0,0,0) scale(1.02);filter:saturate(1.04)}
-  .therapy-card:hover .text-link{color:var(--blue);transform:translateX(3px)}
+  .therapy-card:hover{transform:translateY(-4px);box-shadow:0 20px 48px #22234420}
+  .therapy-card:hover::after{opacity:1}
+  .therapy-card:hover .therapy-card-media>img{transform:scale(1.06);filter:blur(3px) saturate(.9)}
+  .therapy-card:hover .therapy-card-detail{max-height:5.3em;opacity:1;transform:translateY(0)}
+  .therapy-card:hover .therapy-card-mark{background:var(--pink);transform:rotate(45deg)}
 }
 
+@media(hover:none),(pointer:coarse){.therapy-card-mark{display:none}}
+
 @media(prefers-reduced-motion:reduce){
-  .faq-list summary,.faq-list summary>span,.therapy-card,.therapy-card img,.quick-links>a,.quick-links>a .quick-icon{transition:none}
+  .faq-list summary,.faq-list summary>span,.therapy-card,.therapy-card-media>img,.therapy-card::after,.therapy-card-mark,.therapy-card-detail,.quick-links>a,.quick-links>a .quick-icon{transition:none}
   :where(.text-link,.quick-links>a,.specialty-links a,.clinical-contents a,.related-links a,.breadcrumb,.course-link a,.footer-top a,.footer-bottom a,.desktop-nav a,.mobile-nav a:not(.button)):hover{transform:none}
 }
 
@@ -438,10 +455,10 @@ footer{background:#f6f4f1;color:var(--ink)}
 .listing-grid .listing-card.listing-reveal{opacity:0;filter:blur(3px);transform:translate3d(0,18px,0) scale(.99);transition:opacity .82s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),filter .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms),transform .9s cubic-bezier(.22,1,.36,1) var(--listing-delay,0ms);will-change:opacity,filter,transform}
 .listing-grid .listing-card.listing-reveal.is-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
 @media(hover:hover){.listing-grid .listing-card.listing-reveal.is-visible:hover{transform:translate3d(0,-4px,0) scale(1)}}
-.therapy-grid .therapy-card.therapy-reveal{opacity:0;transform:translateY(12px);transition:opacity 1.25s cubic-bezier(.22,.61,.36,1),transform 1.25s cubic-bezier(.22,.61,.36,1);transition-delay:var(--therapy-delay,0ms)}
-.therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;transform:translateY(0)}
+.therapy-grid .therapy-card.therapy-reveal{opacity:0;transform:translateY(20px) scale(.985);transition:opacity 1.25s cubic-bezier(.22,.61,.36,1),transform 1.25s cubic-bezier(.22,.61,.36,1);transition-delay:var(--therapy-delay,0ms)}
+.therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;transform:translateY(0) scale(1)}
 .therapy-grid .therapy-card.therapy-reveal.therapy-revealed{transition:transform .34s cubic-bezier(.22,1,.36,1),box-shadow .34s cubic-bezier(.22,1,.36,1);transition-delay:0s}
-@media(hover:hover) and (pointer:fine){.therapy-grid .therapy-card.therapy-reveal.therapy-revealed:hover{transform:translateY(-5px);box-shadow:0 20px 48px #22234412}}
+@media(hover:hover) and (pointer:fine){.therapy-grid .therapy-card.therapy-reveal.therapy-revealed:hover{transform:translateY(-4px);box-shadow:0 20px 48px #22234420}}
 @media(prefers-reduced-motion:reduce){
   .booking-layout #booking-form.booking-form-reveal,.booking-layout #booking-form.booking-form-reveal.is-visible,.weekly-hours>div.hours-row-reveal,.weekly-hours>div.hours-row-reveal.is-visible,.price-table .price-amount.price-amount-reveal,.price-table .price-amount.price-amount-reveal.is-visible,.listing-grid .listing-card.listing-reveal,.listing-grid .listing-card.listing-reveal.is-visible,.therapy-grid .therapy-card.therapy-reveal,.therapy-grid .therapy-card.therapy-reveal.is-visible{opacity:1;filter:none;transform:none;transition:none;will-change:auto}
   .contact-map iframe{opacity:1;transition:none}

@@ -71,7 +71,7 @@ function heroMarkup(h,s,quickLinks='') {
 }
 function therapyCard(s) {
   const visual=s.image?`<img src="${esc(optimizedImage(s.image))}" alt="" loading="lazy" decoding="async">`:'<img src="/assets/icons/lotus.svg" alt="" loading="lazy" decoding="async">';
-  return `<a class="therapy-card" href="/leistungen/${esc(s.id)}"><div class="therapy-card-media${s.image?'':' therapy-card-media--symbol'}">${visual}</div><div class="therapy-card-copy"><h3>${esc(s.title)}</h3><span class="text-link">Behandlung kennenlernen ${arrow}</span></div></a>`;
+  return `<a class="therapy-card" href="/leistungen/${esc(s.id)}"><div class="therapy-card-media${s.image?'':' therapy-card-media--symbol'}">${visual}</div><span class="therapy-card-mark" aria-hidden="true">+</span><span class="therapy-card-kicker">${esc(s.tag||'Citypraxis')}</span><div class="therapy-card-copy"><h3>${esc(s.title)}</h3><p class="therapy-card-detail">${esc(s.intro||'')}</p><span class="text-link">Behandlung kennenlernen ${arrow}</span></div></a>`;
 }
 function home() {
   const h = pageText('home'), s = data.settings[0];
