@@ -35,7 +35,6 @@
 .therapist-bio p{font-size:17px;line-height:1.8}
 .therapist-book{margin-top:20px}
 .therapist-profile .button{background:var(--pink);border-color:var(--pink)}
-.therapist-profile .button:hover{background:var(--berry-dark);border-color:var(--berry-dark)}
 .therapist-book-note{font-size:12px;max-width:44ch;line-height:1.6;margin:12px 0 0}
 .therapist-contact{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:14px}
 .therapist-contact a{overflow-wrap:anywhere}

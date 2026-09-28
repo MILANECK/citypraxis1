@@ -91,3 +91,60 @@ body{background:#fafaf9}.topline{background:#f0f1f2}.header{background:#fafaf9f5
 
 .booking-note{position:relative;isolation:isolate;overflow:hidden}.booking-note::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;background:radial-gradient(circle 430px at var(--glow-x,50%) var(--glow-y,50%),rgb(192 11 145 / .24) 0%,rgb(192 11 145 / .15) 38%,rgb(192 11 145 / .07) 62%,transparent 82%);transition:opacity .42s cubic-bezier(.22,1,.36,1)}.booking-note:hover::before,.booking-note:focus-within::before{opacity:1}.booking-note>*{position:relative;z-index:1}
 @media(prefers-reduced-motion:reduce){.booking-note::before{transition:none}}
+
+/* Give every pink appointment action the header CTA's lift and arrow motion. */
+:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button){
+  transition:transform .3s cubic-bezier(.22,1,.36,1),background .3s,box-shadow .3s;
+}
+:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button) .arrow-symbol{
+  transition:transform .3s cubic-bezier(.22,1,.36,1);
+}
+@media(hover:hover) and (pointer:fine){
+  :is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button):hover{
+    background:#b12499;
+    transform:translateY(-2px);
+    box-shadow:0 8px 24px #951b8140;
+  }
+  :is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button):hover .arrow-symbol{
+    transform:translate(2px,-2px);
+  }
+}
+
+/* Blue appointment actions reveal a soft magenta circle from the lower right. */
+:is(a.button[href^="/termin"],#booking-form>button.button[type="submit"]):not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)){
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+}
+:is(a.button[href^="/termin"],#booking-form>button.button[type="submit"]):not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button))::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  border-radius:inherit;
+  pointer-events:none;
+  background:radial-gradient(ellipse 240px 160px at 90% 125%,rgb(221 61 189 / .85) 0%,rgb(190 37 155 / .55) 42%,transparent 77%);
+  opacity:0;
+  transform:translate(20px,15px) scale(.88);
+  transform-origin:right bottom;
+  transition:opacity .5s ease,transform .65s cubic-bezier(.22,1,.36,1);
+}
+@media(hover:hover) and (pointer:fine){
+  :is(a.button[href^="/termin"],#booking-form>button.button[type="submit"]):not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):hover{
+    background:var(--blue);
+  }
+  :is(a.button[href^="/termin"],#booking-form>button.button[type="submit"]):not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):hover::before{
+    opacity:1;
+    transform:none;
+  }
+}
+:is(a.button[href^="/termin"],#booking-form>button.button[type="submit"]):not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):focus-visible::before{
+  opacity:1;
+  transform:none;
+}
+@media(prefers-reduced-motion:reduce){
+  :is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button),
+  :is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button) .arrow-symbol,
+  :is(a.button[href^="/termin"],#booking-form>button.button[type="submit"])::before{transition:none}
+  :is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button):hover{transform:none}
+}
