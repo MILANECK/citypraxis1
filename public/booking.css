@@ -38,9 +38,10 @@
 .booking-optional-status{display:block;font-size:10px;font-weight:400;color:var(--muted);margin-top:3px}
 .booking-optional-mark{font-size:22px;font-weight:300;color:var(--blue);transition:transform .25s ease}
 .booking-optional[open] .booking-optional-mark{transform:rotate(45deg)}
-.booking-optional-content{padding:0 14px 14px;display:grid;gap:12px}
-#booking-form .booking-optional-content input,#booking-form .booking-optional-content textarea{background:#fff}
-.booking-optional-actions{display:flex;gap:8px}
+.booking-optional-content{padding:0 14px 14px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.booking-optional-content>label{min-width:0}
+#booking-form.compact-booking .booking-optional-content input:not([type]),#booking-form.compact-booking .booking-optional-content textarea{background:#fff;min-height:43px;height:43px}
+.booking-optional-actions{display:flex;gap:8px;grid-column:1/-1}
 .booking-optional-actions button{border:0;border-radius:7px;padding:9px 12px;font-size:11px;min-height:36px;background:#e6edf0;color:var(--ink)}
 .booking-optional-actions button:first-child{background:var(--blue);color:#fff}
 #booking-form .form-notice{font-size:11px;line-height:1.6;margin:12px 0 17px}
@@ -66,7 +67,7 @@
   #booking-form.compact-booking{padding:22px 20px;border-radius:18px}
   #booking-form.compact-booking h2{font-size:23px;margin-bottom:18px}
   #booking-form.compact-booking input:not([type=checkbox]):not([type=radio]),#booking-form.compact-booking textarea{font-size:16px}
-  .booking-contact-fields{grid-template-columns:1fr}
+  .booking-contact-fields,.booking-optional-content{grid-template-columns:1fr}
   .booking-preferences{grid-template-columns:1fr;gap:14px;margin-block:18px}
   #booking-form .booking-choice>span{font-size:11px;padding:9px 13px;min-height:38px}
   #booking-form .concern-chip>span{min-height:38px}

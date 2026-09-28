@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=3';
+import {enhanceLanding} from './landing.js?v=4';
 let landingCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -510,7 +510,7 @@ function bind() {
     nameInput.addEventListener('change',updateFolder);
     window.addEventListener('resize',updateFolder);
     updateFolder();
-    import('/booking-review.js?v=compact-2').then(({initBookingReview})=>initBookingReview(bookingForm,{english:I18n.language==='en'})).catch(()=>{});
+    import('/booking-review.js?v=compact-4').then(({initBookingReview})=>initBookingReview(bookingForm,{english:I18n.language==='en'})).catch(()=>{});
   }
   bookingForm?.addEventListener('submit',async e=>{
     e.preventDefault();const form=e.currentTarget,button=$('button[type=submit]',form),message=$('.form-message',form),fields=new FormData(form);form.dataset.submissionKey||=crypto.randomUUID();button.disabled=true;message.textContent=I18n.language==='en'?'Saving your request…':'Anfrage wird gespeichert …';

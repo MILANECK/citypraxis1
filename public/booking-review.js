@@ -15,19 +15,12 @@ export function initBookingReview(form,{english=false}={}){
   contact.after(preferences);
   const notes=document.createElement('details');
   notes.className='booking-optional';
-  notes.innerHTML=`<summary><span>${english?'Add a note or availability':'Notiz oder Verfügbarkeit ergänzen'}<small class="booking-optional-status">Optional</small></span><span class="booking-optional-mark" aria-hidden="true">+</span></summary><div class="booking-optional-content"><label>${english?'A short note':'Eine kurze Notiz'}<textarea name="description" rows="2" maxlength="500" placeholder="${english?'Anything else you would like us to know?':'Was möchten Sie uns noch mitteilen?'}"></textarea></label><label>${english?'When are you usually available?':'Wann haben Sie normalerweise Zeit?'}<input name="availability" maxlength="200" placeholder="${english?'e.g. Tuesday afternoons, or flexible':'z. B. Dienstagnachmittag oder flexibel'}"></label><div class="booking-optional-actions"><button type="button" data-notes-done>${english?'Done':'Fertig'}</button><button type="button" data-notes-cancel>${english?'Cancel changes':'Änderungen verwerfen'}</button></div></div>`;
+  notes.innerHTML=`<summary><span>${english?'Add a note or availability':'Notiz oder Verfügbarkeit ergänzen'}<small class="booking-optional-status">Optional</small></span><span class="booking-optional-mark" aria-hidden="true">+</span></summary><div class="booking-optional-content"><label>${english?'A short note':'Eine kurze Notiz'}<textarea name="description" rows="1" maxlength="500"></textarea></label><label>${english?'When are you available?':'Wann haben Sie Zeit?'}<input name="availability" maxlength="200"></label><div class="booking-optional-actions"><button type="button" data-notes-done>${english?'Done':'Fertig'}</button></div></div>`;
   consent.before(notes);
   const controls=[...notes.querySelectorAll('input,textarea')];
-  let saved=controls.map(field=>field.value);
   const updateStatus=()=>{
     notes.querySelector('.booking-optional-status').textContent=controls.some(field=>field.value.trim())?(english?'Note added':'Notiz ergänzt'):'Optional';
   };
-  // Capture before opening; toggle events may be coalesced during quick edits.
-  notes.querySelector('summary').addEventListener('click',()=>{if(!notes.open)saved=controls.map(field=>field.value);});
   notes.addEventListener('toggle',updateStatus);
   notes.querySelector('[data-notes-done]').addEventListener('click',()=>{notes.open=false;notes.querySelector('summary').focus();});
-  notes.querySelector('[data-notes-cancel]').addEventListener('click',()=>{
-    controls.forEach((field,index)=>{field.value=saved[index];});
-    notes.open=false;updateStatus();notes.querySelector('summary').focus();
-  });
 }

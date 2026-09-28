@@ -18,7 +18,7 @@ export function enhanceLanding({preview=false}={}){
     '.team-feature-copy>.eyebrow','.team-feature-copy>h2','.team-feature-copy>p','.team-feature-copy>.text-link',
     '.home-people .section-heading>div>*','.home-people .review-quote','.home-people .review-card blockquote','.home-people .review-card figcaption',
     '.home-price-copy>*','.home-price-figure>*','.home-faq-intro>*','.home-faq .faq-list>details',
-    '.home-scroll-line','.footer-top>div','.footer-bottom','.home-footer-watermark'
+    '.home-scroll-line','.footer-top>div','.footer-bottom','.home-footer-watermark>img'
   ].join(','))];
   let observer,frame;
   const onRevealEnd=event=>{
@@ -54,7 +54,7 @@ export function enhanceLanding({preview=false}={}){
       const entering=entries.filter(entry=>entry.isIntersecting);
       entering.forEach((entry,index)=>{
         const node=entry.target;
-        node.style.setProperty('--home-reveal-delay',`${Math.min(index,5)*70}ms`);
+        node.style.setProperty('--home-reveal-delay',`${Math.min(index,4)*90}ms`);
         node.classList.add('home-reveal-visible');
         observer.unobserve(node);
       });
