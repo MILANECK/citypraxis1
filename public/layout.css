@@ -50,7 +50,7 @@ p { font-size: 18px; line-height: 1.8; }
 .therapy-card > .therapy-card-copy {inset:auto 0 0;box-sizing:border-box;height:108px;display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:14px 18px 16px;background:#fff;transition:height .72s cubic-bezier(.22,1,.36,1)}
 .therapy-card h3 {font-size:clamp(19px,1.8vw,23px);line-height:1.18;letter-spacing:-.04em;color:#222344}
 .therapy-card .therapy-card-detail{max-height:0;margin:0;overflow:hidden;opacity:0;transform:translateY(8px);font-size:12px;line-height:1.45;color:#222344;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;transition:max-height .65s cubic-bezier(.22,1,.36,1),opacity .45s ease,transform .65s cubic-bezier(.22,1,.36,1)}
-.therapy-card .text-link {width:100%;justify-content:space-between;gap:12px;margin-top:auto;padding:0;border:0;font-size:12px;font-weight:500;color:var(--blue);line-height:1.4}
+.therapy-card .text-link {width:100%;justify-content:flex-end;gap:12px;margin-top:auto;padding:0;border:0;font-size:12px;font-weight:500;color:var(--blue);line-height:1.4}
 .therapy-card .text-link .arrow-symbol{width:16px;height:16px;flex-basis:16px}
 .specialty-links { display: grid; grid-template-columns: 1fr 1.7fr; gap: 30px; align-items: center; margin-top: 42px; padding: 30px; background: #f0f2f3; border-radius: 22px; }
 .specialty-links h3 { font-size: 22px; }

@@ -71,7 +71,7 @@ function heroMarkup(h,s,quickLinks='') {
 }
 function therapyCard(s) {
   const visual=s.image?`<img src="${esc(optimizedImage(s.image))}" alt="" loading="lazy" decoding="async">`:'<img src="/assets/icons/lotus.svg" alt="" loading="lazy" decoding="async">';
-  return `<a class="therapy-card" href="/leistungen/${esc(s.id)}"><div class="therapy-card-media${s.image?'':' therapy-card-media--symbol'}">${visual}</div><span class="therapy-card-mark" aria-hidden="true">+</span><div class="therapy-card-copy"><h3>${esc(s.title)}</h3><p class="therapy-card-detail">${esc(s.intro||'')}</p><span class="text-link">Behandlung kennenlernen ${arrow}</span></div></a>`;
+  return `<a class="therapy-card" href="/leistungen/${esc(s.id)}"><div class="therapy-card-media${s.image?'':' therapy-card-media--symbol'}">${visual}</div><span class="therapy-card-mark" aria-hidden="true">+</span><div class="therapy-card-copy"><h3>${esc(s.title)}</h3><p class="therapy-card-detail">${esc(s.intro||'')}</p><span class="text-link">${arrow}</span></div></a>`;
 }
 function home() {
   const h = pageText('home'), s = data.settings[0];
@@ -128,7 +128,8 @@ function teamCardName(t){
   return esc(String(t.title||'').trim());
 }
 function teamCard(t){
-  return `<article class="team-person"><a class="team-profile-link" href="${esc(teamPath(t))}" aria-labelledby="team-name-${esc(t.id)}"><div class="team-portrait">${t.image?`<img class="team-photo" src="${esc(optimizedImage(t.image))}" alt="" loading="lazy" decoding="async" width="360" height="360">`:'<div class="team-no-photo" aria-hidden="true">CP</div>'}</div><div class="team-card-copy">${t.id==='isabella-casny'?`<span class="team-lead-label">${I18n.language==='en'?'Practice director':'Praxisleitung'}</span>`:''}<h3 id="team-name-${esc(t.id)}">${teamCardName(t)}</h3><p class="team-role">${esc(t.role).replaceAll(' / ','<br>').replaceAll(' · ','<br>')}</p><span class="team-profile-prompt">${I18n.language==='en'?'View profile':'Profil ansehen'} ${arrow}</span></div></a></article>`;
+  const cardLabel=String(t.cardLabel??(t.id==='isabella-casny'?(I18n.language==='en'?'Practice director':'Praxisleitung'):'')).trim();
+  return `<article class="team-person"><a class="team-profile-link" href="${esc(teamPath(t))}" aria-labelledby="team-name-${esc(t.id)}"><div class="team-portrait">${t.image?`<img class="team-photo" src="${esc(optimizedImage(t.image))}" alt="" loading="lazy" decoding="async" width="360" height="360">`:'<div class="team-no-photo" aria-hidden="true">CP</div>'}</div><div class="team-card-copy"><h3 id="team-name-${esc(t.id)}">${teamCardName(t)}</h3>${cardLabel?`<span class="team-lead-label">${esc(cardLabel)}</span>`:''}<p class="team-role">${esc(t.role).replaceAll(' / ','<br>').replaceAll(' · ','<br>')}</p><span class="team-profile-prompt">${I18n.language==='en'?'View profile':'Profil ansehen'} ${arrow}</span></div></a></article>`;
 }
 function therapistPage(t){
   const en=I18n.language==='en';

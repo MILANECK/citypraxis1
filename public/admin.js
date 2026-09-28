@@ -10,7 +10,7 @@ const fields={
   pages:[['title','H1 · Überschrift'],['subtitle','Zweite Zeile'],['eyebrow','Dachzeile'],['intro','Einleitung','textarea'],['body','Weitere Überschriften (## bis ######) und Absätze','textarea'],['image','Bildpfad']],
   symptoms:[['title','Name'],['subtitle','Kurzzeile'],['intro','Einleitung','textarea'],['body','Beschreibung','textarea'],['service','Leistung (URL-Kürzel)'],['icon','Symbol','select',['jaw','head','ear','balance','movement']]],
   services:[['title','Name'],['tag','Dachzeile'],['intro','Einleitung','textarea'],['body','Beschreibung (## bis ###### Überschriften, - Aufzählung)','textarea'],['methods','Methoden (pro Zeile: Titel|Beschreibung)','textarea'],['image','Therapiefoto / Kartenbild','media-image'],['related','Verwandte Leistungen (URL-Kürzel, mit Komma getrennt)']],
-  team:[['title','Name'],['role','Fachrichtung'],['bookable','Buchungsanfragen über dieses Profil aktivieren','checkbox'],['qualifications','Qualifikationen','textarea'],['body','Persönliche Vorstellung','textarea'],['specialties','Behandlungsschwerpunkte (eine Zeile mit - pro Punkt)','textarea'],['methods','Angebot & Methoden (eine Zeile mit - pro Punkt)','textarea'],['career','Beruflicher Werdegang (eine Zeile mit - pro Station)','textarea'],['phone','Telefon'],['email','E-Mail','email'],['image','Teamfoto (leere Auswahl entfernt das Foto)','media-image']],
+  team:[['title','Name'],['cardLabel','Zusatz auf Teamkarte (z. B. Praxisleitung)'],['role','Fachrichtung'],['bookable','Buchungsanfragen über dieses Profil aktivieren','checkbox'],['qualifications','Qualifikationen','textarea'],['body','Persönliche Vorstellung','textarea'],['specialties','Behandlungsschwerpunkte (eine Zeile mit - pro Punkt)','textarea'],['methods','Angebot & Methoden (eine Zeile mit - pro Punkt)','textarea'],['career','Beruflicher Werdegang (eine Zeile mit - pro Station)','textarea'],['phone','Telefon'],['email','E-Mail','email'],['image','Teamfoto (leere Auswahl entfernt das Foto)','media-image']],
   reviews:[['title','Anzeigename'],['body','Freigegebene Bewertung (Originalwortlaut)','textarea'],['rating','Sterne','rating'],['source','Quelle (z. B. Google oder direktes Feedback)'],['sourceUrl','Link zur Originalbewertung (optional)','url']],
   faqs:[['title','Frage'],['body','Antwort','textarea']],
   prices:[['category','Kategorie'],['title','Behandlung / Preisposition'],['duration','Terminart oder Dauer'],['amount','Preis in Euro','number'],['details','Zusatzinformation','textarea']],
@@ -276,7 +276,7 @@ async function removeContent(collection,record){
   }catch(error){toast(error.message);}
 }
 function editContent(collection,record={},openPreview=false){
-  if(collection==='team')record={...record,bookable:typeof record.bookable==='boolean'?record.bookable:!(/\b(?:lisa|petra)\b/i.test(`${record.id||''} ${record.title||''}`)||/\b(?:secretary|receptionist|sekretär(?:in)?|sekretaer(?:in)?|rezeption(?:ist(?:in)?)?)\b/i.test(record.role||''))};
+  if(collection==='team')record={...record,cardLabel:record.cardLabel??(record.id==='isabella-casny'?'Praxisleitung':''),cardLabelEn:record.cardLabelEn??(record.id==='isabella-casny'?'Practice director':''),bookable:typeof record.bookable==='boolean'?record.bookable:!(/\b(?:lisa|petra)\b/i.test(`${record.id||''} ${record.title||''}`)||/\b(?:secretary|receptionist|sekretär(?:in)?|sekretaer(?:in)?|rezeption(?:ist(?:in)?)?)\b/i.test(record.role||''))};
   const isNew=!record.id||Boolean(record.virtual);
   if(collection==='reviews'&&isNew&&(content.reviews||[]).length>=3){toast(I18n.language==='en'?'All three review slots are filled. Edit or delete an existing review.':'Alle drei Bewertungsplätze sind belegt. Bitte bearbeiten oder löschen Sie eine bestehende Bewertung.');return;}
   if(collection==='team'&&isNew&&(content.team||[]).length>=20){toast('Es können höchstens 20 Teamprofile angelegt werden.');return;}
@@ -284,7 +284,7 @@ function editContent(collection,record={},openPreview=false){
   const dialog=$('#editor-dialog');
   dialog.classList.remove('with-preview');
   const baseFields=recordFields(collection,record);
-  const translatable=new Set(['title','subtitle','eyebrow','intro','body','tag','methods','role','specialties','career','qualifications','details','category','duration','reviewsTitle','reviewsIntro','city','hours','saturday','payment','acute','heroAlt','teamImageAlt','source','monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday',...Object.values(editorialPages).flatMap(page=>page.fields.map(field=>field[0]))]);
+  const translatable=new Set(['title','subtitle','eyebrow','intro','body','tag','methods','role','cardLabel','specialties','career','qualifications','details','category','duration','reviewsTitle','reviewsIntro','city','hours','saturday','payment','acute','heroAlt','teamImageAlt','source','monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday',...Object.values(editorialPages).flatMap(page=>page.fields.map(field=>field[0]))]);
   translatable.add('chatEmergency');
   const englishFields=baseFields.filter(f=>translatable.has(f[0]) && !(f[0]==='title'&&['team','reviews'].includes(collection))).map(([name,label,type])=>[name+'En',label,type]);
   const editableFields=[...baseFields,...englishFields];

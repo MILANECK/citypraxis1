@@ -43,7 +43,6 @@ Video abspielen|Play video
 Video pausieren|Pause video
 Hintergrundvideo abspielen|Play background video
 Hintergrundvideo pausieren|Pause background video
-Behandlung kennenlernen|Explore this therapy
 Direkt zum Anliegen|Quick links
 Persönlich für Sie da|Here for you personally
 Unsere Therapien|Our therapies
@@ -165,6 +164,7 @@ Symbol|Icon
 Beschreibung (## Überschrift, - Aufzählung)|Description (## heading, - list item)
 Verwandte Leistungen (URL-Kürzel, mit Komma getrennt)|Related therapies (comma-separated URL slugs)
 Fachrichtung|Specialization
+Zusatz auf Teamkarte (z. B. Praxisleitung)|Text on team card (e.g. Practice director)
 Qualifikationen|Qualifications
 Biografie|Biography
 Teamfoto (leere Auswahl entfernt das Foto)|Team photo (leave empty to remove photo)

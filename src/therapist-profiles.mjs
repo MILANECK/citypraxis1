@@ -7,7 +7,7 @@ const speechFocus = ['Erworbene und neurologisch bedingte Sprach-, Sprech- und S
 const speechFocusEn = ['Acquired and neurological language, speech and swallowing disorders', 'Myofunctional therapy and orofacial dysfunction', 'Language development and articulation in childhood', 'Therapy with autistic children', 'Functional, organic and psychogenic voice disorders'];
 export const therapistProfiles = [
   {
-    id:'isabella-casny',title:'Isabella Casny',role:'Osteopathin · Physiotherapeutin',roleEn:'Osteopath · Physiotherapist',
+    id:'isabella-casny',title:'Isabella Casny',cardLabel:'Praxisleitung',cardLabelEn:'Practice director',role:'Osteopathin · Physiotherapeutin',roleEn:'Osteopath · Physiotherapist',
     qualifications:'Medizinische Masseurin · Zertifizierte CRAFTA® Therapeutin · Praxisleitung',qualificationsEn:'Medical massage therapist · Certified CRAFTA® therapist · Practice director',
     body:'Mum of two und Frohnatur – meistens. Von meinen PatientInnen liebevoll der „General“ genannt.',bodyEn:'Mum of two and usually cheerful. Affectionately known as “the General” by my patients.',
     specialties:list([...jawFocus,'Behandlung von Babys und Kleinkindern sowie Begleitung vor und nach Zungenbanddurchtrennungen','Osteopathische Begleitung bei Schwangerschaft und Verdauungsbeschwerden']),
