@@ -74,6 +74,7 @@
 .public-page .therapy-card-mark{color:var(--blue);right:18px;bottom:18px}
 .public-page .therapy-card-mark::before,.public-page .therapy-card-mark::after{height:1.5px}
 .public-page .home-section-link{text-align:center;margin-top:30px}
+.public-page .home-therapies:has(+ .home-distinction)::after{content:"";position:absolute;left:50%;bottom:35px;width:90px;height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,#008daf80 35%,#951b8180 65%,transparent);opacity:.65;pointer-events:none}
 /* One continuous atmosphere, underneath every interactive/content surface. */
 .public-page .home-atmosphere{position:relative;isolation:isolate;background:transparent}
 .public-page .home-atmosphere-background{position:absolute;inset:var(--home-background-top,100svh) 0 0;z-index:0;overflow:hidden;pointer-events:none;mask-image:linear-gradient(transparent,#000 6%)}
@@ -100,7 +101,7 @@
   .public-page .team-feature.team-hover-ready::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--team-photo-width);border-radius:24px;background:linear-gradient(130deg,#e8f2f5f5,#f1f7f9e6);opacity:0;transition:opacity 0s linear var(--team-duration);pointer-events:none}
   .public-page .team-feature.team-hover-ready:is(:hover,:focus-within):not(:has(.home-team-photo.home-reveal-ready))::before{opacity:1;transition:opacity 0s}
   .public-page .team-hover-ready .home-team-photo{overflow:visible;box-shadow:none;min-height:380px;z-index:1;pointer-events:none}
-  .public-page .team-hover-ready .home-team-visual{left:0;right:0;width:auto;pointer-events:auto;isolation:isolate;transform:translateZ(0);clip-path:inset(0 round 24px);box-shadow:0 15px 45px #53473b10;transition:right var(--team-duration) var(--team-ease),left var(--team-duration) var(--team-ease) var(--team-follow-delay),border-radius .385s ease,clip-path .385s ease}
+  .public-page .team-hover-ready .home-team-visual{left:0;right:0;width:auto;pointer-events:auto;isolation:isolate;transform:translateZ(0);clip-path:inset(0 round 24px);box-shadow:0 15px 45px #53473b10;transition:left var(--team-duration) var(--team-ease),right var(--team-duration) var(--team-ease) var(--team-follow-delay),border-radius .385s ease,clip-path .385s ease}
   .public-page .team-hover-ready .team-group-photo{position:absolute;top:-4px;left:50%;width:var(--team-image-width);height:calc(100% + 26px);min-width:0;max-width:none;object-position:center 14%;translate:-50% 0;transition:filter var(--team-duration) var(--team-ease),transform var(--team-duration) var(--team-ease);transform-origin:center}
   .public-page .team-hover-ready .home-team-visual::after{content:"";position:absolute;inset:0;opacity:0;background:radial-gradient(ellipse 90% 115% at 58% 54%,color-mix(in srgb,var(--pink) 80%,transparent) 0%,color-mix(in srgb,var(--pink) 63%,transparent) 52%,color-mix(in srgb,var(--pink) 26%,transparent) 82%,transparent 100%);transition:opacity var(--team-duration) var(--team-ease)}
   .public-page .team-hover-ready .home-team-roster{display:flex;align-items:center;position:absolute;inset:0 auto 0 0;width:var(--team-photo-shift);padding:20px 32px;border-radius:24px 0 0 24px;background:linear-gradient(130deg,#e8f2f5f5,#f1f7f9e6);clip-path:inset(0 100% 0 0 round 24px 0 0 24px);transition:clip-path var(--team-duration) var(--team-ease) var(--team-follow-delay);overflow:auto}
@@ -126,7 +127,7 @@
   .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-plus{color:#fff}
   .public-page .team-hover-ready:is(:hover,:focus-within) .home-team-plus svg{transform:rotate(720deg)}
 }
-.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;min-height:470px;margin-block:0;padding:var(--distinction-padding);overflow:hidden;border-radius:24px;background:linear-gradient(125deg,#e9f4f7 0%,#f1f6f7 51%,#f5eee7 100%);box-shadow:0 18px 46px #25313810}
+.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;min-height:470px;margin-block:24px 0;padding:var(--distinction-padding);overflow:hidden;border-radius:24px;background:linear-gradient(125deg,#e9f4f7 0%,#f1f6f7 51%,#f5eee7 100%);box-shadow:0 18px 46px #25313810}
 .public-page .home-distinction-copy{position:relative;z-index:3;align-self:center;max-width:460px;padding-right:26px}
 .public-page .home-distinction-copy .eyebrow,.public-page .home-distinction-copy-white .eyebrow{font-size:11px;letter-spacing:.16em}
 .public-page .home-distinction-copy .eyebrow{color:var(--blue)}
@@ -139,7 +140,7 @@
 @media(min-width:1001px) and (hover:hover) and (pointer:fine){
   .public-page .home-distinction{--distinction-duration:1375ms;--distinction-follow-delay:110ms;--distinction-ease:cubic-bezier(.4,0,.25,1);cursor:default}
   .public-page .home-distinction:is(:hover,:focus-visible){--distinction-duration:1125ms;--distinction-follow-delay:90ms}
-  .public-page .home-distinction-visual{display:grid;place-items:center;position:absolute;z-index:2;top:0;bottom:0;left:50%;right:0;overflow:hidden;border-radius:24px;background:#fff;box-shadow:0 14px 42px #2531380e;transition:left var(--distinction-duration) var(--distinction-ease),right var(--distinction-duration) var(--distinction-ease) var(--distinction-follow-delay),border-radius var(--distinction-duration) var(--distinction-ease)}
+  .public-page .home-distinction-visual{display:grid;place-items:center;position:absolute;z-index:2;top:0;bottom:0;left:50%;right:0;overflow:hidden;border-radius:24px;background:#fff;box-shadow:0 14px 42px #2531380e;transition:right var(--distinction-duration) var(--distinction-ease),left var(--distinction-duration) var(--distinction-ease) var(--distinction-follow-delay),border-radius var(--distinction-duration) var(--distinction-ease)}
   .public-page .home-distinction-visual::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 95% 88% at 54% 50%,#ad238f 0%,#951b81 68%,#891976 100%);opacity:0;transition:opacity 450ms var(--distinction-ease) 900ms}
   .public-page .home-distinction-benefits li{opacity:0;transform:translateX(18px);transition:opacity 700ms cubic-bezier(.22,1,.36,1) var(--benefit-delay),transform 850ms cubic-bezier(.22,1,.36,1) var(--benefit-delay)}
   .public-page .home-distinction-logo{position:relative;z-index:1;display:grid;place-items:center;width:100%;opacity:1;transition:opacity 360ms ease 550ms}
@@ -149,7 +150,7 @@
   .public-page .home-distinction-copy-white{display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;position:absolute;z-index:4;inset:0;padding:var(--distinction-padding);pointer-events:none;clip-path:inset(0 0 0 50%);transition:clip-path var(--distinction-duration) var(--distinction-ease)}
   .public-page .home-distinction-copy-white-inner{grid-column:1;max-width:460px;padding-right:26px}
   .public-page .home-distinction-copy-white .eyebrow,.public-page .home-distinction-copy-white .home-distinction-white-heading{color:#fff}
-  .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-visual{left:0;right:55%;border-radius:24px 0 0 24px}
+  .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-visual{left:0;right:55%;border-radius:24px 0 0 24px;transition:left var(--distinction-duration) var(--distinction-ease),right var(--distinction-duration) var(--distinction-ease) var(--distinction-follow-delay),border-radius var(--distinction-duration) var(--distinction-ease)}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-visual::before{opacity:1;transition:opacity 810ms var(--distinction-ease)}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-logo{opacity:0;transition:opacity 250ms ease}
   .public-page .home-distinction:is(:hover,:focus-visible) .home-distinction-benefits li{opacity:1;transform:none}
@@ -316,6 +317,7 @@
   .public-page .hero-quick-strip .quick-icon{width:25px;height:25px;flex-basis:25px}
   .public-page .hero-quick-strip .quick-links>a:first-child .quick-icon{width:23px;height:23px;flex-basis:23px;margin:1px}
   .public-page .home-therapies{padding:72px 0 58px}
+  .public-page .home-therapies:has(+ .home-distinction)::after{bottom:20px;width:64px}
   .public-page .home-section-intro{margin-bottom:32px}
   .public-page .home-section-intro h2{font-size:36px;line-height:1.08;margin:16px 0 20px}
   .public-page .home-section-intro p{font-size:13px;max-width:380px}
