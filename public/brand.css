@@ -123,7 +123,7 @@ body{background:#fafaf9}.topline{background:#f0f1f2}.header{background:#fafaf9f5
   z-index:-1;
   border-radius:inherit;
   pointer-events:none;
-  background:radial-gradient(ellipse 240px 160px at 90% 125%,rgb(221 61 189 / .85) 0%,rgb(190 37 155 / .55) 42%,transparent 77%);
+  background:radial-gradient(ellipse 300px 145px at 92% 205%,rgb(221 61 189 / .78) 0%,rgb(190 37 155 / .46) 38%,rgb(170 27 135 / .16) 56%,transparent 82%);
   opacity:0;
   transform:translate(20px,15px) scale(.88);
   transform-origin:right bottom;
