@@ -26,13 +26,16 @@ export function enhanceLanding({preview=false}={}){
     // Interior templates share the rhythm, while forms and dense tables stay ready to use.
     '.interior-page .article>.eyebrow','.interior-page .article>h1','.interior-page .article>.article-intro',
     '.interior-page .article>.article-body>*','.interior-page .listing-card',
+    '.interior-page .about-specialisation-copy>*','.interior-page .about-specialisation>h2',
     '.interior-page .service-intro>div>*','.interior-page .service-intro>img',
-    '.interior-page .clinical-card>h2','.interior-page .clinical-card>h3','.interior-page .clinical-card>p','.interior-page .clinical-card>ul',
-    '.interior-page .clinical-aside>.eyebrow','.interior-page .clinical-aside>h2','.interior-page .clinical-aside>p',
-    '.interior-page .therapist-photo-frame','.interior-page .therapist-intro>*',
+    '.interior-page .clinical-card>.eyebrow','.interior-page .clinical-card>h2','.interior-page .clinical-card>h3','.interior-page .clinical-card>p','.interior-page .clinical-card>ul',
+    '.interior-page .clinical-aside>.eyebrow','.interior-page .clinical-aside>h2','.interior-page .clinical-aside>p','.interior-page .clinical-aside>.text-link',
+    '.interior-page .therapist-photo-frame','.interior-page .therapist-intro>:not(.therapist-bio)','.interior-page .therapist-bio>*',
     '.interior-page .therapist-section>h2','.interior-page .therapist-section>p','.interior-page .therapist-section>ul',
+    '.interior-page .therapist-profile-end>*',
     '.interior-page .info-card>.eyebrow','.interior-page .info-card>h2','.interior-page .info-card>h3',
-    '.interior-page .info-card>p','.interior-page .weekly-hours>div',
+    '.interior-page .info-card>p','.interior-page .info-card>a','.interior-page .weekly-hours>div',
+    '.interior-page .faq-list>details',
     '.interior-page .booking-layout>div:first-child>*',
     '.interior-page #booking-form'
 
@@ -92,6 +95,7 @@ export function enhanceLanding({preview=false}={}){
   };
   const onScroll=()=>{if(!frame)frame=requestAnimationFrame(updateScroll);};
   const showAll=()=>{
+    document.body.classList.remove('team-reveal-enabled');
     observer?.disconnect();
     watermarkObserver?.disconnect();
     teamObserver?.disconnect();
@@ -100,7 +104,7 @@ export function enhanceLanding({preview=false}={}){
     finishPrices();
     faqRows.forEach(node=>{node.classList.remove('faq-line-waiting','faq-line-visible');node.style.removeProperty('--detail-delay');});
     starGroups.forEach(node=>{node.classList.remove('stars-waiting','stars-visible');node.style.removeProperty('--stars-delay');});
-    teamCards.forEach(node=>{node.classList.remove('team-card-waiting','team-card-visible');node.style.removeProperty('--team-card-delay');});
+    teamCards.forEach(node=>{node.classList.remove('team-card-priming','team-card-waiting','team-card-visible');node.style.removeProperty('--team-card-delay');});
     journeyGrid?.classList.remove('journey-waiting','journey-visible');
     journeyGrid?.querySelectorAll(':scope>li').forEach(node=>node.style.removeProperty('--journey-delay'));
     targets.forEach(node=>node.classList.remove('home-reveal-ready','home-reveal-visible'));
@@ -121,7 +125,7 @@ export function enhanceLanding({preview=false}={}){
       const now=performance.now();
       entries.filter(entry=>entry.isIntersecting).forEach(entry=>{
         const node=entry.target;
-        const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-distinction-copy,.home-distinction-benefits,.home-price-panel,.home-faq-intro,.faq-list,.footer-top,.listing-grid,.team-roster,.team-profiles,.process-grid,.service-intro,.therapist-intro,.therapist-section,.clinical-card,.info-card,.weekly-hours,.booking-layout')||node.parentElement;
+        const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-distinction-copy,.home-distinction-benefits,.home-price-panel,.home-faq-intro,.faq-list,.footer-top,.listing-grid,.team-roster,.team-profiles,.process-grid,.service-intro,.therapist-intro,.therapist-section,.therapist-profile-end,.clinical-card,.about-specialisation,.info-card,.weekly-hours,.booking-layout')||node.parentElement;
         const delay=Math.min(800,Math.max(140,(groupTimings.get(group)||0)-now));
         groupTimings.set(group,now+delay+(node.matches('details')?220:170));
         node.style.setProperty('--home-reveal-delay',`${delay}ms`);
@@ -141,19 +145,36 @@ export function enhanceLanding({preview=false}={}){
     },{threshold:.18,rootMargin:`0px 0px -${Math.min(140,Math.max(90,innerHeight*.18))}px 0px`});
     targets.forEach(node=>observer.observe(node));
     if(teamCards.length){
-      teamCards.forEach((card,index)=>{
-        card.style.setProperty('--team-card-delay',`${100+(index%5)*115}ms`);
-        card.classList.add('team-card-waiting');
+      const rowPositions=new Map();
+      teamCards.forEach(card=>{
+        const row=Math.round(card.getBoundingClientRect().top/8);
+        const position=rowPositions.get(row)||0;
+        rowPositions.set(row,position+1);
+        card.style.setProperty('--team-card-delay',`${90+position*110}ms`);
+        card.classList.add('team-card-priming','team-card-waiting');
       });
       teamObserver=new IntersectionObserver(entries=>{
         entries.filter(entry=>entry.isIntersecting).forEach(entry=>{
-          entry.target.classList.add('team-card-visible');
-          teamObserver.unobserve(entry.target);
+          const card=entry.target;
+          teamObserver.unobserve(card);
+          // An image arriving mid-transition makes the first visible row look different.
+          const photos=[...card.querySelectorAll('img')];
+          Promise.all(photos.map(photo=>photo.complete?Promise.resolve():Promise.race([
+            photo.decode().catch(()=>{}),
+            new Promise(resolve=>setTimeout(resolve,750))
+          ]))).then(()=>{
+            if(card.isConnected&&card.classList.contains('team-card-waiting'))card.classList.add('team-card-visible');
+          });
         });
-      },{threshold:.16,rootMargin:'0px 0px -12% 0px'});
-      requestAnimationFrame(()=>requestAnimationFrame(()=>teamCards.forEach(card=>{
-        if(card.isConnected&&card.classList.contains('team-card-waiting'))teamObserver.observe(card);
-      })));
+      },{threshold:.25,rootMargin:'0px 0px -22% 0px'});
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        teamCards.forEach(card=>{
+          if(card.isConnected&&card.classList.contains('team-card-waiting')){
+            card.classList.remove('team-card-priming');
+            teamObserver.observe(card);
+          }
+        });
+      }));
     }
     if(journeyGrid){
       journeyGrid.querySelectorAll(':scope>li').forEach((step,index)=>step.style.setProperty('--journey-delay',`${120+index*430}ms`));

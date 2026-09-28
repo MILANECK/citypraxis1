@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=21';
+import {enhanceLanding} from './landing.js?v=23';
 let landingCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -454,6 +454,7 @@ function renderApp(content,preview){
   document.body.classList.toggle('home-page',location.pathname==='/');
   document.body.classList.toggle('interior-page',location.pathname!=='/');
   document.body.dataset.page=location.pathname;
+  document.body.classList.toggle('team-reveal-enabled',location.pathname==='/ueber-uns'&&!preview&&!matchMedia('(prefers-reduced-motion: reduce)').matches);
   data=I18n.localizeContent(content);
   document.body.classList.toggle('editor-preview-embedded',preview&&window.parent!==window);
   if(preview&&window.parent!==window&&!document.body.dataset.editorPreviewPage)document.body.dataset.editorPreviewPage='true';

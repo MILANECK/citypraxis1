@@ -97,10 +97,15 @@
 .chat-content:has(.conversation-preview){display:flex}
 .conversation-preview{display:flex;flex-direction:column;flex:1;min-width:0}
 .conversation-preview .conversation-thread{margin-bottom:20px}
-.conversation-unlock{margin:2px 0 16px;padding:14px 15px 12px;border:1.5px solid #b73d68;border-radius:17px;background:#fff9fc}
+.conversation-unlock{margin:2px 0 16px;padding:14px 15px 12px;border:0;border-radius:17px;background:#951b81;color:#fff;box-shadow:0 12px 28px #951b8124}
+#cp-chat .conversation-unlock .chat-check span,#cp-chat .conversation-unlock a{color:#fff}
+#cp-chat .conversation-unlock a{text-decoration:underline;text-decoration-color:#ffffff90;text-underline-offset:3px}
+#cp-chat .conversation-unlock input[type=checkbox]{accent-color:#fff}
+#cp-chat .conversation-unlock :focus-visible{outline-color:#fff}
 #cp-chat .conversation-start .chat-check{font-size:11px;line-height:1.5;margin:0 0 12px}
 .conversation-start-actions{display:flex;align-items:center;gap:16px;margin-bottom:0}
-#cp-chat .conversation-start-actions .chat-primary{width:auto;min-height:36px;padding:8px 14px;margin:0;font-size:12px!important;flex-shrink:0}
+#cp-chat .conversation-start-actions .chat-primary{width:auto;min-height:36px;padding:8px 14px;margin:0;font-size:12px!important;flex-shrink:0;background:#fff;border-color:#fff;color:#951b81}
+@media(hover:hover) and (pointer:fine){#cp-chat .conversation-start-actions .chat-primary:hover{background:#f7eaf4;border-color:#f7eaf4}}
 .conversation-start-actions a{font-size:11px}
 #cp-chat .conversation-locked textarea{background:#f6f7f8;border-color:#e6e8eb;cursor:not-allowed}
 #cp-chat .conversation-locked button:disabled{background:#a7c3cc;opacity:1;cursor:not-allowed}

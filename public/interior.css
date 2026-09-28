@@ -19,17 +19,21 @@
 .interior-page:is([data-page="/leistungen"],[data-page="/schwerpunkte"],[data-page="/ueber-uns"],[data-page="/preise"],[data-page="/ablauf-wahltherapie"]) .article>:is(.eyebrow,h1,.article-intro){text-align:center;margin-inline:auto}
 .interior-page .listing-grid{gap:26px;margin-top:48px}
 .interior-page .listing-card{padding:38px;border-radius:24px;background:#ffffffed;box-shadow:0 14px 45px #25313807;min-width:0;transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s ease}
+.interior-page .listing-card.home-reveal-ready{opacity:0;filter:blur(7px);translate:0 24px;transition:opacity 1.2s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms),filter 1.3s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms),translate 1.3s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms)}
+.interior-page .listing-card.home-reveal-ready.home-reveal-visible{opacity:1;filter:blur(0);translate:0 0}
 .interior-page .listing-card h2{font-size:30px;line-height:1.16;margin:17px 0 22px}
 .interior-page .listing-card p{font-size:16px;line-height:1.8;margin-top:0;margin-bottom:28px}
 .interior-page .listing-card .text-link{padding-top:12px;font-size:13px}
 .interior-page .listing-card .health-icon{height:58px;width:64px;margin-bottom:12px}
 .interior-page .team-directory{margin-block:52px 28px}
 .interior-page .team-directory-label{display:block;margin-bottom:26px}
-.interior-page .team-directory .team-profiles{grid-template-columns:repeat(5,minmax(0,1fr));align-items:stretch;gap:22px}
+.interior-page .team-directory .team-profiles{grid-template-columns:repeat(5,minmax(0,1fr));align-items:stretch;gap:28px}
 .interior-page[data-page="/ueber-uns"] .team-directory :is(.team-featured,.team-roster){display:contents}
 .interior-page .team-directory{position:relative;isolation:isolate}
 .interior-page .team-directory::before{content:"";position:absolute;z-index:-1;inset:-45px 0 -65px;pointer-events:none;background:radial-gradient(ellipse 39% 44% at 31% 35%,#a6d2df90 0%,transparent 100%),radial-gradient(ellipse 40% 44% at 70% 67%,#dfcdb5a8 0%,transparent 100%);filter:blur(38px);-webkit-mask-image:radial-gradient(ellipse 80% 85% at 50% 52%,#000 32%,transparent 100%);mask-image:radial-gradient(ellipse 80% 85% at 50% 52%,#000 32%,transparent 100%)}
+.interior-page.team-reveal-enabled .team-directory :is(.team-person,.team-aim-card):not(.team-card-visible):not(:focus-within){opacity:0;filter:blur(7px);transform:translate3d(0,34px,0) scale(.975)}
 .interior-page .team-directory :is(.team-person,.team-aim-card).team-card-waiting{opacity:0;filter:blur(7px);transform:translate3d(0,34px,0) scale(.975);transition:opacity 1.05s cubic-bezier(.22,1,.36,1) var(--team-card-delay,0ms),filter 1.2s cubic-bezier(.22,1,.36,1) var(--team-card-delay,0ms),transform 1.2s cubic-bezier(.22,1,.36,1) var(--team-card-delay,0ms);will-change:opacity,filter,transform}
+.interior-page .team-directory :is(.team-person,.team-aim-card).team-card-priming{transition:none}
 .interior-page .team-directory :is(.team-person,.team-aim-card).team-card-waiting.team-card-visible,.interior-page .team-directory :is(.team-person,.team-aim-card).team-card-waiting:focus-within{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
 .interior-page .team-directory .team-person{border-radius:22px;background:#fff;box-shadow:0 14px 38px #25313808}
 .interior-page .team-directory .team-profile-link{border-radius:22px;outline:0;box-shadow:none}
@@ -179,7 +183,7 @@
   .interior-page #booking-form.compact-booking{padding:24px 20px;border-radius:22px}
 }
 @media(max-width:600px){
-  .interior-page .team-directory .team-profiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .interior-page .team-directory .team-profiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
   .interior-page .team-directory .team-aim-card{padding:28px;min-height:300px}
   .interior-page .about-distinction ul{columns:1}
   .interior-page .team-directory .team-card-copy{padding:16px 12px}
