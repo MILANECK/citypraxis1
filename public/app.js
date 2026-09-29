@@ -322,14 +322,16 @@ function bind() {
       event.preventDefault();
       if(details.dataset.animating==='true')return;
       const opening=!details.open,start=details.getBoundingClientRect().height;
+      const mapDetails=Boolean(details.closest('.map-details'));
+      const easing=mapDetails?'cubic-bezier(.45,0,.55,1)':'cubic-bezier(.22,1,.36,1)';
       details.dataset.animating='true';
       if(opening)details.open=true;
       const end=opening?details.scrollHeight:summary.getBoundingClientRect().height;
       details.style.overflow='hidden';
-      const panel=details.animate({height:[`${start}px`,`${end}px`]},{duration:420,easing:'cubic-bezier(.22,1,.36,1)'});
+      const panel=details.animate({height:[`${start}px`,`${end}px`]},{duration:mapDetails?820:420,easing});
       content.animate(
         opening?{opacity:[0,1],transform:['translateY(-9px)','translateY(0)']}:{opacity:[1,0],transform:['translateY(0)','translateY(-7px)']},
-        {duration:opening?340:220,easing:'cubic-bezier(.22,1,.36,1)',fill:'both'}
+        {duration:mapDetails?(opening?680:630):(opening?340:220),delay:mapDetails&&opening?80:0,easing,fill:'both'}
       );
       panel.onfinish=()=>{
         details.open=opening;
