@@ -295,7 +295,8 @@
   .public-page .hero-immersive .hero-actions .button,.public-page .hero-immersive .urgent-button{font-size:11px;min-height:48px;padding:14px 19px;gap:14px}
   .public-page .hero-quick-strip{padding-bottom:20px}
   .public-page .hero-quick-strip .quick-links{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;padding:18px 0 0}
-  .public-page .hero-quick-strip .quick-links>a{gap:10px;flex-direction:row;align-items:center;min-width:0}
+  .public-page .hero-quick-strip .quick-links>a{gap:10px;flex-direction:row;align-items:center;justify-content:flex-start;min-width:0}
+  .public-page .hero-quick-strip .quick-links>a>div{min-width:0}
   .public-page .hero-quick-strip .quick-links strong{font-size:10px}
   .public-page .hero-quick-strip .quick-links div>span{font-size:9px}
   .public-page .hero-quick-strip .quick-icon{width:25px;height:25px;flex-basis:25px}
