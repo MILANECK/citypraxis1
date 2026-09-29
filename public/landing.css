@@ -327,7 +327,7 @@
   .public-page .home-section-intro{margin-bottom:32px}
   .public-page .home-section-intro h2{font-size:36px;line-height:1.08;margin:16px 0 20px}
   .public-page .home-section-intro p{font-size:13px;max-width:380px}
-  .public-page .therapy-grid{grid-template-columns:repeat(5,minmax(230px,68vw));gap:14px;padding-bottom:22px}
+  .public-page .therapy-grid{grid-template-columns:repeat(5,minmax(230px,68vw));gap:14px;width:calc(100% + 40px);margin-inline:-20px;padding:0 20px 22px;scroll-padding-inline:20px}
   .public-page .therapy-card{aspect-ratio:.74;max-height:400px;border-radius:20px}
   .public-page .therapy-card h3{font-size:19px}
   .public-page .therapy-card>.therapy-card-copy{padding-left:18px}

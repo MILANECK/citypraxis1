@@ -43,7 +43,7 @@ export function enhanceLanding({preview=false}={}){
     '.interior-page #booking-form'
 
   ].join(','))];
-  const panelTargets=[...document.querySelectorAll('.interior-page :is(.article,.clinical-reading)>.clinical-card,.interior-page .therapist-section,.interior-page .contact-grid>.info-card')];
+  const panelTargets=[...document.querySelectorAll('.interior-page :is(.article,.clinical-reading)>.clinical-card,.interior-page .therapist-section,.interior-page .contact-grid>:is(.info-card,.map-card)')];
   targets.push(...panelTargets);
   for(let index=targets.length-1;index>=0;index--){
     if(panelTargets.some(panel=>panel!==targets[index]&&panel.contains(targets[index])))targets.splice(index,1);
