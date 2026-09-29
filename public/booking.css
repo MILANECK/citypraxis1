@@ -76,8 +76,8 @@
 @media(prefers-reduced-motion:reduce){.booking-optional-mark{transition:none}}
 
 /* The form uses the header button radius and quiet ruled fields. */
-.interior-page .booking-gradient-stage{background:#fff;--booking-gradient-top:0px}
-.interior-page .booking-gradient-stage::after{content:"";position:absolute;inset:auto 0 0;height:min(300px,30%);z-index:1;pointer-events:none;background:linear-gradient(180deg,transparent,#fff)}
+.interior-page .booking-gradient-stage{background:transparent}
+.interior-page[data-page="/termin"] .fine-print{color:var(--ink)}
 #booking-form.compact-booking{padding:34px 36px}
 #booking-form.compact-booking h2{padding-bottom:19px;border-bottom:1px solid #dbe4e6;margin-bottom:23px}
 #booking-form.compact-booking input:not([type=checkbox]):not([type=radio]),#booking-form.compact-booking textarea,#booking-form.compact-booking .booking-optional-content input:not([type]){min-height:43px;padding:10px 0 9px;margin-top:4px;background:transparent;border:0;border-bottom:1px solid #c9d7dc;border-radius:0;box-shadow:none;color:var(--ink)}
@@ -95,7 +95,6 @@
 @media(hover:hover) and (pointer:fine){#booking-form.compact-booking>button.button[type=submit]:hover{filter:brightness(1.06);transform:translateY(-2px);box-shadow:0 10px 24px #951b8130}}
 #booking-form .booking-review{background:#f1f6f8;border-radius:14px}
 @media(max-width:767px){
-  .interior-page .booking-gradient-stage::before{display:block;background:linear-gradient(90deg,#fffffff2 0%,#ffffffe0 48%,#ffffffb8 100%)}
   #booking-form.compact-booking{padding:24px 22px}
 }
 .public-page.editor-preview-embedded .booking-gradient-canvas{opacity:.72}

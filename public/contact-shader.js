@@ -36,14 +36,14 @@ const teamSettings={
   ...contactSettings,
   colors:[
     [.975,.980,.985],
-    [.584,.106,.506],
-    [.455,.300,.620],
-    [.667,.851,.922],
+    [.635,.055,.455],
+    [.898,.790,.663],
+    [.780,.886,.941],
     ...contactSettings.colors.slice(4)
   ],
-  colorCount:4,offsetX:-.42
+  colorCount:4,offsetX:-.72,timeScale:1.3
 };
-const bookingSettings={...teamSettings,offsetX:-.18};
+const bookingSettings={...teamSettings,offsetY:.08};
 
 export function initContactShader(canvas,{preset='contact'}={}){
   if(!canvas)return ()=>{};

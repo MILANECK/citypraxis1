@@ -23,7 +23,11 @@
 .interior-page .contact-shader-canvas{position:fixed;inset:0;display:block;width:100vw;height:100svh;pointer-events:none;opacity:0;background:radial-gradient(ellipse 70% 55% at 75% 26%,#f7d797 0%,transparent 85%),radial-gradient(ellipse 65% 60% at 22% 75%,#f7c098 0%,transparent 85%),#fafafa;transition:opacity 1.4s cubic-bezier(.22,1,.36,1)}
 .interior-page .contact-shader-canvas:is(.is-ready,.is-fallback),.interior-page.editor-preview-embedded .contact-shader-canvas{opacity:.8}
 .interior-page[data-page="/ueber-uns"] .home-atmosphere-grain{opacity:.025}
-.interior-page .team-shader-canvas{background:radial-gradient(ellipse 62% 60% at 91% 35%,#951b81 0%,transparent 82%),radial-gradient(ellipse 56% 58% at 103% 83%,#744d9e 0%,transparent 84%),radial-gradient(ellipse 47% 55% at 66% 63%,#a9d9eb 0%,transparent 85%),#fafbfd;mask-image:linear-gradient(to bottom,transparent 0%,#0006 22%,#000 58%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#0006 22%,#000 58%)}
+.interior-page .team-shader-canvas{background:radial-gradient(ellipse 62% 60% at 91% 35%,#a20e74 0%,transparent 82%),radial-gradient(ellipse 56% 58% at 103% 83%,#e5c9a9 0%,transparent 84%),radial-gradient(ellipse 47% 55% at 66% 63%,#c7e2f0 0%,transparent 85%),#fafbfd;mask-image:linear-gradient(to bottom,transparent 0%,#0006 22%,#000 58%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#0006 22%,#000 58%)}
+.interior-page[data-page="/termin"] .home-atmosphere-background{inset:0;mask-image:none;-webkit-mask-image:none}
+.interior-page[data-page="/termin"] .home-atmosphere-colors{display:none}
+.interior-page[data-page="/termin"] .home-atmosphere-grain{opacity:.025}
+.interior-page .booking-gradient-canvas{background:radial-gradient(ellipse 62% 60% at 91% 35%,#a20e74 0%,transparent 82%),radial-gradient(ellipse 56% 58% at 103% 83%,#e5c9a9 0%,transparent 84%),radial-gradient(ellipse 47% 55% at 66% 63%,#c7e2f0 0%,transparent 85%),#fafbfd}
 @media(prefers-reduced-motion:reduce){.interior-page :is(.contact-shader-canvas,.interior-mesh-shader-canvas){transition:none}}
 
 /* Keyframes start reliably as each subpage is inserted. Scroll reveals below

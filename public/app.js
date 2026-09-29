@@ -215,7 +215,7 @@ function contact() {
 function route() {
   const path=location.pathname.replace(/\/$/,'')||'/';
   if(path==='/') return home();
-  if(path==='/termin') return `<div class="booking-gradient-stage"><canvas id="booking-gradient" class="booking-gradient-canvas" aria-hidden="true"></canvas>${appointment()}</div>`;
+  if(path==='/termin') return `<div class="booking-gradient-stage">${appointment()}</div>`;
   if(path.startsWith('/team/')){
     const therapist=data.team.find(t=>path===`/team/${encodeURIComponent(t.id)}`);
     if(therapist)return therapistPage(therapist);
@@ -459,20 +459,14 @@ function renderApp(content,preview){
   data=I18n.localizeContent(content);
   document.body.classList.toggle('editor-preview-embedded',preview&&window.parent!==window);
   if(preview&&window.parent!==window&&!document.body.dataset.editorPreviewPage)document.body.dataset.editorPreviewPage='true';
-  const shaderPreset=location.pathname==='/kontakt'?'contact':location.pathname==='/ueber-uns'?'team':location.pathname==='/'?'landing':['/preise','/ablauf-wahltherapie'].includes(location.pathname)?'interior':null;
-  const shaderId=shaderPreset==='contact'?'contact-shader':shaderPreset==='team'?'team-shader':shaderPreset==='landing'?'home-mesh-shader':'interior-mesh-shader';
-  const shaderClass=shaderPreset==='contact'?'contact-shader-canvas':shaderPreset==='team'?'contact-shader-canvas team-shader-canvas':shaderPreset==='landing'?'home-mesh-shader':'interior-mesh-shader-canvas';
+  const shaderPreset=location.pathname==='/kontakt'?'contact':location.pathname==='/ueber-uns'?'team':location.pathname==='/termin'?'booking':location.pathname==='/'?'landing':['/preise','/ablauf-wahltherapie'].includes(location.pathname)?'interior':null;
+  const shaderId=shaderPreset==='contact'?'contact-shader':shaderPreset==='team'?'team-shader':shaderPreset==='booking'?'booking-gradient':shaderPreset==='landing'?'home-mesh-shader':'interior-mesh-shader';
+  const shaderClass=shaderPreset==='contact'?'contact-shader-canvas':shaderPreset==='team'?'contact-shader-canvas team-shader-canvas':shaderPreset==='booking'?'contact-shader-canvas booking-gradient-canvas':shaderPreset==='landing'?'home-mesh-shader':'interior-mesh-shader-canvas';
   const shaderCanvas=shaderPreset?`<canvas id="${shaderId}" class="${shaderClass}" aria-hidden="true"></canvas>`:'';
   $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div>'+shaderCanvas+'<div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+footer()+'</div>'+cookiePanel();
-  if(location.pathname==='/termin'&&!preview){
-    const bookingCanvas=$('#booking-gradient');
-    import('/contact-shader.js?v=contact-right-1').then(({initContactShader})=>{
-      if(bookingCanvas?.isConnected)meshShaderCleanup=initContactShader(bookingCanvas,{preset:'booking'});
-    }).catch(()=>bookingCanvas?.classList.add('is-fallback'));
-  }
   if(shaderPreset&&!preview){
     const canvas=$(`#${shaderId}`);
-    import('/contact-shader.js?v=contact-right-1').then(({initContactShader})=>{
+    import('/contact-shader.js?v=booking-mesh-3').then(({initContactShader})=>{
       if(canvas.isConnected)meshShaderCleanup=initContactShader(canvas,{preset:shaderPreset});
     }).catch(()=>canvas.classList.add('is-fallback'));
   }

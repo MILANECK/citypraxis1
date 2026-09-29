@@ -522,18 +522,13 @@ footer{background:#f6f4f1;color:var(--ink)}
 @media(hover:hover) and (pointer:fine){.listing-card:hover .health-icon{filter:none;transform:translateY(-2px)}}
 @media(prefers-reduced-motion:reduce){.listing-card .health-icon{transition:none}.listing-card:hover .health-icon{filter:hue-rotate(113deg);transform:none}}
 
-/* The shared contact mesh fills the right half of the booking page behind the form. */
+/* The booking layout sits over the shared page-wide contact mesh. */
 .booking-gradient-stage{position:relative;isolation:isolate;overflow:clip}
-.booking-gradient-stage::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 112% 162% at 5% 86%,var(--beige) 0 53%,#f6f4f1f5 62%,#f6f4f1cf 70%,#f6f4f1a1 76%,transparent 85%)}
-.booking-gradient-canvas{position:absolute;inset:var(--booking-gradient-top,0) 0 0 34%;z-index:0;display:block;width:66%;height:calc(100% - var(--booking-gradient-top,0));pointer-events:none;background:radial-gradient(circle at 68% 25%,#951b81 0,transparent 48%),radial-gradient(circle at 86% 75%,#744d9e 0,transparent 52%),radial-gradient(circle at 32% 64%,#a9d9eb 0,transparent 48%),#fafbfd;opacity:0;transition:opacity 1.4s cubic-bezier(.22,1,.36,1)}
-.booking-gradient-canvas.is-ready,.booking-gradient-canvas.is-fallback{opacity:1}
-@media(prefers-reduced-motion:reduce){.booking-gradient-canvas{opacity:1;transition:none}}
 .booking-gradient-stage>.booking-layout{position:relative;z-index:2;padding-block:105px}
 .booking-gradient-stage #booking-form{box-shadow:0 22px 60px #17193226}
 .booking-gradient-stage #booking-form.request-confirmation{align-self:center}
 @media(max-width:767px){.booking-gradient-stage>.booking-layout{padding-block:35px 70px}.booking-gradient-stage #booking-form{box-shadow:0 18px 45px #17193222}}
 @media(max-width:767px){.booking-gradient-stage:has(#booking-form.request-confirmation)>.booking-layout{padding-bottom:calc(145px + env(safe-area-inset-bottom))}}
-@media(max-width:767px){.booking-gradient-stage::before{display:none}.booking-gradient-canvas{inset-inline:0;width:100%}}
 
 /* The card grows a subtle folder edge as the visitor enters a name. */
 #booking-form{position:relative;overflow:visible}
