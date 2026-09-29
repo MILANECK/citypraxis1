@@ -5,7 +5,38 @@ import {CONVERSATION_LIMIT,createConversationService,conversationFacts,composeRe
 import {childrenService} from '../src/therapy-catalog.mjs';
 import {newSession} from '../src/chat/security.mjs';
 
-const answer=(changes={})=>({kind:'appointment',answer:'',booking_intent:'request',reason:null,availability:null,first_name:null,last_name:null,patient_status:null,...changes});
+const answer=(changes={})=>({kind:'appointment',answer:'',related_pages:[],booking_intent:'request',reason:null,availability:null,first_name:null,last_name:null,patient_status:null,...changes});
+
+test('answers include catalog links, preserve link follow-up context and reject invented destinations',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const facts=conversationFacts({services:[{id:'physiotherapie',title:'Physiotherapie',titleEn:'Physiotherapy'}],symptoms:[{id:'kopfschmerzen',title:'Kopfschmerzen',titleEn:'Headaches'}],team:[{id:'isabella-casny',title:'Isabella Casny'}]});
+  let calls=0,value=answer({kind:'practice_question',booking_intent:'unspecified',answer:'Saturday appointments are from 08:30 to 12:30.'});
+  const service=createConversationService({getFacts:async()=>facts,fetcher:async(_,options)=>{
+    calls++;const request=JSON.parse(options.body),input=JSON.parse(request.input);
+    assert.ok(request.text.format.schema.required.includes('related_pages'));
+    assert.ok(request.text.format.schema.properties.related_pages.items.enum.includes('service:physiotherapie'));
+    assert.ok(input.publishedFacts.sitePages.some(page=>page.id==='hours'&&page.url==='/kontakt#oeffnungszeiten'));
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const hours=await turn('Are you open on Saturday?');
+    assert.match(hours.message,/Saturday appointments are from/);
+    assert.match(hours.message,/\[Opening hours\]\(\/kontakt\?lang=en#oeffnungszeiten\)/);
+    const before=calls,where=await turn('Where?');
+    assert.equal(calls,before);
+    assert.match(where.message,/Opening hours/);
+    assert.doesNotMatch(where.message,/Stubenbastei/);
+    value=answer({kind:'practice_question',booking_intent:'unspecified',answer:'Our team offers physiotherapy.',related_pages:['service:physiotherapie']});
+    assert.match((await turn('Tell me about physiotherapy')).message,/\[Physiotherapy\]\(\/leistungen\/physiotherapie\?lang=en\)/);
+    value=answer({kind:'medical',booking_intent:'unspecified',answer:'Our team can assess your headaches in person.',reason:'Headaches',related_pages:['specialism:kopfschmerzen']});
+    assert.match((await turn('I have headaches')).message,/\/schwerpunkte\/kopfschmerzen\?lang=en/);
+    assert.doesNotMatch((await turn('Yes please')).message,/\]\(/);
+    assert.doesNotMatch((await turn('Test Visitor')).message,/\]\(/);
+    value=answer({kind:'practice_question',booking_intent:'unspecified',answer:'More details.',related_pages:['invented-page']});
+    assert.equal((await turn('Tell me about treatments?')).status,503);
+  }finally{process.env=old;}
+});
 test('headache concern survives price questions and appointment intake, with price links in context',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   const inputs=[];
@@ -264,7 +295,7 @@ test('mixed questions retain concerns, ask before intake, respect a decline and 
   try{
     const invitation=await turn('My jaw hurts, what are the prices?');assert.ok(invitation.message.includes("Published pricing information."));assert.equal((invitation.message.match(/Published pricing information/g)||[]).length,1);assert.match(invitation.message,/Would you like me to prepare/);assert.doesNotMatch(invitation.message,/first and last name/);assert.ok(invitation.message.length<=700);assert.ok(composeReply('A long sentence. '.repeat(100),'May I have your name?').length<=700);assert.equal(composeReply('Perfect, thank you. Perfect, thank you. May I have your name?','May I have your name?'),'Perfect, thank you.\n\nMay I have your name?');
     value=answer({booking_intent:'defer',answer:'Of course. We are happy to answer your questions.'});const declined=await turn('Not yet, just information');assert.equal(declined.message,value.answer);
-    value=answer({kind:'practice_question',booking_intent:'unspecified',answer:'We are in Vienna.'});assert.equal((await turn('Where are you?')).message,value.answer);
+    value=answer({kind:'practice_question',booking_intent:'unspecified',answer:'We are in Vienna.'});assert.equal((await turn('Where are you?')).message,value.answer+'\n\n[Contact & directions](/kontakt?lang=en)');
     value=answer({booking_intent:'request',answer:'We would be happy to help.'});assert.match((await turn('Yes, I want to request an appointment now')).message,/first and last name/);
   }finally{process.env=old;}
 });

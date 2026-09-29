@@ -13,3 +13,18 @@ test('chat link rendering escapes text and rejects outside URLs',()=>{
   assert.equal(formatChatMessage('[click](javascript:alert(1))'), '[click](javascript:alert(1))');
   assert.equal(formatChatMessage('https://evil.example/preise'), 'https://evil.example/preise');
 });
+
+test('section and detail links follow a new deployment domain automatically',()=>{
+  const origin='https://new-practice.example';
+  for(const path of ['/kontakt?lang=en#oeffnungszeiten','/leistungen/physiotherapie?lang=de','/schwerpunkte/kopfschmerzen?lang=en','/team/isabella-casny?lang=en','/ueber-uns?lang=de#team','/termin?lang=en#booking-form']){
+    assert.equal(formatChatMessage(`[More](${path})`,origin),`<a href="${path}">More</a>`);
+    assert.equal(formatChatMessage(`[More](${origin}${path})`,origin),`<a href="${path}">More</a>`);
+  }
+  assert.equal(formatChatMessage('/leistungen/physiotherapie?lang=en',origin),'<a href="/leistungen/physiotherapie?lang=en">/leistungen/physiotherapie?lang=en</a>');
+});
+
+test('unsupported routes and disguised external links stay non-clickable',()=>{
+  for(const url of ['/admin','/preise-invented','/leistungen/test/extra','//evil.example/preise','https://evil.example/leistungen/test','https://citypraxis.wien@evil.example/preise','https://new-practice.example.evil.test/preise']){
+    assert.doesNotMatch(formatChatMessage(`[More](${url})`,'https://new-practice.example'),/<a /);
+  }
+});
