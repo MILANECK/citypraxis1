@@ -85,6 +85,12 @@
 #booking-form.compact-booking .therapist-choice-control select:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 #booking-form .booking-choice>span,#booking-form .concern-chip>span{border-radius:14px;background:#eef4f6}
 #booking-form .booking-choice input:checked+span,#booking-form .concern-chip input:checked+span{background:var(--blue);color:#fff}
+#booking-form .booking-choice>span,#booking-form .concern-chip>span{position:relative;isolation:isolate;overflow:hidden;transition:color .38s ease,box-shadow .38s ease}
+#booking-form .booking-choice>span::before,#booking-form .concern-chip>span::before{content:"";position:absolute;z-index:-1;inset:0;border-radius:inherit;background:linear-gradient(115deg,#83166f 0%,#a6218d 55%,#952083 100%);opacity:0;transition:opacity .38s ease}
+@media(hover:hover) and (pointer:fine){
+  #booking-form .booking-choice:hover>span,#booking-form .concern-chip:hover>span{color:#fff;transform:none}
+  #booking-form .booking-choice:hover>span::before,#booking-form .concern-chip:hover>span::before{opacity:1}
+}
 #booking-form .booking-optional{background:transparent;border-top:1px solid #dbe4e6;border-bottom:1px solid #dbe4e6;border-radius:0;margin-block:22px}
 #booking-form .booking-optional>summary{padding:14px 0}
 #booking-form .booking-optional-content{padding:0 0 18px}
@@ -94,7 +100,7 @@
 #booking-form.compact-booking>button.button[type=submit] .arrow-symbol{transition:transform .45s cubic-bezier(.22,1,.36,1)}
 @media(hover:hover) and (pointer:fine){#booking-form.compact-booking>button.button[type=submit]:hover{background-position:0 50%;transform:translateY(-2px);box-shadow:0 10px 24px #951b8130}#booking-form.compact-booking>button.button[type=submit]:hover .arrow-symbol{transform:translate(3px,-3px)}}
 #booking-form.compact-booking>button.button[type=submit]:focus-visible{background-position:0 50%}
-@media(prefers-reduced-motion:reduce){#booking-form.compact-booking>button.button[type=submit],#booking-form.compact-booking>button.button[type=submit] .arrow-symbol{transition:none}#booking-form.compact-booking>button.button[type=submit]:hover{transform:none}}
+@media(prefers-reduced-motion:reduce){#booking-form.compact-booking>button.button[type=submit],#booking-form.compact-booking>button.button[type=submit] .arrow-symbol,#booking-form .booking-choice>span,#booking-form .concern-chip>span,#booking-form .booking-choice>span::before,#booking-form .concern-chip>span::before{transition:none}#booking-form.compact-booking>button.button[type=submit]:hover{transform:none}}
 #booking-form .booking-review{background:#f1f6f8;border-radius:14px}
 @media(max-width:767px){
   #booking-form.compact-booking{padding:24px 22px}
