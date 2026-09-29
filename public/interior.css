@@ -92,6 +92,12 @@
 .interior-page :is(.clinical-reading>.clinical-card,.article>.clinical-card,.therapist-section,.info-card,.map-card){background:#ffffffed;border:0;border-radius:24px;box-shadow:0 14px 45px #25313807}
 .interior-page .clinical-reading{margin-block:48px}
 .interior-page .clinical-reading>.clinical-card{padding:38px;margin-bottom:24px}
+.interior-page[data-page="/ablauf-wahltherapie"] .clinical-reading{margin-inline:auto}
+.interior-page[data-page="/ablauf-wahltherapie"] .clinical-reading>.clinical-card:first-child{padding:8px 24px 18px;background:transparent;box-shadow:none;text-align:center}
+.interior-page[data-page="/ablauf-wahltherapie"] .clinical-reading>.clinical-card:first-child p{max-width:65ch;margin-inline:auto;font-size:19px;color:var(--ink)}
+.interior-page[data-page="/ablauf-wahltherapie"] .clinical-reading>.clinical-card:last-child{background:linear-gradient(145deg,#f8edf5,#faf1f4 62%,#fbf5ef);box-shadow:0 14px 45px #951b810a}
+.interior-page[data-page="/ablauf-wahltherapie"] .clinical-reading>.clinical-card:last-child h2{color:var(--pink)}
+.interior-page[data-page="/ablauf-wahltherapie"] .article>.button{display:flex;width:max-content;max-width:100%;margin-inline:auto}
 .interior-page .related-links a,.interior-page .related-links .related-info{border:0;border-radius:12px;background:#edf4f6;font-size:14px;padding:16px 20px}
 .interior-page .therapist-hero{gap:clamp(40px,7vw,100px);margin-block:36px 72px}
 .interior-page .therapist-photo-frame{max-width:480px;border-radius:24px;box-shadow:0 18px 45px #2531380b}
@@ -191,6 +197,8 @@
   .interior-page .therapist-intro h1{font-size:37px}
   .interior-page .therapist-photo-frame{max-width:100%;border-radius:22px}
   .interior-page .clinical-reading{margin-block:36px}
+  .interior-page[data-page="/ablauf-wahltherapie"] .clinical-reading>.clinical-card:first-child{padding:0 6px 12px}
+  .interior-page[data-page="/ablauf-wahltherapie"] .clinical-reading>.clinical-card:first-child p{font-size:17px}
   .interior-page .clinical-aside{padding:26px}
   .interior-page .process-grid{grid-template-columns:1fr;gap:16px;margin-block:36px}
   .interior-page .process-grid li{padding:26px 26px 26px 84px;min-height:130px}
