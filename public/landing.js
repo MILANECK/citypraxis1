@@ -55,6 +55,7 @@ export function enhanceLanding({preview=false}={}){
   const watermark=document.querySelector('.home-footer-watermark');
   const priceValues=[...document.querySelectorAll('.home-price-value')].map((node,index)=>({node,final:Number(node.dataset.priceValue),text:node.textContent,duration:index===1?940:1000}));
   const faqRows=[...document.querySelectorAll('.home-faq .faq-list>details')];
+  const benefitRows=[...document.querySelectorAll('.home-distinction-benefits>li')];
   const starGroups=[...document.querySelectorAll('.home-people .review-stars')];
   const teamCards=[...document.querySelectorAll('.interior-page[data-page="/ueber-uns"] .team-directory :is(.team-person,.team-aim-card)')];
   const journeyGrid=document.querySelector('.interior-page[data-page="/ablauf-wahltherapie"] .process-grid');
@@ -138,6 +139,7 @@ export function enhanceLanding({preview=false}={}){
     watermark?.classList.remove('watermark-waiting','watermark-visible');
     finishPrices();
     faqRows.forEach(node=>{node.classList.remove('faq-line-waiting','faq-line-visible');node.style.removeProperty('--detail-delay');});
+    benefitRows.forEach(node=>{node.classList.remove('benefit-line-waiting','benefit-line-visible');node.style.removeProperty('--benefit-line-delay');});
     starGroups.forEach(node=>{node.classList.remove('stars-waiting','stars-visible');node.style.removeProperty('--stars-delay');});
     teamCards.forEach(node=>{node.classList.remove('team-card-priming','team-card-waiting','team-card-visible','interior-load-reveal');node.style.removeProperty('--team-card-delay');node.style.removeProperty('--interior-load-delay');});
     journeyGrid?.querySelectorAll(':scope>li').forEach(node=>{node.classList.remove('journey-step-waiting','journey-step-visible','journey-step-load');node.style.removeProperty('--journey-delay');});
@@ -154,6 +156,7 @@ export function enhanceLanding({preview=false}={}){
   if(!preview&&!motion.matches){
     targets.forEach(node=>node.classList.add('home-reveal-ready'));
     faqRows.forEach(node=>node.classList.add('faq-line-waiting'));
+    benefitRows.forEach(node=>node.classList.add('benefit-line-waiting'));
     starGroups.forEach(node=>node.classList.add('stars-waiting'));
     const revealTarget=(node,now)=>{
       if(disposed||!node.classList.contains('home-reveal-ready')||node.classList.contains('home-reveal-visible'))return;
@@ -166,6 +169,10 @@ export function enhanceLanding({preview=false}={}){
       if(node.matches('.home-faq details')){
         node.style.setProperty('--detail-delay',`${delay+180}ms`);
         node.classList.add('faq-line-visible');
+      }
+      if(node.matches('.home-distinction-benefits>li')){
+        node.style.setProperty('--benefit-line-delay',`${delay+90}ms`);
+        node.classList.add('benefit-line-visible');
       }
       if(node.matches('.review-card figcaption')){
         const stars=node.querySelector('.review-stars');

@@ -135,7 +135,10 @@
 .public-page .home-distinction-copy .eyebrow{font-size:11px;letter-spacing:.16em;color:var(--blue)}
 .public-page .home-distinction-copy h2{margin:23px 0 0;font:400 clamp(38px,3.8vw,56px)/1.08 Rubik,Arial,sans-serif;letter-spacing:-.045em;color:var(--home-ink)}
 .public-page .home-distinction-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(32px,5vw,72px);row-gap:8px;max-width:1120px;margin:0 auto;padding:0;list-style:none}
-.public-page .home-distinction-benefits li{position:relative;display:grid;grid-template-columns:26px minmax(0,1fr);align-content:start;gap:22px;min-width:0;padding:25px 18px 27px;border-top:1px solid rgb(105 125 137 / .2);color:var(--home-ink);font-size:17px;line-height:1.65}
+.public-page .home-distinction-benefits li{position:relative;display:grid;grid-template-columns:26px minmax(0,1fr);align-content:start;gap:22px;min-width:0;padding:25px 18px 27px;color:var(--home-ink);font-size:17px;line-height:1.65}
+.public-page .home-distinction-benefits li::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:var(--home-line);transform-origin:left center;pointer-events:none}
+.public-page .home-distinction-benefits li.benefit-line-waiting::before{scale:0 1}
+.public-page .home-distinction-benefits li.benefit-line-waiting.benefit-line-visible::before{scale:1;transition:scale 1.5s cubic-bezier(.65,0,.25,1) var(--benefit-line-delay,0ms)}
 .public-page .home-distinction-number{display:grid;place-items:center;justify-self:start;width:26px;height:28px;color:var(--pink);font-size:11px;line-height:1;font-weight:500;letter-spacing:.08em;font-variant-numeric:tabular-nums;transition:font-size .42s cubic-bezier(.45,0,.55,1),color .35s ease}
 .public-page .home-distinction-benefit-text{min-width:0;overflow-wrap:break-word;transition:transform .48s cubic-bezier(.22,1,.36,1)}
 @media(hover:hover) and (pointer:fine){
@@ -370,6 +373,7 @@
 }
 @media(prefers-reduced-motion:reduce){
   .public-page .therapy-carousel-dots button span{transition:none}
+  .public-page .home-distinction-benefits li.benefit-line-waiting::before{scale:1;transition:none}
   .public-page .home-distinction-number,.public-page .home-distinction-benefit-text{transition:none}
   .public-page .home-faq .faq-line-waiting>summary::after{scale:1;transition:none}
   .public-page .stars-waiting .review-star{opacity:1;translate:none;transition:none}
