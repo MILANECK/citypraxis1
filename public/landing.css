@@ -54,9 +54,8 @@
 .public-page .hero-immersive .urgent-button{border-radius:14px;min-height:52px;padding:16px 22px;background:#ffffff25;color:#fff;font-size:13px;border:0;box-shadow:none;backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px)}
 .public-page .hero-quick-strip{width:min(1320px,calc(100% - 96px));margin:0 auto;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border:0;padding-bottom:24px}
 .public-page .home-hero-divider{height:1px;background:#ffffff45;width:100%}
-.public-page .hero-quick-strip .quick-links{width:100%;padding-block:22px 8px;gap:32px}
+.public-page .hero-quick-strip .quick-links{width:100%;padding-block:27px 3px;gap:32px}
 .public-page .hero-quick-strip .quick-links>a{gap:16px;padding:8px 0;background:transparent;justify-content:center;text-align:left}
-.public-page .hero-quick-strip .quick-links>a>div{flex:1;text-align:center}
 .public-page .hero-quick-strip .quick-links strong{font-size:12px;font-weight:600}
 .public-page .hero-quick-strip .quick-links div>span{font-size:10px;color:#ffffffe0;line-height:1.5}
 .public-page .hero-quick-strip .quick-icon{width:30px;height:30px;flex-basis:30px;opacity:.9}
