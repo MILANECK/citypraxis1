@@ -464,10 +464,15 @@ function renderApp(content,preview){
   const shaderClass=shaderPreset==='contact'?'contact-shader-canvas':shaderPreset==='team'?'contact-shader-canvas team-shader-canvas':shaderPreset==='landing'?'home-mesh-shader':'interior-mesh-shader-canvas';
   const shaderCanvas=shaderPreset?`<canvas id="${shaderId}" class="${shaderClass}" aria-hidden="true"></canvas>`:'';
   $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div>'+shaderCanvas+'<div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+footer()+'</div>'+cookiePanel();
-  if(location.pathname==='/termin'&&!preview)import('/booking-gradient.js?v=booking-restored-1').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
+  if(location.pathname==='/termin'&&!preview){
+    const bookingCanvas=$('#booking-gradient');
+    import('/contact-shader.js?v=contact-right-1').then(({initContactShader})=>{
+      if(bookingCanvas?.isConnected)meshShaderCleanup=initContactShader(bookingCanvas,{preset:'booking'});
+    }).catch(()=>bookingCanvas?.classList.add('is-fallback'));
+  }
   if(shaderPreset&&!preview){
     const canvas=$(`#${shaderId}`);
-    import('/contact-shader.js?v=team-palette-1').then(({initContactShader})=>{
+    import('/contact-shader.js?v=contact-right-1').then(({initContactShader})=>{
       if(canvas.isConnected)meshShaderCleanup=initContactShader(canvas,{preset:shaderPreset});
     }).catch(()=>canvas.classList.add('is-fallback'));
   }
