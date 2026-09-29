@@ -23,7 +23,6 @@ export function enhanceLanding({preview=false}={}){
     '.home-therapies .therapy-card','.home-section-link','.home-team-photo',
     '.team-feature-copy>.eyebrow','.team-feature-copy>h2','.team-feature-copy>p','.team-feature-copy>.text-link',
     '.home-people .section-heading>div>*','.home-people .review-quote','.home-people .review-card blockquote','.home-people .review-card figcaption',
-    '.home-distinction-copy>.eyebrow','.home-distinction-copy>h2',
     '.home-price-copy>*','.home-price-figure>*','.home-faq-intro>*','.home-faq .faq-list>details',
     '.home-scroll-line','.footer-top>div','.footer-bottom',
     // Interior templates share the rhythm, while forms and dense tables stay ready to use.
@@ -155,7 +154,7 @@ export function enhanceLanding({preview=false}={}){
     starGroups.forEach(node=>node.classList.add('stars-waiting'));
     const revealTarget=(node,now)=>{
       if(disposed||!node.classList.contains('home-reveal-ready')||node.classList.contains('home-reveal-visible'))return;
-      const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-distinction-copy,.home-distinction-benefits,.home-price-panel,.home-faq-intro,.faq-list,.footer-top,.listing-grid,.team-roster,.team-profiles,.process-grid,.service-intro,.therapist-intro,.therapist-section,.therapist-profile-end,.clinical-card,.about-specialisation,.info-card,.weekly-hours,.booking-layout')||node.parentElement;
+      const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-price-panel,.home-faq-intro,.faq-list,.footer-top,.listing-grid,.team-roster,.team-profiles,.process-grid,.service-intro,.therapist-intro,.therapist-section,.therapist-profile-end,.clinical-card,.about-specialisation,.info-card,.weekly-hours,.booking-layout')||node.parentElement;
       const delay=Math.min(800,Math.max(140,(groupTimings.get(group)||0)-now));
       groupTimings.set(group,now+delay+(node.matches('details')?220:170));
       node.style.setProperty('--home-reveal-delay',`${delay}ms`);
@@ -370,10 +369,10 @@ function enhanceTeamHover(){
 function enhanceSlidingCards(){
   const desktop=matchMedia('(min-width:1001px) and (hover:hover) and (pointer:fine)');
   const cleanups=[];
-  document.querySelectorAll('.home-distinction,.team-feature.team-hover-ready').forEach(panel=>{
-    const button=panel.querySelector('.home-distinction-plus,.home-team-plus');
+  document.querySelectorAll('.team-feature.team-hover-ready').forEach(panel=>{
+    const button=panel.querySelector('.home-team-plus');
     if(!button)return;
-    const revealCopy=()=>panel.querySelectorAll('.home-distinction-copy>.home-reveal-ready,.team-feature-copy>.home-reveal-ready').forEach((node,index)=>{
+    const revealCopy=()=>panel.querySelectorAll('.team-feature-copy>.home-reveal-ready').forEach((node,index)=>{
       if(node.classList.contains('home-reveal-visible'))return;
       node.style.setProperty('--home-reveal-delay',`${index*100}ms`);
       node.classList.add('home-reveal-visible');

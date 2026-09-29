@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=33';
+import {enhanceLanding} from './landing.js?v=34';
 let landingCleanup,meshShaderCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -82,7 +82,7 @@ function homeDistinction(about,en){
   const heading=lines(titleLines);
   const eyebrow=en?'WHY CITYPRAXIS':'WARUM CITYPRAXIS';
   const copy=`<span class="eyebrow">${eyebrow}</span><h2 id="home-distinction-title">${heading}</h2>`;
-  return `<section class="container home-distinction" aria-labelledby="home-distinction-title"><div class="home-distinction-copy">${copy}</div><div class="home-distinction-copy-white" aria-hidden="true"><div class="home-distinction-copy-white-inner"><span class="eyebrow">${eyebrow}</span><span class="home-distinction-white-heading">${heading}</span></div></div><div class="home-distinction-benefits" id="home-distinction-benefits"><ul>${about.distinction.items.map((item,index)=>`<li style="--benefit-delay:${210+index*45}ms">${esc(item)}</li>`).join('')}</ul></div><div class="home-distinction-visual"><div class="home-distinction-logo"><img class="home-distinction-symbol" src="/assets/logo-symbol.png" alt="" width="58" height="76"></div><button class="home-distinction-plus" type="button" aria-expanded="false" aria-controls="home-distinction-benefits" aria-label="${en?'Show why Citypraxis is special':'Vorteile von Citypraxis anzeigen'}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="1.5"/></svg></button></div></section>`;
+  return `<section class="container home-distinction" aria-labelledby="home-distinction-title"><div class="home-distinction-copy">${copy}<div class="home-distinction-visual" aria-hidden="true"><img class="home-distinction-symbol" src="/assets/logo-symbol.png" alt="" width="58" height="76"></div></div><div class="home-distinction-benefits"><ul>${about.distinction.items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul></div></section>`;
 }
 function home() {
   const h = pageText('home'), s = data.settings[0];
