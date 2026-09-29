@@ -1,5 +1,6 @@
 #cp-chat{--chat-blue:#0085ac;--chat-ink:#222344;--chat-muted:#606679;font-family:inherit;color:var(--chat-ink);font-size:14px;line-height:1.55;position:relative;z-index:55}
 #cp-chat.is-open{z-index:65}
+.chat-backdrop{display:none}
 #cp-chat *{box-sizing:border-box}
 #cp-chat button,#cp-chat input,#cp-chat textarea{font:inherit}
 #cp-chat button{cursor:pointer}
@@ -102,7 +103,13 @@
 #cp-chat .conversation-unlock a{text-decoration:underline;text-decoration-color:#ffffff90;text-underline-offset:3px}
 #cp-chat .conversation-unlock input[type=checkbox]{accent-color:#fff}
 #cp-chat .conversation-unlock :focus-visible{outline-color:#fff}
-#cp-chat .conversation-start .chat-check{font-size:11px;line-height:1.5;margin:0 0 12px}
+#cp-chat .conversation-start .chat-check{position:relative;gap:11px;font-size:11px;line-height:1.5;margin:0 0 12px;cursor:pointer}
+#cp-chat .conversation-start .chat-check input[type=checkbox]{position:absolute;top:0;left:0;width:26px;height:26px;margin:0;opacity:0}
+.conversation-consent-icon{display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;border:2px solid #ffffffe0;border-radius:8px;background:#ffffff20;box-shadow:0 2px 9px #370d3029;transition:background .22s ease,border-color .22s ease,box-shadow .22s ease}
+.conversation-consent-icon svg{display:block;width:17px;height:17px;opacity:0;transform:scale(.6);transition:opacity .2s ease,transform .25s cubic-bezier(.22,1,.36,1)}
+#cp-chat .conversation-start .chat-check input:checked+.conversation-consent-icon{background:#16865a;border-color:#8ff0b4;box-shadow:0 0 0 3px #7be9a835,0 3px 10px #370d3033}
+#cp-chat .conversation-start .chat-check input:checked+.conversation-consent-icon svg{opacity:1;transform:scale(1)}
+#cp-chat .conversation-start .chat-check input:focus-visible+.conversation-consent-icon{outline:2px solid #fff;outline-offset:3px}
 .conversation-start-actions{display:flex;align-items:center;gap:16px;margin-bottom:0}
 #cp-chat .conversation-start-actions .chat-primary{width:auto;min-height:36px;padding:8px 14px;margin:0;font-size:12px!important;flex-shrink:0;background:#fff;border-color:#fff;color:#951b81}
 @media(hover:hover) and (pointer:fine){#cp-chat .conversation-start-actions .chat-primary:hover{background:#f7eaf4;border-color:#f7eaf4}}
@@ -117,6 +124,9 @@
 @media(max-height:600px){.chat-window:has(.conversation-preview){height:calc(100dvh - 24px)}}
 
 @media(max-width:767px){
+  .chat-backdrop{display:block;position:fixed;inset:0;z-index:0;background:rgb(19 23 40 / .18);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;visibility:hidden;pointer-events:none;touch-action:none;transition:opacity .3s ease,visibility .3s}
+  #cp-chat.is-open .chat-backdrop{opacity:1;visibility:visible;pointer-events:auto}
+  .chat-launch,.chat-window{z-index:1}
   .chat-launch{right:152px;bottom:calc(16px + env(safe-area-inset-bottom));display:grid;place-items:center;width:58px;height:58px;padding:0;border-radius:50%;gap:0}
   .chat-launch span{display:none}
   .chat-launch .chat-launch-icon{position:absolute;inset:0;margin:auto}
