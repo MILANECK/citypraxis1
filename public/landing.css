@@ -129,20 +129,20 @@
   .public-page .team-hover-ready:is(:hover,.is-open):not(.is-click-closed) .home-team-plus{color:#fff}
   .public-page .team-hover-ready:is(:hover,.is-open):not(.is-click-closed) .home-team-plus svg{transform:rotate(720deg)}
 }
-.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;min-height:470px;margin-block:clamp(38px,4vw,58px) 0;padding:var(--distinction-padding);overflow:hidden;border-radius:24px;background:transparent}
+.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);--distinction-padding-y:32px;position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;min-height:390px;margin-block:clamp(38px,4vw,58px) 0;padding:var(--distinction-padding-y) var(--distinction-padding);overflow:hidden;border-radius:24px;background:transparent}
 .public-page .home-distinction-copy{position:relative;z-index:3;align-self:center;max-width:460px;padding-right:26px}
 .public-page .home-distinction-copy .eyebrow,.public-page .home-distinction-copy-white .eyebrow{font-size:11px;letter-spacing:.16em}
 .public-page .home-distinction-copy .eyebrow{color:var(--blue)}
 .public-page .home-distinction-copy h2,.public-page .home-distinction-white-heading{display:block;margin:23px 0 0;font:400 clamp(37px,3.8vw,56px)/1.08 Rubik,Arial,sans-serif;letter-spacing:-.045em;color:var(--home-ink)}
 .public-page .home-distinction-benefits{position:relative;z-index:1;align-self:center;padding:8px 0 8px clamp(36px,5vw,72px)}
 .public-page .home-distinction-benefits ul{columns:2;column-gap:27px;list-style:none;margin:0;padding:0}
-.public-page .home-distinction-benefits li{position:relative;break-inside:avoid;padding:0 0 15px 18px;color:var(--home-ink);font-size:14px;line-height:1.53}
+.public-page .home-distinction-benefits li{position:relative;break-inside:avoid;padding:0 0 9px 18px;color:var(--home-ink);font-size:14px;line-height:1.53}
 .public-page .home-distinction-benefits li::before{content:"";position:absolute;top:.62em;left:0;width:5px;height:5px;border-radius:50%;background:var(--pink)}
 .public-page .home-distinction-visual,.public-page .home-distinction-copy-white{display:none}
 @media(min-width:1001px) and (hover:hover) and (pointer:fine){
   .public-page .home-distinction{--distinction-duration:1375ms;--distinction-follow-delay:110ms;--distinction-ease:cubic-bezier(.4,0,.25,1);cursor:default}
   .public-page .home-distinction:is(:hover,.is-open):not(.is-click-closed){--distinction-duration:1125ms;--distinction-follow-delay:90ms}
-  .public-page .home-distinction-visual{display:grid;place-items:center;position:absolute;z-index:2;top:0;bottom:0;left:50%;right:0;overflow:hidden;border-radius:24px;background:#f5f2ed;box-shadow:0 14px 42px #2531380e;transition:right var(--distinction-duration) var(--distinction-ease),left var(--distinction-duration) var(--distinction-ease) var(--distinction-follow-delay),border-radius var(--distinction-duration) var(--distinction-ease)}
+  .public-page .home-distinction-visual{display:grid;place-items:center;position:absolute;z-index:2;top:0;bottom:0;left:50%;right:0;overflow:hidden;border-radius:24px;background:#fff;box-shadow:0 14px 42px #2531380e;transition:right var(--distinction-duration) var(--distinction-ease),left var(--distinction-duration) var(--distinction-ease) var(--distinction-follow-delay),border-radius var(--distinction-duration) var(--distinction-ease)}
   .public-page .home-distinction-visual::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 95% 88% at 54% 50%,#ad238f 0%,#951b81 68%,#891976 100%);opacity:0;transition:opacity var(--distinction-duration) var(--distinction-ease)}
   .public-page .home-distinction-benefits li{opacity:0;transform:translateX(18px);transition:opacity 700ms cubic-bezier(.22,1,.36,1) var(--benefit-delay),transform 850ms cubic-bezier(.22,1,.36,1) var(--benefit-delay)}
   .public-page .home-distinction-logo{position:relative;z-index:1;display:grid;place-items:center;width:100%;opacity:1;transition:opacity 360ms ease 550ms}
@@ -150,7 +150,7 @@
   .public-page .home-distinction-plus{display:grid;place-items:center;position:absolute;z-index:1;right:16px;top:16px;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--pink);cursor:pointer}
   .public-page .home-distinction-plus:focus-visible{outline:2px solid currentColor;outline-offset:2px;border-radius:10px}
   .public-page .home-distinction-plus svg{display:block;width:24px;height:24px;transform-origin:center;transition:transform var(--distinction-duration) var(--distinction-ease),color 700ms ease}
-  .public-page .home-distinction-copy-white{display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;position:absolute;z-index:4;inset:0;padding:var(--distinction-padding);pointer-events:none;clip-path:inset(0 0 0 50%);transition:clip-path var(--distinction-duration) var(--distinction-ease) var(--distinction-follow-delay)}
+  .public-page .home-distinction-copy-white{display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;position:absolute;z-index:4;inset:0;padding:var(--distinction-padding-y) var(--distinction-padding);pointer-events:none;clip-path:inset(0 0 0 50%);transition:clip-path var(--distinction-duration) var(--distinction-ease) var(--distinction-follow-delay)}
   .public-page .home-distinction-copy-white-inner{grid-column:1;max-width:460px;padding-right:26px}
   .public-page .home-distinction-copy-white .eyebrow{color:var(--blue);transition:color var(--distinction-duration) var(--distinction-ease)}
   .public-page .home-distinction-copy-white .home-distinction-white-heading{color:var(--home-ink);transition:color var(--distinction-duration) var(--distinction-ease)}
@@ -270,7 +270,7 @@
   .public-page .therapy-card h3{font-size:18px}
   .public-page .team-feature{gap:40px;grid-template-columns:1.15fr 1fr;min-height:440px}
   .public-page .home-team-photo{height:440px}
-  .public-page .home-distinction{min-height:440px}
+  .public-page .home-distinction{min-height:370px}
   .public-page .home-distinction-benefits{padding-left:40px}
   .public-page .home-distinction-benefits li{font-size:13px}
   .public-page .home-price-panel{padding:44px 32px;gap:35px}
@@ -342,7 +342,7 @@
   .public-page .home-distinction{grid-template-columns:1fr;grid-template-areas:"copy" "visual" "benefits";min-height:0;padding:26px 24px 30px;gap:25px;border-radius:22px}
   .public-page .home-distinction-copy{grid-area:copy;padding:0}
   .public-page .home-distinction-copy h2{font-size:clamp(34px,8vw,42px);margin-top:15px}
-  .public-page .home-distinction-visual{grid-area:visual;display:grid;place-items:center;position:relative;height:185px;border-radius:18px;background:#f5f2ed}
+  .public-page .home-distinction-visual{grid-area:visual;display:grid;place-items:center;position:relative;height:155px;border-radius:18px;background:#fff}
   .public-page .home-distinction-logo{display:grid;place-items:center;width:100%}
   .public-page .home-distinction-symbol{width:58px;height:auto}
   .public-page .home-distinction-plus{display:none}
