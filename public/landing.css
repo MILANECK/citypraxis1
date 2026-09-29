@@ -371,7 +371,9 @@
   .public-page footer{padding:48px 0 110px}
   .public-page .footer-top{grid-template-columns:1fr 1fr;gap:28px 20px;padding-bottom:30px}
   .public-page .footer-top>div:first-child{grid-column:1/-1}
-  .public-page .footer-logo{width:190px}
+  .public-page .footer-identity{gap:10px}
+  .public-page .footer-identity .footer-logo{width:clamp(210px,65vw,270px)}
+  .public-page .footer-identity .footer-symbol{width:40px}
   .public-page .footer-top>div:first-child>p{font-size:25px;margin:16px 0}
   .public-page .footer-top p,.public-page .footer-top a{font-size:11px}
   .public-page .footer-bottom{display:flex;align-items:flex-start;flex-direction:column;gap:16px}

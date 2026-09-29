@@ -51,6 +51,7 @@
 .interior-page .team-directory{margin-block:52px 28px}
 .interior-page .team-directory-label{display:block;margin-bottom:26px}
 .interior-page .team-directory .team-profiles{grid-template-columns:repeat(5,minmax(0,1fr));align-items:stretch;gap:28px}
+.interior-page .team-directory .team-mobile-lead-gap{display:none}
 .interior-page[data-page="/ueber-uns"] .team-directory :is(.team-featured,.team-roster){display:contents}
 .interior-page .team-directory{position:relative;isolation:isolate}
 .interior-page .team-directory::before{content:"";position:absolute;z-index:-1;inset:-45px 0 -65px;pointer-events:none;background:radial-gradient(ellipse 39% 44% at 31% 35%,#a6d2df90 0%,transparent 100%),radial-gradient(ellipse 40% 44% at 70% 67%,#dfcdb5a8 0%,transparent 100%);filter:blur(38px);-webkit-mask-image:radial-gradient(ellipse 80% 85% at 50% 52%,#000 32%,transparent 100%);mask-image:radial-gradient(ellipse 80% 85% at 50% 52%,#000 32%,transparent 100%)}
@@ -221,6 +222,11 @@
 }
 @media(max-width:600px){
   .interior-page .team-directory .team-profiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+  .interior-page .team-directory .team-mobile-lead-gap{display:block}
+  .interior-page .team-directory .team-card-sophia{grid-column:auto}
+  .interior-page .team-card-sophia .team-profile-link{flex-direction:column}
+  .interior-page .team-card-sophia .team-portrait{width:100%;flex:none}
+  .interior-page .team-card-sophia .team-photo{height:auto;aspect-ratio:1}
   .interior-page .team-directory .team-aim-card{padding:28px;min-height:300px}
   .interior-page .about-distinction ul{columns:1}
   .interior-page .team-directory .team-card-copy{padding:16px 12px}
@@ -228,6 +234,6 @@
   .interior-page .team-directory .team-role{font-size:12px}
   .interior-page .team-directory .team-profile-prompt{font-size:11px}
 }
-@media(max-width:360px){.interior-page .team-directory .team-profiles{grid-template-columns:1fr}.interior-page .team-directory :is(.team-card-sophia,.team-aim-card){grid-column:auto}}
+@media(max-width:360px){.interior-page .team-directory .team-profiles{grid-template-columns:1fr}.interior-page .team-directory .team-mobile-lead-gap{display:none}.interior-page .team-directory :is(.team-card-sophia,.team-aim-card){grid-column:auto}}
 @media(prefers-reduced-motion:reduce){.interior-page :is(.interior-load-reveal,.journey-step-load),.interior-page .journey-step-load :is(.step-top>span:first-child,.step-arrow,h3,p){animation:none;opacity:1;filter:none;transform:none;translate:none}.interior-page .team-directory :is(.team-person,.team-aim-card).team-card-waiting,.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting,.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting :is(.step-top>span:first-child,.step-arrow,h3,p){opacity:1;filter:none;transform:none;transition:none}}
 @media(prefers-reduced-motion:reduce){.interior-page .listing-card{transition:none}.interior-page .listing-card:hover{transform:none}}
