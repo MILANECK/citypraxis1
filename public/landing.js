@@ -86,6 +86,7 @@ export function enhanceLanding({preview=false}={}){
     priceFrame=requestAnimationFrame(tick);
   };
   const onRevealEnd=event=>{
+    if(event.pseudoElement)return;
     if((['translate','scale'].includes(event.propertyName)||(event.propertyName==='opacity'&&event.target.closest('.home-distinction')))&&event.target.classList.contains('home-reveal-visible')){
       event.target.classList.remove('home-reveal-ready','home-reveal-visible');
       event.target.style.removeProperty('--home-reveal-delay');
