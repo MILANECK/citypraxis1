@@ -88,7 +88,7 @@ function homeDistinction(home){
   const copy=`<span class="eyebrow" data-copy-key="distinctionEyebrow">${esc(eyebrow)}</span><h2 id="home-distinction-title" data-copy-key="distinctionHeading">${heading}</h2>`;
   const middle=Math.ceil(items.length/2);
   const benefitColumns=[items.slice(0,middle),items.slice(middle)];
-  return `<section class="container home-distinction" aria-labelledby="home-distinction-title"><div class="home-distinction-visual" aria-hidden="true"><img class="home-distinction-symbol" src="/assets/logo-symbol.png" alt="" width="58" height="76"></div><div class="home-distinction-copy">${copy}</div><span class="home-distinction-divider home-scroll-line" aria-hidden="true"></span><div class="home-distinction-benefits" data-copy-key="distinctionItems">${benefitColumns.map(items=>`<ul>${items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`).join('')}</div></section>`;
+  return `<section class="container home-distinction" aria-labelledby="home-distinction-title"><div class="home-distinction-visual" aria-hidden="true"><img class="home-distinction-symbol" src="/assets/logo-symbol.png" alt="" width="58" height="76"></div><div class="home-distinction-copy">${copy}</div><div class="home-distinction-benefits" data-copy-key="distinctionItems">${benefitColumns.map(items=>`<ul>${items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`).join('')}</div></section>`;
 }
 function home() {
   const h = pageText('home'), s = data.settings[0];
