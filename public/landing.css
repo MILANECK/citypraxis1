@@ -62,7 +62,7 @@
 .public-page .hero-quick-strip .quick-links>a:first-child .quick-icon{width:26px;height:26px;flex-basis:26px;margin:2px}
 
 /* Generous section spacing, with color kept at the edges of the white canvas. */
-.public-page .home-therapies{position:relative;padding:118px 0 100px;background:transparent}
+.public-page .home-therapies{position:relative;padding:118px 0 64px;background:transparent}
 .public-page .home-section-intro{text-align:center;max-width:760px;margin:0 auto 48px}
 .public-page .home-section-intro h2{font-size:clamp(36px,3.8vw,54px);line-height:1.06;margin:20px 0 22px}
 .public-page .home-section-intro p{max-width:570px;margin:0 auto;font-size:15px;line-height:1.8;text-wrap:pretty}
@@ -129,14 +129,14 @@
   .public-page .team-hover-ready:is(:hover,.is-open):not(.is-click-closed) .home-team-plus{color:#fff}
   .public-page .team-hover-ready:is(:hover,.is-open):not(.is-click-closed) .home-team-plus svg{transform:rotate(720deg)}
 }
-.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);display:grid;grid-template-columns:minmax(0,.45fr) 1px minmax(0,.55fr);column-gap:clamp(28px,3.5vw,54px);align-items:start;margin-block:clamp(38px,4vw,58px) 0;padding:32px var(--distinction-padding);background:transparent}
+.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);column-gap:clamp(40px,6vw,84px);align-items:start;margin-block:30px 0;padding:24px var(--distinction-padding) 32px;background:transparent}
 .public-page .home-distinction-copy{max-width:460px;padding-right:26px}
 .public-page .home-distinction-copy .eyebrow{font-size:11px;letter-spacing:.16em}
 .public-page .home-distinction-copy .eyebrow{color:var(--blue)}
 .public-page .home-distinction-copy h2{display:block;margin:23px 0 0;font:400 clamp(37px,3.8vw,56px)/1.08 Rubik,Arial,sans-serif;letter-spacing:-.045em;color:var(--home-ink)}
 .public-page .home-distinction-visual{grid-column:1/-1;display:flex;justify-content:center;margin:0 0 40px}
 .public-page .home-distinction-symbol{width:62px;height:auto}
-.public-page .home-distinction-divider.home-scroll-line{position:relative;top:auto;left:auto;grid-column:2;grid-row:2;width:1px;height:100%;min-height:210px;transform-origin:center top}
+.public-page .home-distinction-divider.home-scroll-line{display:none}
 .public-page .home-distinction-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:27px;padding:8px 0}
 .public-page .home-distinction-benefits ul{min-width:0;list-style:none;margin:0;padding:0}
 .public-page .home-distinction-benefits li{position:relative;isolation:isolate;padding:0 0 9px 18px;color:var(--home-ink);font-size:14px;line-height:1.53}
@@ -228,9 +228,7 @@
 .interior-page #booking-form.home-reveal-ready.home-reveal-visible{opacity:1;filter:blur(0);translate:0 0}
 .public-page .home-scroll-line.home-reveal-ready{translate:none;scale:0 1;transition:opacity 1.2s ease var(--home-reveal-delay,0ms),scale 1.5s cubic-bezier(.65,0,.25,1) var(--home-reveal-delay,0ms)}
 .public-page .home-price-figure>.home-scroll-line.home-reveal-ready{scale:1 0}
-.public-page .home-distinction-divider.home-scroll-line.home-reveal-ready{scale:1 0}
 .public-page .home-scroll-line.home-reveal-visible,.public-page .home-price-figure>.home-scroll-line.home-reveal-visible{scale:1}
-.public-page .home-distinction-divider.home-scroll-line.home-reveal-visible{scale:1}
 .public-page .home-reveal-ready:focus-within{opacity:1;translate:0 0;transition-delay:0s}
 .public-page .home-distinction .home-reveal-ready:not(.home-scroll-line){opacity:0;translate:none;filter:none;transition:opacity 1.15s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms)}
 .public-page .home-distinction .home-reveal-ready.home-reveal-visible:not(.home-scroll-line){opacity:1;translate:none;filter:none}
@@ -308,7 +306,7 @@
   .public-page .hero-quick-strip .quick-links div>span{font-size:9px}
   .public-page .hero-quick-strip .quick-icon{width:25px;height:25px;flex-basis:25px}
   .public-page .hero-quick-strip .quick-links>a:first-child .quick-icon{width:23px;height:23px;flex-basis:23px;margin:1px}
-  .public-page .home-therapies{padding:72px 0 58px}
+  .public-page .home-therapies{padding:72px 0 16px}
   .public-page .home-section-intro{margin-bottom:32px}
   .public-page .home-section-intro h2{font-size:36px;line-height:1.08;margin:16px 0 20px}
   .public-page .home-section-intro p{font-size:13px;max-width:380px}
@@ -324,13 +322,11 @@
   .public-page .team-feature-copy{padding:0 6px}
   .public-page .team-feature-copy h2{font-size:38px;max-width:360px;margin:17px 0 21px}
   .public-page .team-feature-copy p{font-size:14px}
-  .public-page .home-distinction{grid-template-columns:1fr;padding:26px 24px 30px;gap:25px}
+  .public-page .home-distinction{grid-template-columns:1fr;margin-top:18px;padding:26px 24px 30px;gap:25px}
   .public-page .home-distinction-copy{max-width:none;padding:0}
   .public-page .home-distinction-copy h2{font-size:clamp(34px,8vw,42px);margin-top:15px}
   .public-page .home-distinction-visual{grid-column:1;display:flex;align-items:center;justify-content:center;height:auto;margin:0 0 4px;background:transparent}
   .public-page .home-distinction-symbol{width:58px;height:auto}
-  .public-page .home-distinction-divider.home-scroll-line{grid-column:1;grid-row:auto;width:100%;height:1px;min-height:0;transform-origin:left center}
-  .public-page .home-distinction-divider.home-scroll-line.home-reveal-ready{scale:0 1}
   .public-page .home-distinction-benefits{padding:2px 0 0}
   .public-page .home-distinction-benefits{grid-template-columns:1fr;gap:0}
   .public-page .home-distinction-benefits li{font-size:13px;padding-bottom:13px}
