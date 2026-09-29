@@ -51,6 +51,7 @@ export function enhanceLanding({preview=false}={}){
   targets.sort((a,b)=>a===b?0:a.compareDocumentPosition(b)&4?-1:1);
   const cleanTeamHover=enhanceTeamHover();
   const cleanSlidingCards=enhanceSlidingCards();
+  const cleanTherapyCarousel=enhanceTherapyCarousel();
   const watermark=document.querySelector('.home-footer-watermark');
   const priceValues=[...document.querySelectorAll('.home-price-value')].map((node,index)=>({node,final:Number(node.dataset.priceValue),text:node.textContent,duration:index===1?940:1000}));
   const faqRows=[...document.querySelectorAll('.home-faq .faq-list>details')];
@@ -319,6 +320,7 @@ export function enhanceLanding({preview=false}={}){
     showAll();
     cleanTeamHover();
     cleanSlidingCards();
+    cleanTherapyCarousel();
     sizeObserver.disconnect();
     if(frame)cancelAnimationFrame(frame);
     window.removeEventListener('scroll',onScroll);
@@ -331,6 +333,54 @@ export function enhanceLanding({preview=false}={}){
     atmosphere?.style.removeProperty('--home-atmosphere-shift');
     atmosphere?.style.removeProperty('--home-background-top');
     homeShader?.style.removeProperty('--home-mesh-opacity');
+  };
+}
+
+function enhanceTherapyCarousel(){
+  const track=document.querySelector('.home-page .therapy-grid');
+  const nav=document.querySelector('.home-page .therapy-carousel-dots');
+  if(!track||!nav)return ()=>{};
+  const cards=[...track.querySelectorAll('.therapy-card')];
+  const buttons=[...nav.querySelectorAll('[data-therapy-slide]')];
+  const mobile=matchMedia('(max-width:767px)');
+  if(cards.length<2||buttons.length!==cards.length)return ()=>{};
+  let frame=0;
+  const markActive=index=>buttons.forEach((button,i)=>{
+    const active=i===index;
+    button.classList.toggle('is-active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  const update=()=>{
+    frame=0;
+    if(!mobile.matches)return;
+    const center=track.getBoundingClientRect().left+track.clientLeft+track.clientWidth/2;
+    let nearest=0,distance=Infinity;
+    cards.forEach((card,index)=>{
+      const rect=card.getBoundingClientRect();
+      const next=Math.abs(rect.left+rect.width/2-center);
+      if(next<distance){distance=next;nearest=index;}
+    });
+    markActive(nearest);
+  };
+  const schedule=()=>{if(!frame)frame=requestAnimationFrame(update);};
+  const onDot=event=>{
+    const button=event.currentTarget,index=Number(button.dataset.therapySlide),card=cards[index];
+    if(!card||!mobile.matches)return;
+    const style=getComputedStyle(track),inset=parseFloat(style.scrollPaddingInlineStart)||0;
+    const left=card.getBoundingClientRect().left-track.getBoundingClientRect().left+track.scrollLeft-inset;
+    track.scrollTo({left,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  };
+  buttons.forEach(button=>button.addEventListener('click',onDot));
+  track.addEventListener('scroll',schedule,{passive:true});
+  window.addEventListener('resize',schedule,{passive:true});
+  mobile.addEventListener('change',schedule);
+  schedule();
+  return ()=>{
+    if(frame)cancelAnimationFrame(frame);
+    buttons.forEach(button=>button.removeEventListener('click',onDot));
+    track.removeEventListener('scroll',schedule);
+    window.removeEventListener('resize',schedule);
+    mobile.removeEventListener('change',schedule);
   };
 }
 

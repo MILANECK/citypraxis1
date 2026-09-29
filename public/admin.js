@@ -2,7 +2,7 @@ import {showAIUsage} from './admin-ai-usage.js?v=4';
 import {renderChatIntake,chatIntake} from './admin-chat.js?v=conversation-2';
 import {requestSource,normalizeAppointmentConcerns} from './request-summary.js?v=team-capacity-1';
 import {progressMeter} from './progress-meter.js?v=1';
-import {editorialPages} from './page-copy.js?v=landing-1';
+import {editorialPages} from './page-copy.js?v=landing-2';
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={pages:'Seiten',symptoms:'Schwerpunkte',services:'Therapien',team:'Team',reviews:'Bewertungen',faqs:'Häufige Fragen',prices:'Praxispreise',reimbursements:'Rückerstattung',settings:'Praxisdaten'};
@@ -276,6 +276,10 @@ async function removeContent(collection,record){
   }catch(error){toast(error.message);}
 }
 function editContent(collection,record={},openPreview=false){
+  if(collection==='pages'&&record.id==='about'){
+    const withoutLandingSection=value=>String(value||'').replace(/\n\n## (?:Was die Citypraxis auszeichnet|What makes Citypraxis special)\n\n[\s\S]*?(?=\n\n## |$)/g,'');
+    record={...record,body:withoutLandingSection(record.body),bodyEn:withoutLandingSection(record.bodyEn)};
+  }
   if(collection==='team')record={...record,title:String(record.title||'').trim().replace(/\s+/g,' '),cardLabel:record.cardLabel??(record.id==='isabella-casny'?'Praxisleitung':''),cardLabelEn:record.cardLabelEn??(record.id==='isabella-casny'?'Practice director':''),bookable:typeof record.bookable==='boolean'?record.bookable:!(/\b(?:lisa|petra)\b/i.test(`${record.id||''} ${record.title||''}`)||/\b(?:secretary|receptionist|sekretär(?:in)?|sekretaer(?:in)?|rezeption(?:ist(?:in)?)?)\b/i.test(record.role||''))};
   const isNew=!record.id||Boolean(record.virtual);
   if(collection==='reviews'&&isNew&&(content.reviews||[]).length>=3){toast(I18n.language==='en'?'All three review slots are filled. Edit or delete an existing review.':'Alle drei Bewertungsplätze sind belegt. Bitte bearbeiten oder löschen Sie eine bestehende Bewertung.');return;}

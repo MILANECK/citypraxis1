@@ -6,6 +6,45 @@ import {childrenService} from '../src/therapy-catalog.mjs';
 import {newSession} from '../src/chat/security.mjs';
 
 const answer=(changes={})=>({kind:'appointment',answer:'',booking_intent:'request',reason:null,availability:null,first_name:null,last_name:null,patient_status:null,...changes});
+test('headache concern survives price questions and appointment intake, with price links in context',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const inputs=[];
+  const service=createConversationService({fetcher:async(_,options)=>{
+    const input=JSON.parse(JSON.parse(options.body).input);inputs.push(input);
+    let value=answer({kind:'practice_question',booking_intent:'unspecified',answer:'Our team can help.'});
+    if(/headeaches/i.test(input.visitorMessage))value=answer({kind:'medical',booking_intent:'unspecified',answer:'A physiotherapist from our team can assess your headaches in person.'});
+    if(/what is the price/i.test(input.visitorMessage))value=answer({kind:'practice_question',booking_intent:'unspecified',answer:'The first physiotherapy appointment is €130. A 45-minute follow-up is €110.'});
+    if(/like to make an appointment/i.test(input.visitorMessage))value=answer({booking_intent:'request',answer:'Of course, I can prepare your request.'});
+    if(/what did i tell you/i.test(input.visitorMessage))value=answer({kind:'practice_question',booking_intent:'unspecified',answer:`You mentioned ${input.knownDetails.reason}.`});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    await turn('Hello');
+    const concern=await turn('I have a headeaches and maybe you can help me');
+    assert.match(concern.message,/assess your headaches/);
+    assert.match(concern.message,/Would you like me to prepare/);
+    const price=await turn('Im not sure, what is the price?');
+    assert.match(price.message,/\/preise\?lang=en/);
+    assert.doesNotMatch(price.message,/Would you like me to prepare/);
+    assert.equal(inputs.at(-1).knownDetails.reason,'Headaches');
+    const callsBeforeWhere=inputs.length;
+    const where=await turn('Where?');
+    assert.match(where.message,/find the prices here: \/preise\?lang=en/);
+    assert.doesNotMatch(where.message,/Stubenbastei/);
+    assert.equal(inputs.length,callsBeforeWhere);
+    const booking=await turn('Ok I would like to make an appointment');
+    assert.match(booking.message,/first and last name/);
+    await turn('Test Visitor');await turn('test@example.test');
+    const review=await turn('+43 699 12682157');
+    assert.equal(review.ready,true);
+    assert.ok(review.summary.some(([,value])=>value==='Headaches'));
+    const recall=await turn('What did I tell you about the reason?');
+    assert.match(recall.message,/Headaches/);
+    assert.equal(inputs.at(-1).knownDetails.reason,'Headaches');
+    assert.equal(inputs.at(-1).recentConversation.some(item=>/headeaches/i.test(item.text)),false);
+  }finally{process.env=old;}
+});
 test('published Vienna hours distinguish open, closed and unknown periods',()=>{
   const hours={wednesday:'08:00–20:00',saturdayHours:'08:00–14:00',sunday:'Closed'};
   assert.equal(practiceHoursStatus(hours,new Date('2026-09-23T10:00:00Z')).open,true);
@@ -54,7 +93,7 @@ test('mixed or unsupported messages ask for German or English before intake',asy
   let calls=0;
   const service=createConversationService({fetcher:async(_,options)=>{
     calls++;const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
-    const value=answer({input_language:raw.startsWith('Dzień')?'other':'mixed',reason:'Must not be saved yet',answer:''});
+    const value=answer({input_language:raw.startsWith('Dzień')?'other':'mixed',booking_intent:'unspecified',reason:null,availability:null,answer:''});
     return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
   }});
   const turn=async(token,message)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
@@ -67,6 +106,27 @@ test('mixed or unsupported messages ask for German or English before intake',asy
     const resumed=await turn(mixed,'Hallo');assert.equal(resumed.language,'de');assert.match(resumed.message,/Hallo! Wie kann ich Ihnen helfen/);
     const unsupported=await turn(newSession(),'Dzień dobry, kiedy mogę przyjść?');
     assert.match(unsupported.message,/German or English/);assert.equal(unsupported.ready,false);
+  }finally{process.env=old;}
+});
+test('mixed-language appointment details survive the language choice',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let calls=0;
+  const service=createConversationService({fetcher:async(_,options)=>{
+    calls++;const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
+    assert.match(raw,/Rückenschmerzen|appointment/i);
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({kind:'appointment',input_language:'mixed',booking_intent:'request',reason:'Back pain',availability:'Wednesday afternoon',answer:''}))}]}]})};
+  }});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const prompt=await turn('Hallo, I need an appointment wegen Rückenschmerzen. Wednesday afternoon would suit me.');
+    assert.match(prompt.message,/German or English/);assert.equal(prompt.ready,false);
+    const selected=await turn('English please.');
+    assert.equal(selected.language,'en');assert.match(selected.message,/first and last name/);assert.equal(calls,1);
+    await turn('Test Visitor');await turn('test@example.test');
+    const review=await turn('+43 699 12682157');
+    assert.equal(review.ready,true);
+    assert.ok(review.summary.some(([,value])=>value==='Back pain'));
+    assert.ok(review.summary.some(([,value])=>value==='Wednesday afternoon'));
   }finally{process.env=old;}
 });
 test('a short concern can receive a natural acknowledgement without a scripted thank-you',async()=>{
@@ -178,6 +238,46 @@ test('mixed questions retain concerns, ask before intake, respect a decline and 
     value=answer({booking_intent:'defer',answer:'Of course. We are happy to answer your questions.'});const declined=await turn('Not yet, just information');assert.equal(declined.message,value.answer);
     value=answer({kind:'practice_question',booking_intent:'unspecified',answer:'We are in Vienna.'});assert.equal((await turn('Where are you?')).message,value.answer);
     value=answer({booking_intent:'request',answer:'We would be happy to help.'});assert.match((await turn('Yes, I want to request an appointment now')).message,/first and last name/);
+  }finally{process.env=old;}
+});
+test('a short yes after declining and changing topics asks again before starting intake',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let calls=0;
+  const service=createConversationService({fetcher:async(_,options)=>{
+    calls++;const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
+    const value=raw==='Back stiffness'
+      ?answer({kind:'medical',booking_intent:'unspecified',reason:'Back stiffness',answer:'One of our physiotherapists can assess this in person.'})
+      :raw.startsWith('No, I do not want')
+        ?answer({booking_intent:'defer',answer:'Of course. We can leave it for now.'})
+        :raw.startsWith('I would like to prepare')
+          ?answer({booking_intent:'request',answer:'Of course. I can prepare an appointment request.'})
+        :answer({kind:'practice_question',booking_intent:'unspecified',answer:'Please pay in cash at the practice.'});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    assert.match((await turn('Back stiffness')).message,/Would you like me to prepare/);
+    await turn('No, I do not want an appointment. I only wanted information.');
+    await turn('What payment methods do you accept?');
+    await turn('Do I need a referral?');
+    const clarification=await turn('Actually yes.');
+    assert.equal(clarification.ready,false);
+    assert.match(clarification.message,/Just to confirm: would you like to start a new appointment request now\?/);
+    assert.doesNotMatch(clarification.message,/first and last name/);
+    const tentative=await turn('Maybe.');
+    assert.match(tentative.message,/I won’t start anything yet/);
+    assert.doesNotMatch(tentative.message,/first and last name/);
+    const confirmed=await turn('Yes');
+    assert.match(confirmed.message,/first and last name/);
+    assert.equal(confirmed.ready,false);
+    assert.equal(calls,4);
+    const newRequestSession=newSession();
+    const anotherTurn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:newRequestSession,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+    await anotherTurn('Back stiffness');
+    await anotherTurn('No, I do not want an appointment.');
+    const explicit=await anotherTurn('I would like to prepare an appointment request now.');
+    assert.match(explicit.message,/first and last name/);
+    assert.equal(explicit.ready,false);
   }finally{process.env=old;}
 });
 test('conversational reception validates, reviews, edits and submits exactly once',async()=>{
