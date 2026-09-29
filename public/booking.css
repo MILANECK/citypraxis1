@@ -71,7 +71,6 @@
   .booking-preferences{grid-template-columns:1fr;gap:14px;margin-block:18px}
   #booking-form .booking-choice>span{font-size:11px;padding:9px 13px;min-height:38px}
   #booking-form .concern-chip>span{min-height:38px}
-  #booking-form::before,#booking-form::after,#booking-form .booking-folder{display:none}
 }
 @media(prefers-reduced-motion:reduce){.booking-optional-mark{transition:none}}
 
