@@ -171,6 +171,25 @@ vec3 hueRotate(vec3 col, float a) {
 }
 
 vec3 shade(vec2 uv, vec2 p, float t) {
+  if (u_paramA > 1.0) {
+    // The landing composition keeps the middle white. Soft, moving clouds
+    // enter from the sides, with warmer colour low in the frame.
+    vec2 blue = vec2(-0.14 + 0.045 * sin(t * 0.13), 0.62 + 0.07 * sin(t * 0.17));
+    vec2 magenta = vec2(1.14 + 0.05 * cos(t * 0.11), 0.43 + 0.09 * cos(t * 0.15));
+    vec2 beige = vec2(-0.10 + 0.045 * sin(t * 0.10), -0.10 + 0.055 * cos(t * 0.14));
+    vec2 warmRight = vec2(1.16 + 0.04 * cos(t * 0.08), -0.14);
+    vec2 db = (uv - blue) / vec2(0.53, 0.57);
+    vec2 dm = (uv - magenta) / vec2(0.48, 0.59);
+    vec2 dw = (uv - beige) / vec2(0.67, 0.61);
+    vec2 dr = (uv - warmRight) / vec2(0.68, 0.63);
+    float low = 0.45 + 0.55 * (1.0 - smoothstep(0.08, 0.92, uv.y));
+    float blueCloud = exp(-2.0 * dot(db, db)) * 0.51 * low;
+    float magentaCloud = exp(-2.0 * dot(dm, dm)) * 0.51 * low;
+    float warmCloud = (exp(-1.8 * dot(dw, dw)) + exp(-1.8 * dot(dr, dr))) * 0.35 * low;
+    vec3 col = mix(u_colors[0], u_colors[1], blueCloud);
+    col = mix(col, u_colors[2], magentaCloud);
+    return mix(col, u_colors[3], clamp(warmCloud, 0.0, 0.7));
+  }
   vec3 acc = u_colors[0] * 0.15;
   float total = 0.15;
   for (int i = 0; i < 8; i++) {

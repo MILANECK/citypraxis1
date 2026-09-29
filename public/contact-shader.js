@@ -2,7 +2,7 @@ import {VERT,FRAG} from './contact-shader-source.js';
 
 // The supplied React component uses this palette and motion. The site is
 // vanilla JavaScript, so the renderer is mounted directly on its canvas.
-const settings={
+const contactSettings={
   colors:[
     [.9803921569,.9803921569,.9803921569],
     [.968627451,.843137255,.592156863],
@@ -19,8 +19,21 @@ const settings={
   cursorEffect:2,cursorStrength:.3,cursorRadius:.616,oklab:1,timeScale:2
 };
 
-export function initContactShader(canvas){
+const landingSettings={
+  ...contactSettings,
+  colors:[
+    [1,1,1],
+    [0,.56,.76],
+    [.59,.08,.50],
+    [.83,.72,.58],
+    ...contactSettings.colors.slice(4)
+  ],
+  colorCount:4,paramA:2,grain:.025,drift:0,cursorStrength:.12,timeScale:1
+};
+
+export function initContactShader(canvas,{preset='contact'}={}){
   if(!canvas)return ()=>{};
+  const settings=preset==='landing'?landingSettings:contactSettings;
   // Render one still frame on phones, tablets, and for reduced-motion users.
   const staticScene=matchMedia('(prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse)').matches;
   const gl=canvas.getContext('webgl',{antialias:false,alpha:false});
@@ -79,7 +92,7 @@ export function initContactShader(canvas){
     let mouseX=0,mouseY=0,cursorPresence=0;
     let pointerKnown=false,pointerClientX=0,pointerClientY=0;
     let frame=0,lastNow=null,disposed=false,firstFrame=true;
-    let visible=document.visibilityState==='visible',inView=true;
+    let visible=document.visibilityState==='visible',inView=preset!=='landing';
     const start=performance.now();
     const animateTime=!staticScene&&Math.abs(settings.timeScale)>.0001;
 
@@ -158,12 +171,15 @@ export function initContactShader(canvas){
     canvas.addEventListener('webglcontextlost',onContextLost);
     const resizeObserver=new ResizeObserver(updateLayout);
     resizeObserver.observe(canvas);
-    const intersectionObserver=new IntersectionObserver(([entry])=>{
-      inView=entry?.isIntersecting??true;
+    const observed=preset==='landing'?[document.querySelector('.team-feature'),document.querySelector('.home-price-wrap')].filter(Boolean):[canvas];
+    const intersections=new Map(observed.map(node=>[node,false]));
+    const intersectionObserver=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>intersections.set(entry.target,entry.isIntersecting));
+      inView=[...intersections.values()].some(Boolean);
       if(inView)requestRender();
       else if(frame){cancelAnimationFrame(frame);frame=0;lastNow=null;}
     });
-    intersectionObserver.observe(canvas);
+    (observed.length?observed:[canvas]).forEach(node=>intersectionObserver.observe(node));
     updateLayout();
 
     return ()=>{

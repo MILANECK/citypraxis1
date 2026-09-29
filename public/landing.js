@@ -7,6 +7,9 @@ export function enhanceLanding({preview=false}={}){
   const animations=[];
   const atmosphere=document.querySelector('.home-surface');
   const background=document.querySelector('.home-atmosphere-background');
+  const homeShader=document.querySelector('#home-mesh-shader');
+  const teamFeature=document.querySelector('.home-page .team-feature');
+  const priceSection=document.querySelector('.home-page .home-price-wrap');
   const hero=document.querySelector('.hero');
   const decorativeLines=[];
   document.querySelectorAll('.home-people .reviews-section .section-heading,.home-price-figure').forEach(parent=>{
@@ -90,6 +93,17 @@ export function enhanceLanding({preview=false}={}){
       const progress=Math.max(0,Math.min(1,(innerHeight-rect.top)/(innerHeight+rect.height)));
       const shift=preview||motion.matches?0:(progress-.5)*360;
       atmosphere.style.setProperty('--home-atmosphere-shift',`${shift.toFixed(2)}px`);
+    }
+    if(homeShader){
+      const reveal=node=>{
+        if(!node)return 0;
+        const rect=node.getBoundingClientRect();
+        const enter=Math.max(0,Math.min(1,(innerHeight*.86-rect.top)/240));
+        const leave=Math.max(0,Math.min(1,(rect.bottom-innerHeight*.14)/240));
+        return enter*leave;
+      };
+      const opacity=Math.max(reveal(teamFeature)*.78,reveal(priceSection)*.92);
+      homeShader.style.setProperty('--home-mesh-opacity',opacity.toFixed(3));
     }
     frame=null;
   };
@@ -243,6 +257,7 @@ export function enhanceLanding({preview=false}={}){
     decorativeLines.forEach(line=>line.remove());
     atmosphere?.style.removeProperty('--home-atmosphere-shift');
     atmosphere?.style.removeProperty('--home-background-top');
+    homeShader?.style.removeProperty('--home-mesh-opacity');
   };
 }
 

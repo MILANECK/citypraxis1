@@ -80,6 +80,8 @@
 /* A single flowing mist starts white and gains colour lower down the page. */
 .public-page .home-atmosphere-colors{position:absolute;inset:-180px 0;background:url('/assets/home-mist.svg?v=4') center/100% 100% no-repeat;transform:translate3d(0,var(--home-atmosphere-shift,0px),0);will-change:transform}
 .public-page .home-atmosphere-grain{position:absolute;inset:0;background:url('/assets/grain.svg') repeat;opacity:.065;mix-blend-mode:multiply}
+.home-page .home-mesh-shader{position:fixed;inset:0;display:block;width:100vw;height:100svh;pointer-events:none;opacity:0;background:radial-gradient(ellipse 55% 65% at -12% 45%,#008fbe78,transparent 85%),radial-gradient(ellipse 52% 68% at 112% 68%,#97148070,transparent 84%),radial-gradient(ellipse 72% 64% at 50% 115%,#d4b89569,transparent 90%),#fff;transition:opacity .4s ease}
+.home-page .home-mesh-shader:is(.is-ready,.is-fallback){opacity:var(--home-mesh-opacity,0)}
 .public-page .home-atmosphere>.home-therapies,.public-page .home-atmosphere>.home-people,.public-page .home-atmosphere>.home-distinction,.public-page .home-atmosphere>.home-price-wrap,.public-page .home-atmosphere>.home-faq{position:relative;z-index:1}
 .public-page .home-people{padding:142px 0 68px;background:transparent}
 .public-page .team-feature{grid-template-columns:1.2fr 1fr;gap:76px;min-height:470px;overflow:visible;background:transparent;border-radius:0;align-items:center}
@@ -399,5 +401,6 @@
   .public-page .home-reveal-ready,.public-page :is(h1,h2,h3,.article-intro).home-reveal-ready,.interior-page .article-body>p.home-reveal-ready,.interior-page .team-directory .team-person.home-reveal-ready,.interior-page #booking-form.home-reveal-ready{opacity:1;translate:none;scale:1;filter:none;transition:none}
   .public-page .home-scroll-line.home-reveal-ready,.public-page .home-price-figure>.home-scroll-line.home-reveal-ready{scale:1;transition:none}
   .public-page .home-atmosphere-colors{transform:none;will-change:auto}
+  .home-page .home-mesh-shader{transition:none}
   .public-page .header,.public-page .header img{transition:none}
 }

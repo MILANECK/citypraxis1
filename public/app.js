@@ -1,6 +1,6 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=23';
-let landingCleanup,contactShaderCleanup;
+import {enhanceLanding} from './landing.js?v=24';
+let landingCleanup,meshShaderCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const externalUrl=value=>{try{const url=new URL(value);return ['https:','http:'].includes(url.protocol)?url.href:'';}catch{return '';}};
@@ -450,7 +450,7 @@ const contentCacheKey='citypraxis-public-content-v4',contentCacheLifetime=5*60*1
 let previewSourceContent;
 function renderApp(content,preview){
   landingCleanup?.();
-  contactShaderCleanup?.();contactShaderCleanup=null;
+  meshShaderCleanup?.();meshShaderCleanup=null;
   document.body.classList.add('public-page');
   document.body.classList.toggle('home-page',location.pathname==='/');
   document.body.classList.toggle('interior-page',location.pathname!=='/');
@@ -459,13 +459,14 @@ function renderApp(content,preview){
   data=I18n.localizeContent(content);
   document.body.classList.toggle('editor-preview-embedded',preview&&window.parent!==window);
   if(preview&&window.parent!==window&&!document.body.dataset.editorPreviewPage)document.body.dataset.editorPreviewPage='true';
-  const contactShader=location.pathname==='/kontakt'?'<canvas id="contact-shader" class="contact-shader-canvas" aria-hidden="true"></canvas>':'';
-  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div>'+contactShader+'<div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+footer()+'</div>'+cookiePanel();
+  const shaderPreset=location.pathname==='/kontakt'?'contact':location.pathname==='/'?'landing':null;
+  const shaderCanvas=shaderPreset?`<canvas id="${shaderPreset==='contact'?'contact-shader':'home-mesh-shader'}" class="${shaderPreset==='contact'?'contact-shader-canvas':'home-mesh-shader'}" aria-hidden="true"></canvas>`:'';
+  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div>'+shaderCanvas+'<div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+footer()+'</div>'+cookiePanel();
   if(location.pathname==='/termin'&&!preview)import('/booking-gradient.js?v=booking-restored-1').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
-  if(location.pathname==='/kontakt'&&!preview){
-    const canvas=$('#contact-shader');
-    import('/contact-shader.js?v=mobile-static-1').then(({initContactShader})=>{
-      if(canvas.isConnected)contactShaderCleanup=initContactShader(canvas);
+  if(shaderPreset&&!preview){
+    const canvas=shaderPreset==='contact'?$('#contact-shader'):$('#home-mesh-shader');
+    import('/contact-shader.js?v=landing-palette-1').then(({initContactShader})=>{
+      if(canvas.isConnected)meshShaderCleanup=initContactShader(canvas,{preset:shaderPreset});
     }).catch(()=>canvas.classList.add('is-fallback'));
   }
   if(preview)$('.cookie-panel')?.setAttribute('hidden','');
