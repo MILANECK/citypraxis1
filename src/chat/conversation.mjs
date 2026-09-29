@@ -109,6 +109,13 @@ function standaloneFullName(raw){
   while(surnameStart>1&&/^(?:von|van|de|del|der|den|da|di|du|la|le|zu|zur)$/iu.test(parts[surnameStart-1]))surnameStart--;
   try{return {first_name:name(parts.slice(0,surnameStart).join(' ')),last_name:name(parts.slice(surnameStart).join(' '))};}catch{return null;}
 }
+function openingGivenName(raw){
+  const clean=raw.trim().replace(/[.!]+$/u,'').trim();
+  const explicit=/^(my name is|i am|i['’]m|ich heiße|ich heisse|mein name ist)\s+([\p{L}\p{M}][\p{L}\p{M}.'’\-]*)$/iu.exec(clean);
+  const candidate=explicit?.[2]||clean;
+  if(!explicit&&(!/^[\p{Lu}][\p{L}\p{M}.'’\-]*$/u.test(candidate)||/^(?:hello|hi|hey|hallo|servus|ahoj|bonjour|headache|headaches|migraine|tinnitus|dizziness|jaw|pain|massage|prices|price|costs|cost|appointment|booking|termin|therapies|therapy|physiotherapy|osteopathy|kontakt|contact|yes|no|okay|thanks|danke)$/iu.test(candidate)))return null;
+  try{return {value:name(candidate),language:explicit?/^ich|^mein/iu.test(explicit[1])?'de':'en':null};}catch{return null;}
+}
 const acceptedStage=(draft,stage)=>stage==='name'?Boolean(draft.first_name&&draft.last_name):stage==='email'?Boolean(draft.email):stage==='phone'?Boolean(draft.phone):false;
 const contactAttempt=(raw,stage)=>stage==='name'?!raw.includes('?')&&raw.length<=100:stage==='email'?raw.includes('@'):stage==='phone'?/\d{3,}/u.test(raw):false;
 const retryContact=(stage,lang)=>({name:localized(lang,'Bitte nennen Sie mir Ihren Vor- und Nachnamen.','Please send your first and last name.'),email:localized(lang,'Bitte geben Sie eine gültige E-Mail-Adresse ein.','Please enter a valid email address.'),phone:localized(lang,'Bitte geben Sie eine gültige Telefonnummer mit Vorwahl ein.','Please enter a valid phone number, including the country code.')})[stage]||'';
@@ -304,6 +311,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       absorbContact(raw,draft,stage);
       const submittedName=stage==='name'?standaloneFullName(raw):null;
       if(submittedName)Object.assign(draft,submittedName);
+      const earlyName=stage==='reason'&&s.messages.length<=2?openingGivenName(raw):null;
       let ai=null,answer='',kind='appointment';
       const wasAwaitingBookingConfirmation=s.awaitingBookingConfirmation===true;
       s.awaitingBookingConfirmation=false;
@@ -324,6 +332,9 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         kind='practice_question';answer=directPriceLink;
       }else if(simpleGreeting){
         kind='greeting';answer=localized(lang,'Hallo! Wie kann ich Ihnen helfen?','Hello! How can I help you?');
+      }else if(earlyName){
+        if(earlyName.language){lang=earlyName.language;s.language=lang;}
+        kind='greeting';answer=localized(lang,`Hallo, ${earlyName.value}! Wie kann ich Ihnen helfen?`,`Hello, ${earlyName.value}! How can I help you?`);
       }else if(simpleAppointment){
         draft.bookingApproved=true;draft.bookingDeclined=false;
         answer=localized(lang,'Gerne helfe ich Ihnen, eine Terminanfrage für die Citypraxis vorzubereiten.','Of course, I can help you request an appointment at CityPraxis.');
@@ -344,6 +355,8 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         s.editing=null;
       }else if(submittedName){
         // A complete name at the name step does not need model interpretation.
+      }else if(stage==='name'&&openingGivenName(raw)){
+        answer=retryContact('name',lang);
       }else if(stage==='phone'&&draft.phone&&!raw.includes('?')){
         // A valid number is sufficient even when the visitor writes "my phone is …".
       }else if(!((stage==='email'&&emailValid(raw))||(stage==='phone'&&draft.phone))){

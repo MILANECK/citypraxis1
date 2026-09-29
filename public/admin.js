@@ -3,6 +3,7 @@ import {renderChatIntake,chatIntake} from './admin-chat.js?v=conversation-2';
 import {requestSource,normalizeAppointmentConcerns} from './request-summary.js?v=team-capacity-1';
 import {progressMeter} from './progress-meter.js?v=1';
 import {editorialPages} from './page-copy.js?v=landing-2';
+import {videoFirstFrame} from './video-poster.js?v=1';
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={pages:'Seiten',symptoms:'Schwerpunkte',services:'Therapien',team:'Team',reviews:'Bewertungen',faqs:'Häufige Fragen',prices:'Praxispreise',reimbursements:'Rückerstattung',settings:'Praxisdaten'};
@@ -31,6 +32,18 @@ function uploadMedia(file,alt,onProgress=()=>{}){
     xhr.onload=()=>{let result;try{result=JSON.parse(xhr.responseText);}catch{return reject(new Error('Upload fehlgeschlagen.'));}if(xhr.status>=200&&xhr.status<300)resolve(result);else reject(new Error(result.error||'Upload fehlgeschlagen.'));};
     xhr.onerror=()=>reject(new Error('Upload unterbrochen. Bitte erneut versuchen.'));xhr.send(file);
   });
+}
+async function uploadWithPoster(file,alt,onProgress=()=>{},onStage=()=>{}){
+  const media=await uploadMedia(file,alt,onProgress);
+  if(file.type!=='video/mp4')return {media};
+  try{
+    onStage('Video hochgeladen. Standbild wird erstellt …');
+    const videoName=new URL(media.path,location.href).pathname.split('/').pop();
+    const still=await videoFirstFrame(file,videoName.replace(/\.mp4$/i,'.poster.jpg'));
+    onStage('Standbild wird hochgeladen …');
+    const poster=await uploadMedia(still,alt,progress=>onStage(`Standbild-Upload: ${progress} %`));
+    return {media,poster};
+  }catch(posterError){return {media,posterError};}
 }
 async function api(path,method='GET',body){const res=await fetch('/api/'+path,{method,headers:{'Content-Type':'application/json',...(user?{'X-CSRF-Token':user.csrf}:{})},...(body?{body:JSON.stringify(body)}:{})});const value=await res.json();if(!res.ok)throw new Error(value.error);return value;}
 let toastTimer;
@@ -209,7 +222,7 @@ async function render(){
   } else if(view==='media') {
     const media=await api('admin/media');
     w.innerHTML=`<div class="admin-panel"><h2>Foto oder Video hochladen</h2><p>Bilder: PNG, JPEG, WebP bis 10 MB. Videos: MP4 (H.264) bis 60 MB. Hintergrundvideos werden stumm abgespielt.</p><form id="upload-form" class="upload-form"><label>Datei<input type="file" name="file" accept="image/png,image/jpeg,image/webp,video/mp4" required></label><label>Beschreibung<input name="alt" required maxlength="300"></label><button class="button">Hochladen ↗</button></form><p role="status" id="upload-status"></p></div><div class="media-grid">${media.map(mediaCard).join('')}</div>`;
-    $('#upload-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,button=$('button',form),file=$('input[type=file]',form).files[0];button.disabled=true;try{await uploadMedia(file,form.elements.alt.value,p=>$('#upload-status').textContent=`Upload: ${p} %`);await render();toast('Datei hochgeladen.');}catch(error){$('#upload-status').textContent=error.message;button.disabled=false;}};
+    $('#upload-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,button=$('button',form),file=$('input[type=file]',form).files[0];button.disabled=true;try{const result=await uploadWithPoster(file,form.elements.alt.value,p=>$('#upload-status').textContent=`Upload: ${p} %`,message=>$('#upload-status').textContent=message);await render();toast(result.posterError?'Video hochgeladen. Standbild bitte separat auswählen.':result.poster?'Video und Standbild hochgeladen.':'Datei hochgeladen.');}catch(error){$('#upload-status').textContent=error.message;button.disabled=false;}};
     w.querySelectorAll('[data-delete-media]').forEach(button=>button.onclick=async()=>{
       const item=media.find(row=>row.id===button.dataset.deleteMedia);
       if(!item||!confirm(`„${item.name}“ wirklich aus der Mediathek löschen? Verwendete Medien können nicht gelöscht werden.`))return;
@@ -374,12 +387,22 @@ function editContent(collection,record={},openPreview=false){
         select.innerHTML=`<option value="">${isVideo?'Kein Hintergrundvideo':'Kein Foto / Bild entfernen'}</option>${files.map(m=>`<option value="${esc(m.path)}">${esc(m.name)}</option>`).join('')}`;
         if(saved&&!files.some(m=>m.path===saved))select.add(new Option(saved,saved));select.value=saved;
       });
+      const videoSelect=$('#content-form').elements.video,imageSelect=$('#content-form').elements.image;
+      if(videoSelect&&imageSelect)videoSelect.addEventListener('change',()=>{
+        const videoName=new URL(videoSelect.value,location.href).pathname.split('/').pop();
+        const posterName=videoName.replace(/\.mp4$/i,'.poster.jpg');
+        const poster=media.find(item=>item.name===posterName);
+        if(poster){imageSelect.value=poster.path;}
+      });
     }).catch(e=>toast(e.message));
     let uploads=0;
     dialog.querySelectorAll('[data-upload-target]').forEach(input=>input.onchange=async()=>{
       const file=input.files[0];if(!file)return;
-      const message=input.closest('.media-field').querySelector('.upload-progress');uploads++;dialog.querySelectorAll('button[type=submit]').forEach(b=>b.disabled=true);input.disabled=true;
-      try{const result=await uploadMedia(file,$('#content-form').elements.heroAlt?.value||$('#content-form').elements.title.value||file.name,p=>message.textContent=`Upload: ${p} %`);const select=$('#content-form').elements[input.dataset.uploadTarget];select.add(new Option(file.name,result.path));select.value=result.path;message.textContent='Hochgeladen. Entwurf speichern oder veröffentlichen, um die Auswahl zu übernehmen.';}catch(error){message.textContent=error.message;}finally{uploads--;input.disabled=false;if(!uploads)dialog.querySelectorAll('button[type=submit]').forEach(b=>b.disabled=false);}
+      const message=input.closest('.media-field').querySelector('.upload-progress');
+      if(input.dataset.uploadTarget==='image'&&!file.type.startsWith('image/')){message.textContent='Bitte PNG, JPEG oder WebP als Standbild auswählen.';input.value='';return;}
+      if(input.dataset.uploadTarget==='video'&&file.type!=='video/mp4'){message.textContent='Bitte ein MP4-Video auswählen.';input.value='';return;}
+      uploads++;dialog.querySelectorAll('button[type=submit]').forEach(b=>b.disabled=true);input.disabled=true;
+      try{const result=await uploadWithPoster(file,$('#content-form').elements.heroAlt?.value||$('#content-form').elements.title.value||file.name,p=>message.textContent=`Upload: ${p} %`,status=>message.textContent=status);const select=$('#content-form').elements[input.dataset.uploadTarget];select.add(new Option(file.name,result.media.path));select.value=result.media.path;if(result.poster){const imageSelect=$('#content-form').elements.image;if(imageSelect){imageSelect.add(new Option('Standbild aus '+file.name,result.poster.path));imageSelect.value=result.poster.path;}}message.textContent=result.posterError?'Video hochgeladen. Standbild bitte separat auswählen.':'Hochgeladen. Veröffentlichen, um die Auswahl zu übernehmen.';}catch(error){message.textContent=error.message;}finally{uploads--;input.disabled=false;if(!uploads)dialog.querySelectorAll('button[type=submit]').forEach(b=>b.disabled=false);}
     });
   }
   if(record.id&&!record.virtual){

@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-2';
-import {enhanceLanding} from './landing.js?v=38';
+import {enhanceLanding} from './landing.js?v=39';
 let landingCleanup,meshShaderCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -65,7 +65,9 @@ function faqs() { return `<div class="faq-list">${data.faqs.map(f=>`<details><su
 function heroMarkup(h,s,quickLinks='') {
   const video=h.heroMedia==='video' && h.video;
   const openingFrame=video==='/assets/hero-film.mp4' && h.image==='/assets/hero-video-poster.jpg';
-  const poster=`${optimizedImage(h.image)}${openingFrame?'?v=opening-frame-1':''}`;
+  const currentVideo=typeof video==='string'&&/\/69f98965192348a3a466632b\.mp4(?:[?#]|$)/i.test(video);
+  const image=typeof h.image==='string'&&/\.(?:jpe?g|png|webp)(?:[?#]|$)/i.test(h.image)?h.image:'';
+  const poster=`${optimizedImage(image||(currentVideo?'/assets/hero-poster-69f98965192348a3a466632b.webp':'/assets/hero-video-poster.jpg'))}${openingFrame?'?v=opening-frame-1':''}`;
   return `<section class="hero hero-immersive${video?' hero-video-parallax':''} hero-${esc(h.heroHeight||'fullscreen')} overlay-${esc(h.heroOverlay||'balanced')} focus-${esc(h.heroPosition||'center')} mobile-focus-${esc(h.heroMobilePosition||'center')}" aria-label="Willkommen in der Citypraxis">
     <div class="hero-media"><img class="hero-backdrop" src="${esc(poster)}" alt="${esc(h.heroAlt||'Einblicke in die Citypraxis Wien')}" fetchpriority="high" decoding="sync">${video?`<video id="hero-video" class="hero-background-video" data-src="${esc(h.video)}" data-start-time="${openingFrame?'1':'0'}" poster="${esc(poster)}" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>`:''}</div>
     <div class="hero-shade"></div><div class="container hero-stage"><div class="hero-copy"><span class="eyebrow" data-copy-key="eyebrow"><span class="tiny-line"></span>${esc(h.eyebrow)}</span><h1><span data-copy-key="title">${esc(h.title)}</span><br><span data-copy-key="subtitle">${esc(h.subtitle)}</span></h1><p data-copy-key="intro">${esc(h.intro)}</p><div class="hero-actions"><a class="button" href="/termin">Ersttermin buchen ${arrow}</a><a class="urgent-button" href="/termin?akut=1"><span class="availability ${s.acuteAvailable?'is-available':''}"></span>Akuttermin anfragen ${arrow}</a></div></div></div>${quickLinks}
@@ -85,10 +87,10 @@ function homeDistinction(home){
   const titleLines=title.replace(/^What makes Citypraxis special$/i,'What makes\nCitypraxis special').replace(/^Was die Citypraxis auszeichnet$/i,'Was die Citypraxis\nauszeichnet');
   const heading=lines(titleLines);
   const eyebrow=home.distinctionEyebrow;
-  const copy=`<span class="eyebrow" data-copy-key="distinctionEyebrow">${esc(eyebrow)}</span><h2 id="home-distinction-title" data-copy-key="distinctionHeading">${heading}</h2>`;
+  const copy=`<span class="eyebrow" data-copy-key="distinctionEyebrow">${esc(eyebrow)}</span><div class="home-distinction-title-row"><h2 id="home-distinction-title" data-copy-key="distinctionHeading">${heading}</h2><div class="home-distinction-visual" aria-hidden="true"><img class="home-distinction-symbol" src="/assets/logo-symbol.png" alt="" width="58" height="76"></div></div>`;
   const middle=Math.ceil(items.length/2);
   const benefitColumns=[items.slice(0,middle),items.slice(middle)];
-  return `<section class="container home-distinction" aria-labelledby="home-distinction-title"><div class="home-distinction-visual" aria-hidden="true"><img class="home-distinction-symbol" src="/assets/logo-symbol.png" alt="" width="58" height="76"></div><div class="home-distinction-copy">${copy}</div><div class="home-distinction-benefits" data-copy-key="distinctionItems">${benefitColumns.map(items=>`<ul>${items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`).join('')}</div></section>`;
+  return `<section class="container home-distinction" aria-labelledby="home-distinction-title"><div class="home-distinction-copy">${copy}</div><div class="home-distinction-benefits" data-copy-key="distinctionItems">${benefitColumns.map(items=>`<ul>${items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`).join('')}</div></section>`;
 }
 function home() {
   const h = pageText('home'), s = data.settings[0];

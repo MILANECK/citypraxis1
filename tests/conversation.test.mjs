@@ -66,6 +66,34 @@ test('a greeting stays welcoming and a direct appointment request starts with th
     assert.equal(calls,0);
   }finally{process.env=old;}
 });
+test('a first-name greeting still requires a full name before the request can be sent',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let aiCalls=0;
+  const service=createConversationService({fetcher:async()=>{
+    aiCalls++;
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({kind:'medical',booking_intent:'unspecified',reason:'Headaches',answer:'Our team can discuss your headaches in person.'}))}]}]})};
+  }});
+  const token=newSession();const turn=async(message,language='en')=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    assert.equal((await turn('Milan')).message,'Hello, Milan! How can I help you?');
+    assert.equal(aiCalls,0);
+    assert.match((await turn('I have headaches')).message,/appointment request/);
+    assert.match((await turn('yes')).message,/first and last name/);
+    const partial=await turn('Milan');
+    assert.equal(partial.ready,false);
+    assert.match(partial.message,/first and last name/);
+    assert.equal(aiCalls,1);
+    assert.match((await turn('Milan Kovac')).message,/email address/);
+    await turn('milan@example.test');
+    const review=await turn('+43 699 12682157');
+    assert.equal(review.ready,true);
+    assert.ok(review.summary.some(([,value])=>value==='Milan Kovac'));
+    const germanToken=newSession();let german;
+    await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:germanToken,language:'en',message:'Ich heiße Mila',consent:true,turnKey:randomUUID()},(status,data)=>german={status,...data});
+    assert.match(german.message,/Hallo, Mila!/);
+    assert.equal(german.language,'de');
+  }finally{process.env=old;}
+});
 test('chat follows clear German or English input independently of the website language',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   const service=createConversationService({fetcher:async(_,options)=>{
@@ -194,7 +222,7 @@ test('contact intake advances only after a detail is saved and never thanks for 
     const localNumber=await turn('699 12682157',local);
     assert.equal(localNumber.ready,true);
     assert.deepEqual(localNumber.summary.find(([key])=>key==='Phone'),['Phone','+4369912682157']);
-    assert.equal(calls,6);
+    assert.equal(calls,5);
   }finally{process.env=old;}
 });
 test('a refused contact detail is respected while supplied names and later details receive distinct acknowledgements',async()=>{

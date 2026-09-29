@@ -23,7 +23,7 @@ export function enhanceLanding({preview=false}={}){
     '.home-therapies .therapy-card','.home-section-link','.home-team-photo',
     '.team-feature-copy>.eyebrow','.team-feature-copy>h2','.team-feature-copy>p','.team-feature-copy>.text-link',
     '.home-people .section-heading>div>*','.home-people .review-quote','.home-people .review-card blockquote','.home-people .review-card figcaption',
-    '.home-distinction-copy>.eyebrow','.home-distinction-copy>h2','.home-distinction-visual','.home-distinction-benefits li',
+    '.home-distinction-copy>.eyebrow','.home-distinction-title-row>h2','.home-distinction-visual','.home-distinction-benefits li',
     '.home-price-copy>*','.home-price-figure>*','.home-faq-intro>*','.home-faq .faq-list>details',
     '.home-scroll-line','.footer-top>div','.footer-bottom',
     // Interior templates share the rhythm, while forms and dense tables stay ready to use.
