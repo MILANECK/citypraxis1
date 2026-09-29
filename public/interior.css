@@ -142,8 +142,7 @@
 .interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-load p{animation-delay:calc(var(--interior-load-delay,0ms) + 290ms)}
 .interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-load .step-arrow{animation-delay:calc(var(--interior-load-delay,0ms) + 360ms)}
 .interior-page .contact-grid{gap:32px;margin-block:48px 16px}
-.interior-page .info-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:40px}
-.interior-page .info-card .weekly-hours{width:100%}
+.interior-page .info-card{padding:40px}
 .interior-page .info-card h2{font-size:34px;margin-top:18px}
 .interior-page .info-card h3{font-size:22px;margin-top:32px}
 .interior-page .contact-map iframe{opacity:1}
