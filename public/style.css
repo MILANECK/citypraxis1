@@ -22,3 +22,8 @@
 /* Prevent WebKit's rectangular touch flash, including taps on button children. */
 html,body,button,a,summary,[role="button"],button *,a *,summary *,[role="button"] *{-webkit-tap-highlight-color:transparent}
 button,a,summary,[role="button"]{touch-action:manipulation}
+/* The initial state is visible only while the first content request is pending. */
+.loading.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;max-width:none;min-height:100vh;min-height:100svh;margin:0;padding:24px;background:#fff;color:#27323a;text-align:center}
+.loading-screen img{width:46px;height:auto}
+.loading-screen span{font:500 11px/1.5 Inter,Arial,sans-serif;letter-spacing:.13em}
+html[lang="en"] .loading-screen .loading-de,html:not([lang="en"]) .loading-screen .loading-en{display:none}
