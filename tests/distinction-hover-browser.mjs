@@ -17,7 +17,8 @@ try{
       const cell=row.querySelector('.home-distinction-number');
       const range=document.createRange();range.selectNodeContents(cell);
       const glyph=range.getBoundingClientRect(),box=row.getBoundingClientRect();
-      return {glyphX:glyph.x+glyph.width/2-box.x,glyphY:glyph.y+glyph.height/2-box.y,rowHeight:box.height,textX:row.querySelector('.home-distinction-benefit-text').getBoundingClientRect().x-box.x};
+      const style=getComputedStyle(cell);
+      return {glyphX:glyph.x+glyph.width/2-box.x,glyphY:glyph.y+glyph.height/2-box.y,rowHeight:box.height,textX:row.querySelector('.home-distinction-benefit-text').getBoundingClientRect().x-box.x,fontSize:style.fontSize,scale:new DOMMatrixReadOnly(style.transform).a};
     });
     const before=await measure();
     await item.hover();
@@ -29,7 +30,9 @@ try{
       assert.ok(Math.abs(stage.glyphX-before.glyphX)<1,`Number ${number} moved horizontally`);
       assert.ok(Math.abs(stage.glyphY-before.glyphY)<1,`Number ${number} moved vertically`);
       assert.ok(Math.abs(stage.rowHeight-before.rowHeight)<.5,`Row ${number} changed height`);
+      assert.equal(stage.fontSize,before.fontSize,`Number ${number} triggered font layout`);
     }
+    assert.ok(after.scale>1.6,`Number ${number} did not scale smoothly`);
     assert.ok(after.textX-before.textX>6,`Text ${number} did not move right`);
   }
   await page.close();
