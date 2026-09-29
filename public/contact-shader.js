@@ -1,4 +1,4 @@
-import {VERT,FRAG} from './contact-shader-source.js';
+import {VERT,FRAG} from './contact-shader-source.js?v=mesh-3';
 
 // The supplied React component uses this palette and motion. The site is
 // vanilla JavaScript, so the renderer is mounted directly on its canvas.
@@ -28,14 +28,14 @@ const landingSettings={
     [.83,.72,.58],
     ...contactSettings.colors.slice(4)
   ],
-  colorCount:4,paramA:2,grain:.025,drift:0,cursorStrength:.12,timeScale:1
+  colorCount:4,paramA:2,grain:.038,drift:0,cursorStrength:.12,timeScale:1
 };
 
 export function initContactShader(canvas,{preset='contact'}={}){
   if(!canvas)return ()=>{};
-  const settings=preset==='landing'?landingSettings:contactSettings;
+  const settings=preset==='contact'?contactSettings:landingSettings;
   // Render one still frame on phones, tablets, and for reduced-motion users.
-  const staticScene=matchMedia('(prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse)').matches;
+  const staticScene=preset==='interior'||matchMedia('(prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse)').matches;
   const gl=canvas.getContext('webgl',{antialias:false,alpha:false});
   if(!gl){canvas.classList.add('is-fallback');return ()=>{};}
 
