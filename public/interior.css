@@ -25,6 +25,14 @@
 .interior-page .contact-shader-canvas:is(.is-ready,.is-fallback),.interior-page.editor-preview-embedded .contact-shader-canvas{opacity:.8}
 @media(prefers-reduced-motion:reduce){.interior-page :is(.contact-shader-canvas,.interior-mesh-shader-canvas){transition:none}}
 
+/* Keyframes start reliably as each subpage is inserted. Scroll reveals below
+   the opening viewport keep their separate intersection transitions. */
+@keyframes interior-load-rise{from{opacity:0;translate:0 28px;filter:blur(9px)}to{opacity:1;translate:0 0;filter:blur(0)}}
+@keyframes interior-load-slide{from{opacity:0;transform:translate3d(-32px,0,0) scale(.985);filter:blur(6px)}to{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}}
+@keyframes interior-load-chain{from{opacity:0;transform:translate3d(-18px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+.interior-page .interior-load-reveal{animation:interior-load-rise 1.55s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--interior-load-delay,0ms)}
+.interior-page .interior-load-reveal:focus-within{animation:none;opacity:1;translate:0 0;filter:none}
+
 /* Directory and overview pages have a centred introduction and airy, solid cards. */
 .interior-page:is([data-page="/leistungen"],[data-page="/schwerpunkte"],[data-page="/ueber-uns"],[data-page="/preise"],[data-page="/ablauf-wahltherapie"]) .article>:is(.eyebrow,h1,.article-intro){text-align:center;margin-inline:auto}
 .interior-page .listing-grid{gap:26px;margin-top:48px}
@@ -106,14 +114,20 @@
 .interior-page .process-grid h3{font-size:22px;font-weight:500;margin-top:24px}
 .interior-page .process-grid p{font-size:14px;line-height:1.8}
 .interior-page .process-grid .step-top>span:first-child{background:#edf5f8;color:var(--blue)}
-.interior-page[data-page="/ablauf-wahltherapie"] .process-grid.journey-waiting>li{opacity:0;filter:blur(5px);transform:translate3d(-32px,0,0) scale(.985);transition:opacity .85s cubic-bezier(.22,1,.36,1) var(--journey-delay,0ms),filter 1s cubic-bezier(.22,1,.36,1) var(--journey-delay,0ms),transform 1.05s cubic-bezier(.22,1,.36,1) var(--journey-delay,0ms)}
-.interior-page[data-page="/ablauf-wahltherapie"] .process-grid.journey-waiting.journey-visible>li{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
-.interior-page[data-page="/ablauf-wahltherapie"] .process-grid.journey-waiting>li :is(.step-top>span:first-child,.step-arrow,h3,p){opacity:0;transform:translate3d(-18px,0,0);transition:opacity .62s ease,transform .78s cubic-bezier(.16,1,.3,1)}
-.interior-page[data-page="/ablauf-wahltherapie"] .process-grid.journey-waiting.journey-visible>li :is(.step-top>span:first-child,.step-arrow,h3,p){opacity:1;transform:translate3d(0,0,0)}
-.interior-page[data-page="/ablauf-wahltherapie"] .process-grid.journey-waiting>li .step-top>span:first-child{transition-delay:calc(var(--journey-delay,0ms) + 90ms)}
-.interior-page[data-page="/ablauf-wahltherapie"] .process-grid.journey-waiting>li h3{transition-delay:calc(var(--journey-delay,0ms) + 190ms)}
-.interior-page[data-page="/ablauf-wahltherapie"] .process-grid.journey-waiting>li p{transition-delay:calc(var(--journey-delay,0ms) + 290ms)}
-.interior-page[data-page="/ablauf-wahltherapie"] .process-grid.journey-waiting>li .step-arrow{transition-delay:calc(var(--journey-delay,0ms) + 360ms)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting{opacity:0;filter:blur(5px);transform:translate3d(-32px,0,0) scale(.985);transition:opacity .85s cubic-bezier(.22,1,.36,1) var(--journey-delay,0ms),filter 1s cubic-bezier(.22,1,.36,1) var(--journey-delay,0ms),transform 1.05s cubic-bezier(.22,1,.36,1) var(--journey-delay,0ms)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting.journey-step-visible{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting :is(.step-top>span:first-child,.step-arrow,h3,p){opacity:0;transform:translate3d(-18px,0,0);transition:opacity .62s ease,transform .78s cubic-bezier(.16,1,.3,1)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting.journey-step-visible :is(.step-top>span:first-child,.step-arrow,h3,p){opacity:1;transform:translate3d(0,0,0)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting .step-top>span:first-child{transition-delay:calc(var(--journey-delay,0ms) + 90ms)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting h3{transition-delay:calc(var(--journey-delay,0ms) + 190ms)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting p{transition-delay:calc(var(--journey-delay,0ms) + 290ms)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting .step-arrow{transition-delay:calc(var(--journey-delay,0ms) + 360ms)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-load{animation:interior-load-slide 1.2s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--interior-load-delay,0ms)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-load :is(.step-top>span:first-child,.step-arrow,h3,p){animation:interior-load-chain .8s cubic-bezier(.16,1,.3,1) both}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-load .step-top>span:first-child{animation-delay:calc(var(--interior-load-delay,0ms) + 90ms)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-load h3{animation-delay:calc(var(--interior-load-delay,0ms) + 190ms)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-load p{animation-delay:calc(var(--interior-load-delay,0ms) + 290ms)}
+.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-load .step-arrow{animation-delay:calc(var(--interior-load-delay,0ms) + 360ms)}
 .interior-page .contact-grid{gap:32px;margin-block:48px 16px}
 .interior-page .info-card{padding:40px}
 .interior-page .info-card h2{font-size:34px;margin-top:18px}
@@ -202,5 +216,5 @@
   .interior-page .team-directory .team-profile-prompt{font-size:11px}
 }
 @media(max-width:360px){.interior-page .team-directory .team-profiles{grid-template-columns:1fr}.interior-page .team-directory :is(.team-card-sophia,.team-aim-card){grid-column:auto}}
-@media(prefers-reduced-motion:reduce){.interior-page .team-directory :is(.team-person,.team-aim-card).team-card-waiting,.interior-page[data-page="/ablauf-wahltherapie"] .process-grid.journey-waiting>li,.interior-page[data-page="/ablauf-wahltherapie"] .process-grid.journey-waiting>li :is(.step-top>span:first-child,.step-arrow,h3,p){opacity:1;filter:none;transform:none;transition:none}}
+@media(prefers-reduced-motion:reduce){.interior-page :is(.interior-load-reveal,.journey-step-load),.interior-page .journey-step-load :is(.step-top>span:first-child,.step-arrow,h3,p){animation:none;opacity:1;filter:none;transform:none;translate:none}.interior-page .team-directory :is(.team-person,.team-aim-card).team-card-waiting,.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting,.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting :is(.step-top>span:first-child,.step-arrow,h3,p){opacity:1;filter:none;transform:none;transition:none}}
 @media(prefers-reduced-motion:reduce){.interior-page .listing-card{transition:none}.interior-page .listing-card:hover{transform:none}}

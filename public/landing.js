@@ -43,6 +43,12 @@ export function enhanceLanding({preview=false}={}){
     '.interior-page #booking-form'
 
   ].join(','))];
+  const panelTargets=[...document.querySelectorAll('.interior-page :is(.article,.clinical-reading)>.clinical-card,.interior-page .therapist-section,.interior-page .contact-grid>.info-card')];
+  targets.push(...panelTargets);
+  for(let index=targets.length-1;index>=0;index--){
+    if(panelTargets.some(panel=>panel!==targets[index]&&panel.contains(targets[index])))targets.splice(index,1);
+  }
+  targets.sort((a,b)=>a===b?0:a.compareDocumentPosition(b)&4?-1:1);
   const cleanTeamHover=enhanceTeamHover();
   const watermark=document.querySelector('.home-footer-watermark');
   const priceValues=[...document.querySelectorAll('.home-price-value')].map((node,index)=>({node,final:Number(node.dataset.priceValue),text:node.textContent,duration:index===1?940:1000}));
@@ -84,7 +90,13 @@ export function enhanceLanding({preview=false}={}){
       event.target.style.removeProperty('--home-reveal-delay');
     }
   };
+  const onIntroEnd=event=>{
+    if(!event.target.classList.contains('interior-load-reveal')&&!event.target.classList.contains('journey-step-load'))return;
+    event.target.classList.remove('interior-load-reveal','journey-step-load');
+    event.target.style.removeProperty('--interior-load-delay');
+  };
   document.addEventListener('transitionend',onRevealEnd);
+  document.addEventListener('animationend',onIntroEnd);
   const updateScroll=()=>{
     const scrolled=header.classList.contains('header-is-scrolled');
     // Switch where the hero's bottom approaches the floating header, independent of screen size.
@@ -123,10 +135,10 @@ export function enhanceLanding({preview=false}={}){
     finishPrices();
     faqRows.forEach(node=>{node.classList.remove('faq-line-waiting','faq-line-visible');node.style.removeProperty('--detail-delay');});
     starGroups.forEach(node=>{node.classList.remove('stars-waiting','stars-visible');node.style.removeProperty('--stars-delay');});
-    teamCards.forEach(node=>{node.classList.remove('team-card-priming','team-card-waiting','team-card-visible');node.style.removeProperty('--team-card-delay');});
-    journeyGrid?.classList.remove('journey-waiting','journey-visible');
-    journeyGrid?.querySelectorAll(':scope>li').forEach(node=>node.style.removeProperty('--journey-delay'));
+    teamCards.forEach(node=>{node.classList.remove('team-card-priming','team-card-waiting','team-card-visible','interior-load-reveal');node.style.removeProperty('--team-card-delay');node.style.removeProperty('--interior-load-delay');});
+    journeyGrid?.querySelectorAll(':scope>li').forEach(node=>{node.classList.remove('journey-step-waiting','journey-step-visible','journey-step-load');node.style.removeProperty('--journey-delay');});
     targets.forEach(node=>node.classList.remove('home-reveal-ready','home-reveal-visible'));
+    targets.forEach(node=>{node.classList.remove('interior-load-reveal');node.style.removeProperty('--interior-load-delay');});
     animations.forEach(animation=>animation.cancel());
   };
   updateScroll();
@@ -162,12 +174,16 @@ export function enhanceLanding({preview=false}={}){
       const now=performance.now();
       entries.filter(entry=>entry.isIntersecting).forEach(entry=>revealTarget(entry.target,now));
     },{threshold:.18,rootMargin:`0px 0px -${Math.min(140,Math.max(90,innerHeight*.18))}px 0px`});
-    // Paint the hidden state before subscribing: an immediate intersection
-    // callback can otherwise make the first screen appear without a transition.
+    // Elements below the opening viewport keep their scroll-triggered reveal.
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       if(disposed||motion.matches)return;
-      const now=performance.now();
-      if(!isHome)targets.filter(initiallyVisible).forEach(node=>revealTarget(node,now));
+      if(!isHome){
+        targets.filter(initiallyVisible).forEach((node,index)=>{
+          node.classList.remove('home-reveal-ready');
+          node.style.setProperty('--interior-load-delay',`${180+index*190}ms`);
+          node.classList.add('interior-load-reveal');
+        });
+      }
       targets.forEach(node=>{
         if(node.isConnected&&node.classList.contains('home-reveal-ready')&&!node.classList.contains('home-reveal-visible'))observer.observe(node);
       });
@@ -200,33 +216,54 @@ export function enhanceLanding({preview=false}={}){
       },{threshold:.25,rootMargin:'0px 0px -22% 0px'});
       requestAnimationFrame(()=>requestAnimationFrame(()=>{
         if(disposed)return;
+        const initialCards=teamCards.filter(initiallyVisible);
+        const initialCardSet=new Set(initialCards);
         teamCards.forEach(card=>{
+          if(initialCardSet.has(card))return;
           if(card.isConnected&&card.classList.contains('team-card-waiting')){
             card.classList.remove('team-card-priming');
             teamObserver.observe(card);
-            if(initiallyVisible(card))revealTeamCard(card);
           }
+        });
+        if(!initialCards.length)return;
+        const photos=initialCards.flatMap(card=>[...card.querySelectorAll('img')]);
+        Promise.all(photos.map(photo=>photo.complete?Promise.resolve():Promise.race([
+          photo.decode().catch(()=>{}),
+          new Promise(resolve=>setTimeout(resolve,750))
+        ]))).then(()=>{
+          if(disposed||motion.matches)return;
+          initialCards.forEach((card,index)=>{
+            if(!card.isConnected)return;
+            card.classList.remove('team-card-priming','team-card-waiting');
+            card.classList.add('team-card-visible');
+            card.style.setProperty('--interior-load-delay',`${760+index*150}ms`);
+            card.classList.add('interior-load-reveal');
+          });
         });
       }));
     }
     if(journeyGrid){
-      journeyGrid.querySelectorAll(':scope>li').forEach((step,index)=>step.style.setProperty('--journey-delay',`${120+index*430}ms`));
-      journeyGrid.classList.add('journey-waiting');
+      const steps=[...journeyGrid.querySelectorAll(':scope>li')];
+      steps.forEach(step=>step.classList.add('journey-step-waiting'));
       journeyObserver=new IntersectionObserver(entries=>{
-        if(entries.some(entry=>entry.isIntersecting)){
-          journeyGrid.classList.add('journey-visible');
-          journeyObserver.disconnect();
-        }
+        entries.filter(entry=>entry.isIntersecting).forEach(entry=>{
+          entry.target.classList.add('journey-step-visible');
+          journeyObserver.unobserve(entry.target);
+        });
       },{threshold:.25,rootMargin:'0px 0px -80px 0px'});
       requestAnimationFrame(()=>requestAnimationFrame(()=>{
         if(disposed)return;
-        if(journeyGrid.isConnected&&journeyGrid.classList.contains('journey-waiting')){
-          journeyObserver.observe(journeyGrid);
-          if(initiallyVisible(journeyGrid)){
-            journeyGrid.classList.add('journey-visible');
-            journeyObserver.disconnect();
+        steps.forEach((step,index)=>{
+          if(!step.isConnected)return;
+          if(initiallyVisible(step)){
+            step.classList.remove('journey-step-waiting');
+            step.style.setProperty('--interior-load-delay',`${780+index*350}ms`);
+            step.classList.add('journey-step-load');
+          }else{
+            step.style.setProperty('--journey-delay',`${Math.min(index,2)*150}ms`);
+            journeyObserver.observe(step);
           }
-        }
+        });
       }));
     }
     if(watermark){
@@ -281,6 +318,7 @@ export function enhanceLanding({preview=false}={}){
     motion.removeEventListener('change',onMotion);
     document.removeEventListener('focusin',onFocus);
     document.removeEventListener('transitionend',onRevealEnd);
+    document.removeEventListener('animationend',onIntroEnd);
     decorativeLines.forEach(line=>line.remove());
     atmosphere?.style.removeProperty('--home-atmosphere-shift');
     atmosphere?.style.removeProperty('--home-background-top');
