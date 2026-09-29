@@ -34,8 +34,8 @@ const landingSettings={
 export function initContactShader(canvas,{preset='contact'}={}){
   if(!canvas)return ()=>{};
   const settings=preset==='contact'?contactSettings:landingSettings;
-  // Render one still frame on phones, tablets, and for reduced-motion users.
-  const staticScene=preset==='interior'||matchMedia('(prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse)').matches;
+  // Keep the mesh still on touch/mobile devices and for reduced-motion users.
+  const staticScene=matchMedia('(prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse)').matches;
   const gl=canvas.getContext('webgl',{antialias:false,alpha:false});
   if(!gl){canvas.classList.add('is-fallback');return ()=>{};}
 

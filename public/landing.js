@@ -51,7 +51,12 @@ export function enhanceLanding({preview=false}={}){
   const teamCards=[...document.querySelectorAll('.interior-page[data-page="/ueber-uns"] .team-directory :is(.team-person,.team-aim-card)')];
   const journeyGrid=document.querySelector('.interior-page[data-page="/ablauf-wahltherapie"] .process-grid');
   const groupTimings=new WeakMap();
-  let observer,watermarkObserver,teamObserver,journeyObserver,frame,priceFrame;
+  let observer,watermarkObserver,teamObserver,journeyObserver,frame,priceFrame,disposed=false;
+  const initiallyVisible=node=>{
+    if(!node.isConnected)return false;
+    const rect=node.getBoundingClientRect();
+    return rect.bottom>0&&rect.top<innerHeight*.96&&rect.width>0&&rect.height>0;
+  };
   const finishPrices=()=>{
     if(priceFrame)cancelAnimationFrame(priceFrame);
     priceFrame=null;
@@ -134,32 +139,42 @@ export function enhanceLanding({preview=false}={}){
     targets.forEach(node=>node.classList.add('home-reveal-ready'));
     faqRows.forEach(node=>node.classList.add('faq-line-waiting'));
     starGroups.forEach(node=>node.classList.add('stars-waiting'));
+    const revealTarget=(node,now)=>{
+      if(disposed||!node.classList.contains('home-reveal-ready')||node.classList.contains('home-reveal-visible'))return;
+      const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-distinction-copy,.home-distinction-benefits,.home-price-panel,.home-faq-intro,.faq-list,.footer-top,.listing-grid,.team-roster,.team-profiles,.process-grid,.service-intro,.therapist-intro,.therapist-section,.therapist-profile-end,.clinical-card,.about-specialisation,.info-card,.weekly-hours,.booking-layout')||node.parentElement;
+      const delay=Math.min(800,Math.max(140,(groupTimings.get(group)||0)-now));
+      groupTimings.set(group,now+delay+(node.matches('details')?220:170));
+      node.style.setProperty('--home-reveal-delay',`${delay}ms`);
+      node.classList.add('home-reveal-visible');
+      if(node.matches('.home-price-range'))animatePrices(delay+240);
+      if(node.matches('.home-faq details')){
+        node.style.setProperty('--detail-delay',`${delay+180}ms`);
+        node.classList.add('faq-line-visible');
+      }
+      if(node.matches('.review-card figcaption')){
+        const stars=node.querySelector('.review-stars');
+        stars?.style.setProperty('--stars-delay',`${delay+300}ms`);
+        stars?.classList.add('stars-visible');
+      }
+      observer.unobserve(node);
+    };
     observer=new IntersectionObserver(entries=>{
-      // Keep a local rhythm across observer callbacks, including slow scrolling.
       const now=performance.now();
-      entries.filter(entry=>entry.isIntersecting).forEach(entry=>{
-        const node=entry.target;
-        const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-distinction-copy,.home-distinction-benefits,.home-price-panel,.home-faq-intro,.faq-list,.footer-top,.listing-grid,.team-roster,.team-profiles,.process-grid,.service-intro,.therapist-intro,.therapist-section,.therapist-profile-end,.clinical-card,.about-specialisation,.info-card,.weekly-hours,.booking-layout')||node.parentElement;
-        const delay=Math.min(800,Math.max(140,(groupTimings.get(group)||0)-now));
-        groupTimings.set(group,now+delay+(node.matches('details')?220:170));
-        node.style.setProperty('--home-reveal-delay',`${delay}ms`);
-        node.classList.add('home-reveal-visible');
-        if(node.matches('.home-price-range'))animatePrices(delay+240);
-        if(node.matches('.home-faq details')){
-          node.style.setProperty('--detail-delay',`${delay+180}ms`);
-          node.classList.add('faq-line-visible');
-        }
-        if(node.matches('.review-card figcaption')){
-          const stars=node.querySelector('.review-stars');
-          stars?.style.setProperty('--stars-delay',`${delay+300}ms`);
-          stars?.classList.add('stars-visible');
-        }
-        observer.unobserve(node);
-      });
+      entries.filter(entry=>entry.isIntersecting).forEach(entry=>revealTarget(entry.target,now));
     },{threshold:.18,rootMargin:`0px 0px -${Math.min(140,Math.max(90,innerHeight*.18))}px 0px`});
-    targets.forEach(node=>observer.observe(node));
+    // Paint the hidden state before subscribing: an immediate intersection
+    // callback can otherwise make the first screen appear without a transition.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      if(disposed||motion.matches)return;
+      const now=performance.now();
+      if(!isHome)targets.filter(initiallyVisible).forEach(node=>revealTarget(node,now));
+      targets.forEach(node=>{
+        if(node.isConnected&&node.classList.contains('home-reveal-ready')&&!node.classList.contains('home-reveal-visible'))observer.observe(node);
+      });
+    }));
     if(teamCards.length){
       const rowPositions=new Map();
+      const startedCards=new WeakSet();
       teamCards.forEach(card=>{
         const row=Math.round(card.getBoundingClientRect().top/8);
         const position=rowPositions.get(row)||0;
@@ -167,25 +182,29 @@ export function enhanceLanding({preview=false}={}){
         card.style.setProperty('--team-card-delay',`${90+position*110}ms`);
         card.classList.add('team-card-priming','team-card-waiting');
       });
-      teamObserver=new IntersectionObserver(entries=>{
-        entries.filter(entry=>entry.isIntersecting).forEach(entry=>{
-          const card=entry.target;
-          teamObserver.unobserve(card);
-          // An image arriving mid-transition makes the first visible row look different.
-          const photos=[...card.querySelectorAll('img')];
-          Promise.all(photos.map(photo=>photo.complete?Promise.resolve():Promise.race([
-            photo.decode().catch(()=>{}),
-            new Promise(resolve=>setTimeout(resolve,750))
-          ]))).then(()=>{
-            if(card.isConnected&&card.classList.contains('team-card-waiting'))card.classList.add('team-card-visible');
-          });
+      const revealTeamCard=card=>{
+        if(disposed||startedCards.has(card))return;
+        startedCards.add(card);
+        teamObserver.unobserve(card);
+        // An image arriving mid-transition makes the first visible row look different.
+        const photos=[...card.querySelectorAll('img')];
+        Promise.all(photos.map(photo=>photo.complete?Promise.resolve():Promise.race([
+          photo.decode().catch(()=>{}),
+          new Promise(resolve=>setTimeout(resolve,750))
+        ]))).then(()=>{
+          if(!disposed&&card.isConnected&&card.classList.contains('team-card-waiting'))card.classList.add('team-card-visible');
         });
+      };
+      teamObserver=new IntersectionObserver(entries=>{
+        entries.filter(entry=>entry.isIntersecting).forEach(entry=>revealTeamCard(entry.target));
       },{threshold:.25,rootMargin:'0px 0px -22% 0px'});
       requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        if(disposed)return;
         teamCards.forEach(card=>{
           if(card.isConnected&&card.classList.contains('team-card-waiting')){
             card.classList.remove('team-card-priming');
             teamObserver.observe(card);
+            if(initiallyVisible(card))revealTeamCard(card);
           }
         });
       }));
@@ -200,7 +219,14 @@ export function enhanceLanding({preview=false}={}){
         }
       },{threshold:.25,rootMargin:'0px 0px -80px 0px'});
       requestAnimationFrame(()=>requestAnimationFrame(()=>{
-        if(journeyGrid.isConnected&&journeyGrid.classList.contains('journey-waiting'))journeyObserver.observe(journeyGrid);
+        if(disposed)return;
+        if(journeyGrid.isConnected&&journeyGrid.classList.contains('journey-waiting')){
+          journeyObserver.observe(journeyGrid);
+          if(initiallyVisible(journeyGrid)){
+            journeyGrid.classList.add('journey-visible');
+            journeyObserver.disconnect();
+          }
+        }
       }));
     }
     if(watermark){
@@ -245,6 +271,7 @@ export function enhanceLanding({preview=false}={}){
   motion.addEventListener('change',onMotion);
   document.addEventListener('focusin',onFocus);
   return ()=>{
+    disposed=true;
     showAll();
     cleanTeamHover();
     sizeObserver.disconnect();
