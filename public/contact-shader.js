@@ -31,9 +31,20 @@ const landingSettings={
   colorCount:4,paramA:2,grain:.07,drift:0,cursorStrength:.3,timeScale:1
 };
 
+// The team page uses the contact composition and motion, with a cooler palette.
+const teamSettings={
+  ...contactSettings,
+  colors:[
+    [.961,.929,.890],
+    [.651,.831,.894],
+    [.851,.788,.890],
+    ...contactSettings.colors.slice(3)
+  ]
+};
+
 export function initContactShader(canvas,{preset='contact'}={}){
   if(!canvas)return ()=>{};
-  const settings=preset==='contact'?contactSettings:landingSettings;
+  const settings=preset==='contact'?contactSettings:preset==='team'?teamSettings:landingSettings;
   const pageSurface=preset==='interior'?canvas.closest('.home-surface'):null;
   // Keep the mesh still on touch/mobile devices and for reduced-motion users.
   const staticScene=matchMedia('(prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse)').matches;

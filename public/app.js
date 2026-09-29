@@ -459,15 +459,15 @@ function renderApp(content,preview){
   data=I18n.localizeContent(content);
   document.body.classList.toggle('editor-preview-embedded',preview&&window.parent!==window);
   if(preview&&window.parent!==window&&!document.body.dataset.editorPreviewPage)document.body.dataset.editorPreviewPage='true';
-  const shaderPreset=location.pathname==='/kontakt'?'contact':location.pathname==='/'?'landing':['/ueber-uns','/preise','/ablauf-wahltherapie'].includes(location.pathname)?'interior':null;
-  const shaderId=shaderPreset==='contact'?'contact-shader':shaderPreset==='landing'?'home-mesh-shader':'interior-mesh-shader';
-  const shaderClass=shaderPreset==='contact'?'contact-shader-canvas':shaderPreset==='landing'?'home-mesh-shader':'interior-mesh-shader-canvas';
+  const shaderPreset=location.pathname==='/kontakt'?'contact':location.pathname==='/ueber-uns'?'team':location.pathname==='/'?'landing':['/preise','/ablauf-wahltherapie'].includes(location.pathname)?'interior':null;
+  const shaderId=shaderPreset==='contact'?'contact-shader':shaderPreset==='team'?'team-shader':shaderPreset==='landing'?'home-mesh-shader':'interior-mesh-shader';
+  const shaderClass=shaderPreset==='contact'?'contact-shader-canvas':shaderPreset==='team'?'contact-shader-canvas team-shader-canvas':shaderPreset==='landing'?'home-mesh-shader':'interior-mesh-shader-canvas';
   const shaderCanvas=shaderPreset?`<canvas id="${shaderId}" class="${shaderClass}" aria-hidden="true"></canvas>`:'';
   $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div>'+shaderCanvas+'<div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+footer()+'</div>'+cookiePanel();
   if(location.pathname==='/termin'&&!preview)import('/booking-gradient.js?v=booking-restored-1').then(({initBookingGradient})=>initBookingGradient()).catch(()=>{});
   if(shaderPreset&&!preview){
     const canvas=$(`#${shaderId}`);
-    import('/contact-shader.js?v=mesh-6').then(({initContactShader})=>{
+    import('/contact-shader.js?v=team-palette-1').then(({initContactShader})=>{
       if(canvas.isConnected)meshShaderCleanup=initContactShader(canvas,{preset:shaderPreset});
     }).catch(()=>canvas.classList.add('is-fallback'));
   }
