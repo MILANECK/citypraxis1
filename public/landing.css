@@ -227,9 +227,7 @@
 .public-page .home-price-figure>.home-scroll-line.home-reveal-ready{scale:1 0}
 .public-page .home-scroll-line.home-reveal-visible,.public-page .home-price-figure>.home-scroll-line.home-reveal-visible{scale:1}
 .public-page .home-reveal-ready:focus-within{opacity:1;translate:0 0;transition-delay:0s}
-.public-page .home-distinction .home-reveal-ready:not(.home-scroll-line){opacity:0;translate:none;filter:none;transition:opacity 1.15s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms)}
-.public-page .home-distinction .home-reveal-ready.home-reveal-visible:not(.home-scroll-line){opacity:1;translate:none;filter:none}
-.public-page .home-distinction .home-distinction-benefits li.home-reveal-ready{transition:opacity 1.15s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms)}
+.public-page .home-distinction-benefits li.home-reveal-ready{--home-reveal-distance:18px}
 .public-page.editor-preview-embedded .home-reveal-ready,.public-page.editor-preview-embedded .team-person.home-reveal-ready,.public-page.editor-preview-embedded #booking-form.home-reveal-ready{opacity:1;translate:none;scale:1;filter:none;transition:none}
 .public-page.editor-preview-embedded .header{position:absolute;top:12px}
 @media(hover:hover) and (pointer:fine){
@@ -306,13 +304,14 @@
   .public-page .home-section-intro{margin-bottom:32px}
   .public-page .home-section-intro h2{font-size:36px;line-height:1.08;margin:16px 0 20px}
   .public-page .home-section-intro p{font-size:13px;max-width:380px}
-  .public-page .therapy-grid{grid-template-columns:repeat(5,minmax(230px,68vw));gap:14px;width:calc(100% + 40px);margin-inline:-20px;padding:0 20px 22px;scroll-padding-inline:20px}
+  .public-page .therapy-grid{grid-template-columns:repeat(5,minmax(230px,68vw));gap:14px;width:calc(100% + 40px);margin-inline:-20px;padding:16px 20px 48px;scroll-padding-inline:20px;scrollbar-width:none}
+  .public-page .therapy-grid::-webkit-scrollbar{display:none}
   .public-page .therapy-card{aspect-ratio:.74;max-height:400px;border-radius:20px}
   .public-page .therapy-card h3{font-size:19px}
-  .public-page .therapy-carousel-dots{display:flex;align-items:center;justify-content:center;gap:3px;margin:0 auto 8px}
-  .public-page .therapy-carousel-dots button{display:grid;place-items:center;width:22px;height:24px;padding:0;border:0;border-radius:99px;background:transparent;cursor:pointer}
-  .public-page .therapy-carousel-dots button span{display:block;width:6px;height:6px;border-radius:99px;background:#d3d7d9;transition:width .28s ease,background-color .28s ease}
-  .public-page .therapy-carousel-dots button.is-active span{width:17px;background:#9ca6aa}
+  .public-page .therapy-carousel-dots{display:flex;align-items:center;justify-content:center;gap:0;margin:0 auto 6px}
+  .public-page .therapy-carousel-dots button{display:grid;place-items:center;width:24px;height:24px;padding:0;border:0;border-radius:99px;background:transparent;cursor:pointer}
+  .public-page .therapy-carousel-dots button span{display:block;width:4px;height:4px;border-radius:99px;background:#dce1e3;transition:transform .28s ease,background-color .28s ease}
+  .public-page .therapy-carousel-dots button.is-active span{transform:scale(1.5);background:#b9c2c7}
   .public-page .therapy-carousel-dots button:focus-visible{outline:2px solid #9ca6aa;outline-offset:1px}
   .public-page .therapy-card>.therapy-card-copy{padding-left:18px}
   .public-page .home-section-link{margin-top:12px}
