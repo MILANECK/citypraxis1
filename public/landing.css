@@ -98,7 +98,7 @@
 .public-page .home-team-plus,.public-page .team-feature-white,.public-page .home-team-roster{display:none}
 @media(min-width:1001px) and (hover:hover) and (pointer:fine){
   .public-page .team-feature.team-hover-ready{position:relative;isolation:isolate;--team-ease:cubic-bezier(.4,0,.25,1);--team-duration:1375ms;--team-follow-delay:110ms}
-  .public-page .team-feature.team-hover-ready:is(:hover,.is-open):not(.is-click-closed){--team-duration:1125ms;--team-follow-delay:90ms}
+  .public-page .team-feature.team-hover-ready:is(:hover,.is-open):not(.is-click-closed){--team-duration:1000ms;--team-follow-delay:80ms}
   .public-page .team-feature.team-hover-ready::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--team-photo-width);border-radius:24px;background:linear-gradient(130deg,#e8f2f5f5,#f1f7f9e6);opacity:0;transition:opacity 0s linear var(--team-duration);pointer-events:none}
   .public-page .team-feature.team-hover-ready:is(:hover,.is-open):not(.is-click-closed):not(:has(.home-team-photo.home-reveal-ready))::before{opacity:1;transition:opacity 0s}
   .public-page .team-hover-ready .home-team-photo{overflow:visible;box-shadow:none;min-height:380px;z-index:1;pointer-events:none}
@@ -129,14 +129,15 @@
   .public-page .team-hover-ready:is(:hover,.is-open):not(.is-click-closed) .home-team-plus{color:#fff}
   .public-page .team-hover-ready:is(:hover,.is-open):not(.is-click-closed) .home-team-plus svg{transform:rotate(720deg)}
 }
-.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:start;margin-block:clamp(38px,4vw,58px) 0;padding:32px var(--distinction-padding);background:transparent}
+.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);display:grid;grid-template-columns:minmax(0,.45fr) 1px minmax(0,.55fr);column-gap:clamp(28px,3.5vw,54px);align-items:start;margin-block:clamp(38px,4vw,58px) 0;padding:32px var(--distinction-padding);background:transparent}
 .public-page .home-distinction-copy{max-width:460px;padding-right:26px}
 .public-page .home-distinction-copy .eyebrow{font-size:11px;letter-spacing:.16em}
 .public-page .home-distinction-copy .eyebrow{color:var(--blue)}
 .public-page .home-distinction-copy h2{display:block;margin:23px 0 0;font:400 clamp(37px,3.8vw,56px)/1.08 Rubik,Arial,sans-serif;letter-spacing:-.045em;color:var(--home-ink)}
-.public-page .home-distinction-visual{margin-top:28px}
+.public-page .home-distinction-visual{grid-column:1/-1;display:flex;justify-content:center;margin:0 0 40px}
 .public-page .home-distinction-symbol{width:62px;height:auto}
-.public-page .home-distinction-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:27px;padding:8px 0 8px clamp(36px,5vw,72px)}
+.public-page .home-distinction-divider.home-scroll-line{position:relative;top:auto;left:auto;grid-column:2;grid-row:2;width:1px;height:100%;min-height:210px;transform-origin:center top}
+.public-page .home-distinction-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:27px;padding:8px 0}
 .public-page .home-distinction-benefits ul{min-width:0;list-style:none;margin:0;padding:0}
 .public-page .home-distinction-benefits li{position:relative;isolation:isolate;padding:0 0 9px 18px;color:var(--home-ink);font-size:14px;line-height:1.53}
 .public-page .home-distinction-benefits li::before{content:"";position:absolute;top:9px;left:0;width:5px;height:5px;border-radius:50%;background:var(--pink)}
@@ -227,10 +228,12 @@
 .interior-page #booking-form.home-reveal-ready.home-reveal-visible{opacity:1;filter:blur(0);translate:0 0}
 .public-page .home-scroll-line.home-reveal-ready{translate:none;scale:0 1;transition:opacity 1.2s ease var(--home-reveal-delay,0ms),scale 1.5s cubic-bezier(.65,0,.25,1) var(--home-reveal-delay,0ms)}
 .public-page .home-price-figure>.home-scroll-line.home-reveal-ready{scale:1 0}
+.public-page .home-distinction-divider.home-scroll-line.home-reveal-ready{scale:1 0}
 .public-page .home-scroll-line.home-reveal-visible,.public-page .home-price-figure>.home-scroll-line.home-reveal-visible{scale:1}
+.public-page .home-distinction-divider.home-scroll-line.home-reveal-visible{scale:1}
 .public-page .home-reveal-ready:focus-within{opacity:1;translate:0 0;transition-delay:0s}
-.public-page .home-distinction .home-reveal-ready{opacity:0;translate:none;filter:none;transition:opacity 1.15s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms)}
-.public-page .home-distinction .home-reveal-ready.home-reveal-visible{opacity:1;translate:none;filter:none}
+.public-page .home-distinction .home-reveal-ready:not(.home-scroll-line){opacity:0;translate:none;filter:none;transition:opacity 1.15s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms)}
+.public-page .home-distinction .home-reveal-ready.home-reveal-visible:not(.home-scroll-line){opacity:1;translate:none;filter:none}
 .public-page .home-distinction .home-distinction-benefits li.home-reveal-ready{transition:opacity 1.15s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms)}
 .public-page.editor-preview-embedded .home-reveal-ready,.public-page.editor-preview-embedded .team-person.home-reveal-ready,.public-page.editor-preview-embedded #booking-form.home-reveal-ready{opacity:1;translate:none;scale:1;filter:none;transition:none}
 .public-page.editor-preview-embedded .header{position:absolute;top:12px}
@@ -254,7 +257,7 @@
   .public-page .therapy-card h3{font-size:18px}
   .public-page .team-feature{gap:40px;grid-template-columns:1.15fr 1fr;min-height:440px}
   .public-page .home-team-photo{height:440px}
-  .public-page .home-distinction-benefits{padding-left:40px}
+  .public-page .home-distinction-benefits{padding-left:0}
   .public-page .home-distinction-benefits li{font-size:13px}
   .public-page .home-price-panel{padding:44px 32px;gap:35px}
   .public-page .home-price-figure{padding-left:35px}
@@ -324,8 +327,10 @@
   .public-page .home-distinction{grid-template-columns:1fr;padding:26px 24px 30px;gap:25px}
   .public-page .home-distinction-copy{max-width:none;padding:0}
   .public-page .home-distinction-copy h2{font-size:clamp(34px,8vw,42px);margin-top:15px}
-  .public-page .home-distinction-visual{display:grid;place-items:center;height:155px;margin-top:25px;border-radius:18px;background:#fff}
+  .public-page .home-distinction-visual{grid-column:1;display:flex;align-items:center;justify-content:center;height:auto;margin:0 0 4px;background:transparent}
   .public-page .home-distinction-symbol{width:58px;height:auto}
+  .public-page .home-distinction-divider.home-scroll-line{grid-column:1;grid-row:auto;width:100%;height:1px;min-height:0;transform-origin:left center}
+  .public-page .home-distinction-divider.home-scroll-line.home-reveal-ready{scale:0 1}
   .public-page .home-distinction-benefits{padding:2px 0 0}
   .public-page .home-distinction-benefits{grid-template-columns:1fr;gap:0}
   .public-page .home-distinction-benefits li{font-size:13px;padding-bottom:13px}
