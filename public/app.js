@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=34';
+import {enhanceLanding} from './landing.js?v=36';
 let landingCleanup,meshShaderCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -82,7 +82,9 @@ function homeDistinction(about,en){
   const heading=lines(titleLines);
   const eyebrow=en?'WHY CITYPRAXIS':'WARUM CITYPRAXIS';
   const copy=`<span class="eyebrow">${eyebrow}</span><h2 id="home-distinction-title">${heading}</h2>`;
-  return `<section class="container home-distinction" aria-labelledby="home-distinction-title"><div class="home-distinction-copy">${copy}<div class="home-distinction-visual" aria-hidden="true"><img class="home-distinction-symbol" src="/assets/logo-symbol.png" alt="" width="58" height="76"></div></div><div class="home-distinction-benefits"><ul>${about.distinction.items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul></div></section>`;
+  const middle=Math.ceil(about.distinction.items.length/2);
+  const benefitColumns=[about.distinction.items.slice(0,middle),about.distinction.items.slice(middle)];
+  return `<section class="container home-distinction" aria-labelledby="home-distinction-title"><div class="home-distinction-copy">${copy}<div class="home-distinction-visual" aria-hidden="true"><img class="home-distinction-symbol" src="/assets/logo-symbol.png" alt="" width="58" height="76"></div></div><div class="home-distinction-benefits">${benefitColumns.map(items=>`<ul>${items.map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`).join('')}</div></section>`;
 }
 function home() {
   const h = pageText('home'), s = data.settings[0];

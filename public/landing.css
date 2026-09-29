@@ -129,17 +129,21 @@
   .public-page .team-hover-ready:is(:hover,.is-open):not(.is-click-closed) .home-team-plus{color:#fff}
   .public-page .team-hover-ready:is(:hover,.is-open):not(.is-click-closed) .home-team-plus svg{transform:rotate(720deg)}
 }
-.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:center;margin-block:clamp(38px,4vw,58px) 0;padding:32px var(--distinction-padding);background:transparent}
+.public-page .home-distinction{--distinction-padding:clamp(34px,4vw,58px);display:grid;grid-template-columns:minmax(0,.45fr) minmax(0,.55fr);align-items:start;margin-block:clamp(38px,4vw,58px) 0;padding:32px var(--distinction-padding);background:transparent}
 .public-page .home-distinction-copy{max-width:460px;padding-right:26px}
 .public-page .home-distinction-copy .eyebrow{font-size:11px;letter-spacing:.16em}
 .public-page .home-distinction-copy .eyebrow{color:var(--blue)}
 .public-page .home-distinction-copy h2{display:block;margin:23px 0 0;font:400 clamp(37px,3.8vw,56px)/1.08 Rubik,Arial,sans-serif;letter-spacing:-.045em;color:var(--home-ink)}
 .public-page .home-distinction-visual{margin-top:28px}
 .public-page .home-distinction-symbol{width:62px;height:auto}
-.public-page .home-distinction-benefits{padding:8px 0 8px clamp(36px,5vw,72px)}
-.public-page .home-distinction-benefits ul{columns:2;column-gap:27px;list-style:none;margin:0;padding:0}
-.public-page .home-distinction-benefits li{position:relative;break-inside:avoid;padding:0 0 9px 18px;color:var(--home-ink);font-size:14px;line-height:1.53}
-.public-page .home-distinction-benefits li::before{content:"";position:absolute;top:.62em;left:0;width:5px;height:5px;border-radius:50%;background:var(--pink)}
+.public-page .home-distinction-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:27px;padding:8px 0 8px clamp(36px,5vw,72px)}
+.public-page .home-distinction-benefits ul{min-width:0;list-style:none;margin:0;padding:0}
+.public-page .home-distinction-benefits li{position:relative;padding:0 0 9px 18px;color:var(--home-ink);font-size:14px;line-height:1.53;transition:font-size .42s cubic-bezier(.22,1,.36,1)}
+.public-page .home-distinction-benefits li::before{content:"";position:absolute;top:9px;left:0;width:5px;height:5px;border-radius:50%;background:var(--pink);transition:box-shadow .42s ease}
+@media(hover:hover) and (pointer:fine){
+  .public-page .home-distinction-benefits li:hover{font-size:16.5px}
+  .public-page .home-distinction-benefits li:hover::before{box-shadow:0 0 0 4px #951b8126,0 0 13px 3px #951b8170}
+}
 .public-page .reviews-section{padding:64px 0 0}
 .public-page .reviews-section .section-heading{position:relative;display:flex;align-items:end;margin-bottom:28px;padding-top:40px;border-top:0}
 .public-page .home-scroll-line{display:block;position:absolute;top:0;left:0;width:100%;height:1px;background:#cdd5d9;transform-origin:left center;pointer-events:none}
@@ -225,6 +229,9 @@
 .public-page .home-price-figure>.home-scroll-line.home-reveal-ready{scale:1 0}
 .public-page .home-scroll-line.home-reveal-visible,.public-page .home-price-figure>.home-scroll-line.home-reveal-visible{scale:1}
 .public-page .home-reveal-ready:focus-within{opacity:1;translate:0 0;transition-delay:0s}
+.public-page .home-distinction .home-reveal-ready{opacity:0;translate:none;filter:none;transition:opacity 1.15s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms)}
+.public-page .home-distinction .home-reveal-ready.home-reveal-visible{opacity:1;translate:none;filter:none}
+.public-page .home-distinction .home-distinction-benefits li.home-reveal-ready{transition:opacity 1.15s cubic-bezier(.22,1,.36,1) var(--home-reveal-delay,0ms),font-size .42s cubic-bezier(.22,1,.36,1)}
 .public-page.editor-preview-embedded .home-reveal-ready,.public-page.editor-preview-embedded .team-person.home-reveal-ready,.public-page.editor-preview-embedded #booking-form.home-reveal-ready{opacity:1;translate:none;scale:1;filter:none;transition:none}
 .public-page.editor-preview-embedded .header{position:absolute;top:12px}
 @media(hover:hover) and (pointer:fine){
@@ -320,7 +327,7 @@
   .public-page .home-distinction-visual{display:grid;place-items:center;height:155px;margin-top:25px;border-radius:18px;background:#fff}
   .public-page .home-distinction-symbol{width:58px;height:auto}
   .public-page .home-distinction-benefits{padding:2px 0 0}
-  .public-page .home-distinction-benefits ul{columns:1}
+  .public-page .home-distinction-benefits{grid-template-columns:1fr;gap:0}
   .public-page .home-distinction-benefits li{font-size:13px;padding-bottom:13px}
   .public-page .reviews-section{padding-top:36px}
   .public-page .reviews-section .section-heading{padding-top:32px;margin-bottom:22px}
@@ -363,6 +370,7 @@
   .public-page .home-price-range{font-size:60px}
 }
 @media(prefers-reduced-motion:reduce){
+  .public-page .home-distinction-benefits li,.public-page .home-distinction-benefits li::before{transition:none}
   .public-page .home-faq .faq-line-waiting>summary::after{scale:1;transition:none}
   .public-page .stars-waiting .review-star{opacity:1;translate:none;transition:none}
   .public-page .team-hover-ready .home-team-visual,.public-page .team-hover-ready .team-group-photo,.public-page .team-hover-ready .home-team-visual::after,.public-page .team-hover-ready .team-feature-white,.public-page .team-hover-ready .home-team-plus,.public-page .team-hover-ready .home-team-plus svg,.public-page .team-hover-ready .home-team-roster,.public-page .home-team-roster a,.public-page .home-team-roster a>.arrow-symbol{transition:none}

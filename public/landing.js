@@ -23,6 +23,7 @@ export function enhanceLanding({preview=false}={}){
     '.home-therapies .therapy-card','.home-section-link','.home-team-photo',
     '.team-feature-copy>.eyebrow','.team-feature-copy>h2','.team-feature-copy>p','.team-feature-copy>.text-link',
     '.home-people .section-heading>div>*','.home-people .review-quote','.home-people .review-card blockquote','.home-people .review-card figcaption',
+    '.home-distinction-copy>.eyebrow','.home-distinction-copy>h2','.home-distinction-visual','.home-distinction-benefits li',
     '.home-price-copy>*','.home-price-figure>*','.home-faq-intro>*','.home-faq .faq-list>details',
     '.home-scroll-line','.footer-top>div','.footer-bottom',
     // Interior templates share the rhythm, while forms and dense tables stay ready to use.
@@ -85,7 +86,7 @@ export function enhanceLanding({preview=false}={}){
     priceFrame=requestAnimationFrame(tick);
   };
   const onRevealEnd=event=>{
-    if(['translate','scale'].includes(event.propertyName)&&event.target.classList.contains('home-reveal-visible')){
+    if((['translate','scale'].includes(event.propertyName)||(event.propertyName==='opacity'&&event.target.closest('.home-distinction')))&&event.target.classList.contains('home-reveal-visible')){
       event.target.classList.remove('home-reveal-ready','home-reveal-visible');
       event.target.style.removeProperty('--home-reveal-delay');
     }
@@ -154,11 +155,14 @@ export function enhanceLanding({preview=false}={}){
     starGroups.forEach(node=>node.classList.add('stars-waiting'));
     const revealTarget=(node,now)=>{
       if(disposed||!node.classList.contains('home-reveal-ready')||node.classList.contains('home-reveal-visible'))return;
-      const group=node.closest('.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-price-panel,.home-faq-intro,.faq-list,.footer-top,.listing-grid,.team-roster,.team-profiles,.process-grid,.service-intro,.therapist-intro,.therapist-section,.therapist-profile-end,.clinical-card,.about-specialisation,.info-card,.weekly-hours,.booking-layout')||node.parentElement;
-      const delay=Math.min(800,Math.max(140,(groupTimings.get(group)||0)-now));
+      const group=node.closest('.home-distinction,.home-section-intro,.therapy-grid,.team-feature-copy,.review-card,.section-heading,.home-price-panel,.home-faq-intro,.faq-list,.footer-top,.listing-grid,.team-roster,.team-profiles,.process-grid,.service-intro,.therapist-intro,.therapist-section,.therapist-profile-end,.clinical-card,.about-specialisation,.info-card,.weekly-hours,.booking-layout')||node.parentElement;
+      const delay=Math.min(group.matches('.home-distinction')?2100:800,Math.max(140,(groupTimings.get(group)||0)-now));
       groupTimings.set(group,now+delay+(node.matches('details')?220:170));
       node.style.setProperty('--home-reveal-delay',`${delay}ms`);
       node.classList.add('home-reveal-visible');
+      if(node.matches('.home-distinction-copy>.eyebrow')){
+        node.closest('.home-distinction')?.querySelectorAll('.home-reveal-ready:not(.home-reveal-visible)').forEach(item=>revealTarget(item,now));
+      }
       if(node.matches('.home-price-range'))animatePrices(delay+240);
       if(node.matches('.home-faq details')){
         node.style.setProperty('--detail-delay',`${delay+180}ms`);
