@@ -28,12 +28,13 @@ const landingSettings={
     [.83,.72,.58],
     ...contactSettings.colors.slice(4)
   ],
-  colorCount:4,paramA:2,grain:.038,drift:0,cursorStrength:.12,timeScale:1
+  colorCount:4,paramA:2,grain:.07,drift:0,cursorStrength:.3,timeScale:1
 };
 
 export function initContactShader(canvas,{preset='contact'}={}){
   if(!canvas)return ()=>{};
   const settings=preset==='contact'?contactSettings:landingSettings;
+  const pageSurface=preset==='interior'?canvas.closest('.home-surface'):null;
   // Keep the mesh still on touch/mobile devices and for reduced-motion users.
   const staticScene=matchMedia('(prefers-reduced-motion: reduce), (max-width: 767px), (pointer: coarse)').matches;
   const gl=canvas.getContext('webgl',{antialias:false,alpha:false});
@@ -92,7 +93,7 @@ export function initContactShader(canvas,{preset='contact'}={}){
     let mouseX=0,mouseY=0,cursorPresence=0;
     let pointerKnown=false,pointerClientX=0,pointerClientY=0;
     let frame=0,lastNow=null,disposed=false,firstFrame=true;
-    let visible=document.visibilityState==='visible',inView=preset!=='landing';
+    let visible=document.visibilityState==='visible',inView=preset!=='landing',fadeVisible=!pageSurface;
     const start=performance.now();
     const animateTime=!staticScene&&Math.abs(settings.timeScale)>.0001;
 
@@ -109,7 +110,19 @@ export function initContactShader(canvas,{preset='contact'}={}){
       }
     };
     const requestRender=()=>{
-      if(!disposed&&visible&&inView&&!frame)frame=requestAnimationFrame(render);
+      if(!disposed&&visible&&inView&&(fadeVisible||staticScene)&&!frame)frame=requestAnimationFrame(render);
+    };
+    const updatePageFade=()=>{
+      if(!pageSurface)return;
+      const page=pageSurface.getBoundingClientRect();
+      const height=Math.max(page.height,innerHeight);
+      const fadeStart=page.top+height*.4;
+      canvas.style.setProperty('--mesh-fade-start',`${Math.round(fadeStart)}px`);
+      canvas.style.setProperty('--mesh-fade-end',`${Math.round(page.top+height*.9)}px`);
+      const wasVisible=fadeVisible;
+      fadeVisible=fadeStart<innerHeight;
+      if(!fadeVisible&&frame&&!staticScene){cancelAnimationFrame(frame);frame=0;lastNow=null;}
+      else if(fadeVisible&&!wasVisible)requestRender();
     };
     const updatePointerTarget=()=>{
       if(!pointerKnown||!bounds.width||!bounds.height)return;
@@ -127,7 +140,7 @@ export function initContactShader(canvas,{preset='contact'}={}){
     };
     const onPointerLeave=()=>{pointerKnown=false;targetPresence=0;requestRender();};
     const updateLayout=()=>{
-      bounds=canvas.getBoundingClientRect();resizeCanvas();updatePointerTarget();requestRender();
+      bounds=canvas.getBoundingClientRect();resizeCanvas();updatePageFade();updatePointerTarget();requestRender();
     };
     const onVisibilityChange=()=>{
       visible=document.visibilityState==='visible';
@@ -141,7 +154,7 @@ export function initContactShader(canvas,{preset='contact'}={}){
     };
     function render(now){
       frame=0;
-      if(disposed||!visible||!inView)return;
+      if(disposed||!visible||!inView||(!fadeVisible&&!staticScene))return;
       const dt=lastNow===null?0:Math.min((now-lastNow)/1000,.1);
       lastNow=now;
       const follow=1-Math.exp(-12*dt);
@@ -166,11 +179,14 @@ export function initContactShader(canvas,{preset='contact'}={}){
       addEventListener('scroll',updateLayout,true);
       addEventListener('blur',onPointerLeave);
       document.documentElement.addEventListener('pointerleave',onPointerLeave);
+    }else if(pageSurface){
+      addEventListener('scroll',updatePageFade,{passive:true});
     }
     document.addEventListener('visibilitychange',onVisibilityChange);
     canvas.addEventListener('webglcontextlost',onContextLost);
     const resizeObserver=new ResizeObserver(updateLayout);
     resizeObserver.observe(canvas);
+    if(pageSurface)resizeObserver.observe(pageSurface);
     const observed=preset==='landing'?[document.querySelector('.team-feature'),document.querySelector('.home-price-wrap')].filter(Boolean):[canvas];
     const intersections=new Map(observed.map(node=>[node,false]));
     const intersectionObserver=new IntersectionObserver(entries=>{
@@ -195,6 +211,8 @@ export function initContactShader(canvas,{preset='contact'}={}){
         removeEventListener('scroll',updateLayout,true);
         removeEventListener('blur',onPointerLeave);
         document.documentElement.removeEventListener('pointerleave',onPointerLeave);
+      }else if(pageSurface){
+        removeEventListener('scroll',updatePageFade);
       }
       gl.deleteBuffer(buffer);gl.deleteProgram(program);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
