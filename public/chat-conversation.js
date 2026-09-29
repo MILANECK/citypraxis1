@@ -37,7 +37,36 @@ async function api(route,body){
   const response=await fetch(`/api/chat/${route}`,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify({token:state.token,language:lang,...body}):undefined,signal:AbortSignal.timeout(20000)});
   const result=await response.json();if(!response.ok){const error=new Error(errors()[result.code]||t('Das hat nicht geklappt. Bitte versuchen Sie es erneut.','That did not work. Please try again.'));error.code=result.code;throw error;}return result;
 }
-async function run(task){if(busy)return;busy=true;root.setAttribute('aria-busy','true');status.setAttribute('aria-label',t('Citypraxis denkt nach','Citypraxis is thinking'));const thinking=document.createElement('span'),dots=document.createElement('span');thinking.className='chat-thinking';dots.className='chat-thinking-dots';dots.setAttribute('aria-hidden','true');for(let index=0;index<3;index++){const dot=document.createElement('i');dots.append(dot);}thinking.append(dots);status.replaceChildren(thinking);requestAnimationFrame(()=>{const scroll=$('.chat-scroll');scroll.scrollTop=scroll.scrollHeight;});root.querySelectorAll('.chat-content button').forEach(button=>button.disabled=true);try{await task();status.textContent='';}catch(error){status.textContent=error.message||errors().ai_unavailable;if(['session_expired','ai_unavailable','conversation_limit'].includes(error.code))status.innerHTML=`${esc(status.textContent)} <a href="/termin?lang=${siteLang}#booking-form">${t('Terminformular','Appointment form')}</a>`;}finally{busy=false;status.removeAttribute('aria-label');root.removeAttribute('aria-busy');root.querySelectorAll('.chat-content button').forEach(button=>button.disabled=button.closest('.conversation-locked')!==null);}}
+async function run(task,{message=null}={}){
+  if(busy)return;
+  busy=true;root.setAttribute('aria-busy','true');status.textContent='';
+  const thread=content.querySelector('.conversation-thread')||content;
+  const composer=content.querySelector('#conversation-input');
+  let visitor;
+  if(message){
+    visitor=document.createElement('div');visitor.className='conversation-message from-visitor';
+    visitor.innerHTML=`<span class="conversation-speaker">${t('Sie','You')}</span><p>${esc(message)}</p>`;
+    thread.append(visitor);
+    if(composer){composer.value='';composer.readOnly=true;}
+  }
+  const thinking=document.createElement('div');
+  thinking.className='conversation-message from-assistant is-pending';
+  thinking.innerHTML=`<span class="sr-only">${t('Citypraxis denkt nach','Citypraxis is thinking')}</span><span class="chat-thinking" aria-hidden="true"><span class="chat-thinking-dots"><i></i><i></i><i></i></span></span>`;
+  thread.append(thinking);
+  requestAnimationFrame(()=>{const scroll=$('.chat-scroll');scroll.scrollTop=scroll.scrollHeight;});
+  root.querySelectorAll('.chat-content button').forEach(button=>button.disabled=true);
+  try{await task();status.textContent='';}
+  catch(error){
+    if(message&&composer?.isConnected)composer.value=message;
+    status.textContent=error.message||errors().ai_unavailable;
+    if(['session_expired','ai_unavailable','conversation_limit'].includes(error.code))status.innerHTML=`${esc(status.textContent)} <a href="/termin?lang=${siteLang}#booking-form">${t('Terminformular','Appointment form')}</a>`;
+  }finally{
+    thinking.remove();visitor?.remove();
+    if(composer)composer.readOnly=false;
+    busy=false;root.removeAttribute('aria-busy');
+    root.querySelectorAll('.chat-content button').forEach(button=>button.disabled=button.closest('.conversation-locked')!==null);
+  }
+}
 async function revealReply(){
   if(state.emergency||!opened||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const paragraph=content.querySelector('.conversation-message:last-child.from-assistant p');
@@ -114,7 +143,7 @@ function render(){
 }
 function bind(){
   content.querySelector('.conversation-start')?.addEventListener('submit',event=>{event.preventDefault();if(!event.currentTarget.elements.consent.checked)return;run(async()=>{const session=await api('session');if(!session.aiAvailable)throw Object.assign(new Error(errors().ai_unavailable),{code:'ai_unavailable'});state={...blank(),token:session.token,expires:session.expires,started:true,consentVersion,messages:[{role:'assistant',text:welcome}]};persist();render();content.querySelector('#conversation-input')?.focus();});});
-  content.querySelector('.conversation-compose')?.addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget,message=form.elements.message.value.trim();if(!message)return;run(async()=>{if(state.pendingMessage!==message){state.turnKey=crypto.randomUUID();state.pendingMessage=message;}const result=await api('turn',{message,turnKey:state.turnKey,consent:true,turnNumber:state.turnNumber});state.turnNumber++;state.turnKey=null;state.pendingMessage=null;syncLanguage(result);state.messages.push({role:'visitor',text:message},{role:'assistant',text:result.message});if(result.ready&&state.editingField&&!state.editedFields.includes(state.editingField))state.editedFields.push(state.editingField);state.ready=result.ready;state.summary=result.summary;state.editingField=result.ready?null:state.editingField;state.turnsRemaining=result.turnsRemaining;state.limitReached=result.limitReached;state.emergency=result.emergency===true;persist();render();await revealReply();});});
+  content.querySelector('.conversation-compose')?.addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget,message=form.elements.message.value.trim();if(!message)return;run(async()=>{if(state.pendingMessage!==message){state.turnKey=crypto.randomUUID();state.pendingMessage=message;}const result=await api('turn',{message,turnKey:state.turnKey,consent:true,turnNumber:state.turnNumber});state.turnNumber++;state.turnKey=null;state.pendingMessage=null;syncLanguage(result);state.messages.push({role:'visitor',text:message},{role:'assistant',text:result.message});if(result.ready&&state.editingField&&!state.editedFields.includes(state.editingField))state.editedFields.push(state.editingField);state.ready=result.ready;state.summary=result.summary;state.editingField=result.ready?null:state.editingField;state.turnsRemaining=result.turnsRemaining;state.limitReached=result.limitReached;state.emergency=result.emergency===true;persist();render();await revealReply();},{message});});
   content.querySelector('.conversation-confirm')?.addEventListener('submit',event=>{event.preventDefault();run(async()=>{const result=await api('finish',{confirmed:true});state.sent=result.id;state.outsideHours=result.officeOpen===false;state.patientReceipt=result.patientReceipt;clear();render();});});
   content.querySelectorAll('[data-edit]').forEach(button=>button.addEventListener('click',()=>run(async()=>{const field=button.dataset.edit,result=await api('edit',{field});state.messages.push({role:'assistant',text:result.message});state.ready=false;state.summary=null;state.editingField=field;state.turnKey=null;state.pendingMessage=null;persist();render();})));
   content.querySelector('[data-cancel-edit]')?.addEventListener('click',()=>run(async()=>{const result=await api('cancel-edit',{});state.ready=result.ready;state.summary=result.summary;state.editingField=null;state.turnKey=null;state.pendingMessage=null;state.turnsRemaining=result.turnsRemaining;persist();render();}));
