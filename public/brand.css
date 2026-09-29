@@ -111,12 +111,12 @@ body{background:#fafaf9}.topline{background:#f0f1f2}.header{background:#fafaf9f5
 }
 
 /* Blue appointment actions reveal a soft magenta circle from the lower right. */
-:is(a.button[href^="/termin"],#booking-form>button.button[type="submit"]):not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)){
+a.button[href^="/termin"]:not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)){
   position:relative;
   isolation:isolate;
   overflow:hidden;
 }
-:is(a.button[href^="/termin"],#booking-form>button.button[type="submit"]):not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button))::before{
+a.button[href^="/termin"]:not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button))::before{
   content:"";
   position:absolute;
   inset:0;
@@ -130,21 +130,21 @@ body{background:#fafaf9}.topline{background:#f0f1f2}.header{background:#fafaf9f5
   transition:opacity .5s ease,transform .65s cubic-bezier(.22,1,.36,1);
 }
 @media(hover:hover) and (pointer:fine){
-  :is(a.button[href^="/termin"],#booking-form>button.button[type="submit"]):not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):hover{
+  a.button[href^="/termin"]:not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):hover{
     background:var(--blue);
   }
-  :is(a.button[href^="/termin"],#booking-form>button.button[type="submit"]):not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):hover::before{
+  a.button[href^="/termin"]:not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):hover::before{
     opacity:1;
     transform:none;
   }
 }
-:is(a.button[href^="/termin"],#booking-form>button.button[type="submit"]):not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):focus-visible::before{
+a.button[href^="/termin"]:not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):focus-visible::before{
   opacity:1;
   transform:none;
 }
 @media(prefers-reduced-motion:reduce){
   :is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button),
   :is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button) .arrow-symbol,
-  :is(a.button[href^="/termin"],#booking-form>button.button[type="submit"])::before{transition:none}
+  a.button[href^="/termin"]::before{transition:none}
   :is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button):hover{transform:none}
 }

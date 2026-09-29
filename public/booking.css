@@ -89,9 +89,12 @@
 #booking-form .booking-optional>summary{padding:14px 0}
 #booking-form .booking-optional-content{padding:0 0 18px}
 #booking-form .booking-optional-actions button,#booking-form .booking-review-actions button,#booking-form .booking-review-choices button,#booking-form .booking-review-toggle,#booking-form button[type=submit]{border-radius:14px}
-#booking-form.compact-booking>button.button[type=submit]{background:linear-gradient(105deg,var(--blue) 0%,var(--blue) 40%,var(--pink) 82%,var(--pink) 100%);transition:transform .3s cubic-bezier(.22,1,.36,1),filter .3s ease,box-shadow .3s ease}
+#booking-form.compact-booking>button.button[type=submit]{background:linear-gradient(105deg,#741263 0%,var(--pink) 34%,#951b81 52%,var(--blue) 100%);background-size:190% 100%;background-position:100% 50%;transition:background-position .8s cubic-bezier(.22,1,.36,1),transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s ease}
 #booking-form.compact-booking>button.button[type=submit]::before{display:none}
-@media(hover:hover) and (pointer:fine){#booking-form.compact-booking>button.button[type=submit]:hover{filter:brightness(1.06);transform:translateY(-2px);box-shadow:0 10px 24px #951b8130}}
+#booking-form.compact-booking>button.button[type=submit] .arrow-symbol{transition:transform .45s cubic-bezier(.22,1,.36,1)}
+@media(hover:hover) and (pointer:fine){#booking-form.compact-booking>button.button[type=submit]:hover{background-position:0 50%;transform:translateY(-2px);box-shadow:0 10px 24px #951b8130}#booking-form.compact-booking>button.button[type=submit]:hover .arrow-symbol{transform:translate(3px,-3px)}}
+#booking-form.compact-booking>button.button[type=submit]:focus-visible{background-position:0 50%}
+@media(prefers-reduced-motion:reduce){#booking-form.compact-booking>button.button[type=submit],#booking-form.compact-booking>button.button[type=submit] .arrow-symbol{transition:none}#booking-form.compact-booking>button.button[type=submit]:hover{transform:none}}
 #booking-form .booking-review{background:#f1f6f8;border-radius:14px}
 @media(max-width:767px){
   #booking-form.compact-booking{padding:24px 22px}

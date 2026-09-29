@@ -50,6 +50,7 @@ export function enhanceLanding({preview=false}={}){
   }
   targets.sort((a,b)=>a===b?0:a.compareDocumentPosition(b)&4?-1:1);
   const cleanTeamHover=enhanceTeamHover();
+  const cleanSlidingCards=enhanceSlidingCards();
   const watermark=document.querySelector('.home-footer-watermark');
   const priceValues=[...document.querySelectorAll('.home-price-value')].map((node,index)=>({node,final:Number(node.dataset.priceValue),text:node.textContent,duration:index===1?940:1000}));
   const faqRows=[...document.querySelectorAll('.home-faq .faq-list>details')];
@@ -311,6 +312,7 @@ export function enhanceLanding({preview=false}={}){
     disposed=true;
     showAll();
     cleanTeamHover();
+    cleanSlidingCards();
     sizeObserver.disconnect();
     if(frame)cancelAnimationFrame(frame);
     window.removeEventListener('scroll',onScroll);
@@ -359,4 +361,56 @@ function enhanceTeamHover(){
     observer.disconnect();whiteCopy.remove();panel.classList.remove('team-hover-ready');
     ['--team-width','--team-photo-width','--team-uncovered','--team-photo-shift','--team-image-width'].forEach(name=>panel.style.removeProperty(name));
   };
+}
+
+// Hover offers a preview; clicking pins a slider until it is clicked again.
+// Suppress hover only for that closing click, so the card can close under the pointer.
+function enhanceSlidingCards(){
+  const desktop=matchMedia('(min-width:1001px) and (hover:hover) and (pointer:fine)');
+  const cleanups=[];
+  document.querySelectorAll('.home-distinction,.team-feature.team-hover-ready').forEach(panel=>{
+    const button=panel.querySelector('.home-distinction-plus,.home-team-plus');
+    if(!button)return;
+    const revealCopy=()=>panel.querySelectorAll('.home-distinction-copy>.home-reveal-ready,.team-feature-copy>.home-reveal-ready').forEach((node,index)=>{
+      if(node.classList.contains('home-reveal-visible'))return;
+      node.style.setProperty('--home-reveal-delay',`${index*100}ms`);
+      node.classList.add('home-reveal-visible');
+    });
+    const update=()=>button.setAttribute('aria-expanded',String(desktop.matches&&(panel.classList.contains('is-open')||(panel.matches(':hover')&&!panel.classList.contains('is-click-closed')))));
+    const onClick=event=>{
+      if(!desktop.matches||event.target.closest('a'))return;
+      revealCopy();
+      const opening=!panel.classList.contains('is-open');
+      panel.classList.toggle('is-open',opening);
+      panel.classList.toggle('is-click-closed',!opening);
+      update();
+    };
+    const onEnter=()=>{revealCopy();update();};
+    const onLeave=()=>{panel.classList.remove('is-click-closed');update();};
+    const onKey=event=>{
+      if(event.key!=='Escape'||!panel.classList.contains('is-open'))return;
+      panel.classList.remove('is-open');
+      panel.classList.add('is-click-closed');
+      update();
+      button.focus();
+    };
+    const onMedia=()=>{
+      panel.classList.remove('is-open','is-click-closed');
+      update();
+    };
+    panel.addEventListener('click',onClick);
+    panel.addEventListener('pointerenter',onEnter);
+    panel.addEventListener('pointerleave',onLeave);
+    panel.addEventListener('keydown',onKey);
+    desktop.addEventListener('change',onMedia);
+    cleanups.push(()=>{
+      panel.removeEventListener('click',onClick);
+      panel.removeEventListener('pointerenter',onEnter);
+      panel.removeEventListener('pointerleave',onLeave);
+      panel.removeEventListener('keydown',onKey);
+      desktop.removeEventListener('change',onMedia);
+      panel.classList.remove('is-open','is-click-closed');
+    });
+  });
+  return ()=>cleanups.forEach(cleanup=>cleanup());
 }
