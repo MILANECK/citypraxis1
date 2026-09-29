@@ -157,7 +157,7 @@
 .interior-page .booking-layout h1{font-size:clamp(36px,4vw,54px);line-height:1.12}
 .interior-page .booking-layout .article-intro{font-size:16px;margin-bottom:24px}
 .interior-page .booking-layout .booking-note{background:#f8f5efdf;border:0;box-shadow:0 14px 38px #29243d12;backdrop-filter:blur(7px) saturate(1.05);-webkit-backdrop-filter:blur(7px) saturate(1.05)}
-.interior-page #booking-form.compact-booking{background:#fffffff2;border-radius:24px;box-shadow:0 18px 60px #2531380c}
+.interior-page #booking-form.compact-booking{background:#fff;border-radius:24px;box-shadow:0 18px 60px #2531380c}
 .interior-page[data-page="/datenschutz"] .article,.interior-page[data-page="/impressum"] .article{max-width:960px}
 
 @media(hover:hover) and (pointer:fine){
@@ -222,6 +222,7 @@
   .interior-page .booking-layout h1{font-size:36px}
   .interior-page #booking-form.compact-booking{padding:24px 20px;border-radius:22px}
 }
+.interior-page #booking-form.compact-booking.has-folder{border-top-right-radius:0}
 @media(max-width:600px){
   .interior-page .team-directory .team-profiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
   .interior-page .team-directory .team-mobile-lead-gap{display:block}
