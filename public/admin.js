@@ -371,7 +371,7 @@ function editContent(collection,record={},openPreview=false){
         const saved=select.value,isVideo=select.dataset.mediaSelect==='video';
         const files=media.filter(m=>m.path.endsWith('.mp4')===isVideo);
         if(!isVideo)files.push({path:'/assets/hero.jpg',name:'Therapie-Foto'});
-        select.innerHTML=`<option value="">Bitte auswählen</option>${files.map(m=>`<option value="${esc(m.path)}">${esc(m.name)}</option>`).join('')}`;
+        select.innerHTML=`<option value="">${isVideo?'Kein Hintergrundvideo':'Kein Foto / Bild entfernen'}</option>${files.map(m=>`<option value="${esc(m.path)}">${esc(m.name)}</option>`).join('')}`;
         if(saved&&!files.some(m=>m.path===saved))select.add(new Option(saved,saved));select.value=saved;
       });
     }).catch(e=>toast(e.message));
