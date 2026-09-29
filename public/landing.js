@@ -127,6 +127,7 @@ export function enhanceLanding({preview=false}={}){
   };
   const onScroll=()=>{if(!frame)frame=requestAnimationFrame(updateScroll);};
   const showAll=()=>{
+    document.body.classList.remove('interior-reveal-pending');
     document.body.classList.remove('team-reveal-enabled');
     observer?.disconnect();
     watermarkObserver?.disconnect();
@@ -188,6 +189,7 @@ export function enhanceLanding({preview=false}={}){
       targets.forEach(node=>{
         if(node.isConnected&&node.classList.contains('home-reveal-ready')&&!node.classList.contains('home-reveal-visible'))observer.observe(node);
       });
+      document.body.classList.remove('interior-reveal-pending');
     }));
     if(teamCards.length){
       const rowPositions=new Map();

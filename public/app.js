@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-1';
-import {enhanceLanding} from './landing.js?v=31';
+import {enhanceLanding} from './landing.js?v=32';
 let landingCleanup,meshShaderCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -454,6 +454,8 @@ function renderApp(content,preview){
   document.body.classList.add('public-page');
   document.body.classList.toggle('home-page',location.pathname==='/');
   document.body.classList.toggle('interior-page',location.pathname!=='/');
+  // Keep freshly inserted subpage content covered until its entrance states are ready.
+  document.body.classList.toggle('interior-reveal-pending',location.pathname!=='/'&&!preview&&!matchMedia('(prefers-reduced-motion: reduce)').matches);
   document.body.dataset.page=location.pathname;
   document.body.classList.toggle('team-reveal-enabled',location.pathname==='/ueber-uns'&&!preview&&!matchMedia('(prefers-reduced-motion: reduce)').matches);
   data=I18n.localizeContent(content);
