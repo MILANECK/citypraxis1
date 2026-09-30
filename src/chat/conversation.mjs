@@ -5,6 +5,7 @@ import {safetySignal} from './safety.mjs';
 import {emailConfigured,notifyRequest,notifyPatient} from './notify.mjs';
 import {summaryRows} from '../../public/chat-model.js';
 import {chatPages,relatedPageLinks} from './pages.mjs';
+import {matchingRecent,recentCutoff} from './recent-requests.mjs';
 
 export const CONVERSATION_LIMIT=30;
 export const CONVERSATION_PROMPT=`You are CityPraxis's digital receptionist in Vienna. Refer warmly to "our team" without presenting yourself as a human team member. Your introduction already identifies you as digital. Do not repeat this identity in replies unless asked; never pretend to be a human clinician.
@@ -271,6 +272,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         const allowed={patient_status:['new','existing','unsure'],preferred_contact:['email','phone','either']};
         if(!Object.hasOwn(allowed,body.field)||!allowed[body.field].includes(body.value))throw new ChatError('invalid_request');
         s.draft[body.field]=body.value;
+        s.duplicateCandidateId=null;
         s.lastTurn=null;
         json(200,{ready:true,summary:summaryRows(makeIntake(s,lang),lang),turnsRemaining:CONVERSATION_LIMIT-s.turns,language:lang});return true;
       }
@@ -279,6 +281,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         if(s.turns>=CONVERSATION_LIMIT)throw new ChatError('conversation_limit',429);
         if(nextSlot(s.draft)!=='review'||!['reason','name','email','phone','availability'].includes(body.field))throw new ChatError('invalid_request');
         s.editSnapshot={field:body.field,draft:{...s.draft}};
+        s.duplicateCandidateId=null;
         if(body.field==='name'){delete s.draft.first_name;delete s.draft.last_name;}else delete s.draft[body.field];
         s.editing=body.field==='availability'?'availability':null;
         s.lastTurn=null;const message=question(body.field,lang);s.messages.push({role:'assistant',text:message});json(200,{message,ready:false,turnsRemaining:CONVERSATION_LIMIT-s.turns,language:lang});return true;
@@ -292,18 +295,36 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       }
       if(path==='/api/chat/finish'){
         if(s.submitted){json(200,{id:s.submitted,received:true,duplicate:true});return true;}
+        if(s.cancelled){json(200,{cancelled:true,language:lang});return true;}
         if(body.confirmed!==true)throw new ChatError('consent_required');
         if(nextSlot(s.draft)!=='review')throw new ChatError('invalid_request');
         const intake=makeIntake(s,lang);
+        const contact={email:intake.email,phone:intake.phone};
+        const recent=matchingRecent(await store.recent(recentCutoff()),contact);
+        const candidate=recent[0];
+        if(!s.duplicateCandidateId&&candidate){s.duplicateCandidateId=candidate.id;json(200,{requiresChoice:true,language:lang});return true;}
+        const choice=body.duplicateChoice;
+        if(s.duplicateCandidateId){
+          if(!['update','new','cancel'].includes(choice)){
+            json(200,{requiresChoice:true,language:lang});return true;
+          }
+          if(choice==='cancel'){s.cancelled=true;json(200,{cancelled:true,language:lang});return true;}
+          if(choice==='update'&&!recent.some(row=>String(row.id)===String(s.duplicateCandidateId)))throw new ChatError('invalid_request',409);
+          intake.repeat_action=choice==='update'?'updated':'additional';
+          intake.related_request_id=s.duplicateCandidateId;
+          if(choice==='update')intake.repeat_notification_key=token.id;
+        }else if(choice)throw new ChatError('invalid_request');
         intake.fingerprint=createHash('sha256').update(JSON.stringify(intake)).digest('hex');intake.submitted_at=new Date().toISOString();
-        const result=await store.save({name:`${intake.first_name} ${intake.last_name}`,email:intake.email,phone:intake.phone,preference:'Termin anfragen',intake,submission_key:token.id,notification_status:emailConfigured()?'pending':'not_configured'});
-        if(result.row.intake?.fingerprint!==intake.fingerprint)throw new ChatError('already_submitted',409);
+        const row={name:`${intake.first_name} ${intake.last_name}`,email:intake.email,phone:intake.phone,preference:'Termin anfragen',intake,submission_key:token.id,notification_status:emailConfigured()?'pending':'not_configured'};
+        const result=choice==='update'?{created:true,row:await store.update(s.duplicateCandidateId,row)}:await store.save(row);
+        if(!result.row)throw new ChatError('invalid_request',409);
+        if(choice!=='update'&&result.row.intake?.fingerprint!==intake.fingerprint)throw new ChatError('already_submitted',409);
         s.submitted=result.row.id;
         let patientReceipt='not_configured';
         if(result.created){await notifyRequest(result.row,store,fetcher);patientReceipt=await notifyPatient(result.row,fetcher);}
         let officeOpen=null;
         try{officeOpen=practiceHoursStatus((await getFacts()).openingHours).open;}catch{}
-        json(result.created?201:200,{id:result.row.id,received:true,duplicate:!result.created,officeOpen,patientReceipt,language:lang});return true;
+        json(result.created?201:200,{id:result.row.id,received:true,duplicate:!result.created,updated:choice==='update',additional:choice==='new',officeOpen,patientReceipt,language:lang});return true;
       }
       if(s.submitted)throw new ChatError('already_submitted',409);
       if(typeof body.turnKey!=='string'||! /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(body.turnKey))throw new ChatError('invalid_request');

@@ -6,6 +6,11 @@ export function sqliteChatStore(db){
       return {created:Boolean(result.changes),row:decode(db.prepare('SELECT * FROM requests WHERE submission_key=?').get(row.submission_key))};
     },
     async get(id){return decode(db.prepare('SELECT * FROM requests WHERE id=?').get(id));},
+    async recent(since){return db.prepare("SELECT * FROM requests WHERE created_at>=? AND status!='closed' ORDER BY created_at DESC").all(since.slice(0,19).replace('T',' ')).map(decode);},
+    async update(id,row){
+      const result=db.prepare("UPDATE requests SET name=?,email=?,phone=?,preference=?,acute=?,intake=?,notification_status=?,updated_at=? WHERE id=? AND status!='closed'").run(row.name,row.email,row.phone,row.preference,row.acute?1:0,JSON.stringify(row.intake),row.notification_status,new Date().toISOString(),id);
+      return result.changes?decode(db.prepare('SELECT * FROM requests WHERE id=?').get(id)):null;
+    },
     async notification(id,status){db.prepare('UPDATE requests SET notification_status=? WHERE id=?').run(status,id);}
   };
 }
@@ -19,6 +24,15 @@ export function supabaseChatStore(client){
       return {created:false,row:existing[0]};
     },
     async get(id){return (await client.rest('appointment_requests',`?id=eq.${encodeURIComponent(id)}&select=*`))[0];},
+    async recent(since){
+      const rows=[];let page;
+      do{page=await client.rest('appointment_requests',`?created_at=gte.${encodeURIComponent(since)}&status=neq.closed&select=*&order=created_at.desc&limit=1000&offset=${rows.length}`);rows.push(...page);}while(page.length===1000);
+      return rows;
+    },
+    async update(id,row){
+      const rows=await client.rest('appointment_requests',`?id=eq.${encodeURIComponent(id)}&status=neq.closed&select=*`,{method:'PATCH',prefer:'return=representation',body:{name:row.name,email:row.email,phone:row.phone,preference:row.preference,acute:row.acute||false,intake:row.intake,notification_status:row.notification_status,updated_at:new Date().toISOString()}});
+      return rows?.[0]||null;
+    },
     async notification(id,status){await client.rest('appointment_requests',`?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:{notification_status:status}});}
   };
 }

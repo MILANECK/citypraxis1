@@ -14,6 +14,7 @@ import {mediaInUse,mediaDownloadName,mediaFileSize} from './media-library.mjs';
 import {createConversationService,conversationFacts} from './chat/conversation.mjs';
 import {createChatService} from './chat/service.mjs';
 import {supabaseChatStore} from './chat/store.mjs';
+import {markPossibleDuplicates} from './chat/recent-requests.mjs';
 import {isTeamMemberBookable} from './team-booking.mjs';
 import {normalizeAppointmentConcerns} from '../public/request-summary.js';
 
@@ -211,7 +212,7 @@ export function createSupabaseApp() {
         if(req.method==='DELETE'){if(collection==='settings'||(collection==='pages'&&['home','about'].includes(id)))return json(400,{error:'Dieser Basisinhalt kann nicht gelöscht werden.'});if(row)await supabase.rest('revisions','',{method:'POST',body:{collection,entity_id:id,snapshot:row.draft,actor:user.id,actor_email:user.email}});await supabase.rest('content',`?collection=${filter(collection)}&id=${filter(id)}`,{method:'DELETE'});publicContentCache=null;await audit(user,'delete',`${collection}/${id}`);return json(200,{ok:true});}
       }
       if(path==='/api/admin/revisions'&&req.method==='GET'&&editor){const rows=await supabase.rest('revisions',`?collection=${filter(url.searchParams.get('collection'))}&entity_id=${filter(url.searchParams.get('id'))}&select=*&order=id.desc&limit=30`);return json(200,rows.map(r=>({...r,actor:r.actor_email||r.actor})));}
-      if(path==='/api/admin/requests'&&req.method==='GET'&&reception){const rows=[];let page;do{page=await supabase.rest('appointment_requests',`?select=*&order=id.desc&limit=1000&offset=${rows.length}`);rows.push(...page);}while(page.length===1000);return json(200,rows);}
+      if(path==='/api/admin/requests'&&req.method==='GET'&&reception){const rows=[];let page;do{page=await supabase.rest('appointment_requests',`?select=*&order=id.desc&limit=1000&offset=${rows.length}`);rows.push(...page);}while(page.length===1000);return json(200,markPossibleDuplicates(rows));}
       if(path==='/api/admin/requests'&&req.method==='PUT'&&reception){if(!['new','contacted','confirmed','closed'].includes(body.status))return json(400,{error:'Ungültiger Status.'});const assignee=body.assignee||null;if(assignee){const p=await supabase.rest('staff_profiles',`?id=${filter(assignee)}&active=eq.true&select=id,role`);if(!p[0]||!['owner','reception'].includes(p[0].role))return json(400,{error:'Ungültige Zuweisung.'});}await supabase.rest('appointment_requests',`?id=${filter(body.id)}`,{method:'PATCH',body:{status:body.status,assignee,updated_at:new Date().toISOString()}});await audit(user,`request ${body.status}`,`request/${body.id}`);return json(200,{ok:true});}
       if(path==='/api/admin/requests'&&req.method==='DELETE'&&owner){await supabase.rest('appointment_requests',`?id=${filter(body.id)}`,{method:'DELETE'});await audit(user,'delete request',`request/${body.id}`);return json(200,{ok:true});}
       if(path==='/api/admin/staff'&&req.method==='GET'&&reception)return json(200,await supabase.rest('staff_profiles','?active=eq.true&role=in.(owner,reception)&select=id,name'));

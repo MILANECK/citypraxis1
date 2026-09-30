@@ -17,6 +17,7 @@ import {createAppointmentService} from './appointment-service.mjs';
 import {createConversationService,conversationFacts} from './chat/conversation.mjs';
 import {createChatService} from './chat/service.mjs';
 import {sqliteChatStore} from './chat/store.mjs';
+import {markPossibleDuplicates} from './chat/recent-requests.mjs';
 import {isTeamMemberBookable} from './team-booking.mjs';
 
 const root = resolve('public');
@@ -196,7 +197,7 @@ export function createApp(db = openDatabase()) {
         }
       }
       if (path === '/api/admin/revisions' && req.method === 'GET' && editor) return json(200,db.prepare('SELECT * FROM revisions WHERE collection=? AND entity_id=? ORDER BY id DESC LIMIT 30').all(url.searchParams.get('collection'),url.searchParams.get('id')));
-      if (path === '/api/admin/requests' && req.method === 'GET' && reception) return json(200,db.prepare('SELECT * FROM requests ORDER BY id DESC').all());
+      if (path === '/api/admin/requests' && req.method === 'GET' && reception) return json(200,markPossibleDuplicates(db.prepare('SELECT * FROM requests ORDER BY id DESC').all()));
       if (path === '/api/admin/requests' && req.method === 'PUT' && reception) {
         if (!['new','contacted','confirmed','closed'].includes(body.status)) return json(400,{error:'Ungültiger Status.'});
         const assignee = body.assignee ? Number(body.assignee) : null;

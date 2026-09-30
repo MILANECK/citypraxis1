@@ -484,7 +484,7 @@ test('conversational reception validates, reviews, edits and submits exactly onc
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';delete process.env.RESEND_API_KEY;
   let value=answer({reason:'Shoulder concern',first_name:'Test',last_name:'Visitor'}),calls=0,saved=[];
   const fetcher=async(url,options)=>{calls++;const payload=JSON.parse(options.body);assert.equal(payload.model,'gpt-6-luna');assert.equal(payload.store,false);assert.equal(payload.text.format.strict,true);return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};};
-  const store={save:async row=>{saved.push(row);return {created:true,row:{...row,id:42}};}};
+  const store={recent:async()=>[],save:async row=>{saved.push(row);return {created:true,row:{...row,id:42}};}};
   const service=createConversationService({store,fetcher});const token=newSession();
   const call=async(route,body={},session=token)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},`/api/chat/${route}`,{token:session,language:'en',...body},(status,data)=>result={status,...data});return result;};
   const turn=(message,extra={})=>call('turn',{message,consent:true,turnKey:randomUUID(),...extra});
