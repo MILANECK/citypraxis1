@@ -29,6 +29,13 @@ try{
   await page.locator('#conversation-input').fill('');
   assert.deepEqual(await page.locator('.chat-writing-line').evaluateAll(els=>els.map(el=>getComputedStyle(el).animationName)),['chat-line-write','chat-line-write','chat-line-write']);
 
+  await page.goto(origin+'/preise?lang=en');
+  await page.waitForFunction(()=>document.querySelector('#cp-chat')?.classList.contains('resumed-session'));
+  assert.equal(await page.locator('.chat-launch span').textContent(),'Continue chat');
+  assert.ok(await launcher.evaluate(el=>el.getBoundingClientRect().width)>170);
+  await launcher.click();
+  assert.ok(await page.locator('.conversation-thread').textContent());
+
   await page.locator('.chat-close').click();
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(34, 35, 68)');
   assert.equal(await page.locator('.chat-launch-icon').evaluate(el=>getComputedStyle(el).display),'block');
@@ -36,7 +43,10 @@ try{
   await page.waitForFunction(()=>document.querySelector('#cp-chat')?.classList.contains('resumed-session'));
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(220, 238, 245)');
   assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).display),'block');
-  console.log('Original idle launcher, animated lines, typing pause, close and resumed session verified.');
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.locator('.chat-launch span').evaluate(el=>getComputedStyle(el).display),'block');
+  assert.ok(await launcher.evaluate(el=>{const bounds=el.getBoundingClientRect();return bounds.left>=0&&bounds.right<=innerWidth;}));
+  console.log('Original idle launcher, animated lines, typing pause, page-to-page continuation, close and resumed session verified.');
 }finally{
   await browser.close();
 }

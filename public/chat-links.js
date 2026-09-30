@@ -21,7 +21,7 @@ export function formatChatMessage(value,origin=globalThis.location?.origin||'htt
     const trimmed=markdown?raw:raw.replace(/[.,!?;:]+$/u,'');
     const suffix=markdown?'':raw.slice(trimmed.length);
     const href=safePageUrl(trimmed,origin);
-    html+=href?`<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(markdown?match[1]:trimmed)}</a>${escapeHtml(suffix)}`:escapeHtml(match[0]);
+    html+=href?`<a href="${escapeHtml(href)}">${escapeHtml(markdown?match[1]:trimmed)}</a>${escapeHtml(suffix)}`:escapeHtml(match[0]);
     index=match.index+match[0].length;
   }
   return html+escapeHtml(source.slice(index));

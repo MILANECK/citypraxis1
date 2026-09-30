@@ -1,5 +1,5 @@
 import {choices} from '/chat-model.js';
-import {formatChatMessage} from '/chat-links.js?v=chat-link-tab-1';
+import {formatChatMessage} from '/chat-links.js?v=chat-continue-1';
 const siteLang=window.I18n?.language==='en'?'en':'de';
 let lang=siteLang,en=lang==='en';
 const t=(de,english)=>en?english:de;
