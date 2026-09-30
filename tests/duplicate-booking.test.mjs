@@ -60,7 +60,7 @@ test('recent chatbot requests offer update, additional appointment or cancellati
     assert.equal((await call(extra,'finish',{confirmed:true})).requiresChoice,true);
     const additional=await call(extra,'finish',{confirmed:true,duplicateChoice:'new'});
     assert.equal(additional.additional,true);assert.notEqual(additional.id,saved.id);assert.equal(count(),2);
-    assert.match(mails[2].subject,/ZUSÄTZLICHER TERMIN/);
+    assert.match(mails[2].subject,/ADDITIONAL REQUEST \/ ZUSÄTZLICHE ANFRAGE/);
     const marked=markPossibleDuplicates(db.prepare('SELECT * FROM requests').all());
     assert.deepEqual(marked.find(row=>row.id===saved.id).possible_duplicate_ids,[additional.id]);
     assert.deepEqual(marked.find(row=>row.id===additional.id).possible_duplicate_ids,[saved.id]);

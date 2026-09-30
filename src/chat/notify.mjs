@@ -13,7 +13,7 @@ export const patientReceiptConfigured=row=>Boolean(patientReceiptSender(row));
 export function requestEmail(row){
   const source=sourceLabel(row.intake,'de'),rows=requestRows(row,'de');
   const updated=row.intake?.repeat_action==='updated',additional=row.intake?.repeat_action==='additional';
-  const marker=updated?'UPDATED REQUEST / AKTUALISIERTE ANFRAGE':additional?'ZUSÄTZLICHER TERMIN':'';
+  const marker=updated?'UPDATED REQUEST / AKTUALISIERTE ANFRAGE':additional?'ADDITIONAL REQUEST / ZUSÄTZLICHE ANFRAGE':'';
   const base=process.env.RENDER_EXTERNAL_URL||process.env.APP_ORIGIN||'';
   let adminUrl='';try{const url=new URL(base);if(['http:','https:'].includes(url.protocol))adminUrl=url.origin+'/admin';}catch{}
   const subject=`Citypraxis · ${marker?marker+' · ':''}${source}${row.acute?' · AKUT':''} · Anfrage #${row.id}`;

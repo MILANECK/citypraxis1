@@ -24,7 +24,8 @@ try{
     await page.locator('.conversation-confirm input').check();
     await page.locator('.conversation-confirm button').click();
     await page.locator('.conversation-duplicate').waitFor();
-    assert.match(await page.locator('.conversation-duplicate').innerText(),/recently sent another appointment request/);
+    assert.match(await page.locator('.conversation-duplicate').innerText(),/Is this a new booking request/);
+    assert.equal(await page.locator('[data-duplicate-choice="new"]').innerText(),'New booking request');
     assert.equal(await page.locator('[data-duplicate-choice]').count(),3);
     assert.equal(await page.locator('.chat-scroll').evaluate(node=>node.scrollWidth<=node.clientWidth),true);
     await page.locator(`[data-duplicate-choice="${choice}"]`).click();
