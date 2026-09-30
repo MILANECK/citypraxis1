@@ -117,7 +117,29 @@ function animateRequestDisclosure(details){
 function mediaCard(media,status){
   const preview=media.path.endsWith('.mp4')?`<video controls muted playsinline preload="metadata" src="${esc(media.path)}" aria-label="${esc(media.alt)}"></video>`:`<img src="${esc(media.path)}" alt="${esc(media.alt)}" loading="lazy">`;
   const label={live:'Auf Website',draft:'Im Entwurf',unused:'Nicht verwendet'}[status];
-  return `<article class="admin-panel media-card media-card--${status}"><div class="media-thumb">${preview}</div><span class="media-use-badge">${label}</span><h3 title="${esc(media.name)}">${esc(media.name)}</h3><p>${esc(media.alt)}</p><div class="media-card-actions"><a class="button button-outline" href="/api/admin/media/${encodeURIComponent(media.id)}/download" download>Herunterladen</a><button type="button" class="delete-entry" data-delete-media="${esc(media.id)}">Löschen</button></div></article>`;
+  return `<article class="admin-panel media-card media-card--${status}"><div class="media-thumb">${preview}</div><div class="media-card-meta"><span class="media-use-badge">${label}</span><span class="media-size" data-media-size="${esc(media.id)}" aria-label="Dateigröße wird geladen">…</span></div><h3 title="${esc(media.name)}">${esc(media.name)}</h3><p>${esc(media.alt)}</p><div class="media-card-actions"><a class="button button-outline" href="/api/admin/media/${encodeURIComponent(media.id)}/download" download>Herunterladen</a><button type="button" class="delete-entry" data-delete-media="${esc(media.id)}">Löschen</button></div></article>`;
+}
+function formatMediaSize(bytes){
+  const amount=(value,unit)=>`${new Intl.NumberFormat(I18n.language==='en'?'en-GB':'de-AT',{maximumFractionDigits:1}).format(value)} ${unit}`;
+  return bytes<1000?`${bytes} B`:bytes<1_000_000?amount(bytes/1000,'KB'):amount(bytes/1_000_000,'MB');
+}
+async function loadMediaSizes(media,grid){
+  const labels=new Map([...grid.querySelectorAll('[data-media-size]')].map(el=>[el.dataset.mediaSize,el]));
+  let index=0;
+  const worker=async()=>{
+    while(index<media.length&&grid.isConnected){
+      const item=media[index++],label=labels.get(item.id);
+      try{
+        const {bytes}=await api(`admin/media/${encodeURIComponent(item.id)}/size`);
+        if(!label?.isConnected)continue;
+        label.textContent=Number.isSafeInteger(bytes)&&bytes>=0?formatMediaSize(bytes):'k. A.';
+        label.setAttribute('aria-label',Number.isSafeInteger(bytes)&&bytes>=0?`Dateigröße: ${label.textContent}`:'Dateigröße nicht verfügbar');
+      }catch{
+        if(label?.isConnected){label.textContent='k. A.';label.setAttribute('aria-label','Dateigröße nicht verfügbar');}
+      }
+    }
+  };
+  await Promise.all(Array.from({length:Math.min(4,media.length)},worker));
 }
 function shell(){
   const links=[['overview','Übersicht','◫'],...(canEdit()?[['hero','Startbild & Video','▷']]:[]),...(canRequests()?[['requests','Terminanfragen','↗']]:[]),...(canEdit()?Object.entries(labels).map(([k,v])=>[k,v,'○']):[]),...(canEdit()?[['social','Social Media','◎'],['media','Mediathek','▧']]:[]),...(user.role==='owner'?[['users','Benutzer & Rollen','◎'],['audit','Aktivitäten','↺']]:[]),['account','Mein Konto','◇']];
@@ -224,6 +246,7 @@ async function render(){
   } else if(view==='media') {
     const [media,publishedContent]=await Promise.all([api('admin/media'),api('content')]);
     w.innerHTML=`<div class="admin-panel"><h2>Foto oder Video hochladen</h2><p>Bilder: PNG, JPEG, WebP bis 10 MB. Videos: MP4 (H.264) bis 60 MB. Hintergrundvideos werden stumm abgespielt.</p><form id="upload-form" class="upload-form"><label>Datei<input type="file" name="file" accept="image/png,image/jpeg,image/webp,video/mp4" required></label><label>Beschreibung<input name="alt" required maxlength="300"></label><button class="button">Hochladen ↗</button></form><p role="status" id="upload-status"></p></div><div class="media-grid">${media.map(item=>mediaCard(item,mediaUsageStatus(item.path,publishedContent,content))).join('')}</div>`;
+    void loadMediaSizes(media,w.querySelector('.media-grid'));
     $('#upload-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,button=$('button',form),file=$('input[type=file]',form).files[0];button.disabled=true;try{const result=await uploadWithPoster(file,form.elements.alt.value,p=>$('#upload-status').textContent=`Upload: ${p} %`,message=>$('#upload-status').textContent=message);await render();toast(result.posterError?'Video hochgeladen. Standbild bitte separat auswählen.':result.poster?'Video und Standbild hochgeladen.':'Datei hochgeladen.');}catch(error){$('#upload-status').textContent=error.message;button.disabled=false;}};
     w.querySelectorAll('[data-delete-media]').forEach(button=>button.onclick=async()=>{
       const item=media.find(row=>row.id===button.dataset.deleteMedia);

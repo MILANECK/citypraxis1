@@ -110,6 +110,8 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     try{
       assert.equal((await fetch(origin+uploadedMedia.path)).status,200);
       const media=(await call('admin/media','GET',null,editor)).data.find(m=>m.path===uploadedMedia.path);assert.ok(media);
+      assert.equal((await call(`admin/media/${media.id}/size`,'GET',null,editor)).data.bytes,readFileSync('public/assets/wordmark-white.png').length);
+      assert.equal((await call(`admin/media/${media.id}/size`,'GET')).status,401);
       assert.equal((await fetch(origin+`/api/admin/media/${media.id}/download`)).status,401);
       const download=await fetch(origin+`/api/admin/media/${media.id}/download`,{headers:{Cookie:editor.cookie}});
       assert.equal(download.status,200);assert.match(download.headers.get('content-disposition'),/attachment/);

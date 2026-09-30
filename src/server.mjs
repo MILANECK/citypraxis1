@@ -12,7 +12,7 @@ import { openDatabase, contentSnapshot, collections, passwordHash, verifyPasswor
 import { hasSupabaseConfig } from './supabase-client.mjs';
 import { createSupabaseApp } from './supabase-server.mjs';
 import { normalizeSocialLinks } from './social-links.mjs';
-import { mediaInUse,mediaDownloadName } from './media-library.mjs';
+import { mediaInUse,mediaDownloadName,mediaFileSize } from './media-library.mjs';
 import {createAppointmentService} from './appointment-service.mjs';
 import {createConversationService,conversationFacts} from './chat/conversation.mjs';
 import {createChatService} from './chat/service.mjs';
@@ -239,10 +239,11 @@ export function createApp(db = openDatabase()) {
           db.prepare('INSERT INTO media(id,path,name,alt) VALUES(?,?,?,?)').run(id,path,clean(body.name),clean(body.alt,300)); audit(user,'upload image',id); return json(201,{path});
         }
       }
-      const mediaAction=/^\/api\/admin\/media\/([a-zA-Z0-9-]+)(?:\/(download))?$/.exec(path);
+      const mediaAction=/^\/api\/admin\/media\/([a-zA-Z0-9-]+)(?:\/(download|size))?$/.exec(path);
       if(mediaAction && editor){
         const media=db.prepare('SELECT * FROM media WHERE id=?').get(mediaAction[1]);
         if(!media)return json(404,{error:'Datei nicht gefunden.'});
+        if(mediaAction[2]==='size'&&req.method==='GET')return json(200,{bytes:await mediaFileSize(media,root)});
         if(mediaAction[2]==='download'&&req.method==='GET'){
           if(!/^\/(assets|uploads)\/[a-zA-Z0-9._-]+$/.test(media.path))return json(400,{error:'Ungültiger Medienpfad.'});
           const file=resolve(root,`.${media.path}`),bytes=await readFile(file);
