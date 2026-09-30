@@ -141,3 +141,10 @@
 }
 @media(max-width:767px) and (max-height:600px){.chat-window,.chat-window:has(.conversation-preview){bottom:12px;height:calc(100dvh - 24px)}}
 @media(max-width:767px){body:has(#booking-form.request-confirmation) #cp-chat .chat-launch{right:152px;bottom:calc(16px + env(safe-area-inset-bottom))}}
+
+@media(min-width:768px){
+  .chat-window{border:0;transform:translate3d(0,52px,0) scaleY(.94);transform-origin:bottom center;will-change:transform,opacity;transition:transform .36s cubic-bezier(.45,0,.2,1),opacity .25s ease,visibility .36s}
+  .is-open .chat-window{transform:translate3d(0,0,0) scaleY(1)}
+  .chat-window:has(.conversation-preview){transition:height .38s cubic-bezier(.22,1,.36,1),transform .36s cubic-bezier(.45,0,.2,1),opacity .25s ease,visibility .36s}
+  .chat-heading{border-bottom:0}
+}
