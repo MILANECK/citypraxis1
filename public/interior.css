@@ -83,6 +83,38 @@
 .interior-page .about-distinction li{break-inside:avoid}
 
 /* Treatment pages: image-led introductions, readable text, a quiet practical sidebar. */
+.interior-page .clinical-layout>.clinical-text{grid-column:1;grid-row:1;min-width:0}
+.interior-page .clinical-aside.therapy-quick-nav{grid-column:2;grid-row:1;display:flex;flex-direction:column;padding:12px 26px 26px;max-height:calc(100dvh - 144px);overflow:hidden}
+.therapy-nav-sections{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#b8c0c3 transparent}
+.therapy-nav-booking{flex:none}
+.therapy-nav-group{border-bottom:1px solid #899195}
+.therapy-nav-group>summary{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:62px;padding:20px 0;list-style:none;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.065em;text-transform:uppercase;color:var(--ink)}
+.therapy-nav-group>summary::-webkit-details-marker{display:none}
+.therapy-nav-toggle{position:relative;flex:0 0 12px;width:12px;height:12px;color:var(--pink)}
+.therapy-nav-toggle::before,.therapy-nav-toggle::after{content:"";position:absolute;background:currentColor;inset:5.5px 0 auto;height:1px;transition:transform .25s ease}
+.therapy-nav-toggle::after{transform:rotate(90deg)}
+.therapy-nav-group[open] .therapy-nav-toggle::after{transform:rotate(0)}
+.therapy-nav-group nav{padding:0 0 18px}
+.therapy-nav-group ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.therapy-nav-group a{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 0;font-size:13px;line-height:1.55;color:var(--muted);transition:color .22s ease}
+.therapy-nav-group a>span:first-child{min-width:0}
+.therapy-nav-group a>.arrow-symbol{flex:none;width:13px;height:13px;color:var(--blue);opacity:.65;transition:opacity .22s ease,transform .22s ease}
+.therapy-nav-group a[aria-current="page"]{color:var(--pink);font-weight:600}
+.therapy-nav-current{width:5px;height:5px;flex:0 0 5px;border-radius:50%;background:currentColor;margin-inline:4px}
+.interior-page .therapy-quick-nav .therapy-nav-booking h2{font-size:23px;line-height:1.25;margin:24px 0 18px}
+.interior-page .therapy-nav-booking .button{display:flex;justify-content:space-between;gap:16px;text-align:left;padding:16px 18px;border-radius:16px;min-height:56px}
+.therapy-nav-booking .button>span:first-child{font-size:13px;line-height:1.45}
+.therapy-nav-booking .button>.arrow-symbol{flex:none}
+@media(hover:hover) and (pointer:fine){
+  .therapy-nav-group>summary:hover,.therapy-nav-group a:hover{color:var(--pink)}
+  .therapy-nav-group a:hover>.arrow-symbol{opacity:1;transform:translateX(2px)}
+}
+@media(max-width:900px){
+  .interior-page .clinical-aside.therapy-quick-nav{grid-column:1;grid-row:1;position:static;max-height:none;overflow:visible;padding:8px 26px 26px}
+  .therapy-nav-sections{overflow:visible}
+  .interior-page .clinical-layout>.clinical-text{grid-column:1;grid-row:2}
+}
+@media(prefers-reduced-motion:reduce){.therapy-nav-toggle::after,.therapy-nav-group a,.therapy-nav-group a>.arrow-symbol{transition:none}}
 .interior-page .service-intro{grid-template-columns:1.1fr 1fr;gap:72px;margin:28px 0 80px;align-items:center}
 .interior-page .service-intro h1{margin:20px 0 24px;font-size:clamp(38px,4.5vw,62px)}
 .interior-page .service-intro p{max-width:58ch;font-size:17px;line-height:1.8}
