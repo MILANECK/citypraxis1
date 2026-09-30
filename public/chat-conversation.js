@@ -1,5 +1,5 @@
 import {choices} from '/chat-model.js';
-import {formatChatMessage} from '/chat-links.js?v=site-pages-2';
+import {formatChatMessage} from '/chat-links.js?v=chat-link-tab-1';
 const siteLang=window.I18n?.language==='en'?'en':'de';
 let lang=siteLang,en=lang==='en';
 const t=(de,english)=>en?english:de;
@@ -16,13 +16,22 @@ const persist=()=>{try{if(state.started&&!state.sent)sessionStorage.setItem(stor
 const clear=()=>{try{sessionStorage.removeItem(storageKey);}catch{}};
 const root=document.createElement('div');root.id='cp-chat';root.dataset.noTranslate='';
 root.innerHTML=`<div class="chat-backdrop" aria-hidden="true"></div><button class="chat-launch" aria-expanded="false" aria-controls="chat-window" aria-label="${t('Chat mit uns öffnen','Open chat with us')}"><picture class="chat-launch-icon"><source media="(prefers-reduced-motion: reduce)" srcset="/assets/icons/chat-still.svg"><img src="/assets/icons/chat-animated.svg?v=chat-interval-1" alt="" width="32" height="30"></picture><span>${t('Chat mit uns','Chat with us')}</span></button><section id="chat-window" class="chat-window" role="dialog" aria-labelledby="chat-title" aria-hidden="true" inert><header class="chat-heading"><img src="/assets/logo-symbol.png" width="30" height="42" alt=""><div><strong id="chat-title">${t('Digitaler Empfang','Digital receptionist')}</strong><small>Citypraxis · ${t('Anfragen vorbereiten','Prepare your request')}</small></div><button type="button" class="chat-close" aria-label="${t('Chat schließen','Close chat')}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header><div class="chat-scroll"><div class="chat-content"></div><p class="chat-status" role="status" aria-live="polite"></p></div><div class="chat-footer"><button type="button" data-reset>${t('Neu beginnen','Start again')}</button><a href="/datenschutz?lang=${siteLang}#digitaler-empfang">${t('Datenschutz','Privacy')}</a><span>${t('Keine Notfallhilfe','Not for emergencies')}</span></div></section>`;
+const launcherIcon=root.querySelector('.chat-launch-icon');
+launcherIcon.querySelector('source')?.remove();
+launcherIcon.querySelector('img').src='/assets/icons/chat-still.svg';
+launcherIcon.insertAdjacentHTML('afterend','<svg class="chat-active-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4H6a2 2 0 0 0-2 2v2m12-4h2a2 2 0 0 1 2 2v2M4 16v2a2 2 0 0 0 2 2h2m12-4v2a2 2 0 0 1-2 2h-2"/><path class="chat-writing-line" d="M8 9h8"/><path class="chat-writing-line" d="M7 12h10"/><path class="chat-writing-line" d="M9 15h6"/></svg>');
 document.body.append(root);
 const $=selector=>root.querySelector(selector),content=$('.chat-content'),status=$('.chat-status'),panel=$('.chat-window');
+function updateLauncher(){
+  const active=state.started&&!state.sent&&!state.cancelled&&state.expires>Date.now();
+  root.classList.toggle('has-session',active);
+  $('.chat-launch').setAttribute('aria-label',opened?t('Chat schließen','Close chat'):active?t('Aktiven Chat fortsetzen','Continue active chat'):t('Chat mit uns öffnen','Open chat with us'));
+  $('.chat-launch span').textContent=active?t('Chat fortsetzen','Continue chat'):t('Chat mit uns','Chat with us');
+}
 function syncLanguage(result){
   if(!['de','en'].includes(result?.language))return;
   lang=result.language;en=lang==='en';state.language=lang;
-  $('.chat-launch').setAttribute('aria-label',t('Chat mit uns öffnen','Open chat with us'));
-  $('.chat-launch span').textContent=t('Chat mit uns','Chat with us');
+  updateLauncher();
   $('#chat-title').textContent=t('Digitaler Empfang','Digital receptionist');
   $('.chat-heading small').textContent=`Citypraxis · ${t('Anfragen vorbereiten','Prepare your request')}`;
   $('.chat-close').setAttribute('aria-label',t('Chat schließen','Close chat'));
@@ -32,7 +41,7 @@ function syncLanguage(result){
   $('.chat-footer span').textContent=t('Keine Notfallhilfe','Not for emergencies');
 }
 function scrollEnd(){requestAnimationFrame(()=>{const scroll=$('.chat-scroll'),review=$('.conversation-review');scroll.scrollTop=!state.started?0:state.ready&&review?review.getBoundingClientRect().top-scroll.getBoundingClientRect().top+scroll.scrollTop-20:scroll.scrollHeight;});}
-function setOpen(value){opened=value;root.classList.toggle('is-open',value);$('.chat-launch').setAttribute('aria-expanded',String(value));panel.setAttribute('aria-hidden',String(!value));panel.inert=!value;if(value){$('.chat-close').focus();scrollEnd();}else $('.chat-launch').focus();}
+function setOpen(value){opened=value;root.classList.toggle('is-open',value);$('.chat-launch').setAttribute('aria-expanded',String(value));panel.setAttribute('aria-hidden',String(!value));panel.inert=!value;updateLauncher();if(value){$('.chat-close').focus();scrollEnd();}else $('.chat-launch').focus();}
 async function api(route,body){
   const response=await fetch(`/api/chat/${route}`,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify({token:state.token,language:lang,...body}):undefined,signal:AbortSignal.timeout(20000)});
   const result=await response.json();if(!response.ok){const error=new Error(errors()[result.code]||t('Das hat nicht geklappt. Bitte versuchen Sie es erneut.','That did not work. Please try again.'));error.code=result.code;throw error;}return result;
@@ -57,6 +66,11 @@ async function run(task,{message=null}={}){
   root.querySelectorAll('.chat-content button').forEach(button=>button.disabled=true);
   try{await task();status.textContent='';}
   catch(error){
+    if(error.code==='session_expired'){
+      clear();lang=siteLang;en=lang==='en';state=blank();syncLanguage({language:lang});render();
+      status.textContent=errors().session_expired;
+      return;
+    }
     if(message&&composer?.isConnected)composer.value=message;
     status.textContent=error.message||errors().ai_unavailable;
     if(['session_expired','ai_unavailable','conversation_limit'].includes(error.code))status.innerHTML=`${esc(status.textContent)} <a href="/termin?lang=${siteLang}#booking-form">${t('Terminformular','Appointment form')}</a>`;
@@ -131,6 +145,7 @@ function setChoiceOpen(group,open){
   reveal.setAttribute('aria-hidden',String(!open));
 }
 function render(){
+  updateLauncher();
   content.classList.remove('request-confirmation','confirmation-reveal');
   if(state.cancelled){content.innerHTML=`<div class="chat-success" aria-hidden="true">✓</div><h3>${t('Anfrage abgebrochen.','Request cancelled.')}</h3><p>${t('Es wurde keine neue Anfrage gesendet.','No new request was sent.')}</p>`;return;}
   if(state.sent){content.innerHTML=`<div class="chat-success" aria-hidden="true">✓</div><h3>${t('Ihre Anfrage ist eingegangen.','Your request has been received.')}</h3><p>${state.outsideHours?t('Vielen Dank. Unser Empfangsteam ist derzeit außerhalb der veröffentlichten Öffnungszeiten und meldet sich so bald wie möglich telefonisch oder per E-Mail bei Ihnen.','Thank you. Our reception team is currently outside its published hours and will contact you by phone or email as soon as it can.'):t('Vielen Dank. Unser Empfangsteam meldet sich so bald wie möglich telefonisch oder per E-Mail bei Ihnen.','Thank you. Our reception team will contact you by phone or email as soon as it can.')}</p>${state.patientReceipt==='sent'?`<p>${t('Eine Kopie Ihrer Anfrage wurde an Ihre E-Mail-Adresse gesendet.','A copy of your request was emailed to you.')}</p>`:''}`;import('/confirmation.js').then(({enhanceConfirmation})=>enhanceConfirmation(content)).catch(()=>{});return;}
