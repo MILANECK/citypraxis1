@@ -20,9 +20,13 @@
 .chat-launch-icon img{display:block;width:32px;height:30px}
 .chat-launch .chat-active-icon{display:none;width:32px;height:30px;flex:0 0 32px;margin:0}
 #cp-chat.has-session .chat-launch-icon{display:none}
-#cp-chat.has-session .chat-active-icon{display:block;animation:chat-icon-bounce 1.8s ease-in-out infinite}
-#cp-chat.is-composing .chat-active-icon{animation:none}
-@keyframes chat-icon-bounce{0%,55%,100%{transform:translateY(0)}23%{transform:translateY(-3px)}39%{transform:translateY(1px)}}
+#cp-chat.has-session .chat-active-icon{display:block}
+.chat-active-icon .chat-writing-line{transform-box:fill-box;transform-origin:left center}
+#cp-chat.has-session .chat-writing-line{animation:chat-line-write 2.4s cubic-bezier(.45,0,.2,1) infinite}
+#cp-chat.has-session .chat-writing-line:nth-child(2){animation-delay:.18s}
+#cp-chat.has-session .chat-writing-line:nth-child(3){animation-delay:.36s}
+#cp-chat.is-composing .chat-writing-line{animation:none;transform:scaleX(1)}
+@keyframes chat-line-write{0%,62%,100%{transform:scaleX(1)}28%{transform:scaleX(.62)}46%{transform:scaleX(1)}}
 @media(hover:hover) and (pointer:fine) and (min-width:768px){.chat-launch:hover,.chat-launch:focus-visible{width:160px;box-shadow:0 10px 32px #22234430}.chat-launch:hover span,.chat-launch:focus-visible span{max-width:138px;margin-right:9px;opacity:1;transform:translateX(0)}.chat-launch:hover::before,.chat-launch:focus-visible::before{opacity:1;transform:translateX(0)}.chat-launch:hover::after,.chat-launch:focus-visible::after{animation:none;opacity:0}}
 #cp-chat.is-open:not(.has-session) .chat-launch::before{opacity:1;transform:translateX(0)}
 #cp-chat.is-open:not(.has-session) .chat-launch::after{animation:none;opacity:0}

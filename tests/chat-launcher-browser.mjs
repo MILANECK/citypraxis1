@@ -22,11 +22,12 @@ try{
   await page.waitForFunction(()=>document.querySelector('#cp-chat')?.classList.contains('has-session'));
   assert.match(await launcher.evaluate(el=>getComputedStyle(el).backgroundImage),/linear-gradient/);
   assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).display),'block');
-  assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).animationName),'chat-icon-bounce');
-  await page.locator('#conversation-input').fill('Hello');
   assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).animationName),'none');
+  assert.deepEqual(await page.locator('.chat-writing-line').evaluateAll(els=>els.map(el=>getComputedStyle(el).animationName)),['chat-line-write','chat-line-write','chat-line-write']);
+  await page.locator('#conversation-input').fill('Hello');
+  assert.deepEqual(await page.locator('.chat-writing-line').evaluateAll(els=>els.map(el=>getComputedStyle(el).animationName)),['none','none','none']);
   await page.locator('#conversation-input').fill('');
-  assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).animationName),'chat-icon-bounce');
+  assert.deepEqual(await page.locator('.chat-writing-line').evaluateAll(els=>els.map(el=>getComputedStyle(el).animationName)),['chat-line-write','chat-line-write','chat-line-write']);
 
   await page.locator('.chat-close').click();
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(34, 35, 68)');
@@ -35,7 +36,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('#cp-chat')?.classList.contains('resumed-session'));
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(220, 238, 245)');
   assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).display),'block');
-  console.log('Original idle launcher, active bouncing icon, typing pause, close and resumed session verified.');
+  console.log('Original idle launcher, animated lines, typing pause, close and resumed session verified.');
 }finally{
   await browser.close();
 }
