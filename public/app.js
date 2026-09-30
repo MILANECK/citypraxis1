@@ -1,6 +1,6 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-2';
 import {enhanceLanding} from './landing.js?v=team-hover-toggle-1';
-let landingCleanup,meshShaderCleanup,therapyNavCleanup;
+let landingCleanup,meshShaderCleanup,therapyNavCleanup,mapOutsideCleanup,backToTopCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const externalUrl=value=>{try{const url=new URL(value);return ['https:','http:'].includes(url.protocol)?url.href:'';}catch{return '';}};
@@ -57,6 +57,10 @@ function footer() {
   const s = data.settings[0];
   const c=privacyCopy();
   return `<footer><div class="home-footer-watermark" aria-hidden="true"><img src="/assets/wordmark-black.png" alt="" width="1200" height="160"></div><div class="container footer-top"><div><div class="footer-identity"><img class="footer-logo" src="/assets/wordmark-black.png" alt="Citypraxis" width="250" height="34"><img class="footer-symbol" src="/assets/logo-symbol.png" alt="" width="38" height="49"></div><p>Gemeinsam weiterkommen.<br>Mitten in Wien.</p>${socialLinksMarkup(s)}</div><div><h3>Besuchen Sie uns</h3><p>${esc(s.address)}<br>${esc(s.city)}</p><a href="https://www.google.com/maps/search/?api=1&query=Stubenbastei+12+1010+Wien" target="_blank" rel="noopener">Route planen ↗︎</a></div><div><h3>Wir sind für Sie da</h3><a href="tel:${esc(s.phone.replaceAll(' ',''))}">${esc(s.phone)}</a><a href="mailto:${esc(s.email)}">${esc(s.email)}</a><p><a href="/kontakt#oeffnungszeiten"><strong>${I18n.language==='en'?'Opening hours':'Öffnungszeiten'}</strong></a><br>${esc(s.hours)}</p></div><div><h3>Gut zu wissen</h3><a href="/ablauf-wahltherapie">Ersttermin & Wahltherapie</a><a href="/leistungen">Unsere Leistungen</a><p>${esc(s.payment)}</p></div></div><div class="container footer-bottom"><span>© ${new Date().getFullYear()} Citypraxis Wien</span><div><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><button class="cookie-settings-link" type="button">${c.settings}</button><a href="/admin">Praxis-Login ↗︎</a></div></div></footer><nav class="mobile-booking" aria-label="${I18n.language==='en'?'Quick contact':'Schnellkontakt'}"><a class="mobile-call" href="tel:${esc(s.phone.replaceAll(' ',''))}" aria-label="${I18n.language==='en'?'Call us':'Anrufen'}" title="${I18n.language==='en'?'Call us':'Anrufen'}"><img src="/assets/icons/phone.svg" width="27" height="27" alt=""></a><a class="mobile-appointment" href="/termin#booking-form" aria-label="${I18n.language==='en'?'Book first appointment':'Ersttermin buchen'}" title="${I18n.language==='en'?'Book first appointment':'Ersttermin buchen'}"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M7.5 3v4M16.5 3v4M3.5 10h17M8 15h8M12 12v6"/></svg></a></nav>`;
+}
+function backToTop(){
+  const label=I18n.language==='en'?'Back to top':'Nach oben';
+  return `<div class="container back-to-top-wrap"><button class="back-to-top" type="button">${label}<span class="arrow-symbol arrow-up" aria-hidden="true"></span></button></div>`;
 }
 function processBlock() {
   const page=pageText('ablauf-wahltherapie');
@@ -413,6 +417,8 @@ function bindTherapyNavigation(){
   }));
 }
 function bind() {
+  mapOutsideCleanup?.();mapOutsideCleanup=null;
+  backToTopCleanup?.();backToTopCleanup=null;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   bindTherapyNavigation();
   const bookingNote=document.querySelector('#main .booking-note');
@@ -531,8 +537,41 @@ function bind() {
         details.style.removeProperty('height');
         delete details.dataset.animating;
         content.getAnimations().forEach(animation=>animation.cancel());
+        if(details.dataset.closeAfterAnimation){delete details.dataset.closeAfterAnimation;if(details.open)summary.click();}
       };
     });
+  });
+  if(document.querySelector('.map-details details')){
+    const closeMapOutside=event=>{
+      const details=document.querySelector('.map-details details[open]');
+      if(!details||event.target.closest('.map-card'))return;
+      if(details.dataset.animating==='true')details.dataset.closeAfterAnimation='true';
+      else details.querySelector('summary')?.click();
+    };
+    document.addEventListener('click',closeMapOutside);
+    mapOutsideCleanup=()=>document.removeEventListener('click',closeMapOutside);
+  }
+  const backToTopButton=document.querySelector('.back-to-top');
+  backToTopButton?.addEventListener('click',()=>{
+    backToTopCleanup?.();
+    const start=window.scrollY;
+    if(reducedMotion.matches||start<2){window.scrollTo({top:0,behavior:'instant'});return;}
+    const duration=Math.min(2400,Math.max(1400,900+start*.2));
+    const started=performance.now();
+    let frame=0;
+    const stop=()=>{cancelAnimationFrame(frame);window.removeEventListener('wheel',stop);window.removeEventListener('touchstart',stop);window.removeEventListener('keydown',stop);if(backToTopCleanup===stop)backToTopCleanup=null;};
+    backToTopCleanup=stop;
+    window.addEventListener('wheel',stop,{passive:true,once:true});
+    window.addEventListener('touchstart',stop,{passive:true,once:true});
+    window.addEventListener('keydown',stop,{once:true});
+    const step=now=>{
+      const progress=Math.min(1,(now-started)/duration);
+      const eased=(1-Math.cos(Math.PI*progress))/2;
+      window.scrollTo({top:start*(1-eased),behavior:'instant'});
+      if(progress<1)frame=requestAnimationFrame(step);
+      else stop();
+    };
+    frame=requestAnimationFrame(step);
   });
   const video=$('#hero-video');
   if(video) {
@@ -664,7 +703,7 @@ function renderApp(content,preview){
   const shaderId=shaderPreset==='contact'?'contact-shader':shaderPreset==='team'?'team-shader':shaderPreset==='booking'?'booking-gradient':shaderPreset==='landing'?'home-mesh-shader':'interior-mesh-shader';
   const shaderClass=shaderPreset==='contact'?'contact-shader-canvas':shaderPreset==='team'?'contact-shader-canvas team-shader-canvas':shaderPreset==='booking'?'contact-shader-canvas booking-gradient-canvas':shaderPreset==='landing'?'home-mesh-shader':'interior-mesh-shader-canvas';
   const shaderCanvas=shaderPreset?`<canvas id="${shaderId}" class="${shaderClass}" aria-hidden="true"></canvas>`:'';
-  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div>'+shaderCanvas+'<div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+footer()+'</div>'+cookiePanel();
+  $('#app').innerHTML=(preview?'<div class="preview-banner">Entwurfsvorschau · Änderungen sind noch nicht öffentlich. <a href="/admin">Zur Verwaltung ↗︎</a></div>':'')+header()+'<div class="home-surface"><div class="home-atmosphere-background" aria-hidden="true"><div class="home-atmosphere-colors"></div>'+shaderCanvas+'<div class="home-atmosphere-grain"></div></div>'+`<main id="main">${route()}</main>`+backToTop()+footer()+'</div>'+cookiePanel();
   if(shaderPreset&&!preview){
     const canvas=$(`#${shaderId}`);
     import('/contact-shader.js?v=booking-mesh-3').then(({initContactShader})=>{

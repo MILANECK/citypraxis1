@@ -246,6 +246,11 @@ p { font-size: 18px; line-height: 1.8; }
 @media(hover:hover) and (pointer:fine){.urgent-button:hover{background:rgba(255,255,255,.25);filter:brightness(1.08);transform:translateY(-2px);box-shadow:0 0 0 1px #ffffff30,0 7px 28px #ffffff35}.urgent-button:hover .arrow-symbol{transform:translate(2px,-2px)}}
 .urgent-button:focus-visible{background:rgba(255,255,255,.24)}
 footer{background:#f6f4f1;color:var(--ink)}
+.back-to-top-wrap{position:relative;z-index:2;display:flex;justify-content:flex-end;padding-block:20px 10px}
+.back-to-top{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #d8e2e5;border-radius:999px;background:#ffffffdf;color:var(--blue);font-size:12px;font-weight:600;box-shadow:0 8px 22px #2531380b;transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .35s ease,box-shadow .35s ease}
+.back-to-top .arrow-symbol{width:15px;height:15px;flex-basis:15px;rotate:-45deg;transition:translate .35s cubic-bezier(.22,1,.36,1)}
+@media(hover:hover) and (pointer:fine){.back-to-top:hover{transform:translateY(-2px);border-color:#9fc9d5;box-shadow:0 12px 28px #25313815}.back-to-top:hover .arrow-symbol{translate:0 -2px}}
+@media(prefers-reduced-motion:reduce){.back-to-top,.back-to-top .arrow-symbol{transition:none}}
 .footer-top h3{color:var(--ink)}
 .footer-top p,.footer-bottom{color:var(--muted)}
 .footer-top a{color:var(--ink)}
