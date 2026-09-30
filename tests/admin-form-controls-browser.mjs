@@ -27,8 +27,22 @@ try{
   await page.locator('#login-form [name=email]').fill('preview@example.test');
   await page.locator('#login-form [name=password]').fill('local-preview-only-2026');
   await page.locator('#login-form button').first().click();
+  await page.waitForFunction(()=>Boolean(document.querySelector('[data-view="pages"]')?.title));
+  assert.equal(await page.locator('.local-badge').count(),0);
+  assert.match(await page.locator('[data-view="pages"]').getAttribute('title'),/page/i);
+  for(const section of ['overview','requests','media','team','users']){
+    await page.locator(`[data-view="${section}"]`).click();
+    await page.waitForFunction(()=>[...document.querySelectorAll('#admin-app button,#admin-app a,#admin-app summary,#admin-app select,#admin-app input:not([type="hidden"])')].every(el=>Boolean(el.title)));
+  }
   await page.locator('[data-view=pages]').click();
   await page.locator('[data-edit="home"]').click();
+  await page.waitForFunction(()=>Boolean(document.querySelector('#content-form button[value="publish"]')?.title));
+  assert.match(await page.locator('#content-form button[value="publish"]').getAttribute('title'),/public/i);
+  await page.locator('#revisions>summary').click();
+  const restore=page.locator('[data-restore]').first();
+  await restore.waitFor();
+  await page.waitForFunction(()=>Boolean(document.querySelector('[data-restore]')?.title));
+  assert.match(await restore.getAttribute('title'),/only/i);
   const advanced=page.locator('.hero-advanced-settings');
   assert.equal(await advanced.evaluate(el=>el.open),false);
   await advanced.locator('summary').click();
@@ -42,7 +56,7 @@ try{
   assert.match(await notice.innerText(),/Please sign in|Bitte anmelden/);
   assert.equal(await notice.locator('xpath=preceding-sibling::button[1]').getAttribute('value'),'publish');
   assert.equal(await page.locator('.editor-message').innerText(),'');
-  console.log('Form colors, hero settings and signed-out Publish notice verified.');
+  console.log('Form colors, admin tooltips, hero settings and signed-out Publish notice verified.');
 }finally{
   await browser.close();
 }

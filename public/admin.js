@@ -5,6 +5,7 @@ import {progressMeter} from './progress-meter.js?v=1';
 import {editorialPages} from './page-copy.js?v=landing-2';
 import {videoFirstFrame} from './video-poster.js?v=1';
 import {mediaUsageStatus} from './media-usage.js?v=1';
+import {installAdminTooltips} from './admin-tooltips.js?v=1';
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={pages:'Seiten',symptoms:'Schwerpunkte',services:'Therapien',team:'Team',reviews:'Bewertungen',faqs:'Häufige Fragen',prices:'Praxispreise',reimbursements:'Rückerstattung',settings:'Praxisdaten'};
@@ -154,7 +155,7 @@ async function loadMediaSizes(media,grid){
 }
 function shell(){
   const links=[['overview','Übersicht','◫'],...(canEdit()?[['hero','Startbild & Video','▷']]:[]),...(canRequests()?[['requests','Terminanfragen','↗']]:[]),...(canEdit()?Object.entries(labels).map(([k,v])=>[k,v,'○']):[]),...(canEdit()?[['social','Social Media','◎'],['media','Mediathek','▧']]:[]),...(user.role==='owner'?[['users','Benutzer & Rollen','◎'],['audit','Aktivitäten','↺']]:[]),['account','Mein Konto','◇']];
-  $('#admin-app').innerHTML=`<div class="admin-layout"><aside class="sidebar"><a href="/" class="admin-brand"><img src="/assets/wordmark-white.png" alt="Citypraxis"><span>PRAXISVERWALTUNG</span></a><nav aria-label="Verwaltung">${links.map(([key,label,symbol])=>`<button data-view="${key}" class="${key===view?'active':''}"><span aria-hidden="true">${symbol}</span>${label}${key==='requests'&&requests.filter(r=>r.status==='new').length?`<b>${requests.filter(r=>r.status==='new').length}</b>`:''}</button>`).join('')}</nav><a class="sidebar-site" href="/" target="_blank" rel="noopener">Website ansehen ↗</a><div class="admin-user"><span class="avatar">${esc(user.name.charAt(0))}</span><div><strong>${esc(user.name)}</strong><small>${esc(user.role)}</small></div><button id="logout" aria-label="Abmelden">↪</button></div></aside><main class="admin-main"><header class="admin-header"><div><span class="eyebrow">CITYPRAXIS · WIEN</span><h1 id="view-title"></h1></div>${I18n.toggle()}<span class="local-badge">Sichere Verwaltung</span></header><div id="workspace"></div></main></div>`;
+  $('#admin-app').innerHTML=`<div class="admin-layout"><aside class="sidebar"><a href="/" class="admin-brand"><img src="/assets/wordmark-white.png" alt="Citypraxis"><span>PRAXISVERWALTUNG</span></a><nav aria-label="Verwaltung">${links.map(([key,label,symbol])=>`<button data-view="${key}" class="${key===view?'active':''}"><span aria-hidden="true">${symbol}</span>${label}${key==='requests'&&requests.filter(r=>r.status==='new').length?`<b>${requests.filter(r=>r.status==='new').length}</b>`:''}</button>`).join('')}</nav><a class="sidebar-site" href="/" target="_blank" rel="noopener">Website ansehen ↗</a><div class="admin-user"><span class="avatar">${esc(user.name.charAt(0))}</span><div><strong>${esc(user.name)}</strong><small>${esc(user.role)}</small></div><button id="logout" aria-label="Abmelden">↪</button></div></aside><main class="admin-main"><header class="admin-header"><div><span class="eyebrow">CITYPRAXIS · WIEN</span><h1 id="view-title"></h1></div>${I18n.toggle()}</header><div id="workspace"></div></main></div>`;
   document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{view=b.dataset.view;shell();render().catch(e=>toast(e.message));});
   $('#logout').onclick=async()=>{try{await api('logout','POST',{});user=null;login();}catch(e){toast(e.message);}};
 }
@@ -482,4 +483,5 @@ async function bootAdmin(){
   if(tokenHash){showRecoveryForm(I18n.language==='en'?'Checking your recovery link…':'Wiederherstellungslink wird geprüft …');try{const result=await api('recovery/verify','POST',{tokenHash});recoveryAccessToken=result.accessToken;showRecoveryForm();}catch(error){showRecoveryForm(error.message);}return;}
   showRecoveryForm(I18n.language==='en'?'This link is invalid or has expired. Request a new one.':'Dieser Link ist ungültig oder abgelaufen. Fordern Sie einen neuen an.');
 }
+installAdminTooltips();
 bootAdmin();
