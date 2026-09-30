@@ -254,6 +254,11 @@
   .interior-page[data-page="/preise"] .reimbursement-table:not(.price-table) tbody th[scope="row"]{grid-column:1/-1;border-bottom:1px solid #dce6e9;padding-bottom:8px}
   .interior-page[data-page="/preise"] .reimbursement-table:not(.price-table) tbody td::before{content:attr(data-label);display:block;margin-bottom:3px;color:var(--blue);font-size:10px;font-weight:600;letter-spacing:.04em}
 }
+/* The quiet table stripes fill in sequence as each price row enters view. */
+.interior-page[data-page="/preise"] .reimbursement-table tbody tr.price-band-reveal:nth-child(even){background-color:transparent;background-image:linear-gradient(90deg,#f7f7f6,#f7f7f6);background-size:0% 100%;background-repeat:no-repeat;transition:background-size .9s cubic-bezier(.42,0,.2,1) var(--price-band-delay,0ms)}
+.interior-page[data-page="/preise"] .reimbursement-table tbody tr.price-band-reveal.is-visible:nth-child(even){background-size:100% 100%}
+@media(max-width:640px){.interior-page[data-page="/preise"] .reimbursement-table tbody tr.price-band-reveal:nth-child(even){background-image:linear-gradient(90deg,#f6f4f1,#f6f4f1)}}
+@media(prefers-reduced-motion:reduce){.interior-page[data-page="/preise"] .reimbursement-table tbody tr.price-band-reveal:nth-child(even){background-size:100% 100%;transition:none}}
 @media(max-width:360px){.interior-page .team-directory .team-profiles{grid-template-columns:1fr}.interior-page .team-directory .team-mobile-lead-gap{display:none}.interior-page .team-directory :is(.team-card-sophia,.team-aim-card){grid-column:auto}}
 @media(prefers-reduced-motion:reduce){.interior-page :is(.interior-load-reveal,.journey-step-load),.interior-page .journey-step-load :is(.step-top>span:first-child,.step-arrow,h3,p){animation:none;opacity:1;filter:none;transform:none;translate:none}.interior-page .team-directory :is(.team-person,.team-aim-card).team-card-waiting,.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting,.interior-page[data-page="/ablauf-wahltherapie"] .process-grid>li.journey-step-waiting :is(.step-top>span:first-child,.step-arrow,h3,p){opacity:1;filter:none;transform:none;transition:none}}
 @media(prefers-reduced-motion:reduce){.interior-page .listing-card{transition:none}.interior-page .listing-card:hover{transform:none}}

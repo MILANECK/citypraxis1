@@ -326,6 +326,25 @@ function bind() {
     const pricesObserver=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){revealPriceAmounts(firstPricePanel);pricesObserver.disconnect();}},{threshold:.18,rootMargin:'0px 0px -4% 0px'});
     pricesObserver.observe(priceSection);
   }
+  if(!reducedMotion.matches){
+    const priceBands=[...document.querySelectorAll('#main .reimbursement-table tbody tr:nth-child(even)')];
+    if(priceBands.length){
+      document.querySelectorAll('#main .reimbursement-table').forEach(table=>{
+        [...table.querySelectorAll('tbody tr:nth-child(even)')].forEach((row,index)=>{
+          row.classList.add('price-band-reveal');
+          row.style.setProperty('--price-band-delay',`${index*90}ms`);
+        });
+      });
+      const bandObserver=new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{
+          if(!entry.isIntersecting)return;
+          entry.target.classList.add('is-visible');
+          bandObserver.unobserve(entry.target);
+        });
+      },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
+      priceBands.forEach(row=>bandObserver.observe(row));
+    }
+  }
   document.querySelectorAll('.faq-list details').forEach(details=>{
     const summary=details.querySelector(':scope > summary'),content=details.querySelector(':scope > div');
     if(!summary||!content)return;
@@ -336,17 +355,32 @@ function bind() {
       const opening=!details.open,start=details.getBoundingClientRect().height;
       const mapDetails=Boolean(details.closest('.map-details'));
       const easing=mapDetails?'cubic-bezier(.45,0,.55,1)':'cubic-bezier(.22,1,.36,1)';
+      const map=mapDetails&&matchMedia('(min-width:768px)').matches?details.closest('.map-card')?.querySelector('.contact-map'):null;
+      let mapEnd=0,mapStart=0;
+      if(map){
+        const card=map.closest('.map-card');
+        mapStart=map.getBoundingClientRect().height;
+        if(opening)card.dataset.closedMapHeight=String(mapStart);
+        mapEnd=opening?420:Math.max(420,Number(card.dataset.closedMapHeight)||mapStart);
+        map.style.flex=`0 0 ${mapStart}px`;
+      }
       details.dataset.animating='true';
       if(opening)details.open=true;
       const end=opening?details.scrollHeight:summary.getBoundingClientRect().height;
       details.style.overflow='hidden';
       const panel=details.animate({height:[`${start}px`,`${end}px`]},{duration:mapDetails?820:420,easing});
+      const mapAnimation=map?.animate({flexBasis:[`${mapStart}px`,`${mapEnd}px`]},{duration:820,easing,fill:'forwards'});
       content.animate(
         opening?{opacity:[0,1],transform:['translateY(-9px)','translateY(0)']}:{opacity:[1,0],transform:['translateY(0)','translateY(-7px)']},
         {duration:mapDetails?(opening?680:630):(opening?340:220),delay:mapDetails&&opening?80:0,easing,fill:'both'}
       );
       panel.onfinish=()=>{
         details.open=opening;
+        if(map){
+          map.closest('.map-card').classList.toggle('map-details-open',opening);
+          mapAnimation?.cancel();
+          map.style.removeProperty('flex');
+        }
         details.style.removeProperty('overflow');
         details.style.removeProperty('height');
         delete details.dataset.animating;
