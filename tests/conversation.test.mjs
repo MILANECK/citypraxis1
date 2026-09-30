@@ -167,6 +167,60 @@ test('mixed or unsupported messages ask for German or English before intake',asy
     assert.match(unsupported.message,/German or English/);assert.equal(unsupported.ready,false);
   }finally{process.env=old;}
 });
+test('a misspelled English request is answered and a correction escapes the language prompt',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let calls=0;
+  const service=createConversationService({fetcher:async(_,options)=>{
+    calls++;
+    const input=JSON.parse(JSON.parse(options.body).input),raw=input.visitorMessage;
+    let value;
+    if(raw.startsWith('Hallo.'))value=answer({input_language:'mixed',booking_intent:'unspecified',answer:''});
+    else{
+      assert.equal(input.forcedLanguage,'en');
+      value=answer({kind:'medical',input_language:'en',booking_intent:'unspecified',reason:'Elbow pain',answer:'I can explain the published prices. A physiotherapist can assess your elbow pain in person.'});
+    }
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const turn=async(token,message)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  const request='Im dany Bodo , I have an elbow  pain , thinking about an appointment can you give me some pricing ?';
+  try{
+    for(const introduction of [request,`my ${request}`]){
+      const directToken=newSession(),direct=await turn(directToken,introduction);
+      assert.equal(direct.language,'en');
+      assert.match(direct.message,/published prices/i);
+      assert.doesNotMatch(direct.message,/Which language would you prefer|Vor- und Nachnamen|first and last name/i);
+      const accepted=await turn(directToken,'yes please');
+      assert.match(accepted.message,/email address and your phone number/i);
+      assert.doesNotMatch(accepted.message,/first and last name/i);
+      const review=await turn(directToken,'dany@example.test +43 699 12682157');
+      assert.equal(review.ready,true);
+      assert.ok(review.summary.some(([,value])=>value==='dany Bodo'));
+    }
+    const token=newSession();
+    assert.match((await turn(token,'Hallo. What are your hours? Ahoj.')).message,/Which language would you prefer/);
+    const corrected=await turn(token,`sorry, i wrote ${request}`);
+    assert.equal(corrected.language,'en');
+    assert.match(corrected.message,/published prices/i);
+    assert.doesNotMatch(corrected.message,/Which language would you prefer/i);
+    assert.equal(calls,6);
+  }finally{process.env=old;}
+});
+test('a mistaken mixed-language model result cannot trap an English chat in repeated prompts',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const service=createConversationService({fetcher:async(_,options)=>{
+    const input=JSON.parse(JSON.parse(options.body).input);
+    assert.equal(input.forcedLanguage,'en');
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({kind:'medical',input_language:'mixed',booking_intent:'unspecified',reason:'Elbow pain',answer:''}))}]}]})};
+  }});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const first=await turn('Im dany Bodo , I have an elbow pain, can you give me some pricing?');
+    assert.match(first.message,/Which treatment would you like a price for/i);
+    assert.doesNotMatch(first.message,/Which language would you prefer/i);
+    const followUp=await turn('Physiotherapy');
+    assert.doesNotMatch(followUp.message,/Which language would you prefer/i);
+  }finally{process.env=old;}
+});
 test('mixed-language appointment details survive the language choice',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   let calls=0;
