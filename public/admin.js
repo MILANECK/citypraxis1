@@ -4,6 +4,7 @@ import {requestSource,normalizeAppointmentConcerns} from './request-summary.js?v
 import {progressMeter} from './progress-meter.js?v=1';
 import {editorialPages} from './page-copy.js?v=landing-2';
 import {videoFirstFrame} from './video-poster.js?v=1';
+import {mediaUsageStatus} from './media-usage.js?v=1';
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={pages:'Seiten',symptoms:'Schwerpunkte',services:'Therapien',team:'Team',reviews:'Bewertungen',faqs:'Häufige Fragen',prices:'Praxispreise',reimbursements:'Rückerstattung',settings:'Praxisdaten'};
@@ -113,9 +114,10 @@ function animateRequestDisclosure(details){
     animation.onfinish=()=>{details.open=opening;details.style.removeProperty('overflow');delete details.dataset.animating;bodyAnimation.cancel();};
   });
 }
-function mediaCard(media){
+function mediaCard(media,status){
   const preview=media.path.endsWith('.mp4')?`<video controls muted playsinline preload="metadata" src="${esc(media.path)}" aria-label="${esc(media.alt)}"></video>`:`<img src="${esc(media.path)}" alt="${esc(media.alt)}" loading="lazy">`;
-  return `<article class="admin-panel media-card"><div class="media-thumb">${preview}</div><h3 title="${esc(media.name)}">${esc(media.name)}</h3><p>${esc(media.alt)}</p><div class="media-card-actions"><a class="button button-outline" href="/api/admin/media/${encodeURIComponent(media.id)}/download" download>Herunterladen</a><button type="button" class="delete-entry" data-delete-media="${esc(media.id)}">Löschen</button></div></article>`;
+  const label={live:'Auf Website',draft:'Im Entwurf',unused:'Nicht verwendet'}[status];
+  return `<article class="admin-panel media-card media-card--${status}"><div class="media-thumb">${preview}</div><span class="media-use-badge">${label}</span><h3 title="${esc(media.name)}">${esc(media.name)}</h3><p>${esc(media.alt)}</p><div class="media-card-actions"><a class="button button-outline" href="/api/admin/media/${encodeURIComponent(media.id)}/download" download>Herunterladen</a><button type="button" class="delete-entry" data-delete-media="${esc(media.id)}">Löschen</button></div></article>`;
 }
 function shell(){
   const links=[['overview','Übersicht','◫'],...(canEdit()?[['hero','Startbild & Video','▷']]:[]),...(canRequests()?[['requests','Terminanfragen','↗']]:[]),...(canEdit()?Object.entries(labels).map(([k,v])=>[k,v,'○']):[]),...(canEdit()?[['social','Social Media','◎'],['media','Mediathek','▧']]:[]),...(user.role==='owner'?[['users','Benutzer & Rollen','◎'],['audit','Aktivitäten','↺']]:[]),['account','Mein Konto','◇']];
@@ -220,8 +222,8 @@ async function render(){
       document.querySelectorAll('[data-delete-request]').forEach(b=>b.onclick=async()=>{if(!confirm(I18n.translate('Diese Anfrage mit ihren Kontaktdaten endgültig löschen?')))return;try{await api('admin/requests','DELETE',{id:Number(b.dataset.deleteRequest)});await refresh();draw();toast('Anfrage gelöscht.');}catch(e){toast(e.message);}});
     };$('#request-filter').onchange=draw;draw();
   } else if(view==='media') {
-    const media=await api('admin/media');
-    w.innerHTML=`<div class="admin-panel"><h2>Foto oder Video hochladen</h2><p>Bilder: PNG, JPEG, WebP bis 10 MB. Videos: MP4 (H.264) bis 60 MB. Hintergrundvideos werden stumm abgespielt.</p><form id="upload-form" class="upload-form"><label>Datei<input type="file" name="file" accept="image/png,image/jpeg,image/webp,video/mp4" required></label><label>Beschreibung<input name="alt" required maxlength="300"></label><button class="button">Hochladen ↗</button></form><p role="status" id="upload-status"></p></div><div class="media-grid">${media.map(mediaCard).join('')}</div>`;
+    const [media,publishedContent]=await Promise.all([api('admin/media'),api('content')]);
+    w.innerHTML=`<div class="admin-panel"><h2>Foto oder Video hochladen</h2><p>Bilder: PNG, JPEG, WebP bis 10 MB. Videos: MP4 (H.264) bis 60 MB. Hintergrundvideos werden stumm abgespielt.</p><form id="upload-form" class="upload-form"><label>Datei<input type="file" name="file" accept="image/png,image/jpeg,image/webp,video/mp4" required></label><label>Beschreibung<input name="alt" required maxlength="300"></label><button class="button">Hochladen ↗</button></form><p role="status" id="upload-status"></p></div><div class="media-grid">${media.map(item=>mediaCard(item,mediaUsageStatus(item.path,publishedContent,content))).join('')}</div>`;
     $('#upload-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,button=$('button',form),file=$('input[type=file]',form).files[0];button.disabled=true;try{const result=await uploadWithPoster(file,form.elements.alt.value,p=>$('#upload-status').textContent=`Upload: ${p} %`,message=>$('#upload-status').textContent=message);await render();toast(result.posterError?'Video hochgeladen. Standbild bitte separat auswählen.':result.poster?'Video und Standbild hochgeladen.':'Datei hochgeladen.');}catch(error){$('#upload-status').textContent=error.message;button.disabled=false;}};
     w.querySelectorAll('[data-delete-media]').forEach(button=>button.onclick=async()=>{
       const item=media.find(row=>row.id===button.dataset.deleteMedia);

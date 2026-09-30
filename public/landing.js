@@ -407,8 +407,6 @@ function enhanceTeamHover(){
     const panelWidth=panel.getBoundingClientRect().width,photoWidth=photo.getBoundingClientRect().width;
     panel.style.setProperty('--team-width',`${panelWidth}px`);
     panel.style.setProperty('--team-photo-shift',`${panelWidth-photoWidth}px`);
-    // Keep the source's full width visible in both positions; allow only a small blur bleed.
-    panel.style.setProperty('--team-image-width',`${photoWidth+8}px`);
     panel.style.setProperty('--team-photo-width',`${photoWidth}px`);
     panel.style.setProperty('--team-uncovered',`${panelWidth-photoWidth}px`);
   };
@@ -418,7 +416,7 @@ function enhanceTeamHover(){
   panel.classList.add('team-hover-ready');
   return ()=>{
     observer.disconnect();whiteCopy.remove();panel.classList.remove('team-hover-ready');
-    ['--team-width','--team-photo-width','--team-uncovered','--team-photo-shift','--team-image-width'].forEach(name=>panel.style.removeProperty(name));
+    ['--team-width','--team-photo-width','--team-uncovered','--team-photo-shift'].forEach(name=>panel.style.removeProperty(name));
   };
 }
 

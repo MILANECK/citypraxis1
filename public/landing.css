@@ -104,7 +104,7 @@
   .public-page .team-feature.team-hover-ready:is(:hover,.is-open,.is-scroll-open):not(.is-click-closed):not(:has(.home-team-photo.home-reveal-ready))::before{opacity:1;transition:opacity 0s}
   .public-page .team-hover-ready .home-team-photo{overflow:visible;box-shadow:none;min-height:0;z-index:1;pointer-events:none}
   .public-page .team-hover-ready .home-team-visual{left:0;right:0;width:auto;pointer-events:auto;isolation:isolate;transform:translateZ(0);clip-path:inset(0 round 24px);box-shadow:0 15px 45px #53473b10;transition:left var(--team-duration) var(--team-ease),right var(--team-duration) var(--team-ease) var(--team-follow-delay),border-radius .385s ease,clip-path .385s ease}
-  .public-page .team-hover-ready .team-group-photo{position:absolute;top:-4px;left:50%;width:var(--team-image-width);height:calc(100% + 8px);min-width:0;max-width:none;object-position:center 14%;translate:-50% 0;transition:filter var(--team-duration) var(--team-ease),transform var(--team-duration) var(--team-ease);transform-origin:center}
+  .public-page .team-hover-ready .team-group-photo{position:absolute;inset:0;width:100%;height:100%;min-width:0;max-width:none;object-fit:cover;object-position:center top;translate:none;transition:filter var(--team-duration) var(--team-ease)}
   .public-page .team-hover-ready .home-team-visual::after{content:"";position:absolute;inset:0;opacity:0;background:radial-gradient(ellipse 90% 115% at 58% 54%,color-mix(in srgb,var(--pink) 80%,transparent) 0%,color-mix(in srgb,var(--pink) 63%,transparent) 52%,color-mix(in srgb,var(--pink) 26%,transparent) 82%,transparent 100%);transition:opacity var(--team-duration) var(--team-ease)}
   .public-page .team-hover-ready .home-team-roster{display:flex;align-items:center;position:absolute;inset:0 auto 0 0;width:var(--team-photo-shift);padding:20px 32px;border-radius:24px 0 0 24px;background:linear-gradient(130deg,#e8f2f5f5,#f1f7f9e6);clip-path:inset(0 100% 0 0 round 24px 0 0 24px);transition:clip-path var(--team-duration) var(--team-ease) var(--team-follow-delay);overflow:auto}
   .public-page .home-team-roster ul{list-style:none;padding:0;margin:0;width:100%}
@@ -114,21 +114,22 @@
   .public-page .home-team-roster a:is(:hover,:focus-visible){color:var(--pink);transform:translateX(5px)}
   .public-page .home-team-roster a:is(:hover,:focus-visible)>.arrow-symbol{opacity:1;translate:0 0}
   .public-page .team-hover-ready:is(:hover,.is-open,.is-scroll-open):not(.is-click-closed) .home-team-roster{clip-path:inset(0 0 0 0 round 24px 0 0 24px)}
-  .public-page .team-hover-ready>.team-feature-copy{position:relative;z-index:1;padding-right:30px}
+  .public-page .team-hover-ready>.team-feature-copy{position:relative;z-index:1;padding-right:30px;pointer-events:none}
+  .public-page .team-hover-ready>.team-feature-copy>.text-link{pointer-events:auto}
   .public-page .team-hover-ready .team-feature-white{display:block;position:absolute;inset:0;padding:16px 30px 16px 0;pointer-events:none;clip-path:polygon(0 -20px,calc(100% - var(--team-uncovered)) -20px,calc(100% - var(--team-uncovered)) calc(100% + 20px),0 calc(100% + 20px));transition:clip-path var(--team-duration) var(--team-ease)}
   .public-page .team-hover-ready .team-feature-white,.public-page .team-hover-ready .team-feature-white *{color:#fff}
   /* The inert white link must follow the real link's hover/focus lift exactly. */
   .public-page .team-hover-ready>.team-feature-copy:has(>.text-link:is(:hover,:focus-visible)) .team-feature-white>.text-link,
   .public-page .team-hover-ready>.team-feature-copy>.text-link:focus-visible{transform:translateY(-2px)}
-  .public-page .team-hover-ready .home-team-plus{display:grid;place-items:center;position:absolute;z-index:2;left:calc(var(--team-photo-width)/2 - 22px);top:calc(50% - 22px);width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--blue);cursor:pointer;transition:left var(--team-duration) var(--team-ease),top var(--team-duration) var(--team-ease),color var(--team-duration) var(--team-ease)}
+  .public-page .team-hover-ready .home-team-plus{display:grid;place-items:center;position:absolute;z-index:2;right:12px;bottom:12px;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--blue);cursor:pointer;transition:color var(--team-duration) var(--team-ease)}
   .public-page .team-hover-ready .home-team-plus:focus-visible{outline:2px solid currentColor;outline-offset:2px;border-radius:10px}
   .public-page .home-team-plus svg{display:block;width:24px;height:24px;transform-origin:50% 50%;transition:transform var(--team-duration) var(--team-ease)}
   .public-page .team-hover-ready:is(:hover,.is-open,.is-scroll-open):not(.is-click-closed) .home-team-visual{left:var(--team-photo-shift);right:calc(var(--team-photo-width) - var(--team-width));border-radius:0 24px 24px 0;clip-path:inset(0 round 0 24px 24px 0);transition:right var(--team-duration) var(--team-ease),left var(--team-duration) var(--team-ease) var(--team-follow-delay),border-radius .315s ease .74s,clip-path .315s ease .74s}
-  .public-page .team-hover-ready:is(:hover,.is-open,.is-scroll-open):not(.is-click-closed) .team-group-photo{filter:blur(4px);transform:scale(1.01)}
+  .public-page .team-hover-ready:is(:hover,.is-open,.is-scroll-open):not(.is-click-closed) .team-group-photo{filter:blur(4px)}
   .public-page .team-hover-ready:is(:hover,.is-open,.is-scroll-open):not(.is-click-closed) .home-team-visual::after{opacity:1}
   .public-page .team-hover-ready:is(:hover,.is-open,.is-scroll-open):not(.is-click-closed) .team-feature-white{clip-path:polygon(0 -20px,100% -20px,100% calc(100% + 20px),0 calc(100% + 20px))}
-  .public-page .team-hover-ready:is(:hover,.is-open,.is-scroll-open):not(.is-click-closed) .home-team-plus{left:calc(100% - 56px);top:calc(100% - 56px);color:#fff}
-  .public-page .team-hover-ready:is(:hover,.is-open,.is-scroll-open):not(.is-click-closed) .home-team-plus svg{transform:rotate(405deg)}
+  .public-page .team-hover-ready:is(:hover,.is-open,.is-scroll-open):not(.is-click-closed) .home-team-plus{color:#fff}
+  .public-page .team-hover-ready:is(:hover,.is-open,.is-scroll-open):not(.is-click-closed) .home-team-plus svg{transform:rotate(45deg)}
 }
 .public-page .home-distinction{margin-block:0;padding:12px clamp(24px,4vw,58px);background:transparent}
 .public-page .home-distinction-copy{max-width:720px;margin:0 auto 58px;text-align:center}
