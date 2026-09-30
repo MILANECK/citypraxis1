@@ -327,28 +327,28 @@ function bind() {
     pricesObserver.observe(priceSection);
   }
   if(!reducedMotion.matches){
-    const tables=[...document.querySelectorAll('#main .reimbursement-table')];
-    const upperObserver=new IntersectionObserver(entries=>{
+    const bandObserver=new IntersectionObserver(entries=>{
       entries.forEach(entry=>{
         if(!entry.isIntersecting)return;
-        entry.target.querySelectorAll('tbody tr.price-band-reveal').forEach(row=>row.classList.add('is-visible'));
-        upperObserver.unobserve(entry.target);
+        const row=entry.target,panel=row.closest('.clinical-card'),started=performance.now();
+        const reveal=()=>{
+          if(!row.isConnected)return;
+          if(panel&&(panel.classList.contains('interior-load-reveal')||panel.classList.contains('home-reveal-ready'))&&performance.now()-started<4000){
+            requestAnimationFrame(reveal);
+            return;
+          }
+          row.classList.add('is-visible');
+        };
+        requestAnimationFrame(reveal);
+        bandObserver.unobserve(row);
       });
-    },{rootMargin:'0px 0px -40% 0px'});
-    const lowerObserver=new IntersectionObserver(entries=>{
-      entries.forEach(entry=>{
-        if(!entry.isIntersecting)return;
-        entry.target.classList.add('is-visible');
-        lowerObserver.unobserve(entry.target);
-      });
-    },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
-    tables.forEach(table=>{
+    },{threshold:.15,rootMargin:'0px 0px -48% 0px'});
+    document.querySelectorAll('#main .reimbursement-table').forEach(table=>{
       [...table.querySelectorAll('tbody tr:nth-child(even)')].forEach((row,index)=>{
         row.classList.add('price-band-reveal');
-        row.style.setProperty('--price-band-delay',`${index*(table.classList.contains('price-table')?135:90)}ms`);
-        if(!table.classList.contains('price-table'))lowerObserver.observe(row);
+        row.style.setProperty('--price-band-delay',`${index*170}ms`);
+        bandObserver.observe(row);
       });
-      if(table.classList.contains('price-table'))upperObserver.observe(table);
     });
   }
   document.querySelectorAll('.faq-list details').forEach(details=>{
