@@ -149,7 +149,7 @@ function therapyQuickNav(item,related){
   const therapies=data.services.map(service=>({title:service.title,href:'/leistungen/'+service.id,current:service.id===item.id}));
   const topics=[...related.filter(service=>service.id!==item.id).map(service=>({title:service.title,href:'/leistungen/'+service.id})),...(data.symptoms||[]).filter(topic=>topic.service===item.id).map(topic=>({title:topic.title,href:'/schwerpunkte/'+topic.id})),{title:en?'Your first visit':'Ablauf & Wahltherapie',href:'/ablauf-wahltherapie'},{title:en?'Prices & reimbursement':'Preise & Rückerstattung',href:'/preise'}];
   const links=items=>items.map(link=>`<li><a href="${esc(link.href)}"${link.current?' aria-current="page"':''}><span>${esc(link.title)}</span>${link.current?'<span class="therapy-nav-current" aria-hidden="true"></span>':arrow}</a></li>`).join('');
-  const group=(title,items,open=false)=>`<details class="therapy-nav-group" name="therapy-navigation"${open?' open':''}><summary>${title}<span class="therapy-nav-toggle" aria-hidden="true"></span></summary><nav aria-label="${title}"><ul>${links(items)}</ul></nav></details>`;
+  const group=(title,items,open=false)=>`<details class="therapy-nav-group"${open?' open':''}><summary>${title}<span class="therapy-nav-toggle" aria-hidden="true"></span></summary><nav aria-label="${title}"><ul>${links(items)}</ul></nav></details>`;
   return `<aside class="clinical-aside therapy-quick-nav" aria-label="${en?'Treatment navigation':'Behandlungsnavigation'}"><div class="therapy-nav-sections">${group(en?'On this page':'Auf dieser Seite',sections,matchMedia('(min-width: 901px)').matches)}${group(en?'All therapies':'Alle Therapien',therapies)}${group(en?'Related topics':'Verwandte Themen',topics)}</div><div class="therapy-nav-booking"><h2>${en?'Your next step.':'Ihr nächster Schritt.'}</h2><a class="button" href="/termin"><span>${en?'Request an appointment':'Ersttermin anfragen'}</span>${arrow}</a></div></aside>`;
 }
 function servicePage(item){
@@ -279,8 +279,42 @@ function chatPrivacyInfo(){
   const en=I18n.language==='en';
   return `<section id="digitaler-empfang" class="article-body" data-no-translate><h2>${en?'Digital reception':'Digitaler Empfang'}</h2><p>${en?'The digital assistant prepares administrative requests for the Citypraxis team. Starting a request is voluntary. With your consent, we process your contact details, your request, availability preferences and any health information you choose to share. Please provide only a short description, without medical reports.':'Der digitale Assistent bereitet organisatorische Anfragen für das Citypraxis-Team vor. Die Nutzung ist freiwillig. Mit Ihrem Einverständnis verarbeiten wir Ihre Kontaktdaten, Ihr Anliegen, Terminwünsche und freiwillig mitgeteilte Gesundheitsangaben. Bitte geben Sie nur eine kurze Beschreibung ohne medizinische Befunde ein.'}</p><p>${en?'The draft is kept in this browser tab and temporarily in server memory for a 30-minute session. A server restart can end the session. It is cleared after submission, restart or session expiry; an expired draft is not restored. Only after you review and send your request are the summary and conversation stored in the existing practice request database (Supabase), accessible to authorized reception staff and owners. Requests can be deleted by the practice. Contact us to withdraw consent or ask about your data; withdrawal does not affect processing already carried out.':'Der Entwurf wird in diesem Browser-Tab und vorübergehend im Arbeitsspeicher des Servers für eine Sitzung von 30 Minuten gespeichert. Ein Serverneustart kann die Sitzung beenden. Nach Absenden, Neustart oder Sitzungsablauf wird er gelöscht; abgelaufene Entwürfe werden nicht wiederhergestellt. Erst nach Ihrer Prüfung und dem Absenden werden Zusammenfassung und Gesprächsverlauf in der bestehenden Praxis-Anfragedatenbank (Supabase) gespeichert. Berechtigte EmpfangsmitarbeiterInnen und InhaberInnen haben Zugriff; die Praxis kann Anfragen löschen. Für Widerruf oder Auskunft zu Ihren Daten kontaktieren Sie uns bitte. Ein Widerruf betrifft nicht die bereits erfolgte Verarbeitung.'}</p><p>${en?'The conversational assistant uses OpenAI to process messages, which may contain health information. Recognized email addresses and phone numbers are removed where possible before transmission; this does not guarantee anonymity. We request that API responses are not stored, but provider security retention may still apply. You can use the appointment form instead. The assistant provides no medical advice and cannot confirm appointments. Please review your summary before submitting.':'Der dialogbasierte Assistent nutzt OpenAI zur Verarbeitung von Nachrichten, die Gesundheitsangaben enthalten können. Erkannte E-Mail-Adressen und Telefonnummern werden vor der Übermittlung nach Möglichkeit entfernt; dies garantiert keine Anonymität. Wir fordern keine Speicherung der API-Antworten an; Sicherheitsaufbewahrung beim Anbieter kann dennoch erfolgen. Alternativ können Sie das Terminformular nutzen. Der Assistent gibt keine medizinische Beratung und bestätigt keine Termine. Bitte prüfen Sie die Zusammenfassung vor dem Absenden.'}</p><p>${en?'When you send a request through the appointment form or chat, its details are stored in Supabase. If email delivery is configured, your contact details, selected concerns, any voluntary health information and contact preferences are also forwarded to the practice’s reception email address through Resend. The email identifies whether you used the general appointment form, a therapist profile or the chatbot. The secretary contacts you by phone or email; submitting a request does not book an appointment. This chat is not continuously monitored and is not an emergency service.':'Wenn Sie eine Anfrage über das Terminformular oder den Chat absenden, werden Ihre Angaben in Supabase gespeichert. Bei eingerichtetem E-Mail-Versand werden außerdem Kontaktdaten, ausgewählte Beschwerden, freiwillige Gesundheitsangaben und Kontaktwünsche über Resend an die Empfangsadresse der Praxis weitergeleitet. Die E-Mail kennzeichnet den Zugang über Erstterminformular, Therapeutenprofil oder Chatbot. Das Sekretariat meldet sich telefonisch oder per E-Mail; eine Anfrage ist keine Terminbuchung. Dieser Chat wird nicht laufend überwacht und ist kein Notfalldienst.'}</p><p>${en?'When email delivery is enabled, we may also send a copy of your submitted request to the email address you provide through Resend. This copy includes the contact details and concerns in your request. Delivery depends on the configured sender; the on-screen submission confirmation remains valid even if the copy cannot be emailed.':'Bei eingerichtetem E-Mail-Versand können wir Ihnen über Resend auch eine Kopie Ihrer abgesendeten Anfrage an die angegebene E-Mail-Adresse senden. Diese Kopie enthält die Kontaktdaten und Anliegen Ihrer Anfrage. Der Versand hängt von der eingerichteten Absenderadresse ab; die Bestätigung auf der Website gilt auch dann, wenn die Kopie nicht per E-Mail zugestellt werden kann.'}</p></section>`;
 }
+function bindTherapyNavigation(){
+  const groups=[...document.querySelectorAll('.therapy-quick-nav .therapy-nav-group')];
+  if(!groups.length)return;
+  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+  const desired=new WeakMap(groups.map(group=>[group,group.open]));
+  const animations=new WeakMap();
+  const change=(group,open)=>{
+    const content=group.querySelector('nav');
+    const start=group.open?content.getBoundingClientRect().height:0;
+    const startOpacity=group.open?Number(getComputedStyle(content).opacity):0;
+    animations.get(group)?.cancel();
+    desired.set(group,open);
+    group.open=true;
+    group.classList.toggle('is-closing',!open);
+    const finish=()=>{group.open=open;group.classList.remove('is-closing');content.style.removeProperty('overflow');};
+    if(reducedMotion.matches){finish();return;}
+    const end=open?content.scrollHeight:0;
+    if(Math.abs(start-end)<1){finish();return;}
+    content.style.overflow='hidden';
+    const animation=content.animate([{height:`${start}px`,opacity:startOpacity},{height:`${end}px`,opacity:open?1:0}],{duration:open?460:360,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'});
+    animations.set(group,animation);
+    animation.onfinish=()=>{
+      if(animations.get(group)!==animation)return;
+      animation.cancel();animations.delete(group);finish();
+    };
+  };
+  groups.forEach(group=>group.querySelector('summary').addEventListener('click',event=>{
+    event.preventDefault();
+    const open=!desired.get(group);
+    if(open)groups.filter(other=>other!==group&&desired.get(other)).forEach(other=>change(other,false));
+    change(group,open);
+  }));
+}
 function bind() {
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+  bindTherapyNavigation();
   const bookingNote=document.querySelector('#main .booking-note');
   if(bookingNote&&matchMedia('(hover: hover) and (pointer: fine)').matches&&!reducedMotion.matches){
     let x=50,y=50,targetX=50,targetY=50,frame=0;

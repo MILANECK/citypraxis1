@@ -94,6 +94,7 @@
 .therapy-nav-toggle::before,.therapy-nav-toggle::after{content:"";position:absolute;background:currentColor;inset:5.5px 0 auto;height:1px;transition:transform .36s cubic-bezier(.22,1,.36,1)}
 .therapy-nav-toggle::after{transform:rotate(90deg)}
 .therapy-nav-group[open] .therapy-nav-toggle::after{transform:rotate(0)}
+.therapy-nav-group[open].is-closing .therapy-nav-toggle::after{transform:rotate(90deg)}
 .therapy-nav-group nav{padding:0 0 18px}
 .therapy-nav-group ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}
 .therapy-nav-group a{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 6px 9px 0;font-size:13px;line-height:1.55;color:var(--muted);transition:color .32s ease}
