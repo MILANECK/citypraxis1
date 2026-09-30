@@ -43,6 +43,11 @@ try{
   await restore.waitFor();
   await page.waitForFunction(()=>Boolean(document.querySelector('[data-restore]')?.title));
   assert.match(await restore.getAttribute('title'),/only/i);
+  const revisionId=await restore.getAttribute('data-restore');
+  page.once('dialog',dialog=>dialog.accept());
+  await page.locator(`[data-delete-revision="${revisionId}"]`).click();
+  await page.waitForFunction(id=>!document.querySelector(`[data-restore="${id}"]`),revisionId);
+  assert.equal(await page.locator(`[data-delete-revision="${revisionId}"]`).count(),0);
   const advanced=page.locator('.hero-advanced-settings');
   assert.equal(await advanced.evaluate(el=>el.open),false);
   await advanced.locator('summary').click();

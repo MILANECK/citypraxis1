@@ -451,7 +451,35 @@ function editContent(collection,record={},openPreview=false){
     $('#revisions').insertAdjacentHTML('beforebegin',`<p><a class="text-link" href="${previewPath}?preview=1" target="_blank" rel="noopener">Gespeicherten Entwurf ansehen ↗</a></p><button type="button" class="danger-text" id="unpublish">Veröffentlichung zurücknehmen</button>`);
     $('#unpublish').onclick=async()=>{try{await api(`admin/content/${collection}/${record.id}`,'PATCH',{});dialog.close();await refresh();await render();toast('Veröffentlichung zurückgenommen.');}catch(error){$('.editor-message').textContent=error.message;}};
     $('#delete-content')?.addEventListener('click',()=>removeContent(collection,record));
-    $('#revisions').addEventListener('toggle',async e=>{if(!e.target.open)return;try{const revisions=await api(`admin/revisions?collection=${collection}&id=${record.id}`);$('#revision-list').innerHTML=revisions.map(r=>`<div class="revision-row"><span>${formatDate(r.created_at)} · ${esc(r.actor)}</span><button type="button" data-restore="${r.id}">In Editor laden</button></div>`).join('')||'<p>Noch keine früheren Versionen.</p>';document.querySelectorAll('[data-restore]').forEach(b=>b.onclick=()=>{const snapshot=JSON.parse(revisions.find(r=>r.id===Number(b.dataset.restore)).snapshot);for(const [key,value]of Object.entries(snapshot)){const input=$('#content-form').elements[key];if(input){if(input.type==='checkbox')input.checked=Boolean(value);else input.value=value;}}toast('Version geladen. Speichern oder veröffentlichen Sie die Änderung.');});}catch(error){$('#revision-list').textContent=error.message;}});
+    const revisionsList=$('#revision-list',dialog),revisions=[];
+    const drawRevisions=()=>{
+      revisionsList.innerHTML=`<div class="revision-items">${revisions.map(r=>`<div class="revision-row"><span>${formatDate(r.created_at)} · ${esc(r.actor)}</span><div class="revision-actions"><button type="button" data-restore="${r.id}">${I18n.language==='en'?'Load in editor':'In Editor laden'}</button>${user.role==='owner'?`<button type="button" class="danger-text" data-delete-revision="${r.id}">${I18n.language==='en'?'Delete':'Löschen'}</button>`:''}</div></div>`).join('')||'<p>Noch keine früheren Versionen.</p>'}</div>`;
+      revisionsList.querySelectorAll('[data-restore]').forEach(button=>button.onclick=()=>{
+        const entry=revisions.find(r=>r.id===Number(button.dataset.restore));
+        const snapshot=typeof entry.snapshot==='string'?JSON.parse(entry.snapshot):entry.snapshot;
+        for(const [key,value]of Object.entries(snapshot)){
+          const input=$('#content-form',dialog).elements[key];
+          if(!input)continue;
+          if(input.type==='checkbox')input.checked=Boolean(value);
+          else input.value=Array.isArray(value)||value&&typeof value==='object'?JSON.stringify(value):value;
+        }
+        toast(I18n.language==='en'?'Version loaded into the editor. Save or publish to apply it.':'Version in den Editor geladen. Speichern oder veröffentlichen Sie die Änderung.');
+      });
+      revisionsList.querySelectorAll('[data-delete-revision]').forEach(button=>button.onclick=async()=>{
+        const revisionId=Number(button.dataset.deleteRevision);
+        if(!confirm(I18n.language==='en'?'Permanently delete this previous version from the database? This cannot be undone.':'Diese frühere Version endgültig aus der Datenbank löschen? Dies kann nicht rückgängig gemacht werden.'))return;
+        button.disabled=true;
+        try{await api('admin/revisions','DELETE',{id:revisionId,collection,entityId:record.id});revisions.splice(revisions.findIndex(r=>r.id===revisionId),1);drawRevisions();toast(I18n.language==='en'?'Previous version deleted.':'Frühere Version gelöscht.');}
+        catch(error){button.disabled=false;toast(error.message);}
+      });
+    };
+    const loadRevisions=async()=>{
+      try{
+        const page=await api(`admin/revisions?collection=${encodeURIComponent(collection)}&id=${encodeURIComponent(record.id)}`);
+        revisions.splice(0,revisions.length,...page);drawRevisions();
+      }catch(error){revisionsList.textContent=error.message;}
+    };
+    $('#revisions',dialog).addEventListener('toggle',e=>{if(e.target.open)void loadRevisions();});
   }
 }
 function isMobileAdmin(){return window.matchMedia('(max-width: 767px)').matches;}

@@ -25,12 +25,21 @@ export function openDatabase(file = process.env.DB_PATH || resolve('data/citypra
     CREATE TABLE IF NOT EXISTS migrations (version INTEGER PRIMARY KEY, applied_at TEXT DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE IF NOT EXISTS content (collection TEXT NOT NULL, id TEXT NOT NULL, draft TEXT NOT NULL, published TEXT, updated_at TEXT DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(collection,id));
     CREATE TABLE IF NOT EXISTS revisions (id INTEGER PRIMARY KEY, collection TEXT, entity_id TEXT, snapshot TEXT NOT NULL, actor TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
+    CREATE INDEX IF NOT EXISTS revisions_entry_latest ON revisions(collection,entity_id,id DESC);
+    CREATE TRIGGER IF NOT EXISTS revisions_keep_ten AFTER INSERT ON revisions BEGIN
+      DELETE FROM revisions WHERE collection=NEW.collection AND entity_id=NEW.entity_id
+        AND id NOT IN (SELECT id FROM revisions WHERE collection=NEW.collection AND entity_id=NEW.entity_id ORDER BY id DESC LIMIT 10);
+    END;
     CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password TEXT NOT NULL, role TEXT CHECK(role IN ('owner','editor','reception')) NOT NULL, active INTEGER DEFAULT 1);
     CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, user_id INTEGER REFERENCES users(id) ON DELETE CASCADE, csrf TEXT NOT NULL, expires INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS requests (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, phone TEXT NOT NULL DEFAULT '', preference TEXT NOT NULL DEFAULT '', acute INTEGER DEFAULT 0, status TEXT DEFAULT 'new', assignee INTEGER REFERENCES users(id), created_at TEXT DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY, actor TEXT, action TEXT NOT NULL, entity TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
     CREATE TABLE IF NOT EXISTS media (id TEXT PRIMARY KEY, path TEXT NOT NULL, name TEXT NOT NULL, alt TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP);
   `);
+  db.exec(`DELETE FROM revisions WHERE id IN (
+    SELECT id FROM (SELECT id,ROW_NUMBER() OVER (PARTITION BY collection,entity_id ORDER BY id DESC) AS position FROM revisions)
+    WHERE position>10
+  )`);
   if (!db.prepare('SELECT version FROM migrations WHERE version = 1').get()) {
     const insert = db.prepare('INSERT INTO content(collection,id,draft,published) VALUES(?,?,?,?)');
     db.exec('BEGIN');

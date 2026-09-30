@@ -8,23 +8,23 @@ const storageKey='citypraxis-conversation-v2',consentVersion='citypraxis-recepti
 const welcome=t('Herzlich willkommen in der Citypraxis! Ich bin der digitale Empfang und helfe Ihnen gerne bei Fragen zur Praxis oder einer Terminanfrage. Wie kann ich Ihnen helfen?','Hello and welcome to CityPraxis! I’m the digital receptionist. I can help with questions about our practice or prepare an appointment request with you. How can I help?');
 const errors=()=>({session_expired:t('Die Sitzung ist abgelaufen. Bitte beginnen Sie neu.','This session has expired. Please start again.'),rate_limit:t('Bitte versuchen Sie es später erneut oder nutzen Sie das Terminformular.','Please try later or use the appointment form.'),conversation_limit:t('Das Gesprächslimit ist erreicht. Sie können das Terminformular verwenden.','The conversation limit has been reached. You can use the appointment form.'),ai_unavailable:t('Der digitale Empfang ist gerade nicht verfügbar. Bitte nutzen Sie das Terminformular.','The digital receptionist is temporarily unavailable. Please use the appointment form.')});
 const blank=()=>({token:null,expires:0,started:false,consentVersion:null,language:lang,messages:[],summary:null,ready:false,duplicatePrompt:false,cancelled:false,editingField:null,editedFields:[],sent:null,outsideHours:false,patientReceipt:null,turnsRemaining:30,turnKey:null,pendingMessage:null,turnNumber:0,limitReached:false,emergency:false});
-let state=blank(),opened=false,busy=false;
+let state=blank(),opened=false,busy=false,parked=false;
 try{const saved=JSON.parse(sessionStorage.getItem(storageKey));if(saved?.expires>Date.now()&&saved.token&&saved.consentVersion===consentVersion)state={...state,...saved};else sessionStorage.removeItem(storageKey);}catch{}
 if(!Array.isArray(state.editedFields))state.editedFields=[];
 if(['de','en'].includes(state.language)){lang=state.language;en=lang==='en';}
+let resumedSession=state.started&&!state.sent&&!state.cancelled&&state.expires>Date.now();
 const persist=()=>{try{if(state.started&&!state.sent)sessionStorage.setItem(storageKey,JSON.stringify(state));}catch{}};
 const clear=()=>{try{sessionStorage.removeItem(storageKey);}catch{}};
 const root=document.createElement('div');root.id='cp-chat';root.dataset.noTranslate='';
 root.innerHTML=`<div class="chat-backdrop" aria-hidden="true"></div><button class="chat-launch" aria-expanded="false" aria-controls="chat-window" aria-label="${t('Chat mit uns öffnen','Open chat with us')}"><picture class="chat-launch-icon"><source media="(prefers-reduced-motion: reduce)" srcset="/assets/icons/chat-still.svg"><img src="/assets/icons/chat-animated.svg?v=chat-interval-1" alt="" width="32" height="30"></picture><span>${t('Chat mit uns','Chat with us')}</span></button><section id="chat-window" class="chat-window" role="dialog" aria-labelledby="chat-title" aria-hidden="true" inert><header class="chat-heading"><img src="/assets/logo-symbol.png" width="30" height="42" alt=""><div><strong id="chat-title">${t('Digitaler Empfang','Digital receptionist')}</strong><small>Citypraxis · ${t('Anfragen vorbereiten','Prepare your request')}</small></div><button type="button" class="chat-close" aria-label="${t('Chat schließen','Close chat')}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header><div class="chat-scroll"><div class="chat-content"></div><p class="chat-status" role="status" aria-live="polite"></p></div><div class="chat-footer"><button type="button" data-reset>${t('Neu beginnen','Start again')}</button><a href="/datenschutz?lang=${siteLang}#digitaler-empfang">${t('Datenschutz','Privacy')}</a><span>${t('Keine Notfallhilfe','Not for emergencies')}</span></div></section>`;
 const launcherIcon=root.querySelector('.chat-launch-icon');
-launcherIcon.querySelector('source')?.remove();
-launcherIcon.querySelector('img').src='/assets/icons/chat-still.svg';
-launcherIcon.insertAdjacentHTML('afterend','<svg class="chat-active-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4H6a2 2 0 0 0-2 2v2m12-4h2a2 2 0 0 1 2 2v2M4 16v2a2 2 0 0 0 2 2h2m12-4v2a2 2 0 0 1-2 2h-2"/><path class="chat-writing-line" d="M8 9h8"/><path class="chat-writing-line" d="M7 12h10"/><path class="chat-writing-line" d="M9 15h6"/></svg>');
+launcherIcon.insertAdjacentHTML('afterend','<svg class="chat-active-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h11M4 17h14"/></svg>');
 document.body.append(root);
 const $=selector=>root.querySelector(selector),content=$('.chat-content'),status=$('.chat-status'),panel=$('.chat-window');
 function updateLauncher(){
   const active=state.started&&!state.sent&&!state.cancelled&&state.expires>Date.now();
-  root.classList.toggle('has-session',active);
+  root.classList.toggle('has-session',active&&!parked);
+  root.classList.toggle('resumed-session',active&&!parked&&resumedSession);
   $('.chat-launch').setAttribute('aria-label',opened?t('Chat schließen','Close chat'):active?t('Aktiven Chat fortsetzen','Continue active chat'):t('Chat mit uns öffnen','Open chat with us'));
   $('.chat-launch span').textContent=active?t('Chat fortsetzen','Continue chat'):t('Chat mit uns','Chat with us');
 }
@@ -41,7 +41,7 @@ function syncLanguage(result){
   $('.chat-footer span').textContent=t('Keine Notfallhilfe','Not for emergencies');
 }
 function scrollEnd(){requestAnimationFrame(()=>{const scroll=$('.chat-scroll'),review=$('.conversation-review');scroll.scrollTop=!state.started?0:state.ready&&review?review.getBoundingClientRect().top-scroll.getBoundingClientRect().top+scroll.scrollTop-20:scroll.scrollHeight;});}
-function setOpen(value){opened=value;root.classList.toggle('is-open',value);$('.chat-launch').setAttribute('aria-expanded',String(value));panel.setAttribute('aria-hidden',String(!value));panel.inert=!value;updateLauncher();if(value){$('.chat-close').focus();scrollEnd();}else $('.chat-launch').focus();}
+function setOpen(value){opened=value;parked=!value;root.classList.toggle('is-open',value);$('.chat-launch').setAttribute('aria-expanded',String(value));panel.setAttribute('aria-hidden',String(!value));panel.inert=!value;updateLauncher();if(value){$('.chat-close').focus();scrollEnd();}else $('.chat-launch').focus();}
 async function api(route,body){
   const response=await fetch(`/api/chat/${route}`,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify({token:state.token,language:lang,...body}):undefined,signal:AbortSignal.timeout(20000)});
   const result=await response.json();if(!response.ok){const error=new Error(errors()[result.code]||t('Das hat nicht geklappt. Bitte versuchen Sie es erneut.','That did not work. Please try again.'));error.code=result.code;throw error;}return result;
@@ -79,6 +79,7 @@ async function run(task,{message=null}={}){
     if(composer)composer.readOnly=false;
     busy=false;root.removeAttribute('aria-busy');
     root.querySelectorAll('.chat-content button').forEach(button=>button.disabled=button.closest('.conversation-locked')!==null);
+    root.classList.toggle('is-composing',Boolean(content.querySelector('.conversation-compose textarea:not(:disabled)')?.value.trim()));
   }
 }
 async function revealReply(){
@@ -158,8 +159,8 @@ function render(){
   bind();scrollEnd();
 }
 function bind(){
-  content.querySelector('.conversation-start')?.addEventListener('submit',event=>{event.preventDefault();if(!event.currentTarget.elements.consent.checked)return;run(async()=>{const session=await api('session');if(!session.aiAvailable)throw Object.assign(new Error(errors().ai_unavailable),{code:'ai_unavailable'});state={...blank(),token:session.token,expires:session.expires,started:true,consentVersion,messages:[{role:'assistant',text:welcome}]};persist();render();content.querySelector('#conversation-input')?.focus();});});
-  content.querySelector('.conversation-compose')?.addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget,message=form.elements.message.value.trim();if(!message)return;run(async()=>{if(state.pendingMessage!==message){state.turnKey=crypto.randomUUID();state.pendingMessage=message;}const result=await api('turn',{message,turnKey:state.turnKey,consent:true,turnNumber:state.turnNumber});state.turnNumber++;state.turnKey=null;state.pendingMessage=null;syncLanguage(result);state.messages.push({role:'visitor',text:message},{role:'assistant',text:result.message});if(result.ready&&state.editingField&&!state.editedFields.includes(state.editingField))state.editedFields.push(state.editingField);state.ready=result.ready;state.summary=result.summary;state.editingField=result.ready?null:state.editingField;state.turnsRemaining=result.turnsRemaining;state.limitReached=result.limitReached;state.emergency=result.emergency===true;persist();render();await revealReply();},{message});});
+  content.querySelector('.conversation-start')?.addEventListener('submit',event=>{event.preventDefault();if(!event.currentTarget.elements.consent.checked)return;run(async()=>{const session=await api('session');if(!session.aiAvailable)throw Object.assign(new Error(errors().ai_unavailable),{code:'ai_unavailable'});resumedSession=false;state={...blank(),token:session.token,expires:session.expires,started:true,consentVersion,messages:[{role:'assistant',text:welcome}]};persist();render();content.querySelector('#conversation-input')?.focus();});});
+  content.querySelector('.conversation-compose')?.addEventListener('submit',event=>{event.preventDefault();const form=event.currentTarget,message=form.elements.message.value.trim();if(!message)return;root.classList.remove('is-composing');run(async()=>{if(state.pendingMessage!==message){state.turnKey=crypto.randomUUID();state.pendingMessage=message;}const result=await api('turn',{message,turnKey:state.turnKey,consent:true,turnNumber:state.turnNumber});state.turnNumber++;state.turnKey=null;state.pendingMessage=null;syncLanguage(result);state.messages.push({role:'visitor',text:message},{role:'assistant',text:result.message});if(result.ready&&state.editingField&&!state.editedFields.includes(state.editingField))state.editedFields.push(state.editingField);state.ready=result.ready;state.summary=result.summary;state.editingField=result.ready?null:state.editingField;state.turnsRemaining=result.turnsRemaining;state.limitReached=result.limitReached;state.emergency=result.emergency===true;persist();render();await revealReply();},{message});});
   content.querySelector('.conversation-confirm')?.addEventListener('submit',event=>{event.preventDefault();run(async()=>{const result=await api('finish',{confirmed:true});if(result.requiresChoice){state.duplicatePrompt=true;persist();render();return;}state.sent=result.id;state.outsideHours=result.officeOpen===false;state.patientReceipt=result.patientReceipt;clear();render();});});
   content.querySelectorAll('[data-duplicate-choice]').forEach(button=>button.addEventListener('click',()=>run(async()=>{const result=await api('finish',{confirmed:true,duplicateChoice:button.dataset.duplicateChoice});if(result.cancelled){state.cancelled=true;clear();render();return;}state.sent=result.id;state.outsideHours=result.officeOpen===false;state.patientReceipt=result.patientReceipt;clear();render();})));
   content.querySelectorAll('[data-edit]').forEach(button=>button.addEventListener('click',()=>run(async()=>{const field=button.dataset.edit,result=await api('edit',{field});state.messages.push({role:'assistant',text:result.message});state.ready=false;state.summary=null;state.editingField=field;state.turnKey=null;state.pendingMessage=null;persist();render();})));
@@ -170,10 +171,11 @@ function bind(){
 }
 $('.chat-launch').onclick=()=>setOpen(!opened);
 $('.chat-close').onclick=()=>setOpen(false);
+root.addEventListener('input',event=>{if(event.target.matches('.conversation-compose textarea'))root.classList.toggle('is-composing',Boolean(event.target.value.trim()));});
 $('.chat-backdrop').onclick=()=>setOpen(false);
 root.addEventListener('click',event=>{if(event.target instanceof Element&&event.target.closest('a[href*="#booking-form"]'))setOpen(false);});
 root.addEventListener('keydown',event=>{if(event.key==='Escape'&&opened){event.preventDefault();setOpen(false);}});
-$('[data-reset]').onclick=()=>{if(busy)return;if(state.started&&!state.sent&&!confirm(t('Diesen Entwurf verwerfen und neu beginnen?','Discard this draft and start again?')))return;clear();lang=siteLang;en=lang==='en';state=blank();syncLanguage({language:lang});status.textContent='';render();};
+$('[data-reset]').onclick=()=>{if(busy)return;if(state.started&&!state.sent&&!confirm(t('Diesen Entwurf verwerfen und neu beginnen?','Discard this draft and start again?')))return;clear();lang=siteLang;en=lang==='en';resumedSession=false;state=blank();syncLanguage({language:lang});status.textContent='';render();};
 render();
 
 setInterval(()=>{if(state.started&&!state.sent&&!state.cancelled&&state.expires<=Date.now()){clear();lang=siteLang;en=lang==='en';state=blank();syncLanguage({language:lang});render();status.textContent=errors().session_expired;}},10000);

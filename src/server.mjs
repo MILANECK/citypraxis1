@@ -196,7 +196,17 @@ export function createApp(db = openDatabase()) {
           db.prepare('DELETE FROM content WHERE collection=? AND id=?').run(collection,id); audit(user,'delete',`${collection}/${id}`); return json(200,{ok:true});
         }
       }
-      if (path === '/api/admin/revisions' && req.method === 'GET' && editor) return json(200,db.prepare('SELECT * FROM revisions WHERE collection=? AND entity_id=? ORDER BY id DESC LIMIT 30').all(url.searchParams.get('collection'),url.searchParams.get('id')));
+      if (path === '/api/admin/revisions' && req.method === 'GET' && editor) {
+        return json(200,db.prepare('SELECT * FROM revisions WHERE collection=? AND entity_id=? ORDER BY id DESC LIMIT 10').all(url.searchParams.get('collection'),url.searchParams.get('id')));
+      }
+      if (path === '/api/admin/revisions' && req.method === 'DELETE' && owner) {
+        const revisionId=Number(body.id),collection=clean(body.collection,40),entityId=clean(body.entityId,200);
+        if(!Number.isSafeInteger(revisionId)||revisionId<=0||!collections.includes(collection)||!/^[a-z0-9-]+$/.test(entityId))return json(400,{error:'Ungültige Version.'});
+        const deleted=db.prepare('DELETE FROM revisions WHERE id=? AND collection=? AND entity_id=?').run(revisionId,collection,entityId);
+        if(!deleted.changes)return json(404,{error:'Version nicht gefunden.'});
+        audit(user,'delete revision',`${collection}/${entityId}/${revisionId}`);
+        return json(200,{ok:true});
+      }
       if (path === '/api/admin/requests' && req.method === 'GET' && reception) return json(200,markPossibleDuplicates(db.prepare('SELECT * FROM requests ORDER BY id DESC').all()));
       if (path === '/api/admin/requests' && req.method === 'PUT' && reception) {
         if (!['new','contacted','confirmed','closed'].includes(body.status)) return json(400,{error:'Ungültiger Status.'});

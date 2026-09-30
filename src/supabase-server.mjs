@@ -58,6 +58,14 @@ export function createSupabaseApp() {
   const storagePrefix = `${supabase.url}/storage/v1/object/public/${encodeURIComponent(supabase.bucket)}/`;
   function limit(key,max){const now=Date.now();let state=attempts.get(key);if(!state||state.until<now)state={count:0,until:now+900000};state.count++;attempts.set(key,state);if(state.count>max)throw Object.assign(new Error('Zu viele Versuche. Bitte später erneut versuchen.'),{status:429});}
   const audit = (user,action,entity)=>supabase.rest('audit_log','',{method:'POST',body:{actor:user?.id||null,actor_email:user?.email||'public',action,entity}});
+  const pruneRevisions=async(collection,entityId)=>{
+    const latest=await supabase.rest('revisions',`?collection=${filter(collection)}&entity_id=${filter(entityId)}&select=id&order=id.desc&limit=10`);
+    if(latest.length===10)await supabase.rest('revisions',`?collection=${filter(collection)}&entity_id=${filter(entityId)}&id=lt.${latest.at(-1).id}`,{method:'DELETE',prefer:'return=minimal'});
+  };
+  const saveRevision=async(collection,entityId,snapshot,user)=>{
+    await supabase.rest('revisions','',{method:'POST',body:{collection,entity_id:entityId,snapshot,actor:user.id,actor_email:user.email}});
+    await pruneRevisions(collection,entityId);
+  };
   async function currentUser(req) {
     const accessToken = cookie(req,'cp_access');
     if (!accessToken) return null;
@@ -166,7 +174,7 @@ export function createSupabaseApp() {
         let socialLinks;try{socialLinks=normalizeSocialLinks(body.socialLinks);}catch{return json(400,{error:'Bitte gültige Instagram- oder Facebook-Profillinks verwenden (https://).'});}
         const row=(await supabase.rest('content','?collection=eq.settings&id=eq.practice&select=draft,published'))[0];
         if(!row)return json(404,{error:'Praxisdaten fehlen.'});
-        await supabase.rest('revisions','',{method:'POST',body:{collection:'settings',entity_id:'practice',snapshot:row.draft,actor:user.id,actor_email:user.email}});
+        await saveRevision('settings','practice',row.draft,user);
         await supabase.rest('content','?collection=eq.settings&id=eq.practice',{method:'PATCH',body:{draft:{...row.draft,socialLinks},published:{...(row.published||row.draft),socialLinks},updated_at:new Date().toISOString()}});
         publicContentCache=null;await audit(user,'publish social links','settings/practice');
         return json(200,{ok:true,socialLinks});
@@ -182,7 +190,7 @@ export function createSupabaseApp() {
           if(Number(row.draft.order)===order&&(!published||Number(row.published.order)===order))continue;
           changed.push({row,draft,published});
         }
-        for(const {row}of changed)await supabase.rest('revisions','',{method:'POST',body:{collection:'team',entity_id:row.id,snapshot:row.draft,actor:user.id,actor_email:user.email}});
+        for(const {row}of changed)await saveRevision('team',row.id,row.draft,user);
         for(const {row,draft,published}of changed){
           const saved=await supabase.rest('content',`?collection=eq.team&id=${filter(row.id)}&select=id`,{method:'PATCH',body:{draft,published,updated_at:new Date().toISOString()}});
           if(saved.length!==1||saved[0].id!==row.id)throw new Error('Team order was not saved');
@@ -206,12 +214,13 @@ export function createSupabaseApp() {
           if(!clean(data.title))return json(400,{error:'Titel erforderlich.'});
           if(data.sourceUrl){try{const source=new URL(data.sourceUrl);if(!['https:','http:'].includes(source.protocol))throw new Error();data.sourceUrl=source.href;}catch{return json(400,{error:'Bitte einen gültigen Link zur Originalbewertung verwenden.'});}}
           const mediaOk=value=>!value||/^\/(assets|uploads)\/[a-zA-Z0-9._-]+$/.test(value)||value.startsWith(storagePrefix);if(!mediaOk(data.image)||!mediaOk(data.video))return json(400,{error:'Bitte eine Datei aus der Mediathek verwenden.'});
-          if(row)await supabase.rest('revisions','',{method:'POST',body:{collection,entity_id:id,snapshot:row.draft,actor:user.id,actor_email:user.email}});
+          if(row)await saveRevision(collection,id,row.draft,user);
           await supabase.rest('content',body.createOnly?'':'?on_conflict=collection,id',{method:'POST',prefer:body.createOnly?'return=representation':'resolution=merge-duplicates,return=representation',body:{collection,id,draft:data,published:body.publish?data:(row?.published||null),updated_at:new Date().toISOString()}});if(body.publish)publicContentCache=null;await audit(user,body.publish?'publish':'save draft',`${collection}/${id}`);return json(200,{ok:true});
         }
-        if(req.method==='DELETE'){if(collection==='settings'||(collection==='pages'&&['home','about'].includes(id)))return json(400,{error:'Dieser Basisinhalt kann nicht gelöscht werden.'});if(row)await supabase.rest('revisions','',{method:'POST',body:{collection,entity_id:id,snapshot:row.draft,actor:user.id,actor_email:user.email}});await supabase.rest('content',`?collection=${filter(collection)}&id=${filter(id)}`,{method:'DELETE'});publicContentCache=null;await audit(user,'delete',`${collection}/${id}`);return json(200,{ok:true});}
+        if(req.method==='DELETE'){if(collection==='settings'||(collection==='pages'&&['home','about'].includes(id)))return json(400,{error:'Dieser Basisinhalt kann nicht gelöscht werden.'});if(row)await saveRevision(collection,id,row.draft,user);await supabase.rest('content',`?collection=${filter(collection)}&id=${filter(id)}`,{method:'DELETE'});publicContentCache=null;await audit(user,'delete',`${collection}/${id}`);return json(200,{ok:true});}
       }
-      if(path==='/api/admin/revisions'&&req.method==='GET'&&editor){const rows=await supabase.rest('revisions',`?collection=${filter(url.searchParams.get('collection'))}&entity_id=${filter(url.searchParams.get('id'))}&select=*&order=id.desc&limit=30`);return json(200,rows.map(r=>({...r,actor:r.actor_email||r.actor})));}
+      if(path==='/api/admin/revisions'&&req.method==='GET'&&editor){const collection=clean(url.searchParams.get('collection'),40),entityId=clean(url.searchParams.get('id'),200);if(!collections.includes(collection)||!/^[a-z0-9-]+$/.test(entityId))return json(400,{error:'Ungültiger Eintrag.'});await pruneRevisions(collection,entityId);const rows=await supabase.rest('revisions',`?collection=${filter(collection)}&entity_id=${filter(entityId)}&select=*&order=id.desc&limit=10`);return json(200,rows.map(r=>({...r,actor:r.actor_email||r.actor})));}
+      if(path==='/api/admin/revisions'&&req.method==='DELETE'&&owner){const revisionId=Number(body.id),collection=clean(body.collection,40),entityId=clean(body.entityId,200);if(!Number.isSafeInteger(revisionId)||revisionId<=0||!collections.includes(collection)||!/^[a-z0-9-]+$/.test(entityId))return json(400,{error:'Ungültige Version.'});const deleted=await supabase.rest('revisions',`?id=eq.${revisionId}&collection=${filter(collection)}&entity_id=${filter(entityId)}`,{method:'DELETE'});if(!deleted?.length)return json(404,{error:'Version nicht gefunden.'});await audit(user,'delete revision',`${collection}/${entityId}/${revisionId}`);return json(200,{ok:true});}
       if(path==='/api/admin/requests'&&req.method==='GET'&&reception){const rows=[];let page;do{page=await supabase.rest('appointment_requests',`?select=*&order=id.desc&limit=1000&offset=${rows.length}`);rows.push(...page);}while(page.length===1000);return json(200,markPossibleDuplicates(rows));}
       if(path==='/api/admin/requests'&&req.method==='PUT'&&reception){if(!['new','contacted','confirmed','closed'].includes(body.status))return json(400,{error:'Ungültiger Status.'});const assignee=body.assignee||null;if(assignee){const p=await supabase.rest('staff_profiles',`?id=${filter(assignee)}&active=eq.true&select=id,role`);if(!p[0]||!['owner','reception'].includes(p[0].role))return json(400,{error:'Ungültige Zuweisung.'});}await supabase.rest('appointment_requests',`?id=${filter(body.id)}`,{method:'PATCH',body:{status:body.status,assignee,updated_at:new Date().toISOString()}});await audit(user,`request ${body.status}`,`request/${body.id}`);return json(200,{ok:true});}
       if(path==='/api/admin/requests'&&req.method==='DELETE'&&owner){await supabase.rest('appointment_requests',`?id=${filter(body.id)}`,{method:'DELETE'});await audit(user,'delete request',`request/${body.id}`);return json(200,{ok:true});}

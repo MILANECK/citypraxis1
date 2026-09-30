@@ -141,6 +141,8 @@ Without those variables, the local SQLite backend remains available for isolated
 
 Run `supabase/migrations/202609240001_capacity_metrics.sql` once in the project's Supabase **SQL Editor**. It adds a read-only, service-role-only function that reports the current database size and the sum of uploaded file sizes. Admin → Overview then shows separate bars against the Free plan's 500 MB database and 1 GB Storage allowances. The local SQLite preview and any Supabase project without this migration show “Live usage unavailable” instead of an estimated value.
 
+Run `supabase/migrations/202610010001_revision_retention.sql` once in the same SQL Editor to remove editor versions older than the latest ten per content entry and enforce that limit for future saves. The server also trims a content entry's versions when it saves or reads them, so the Admin remains bounded before the SQL migration is applied.
+
 Do not send medical reports, diagnoses or other clinical records through the appointment form. This database is for website content and appointment-contact requests, not patient records.
 
 ## 9. Safe handoff information
