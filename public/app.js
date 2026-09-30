@@ -145,7 +145,7 @@ function aboutBodySections(body){
 }
 function therapyQuickNav(item,related){
   const en=I18n.language==='en';
-  const sections=String(item.body||'').split(/\n\n(?=## )/).map((part,i)=>({title:part.startsWith('## ')?part.split('\n')[0].slice(3):(en?'About the treatment':'Über die Behandlung'),href:'#abschnitt-'+i}));
+  const sections=String(item.body||'').split(/\n\n(?=## )/).map((part,i)=>({title:part.startsWith('## ')?part.split('\n')[0].slice(3):(en?'About the treatment':'Über die Behandlung'),href:i===0?'#therapy-overview':'#abschnitt-'+i}));
   const therapies=data.services.map(service=>({title:service.title,href:'/leistungen/'+service.id,current:service.id===item.id}));
   const topics=[...related.filter(service=>service.id!==item.id).map(service=>({title:service.title,href:'/leistungen/'+service.id})),...(data.symptoms||[]).filter(topic=>topic.service===item.id).map(topic=>({title:topic.title,href:'/schwerpunkte/'+topic.id})),{title:en?'Your first visit':'Ablauf & Wahltherapie',href:'/ablauf-wahltherapie'},{title:en?'Prices & reimbursement':'Preise & Rückerstattung',href:'/preise'}];
   const links=items=>items.map(link=>`<li><a href="${esc(link.href)}"${link.current?' aria-current="page"':''}><span>${esc(link.title)}</span>${link.current?'<span class="therapy-nav-current" aria-hidden="true"></span>':arrow}</a></li>`).join('');
@@ -283,6 +283,51 @@ function bindTherapyNavigation(){
   const groups=[...document.querySelectorAll('.therapy-quick-nav .therapy-nav-group')];
   if(!groups.length)return;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+  let headingObserver=null,stopWave=null;
+  const waveHeading=heading=>{
+    stopWave?.();
+    if(reducedMotion.matches)return;
+    const label=heading.textContent.trim();
+    if(!label)return;
+    const original=[...heading.childNodes].map(node=>node.cloneNode(true));
+    const previousLabel=heading.getAttribute('aria-label');
+    const color=getComputedStyle(heading).color;
+    const letters=[],words=[];
+    heading.setAttribute('aria-label',label);
+    for(const part of label.split(/(\s+)/u)){
+      if(!part)continue;
+      if(/^\s+$/u.test(part)){words.push(document.createTextNode(part));continue;}
+      const word=document.createElement('span');word.className='therapy-heading-word';word.setAttribute('aria-hidden','true');
+      for(const character of part){const span=document.createElement('span');span.textContent=character;span.className='therapy-heading-letter';letters.push({span,index:letters.length});word.append(span);}
+      words.push(word);
+    }
+    heading.replaceChildren(...words);
+    const animations=letters.map(({span,index})=>span.animate([
+      {color,transform:'translateY(0) scale(1)'},
+      {color:'var(--pink)',transform:'translateY(-3px) scale(1.08)',offset:.48},
+      {color,transform:'translateY(0) scale(1)'}
+    ],{delay:index*28,duration:680,easing:'cubic-bezier(.22,1,.36,1)'}));
+    const cleanup=()=>{animations.forEach(animation=>animation.cancel());heading.replaceChildren(...original);if(previousLabel===null)heading.removeAttribute('aria-label');else heading.setAttribute('aria-label',previousLabel);if(stopWave===cleanup)stopWave=null;};
+    stopWave=cleanup;
+    Promise.allSettled(animations.map(animation=>animation.finished)).then(()=>{if(stopWave===cleanup)cleanup();});
+  };
+  groups[0].querySelectorAll('a[href^="#"]').forEach(link=>link.addEventListener('click',event=>{
+    const target=document.getElementById(link.hash.slice(1));
+    if(!target)return;
+    event.preventDefault();
+    headingObserver?.disconnect();
+    const heading=target.querySelector('h1,h2,h3')||target;
+    if(reducedMotion.matches){if(location.hash!==link.hash)history.pushState(null,'',link.hash);target.scrollIntoView({behavior:'instant',block:'start'});return;}
+    headingObserver=new IntersectionObserver(entries=>{
+      if(!entries[0].isIntersecting)return;
+      headingObserver.disconnect();headingObserver=null;
+      if(event.detail===0){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});heading.removeAttribute('tabindex');}
+      waveHeading(heading);
+    },{rootMargin:'-120px 0px -30% 0px'});
+    headingObserver.observe(heading);
+    if(location.hash!==link.hash)history.pushState(null,'',link.hash);
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+  }));
   const desired=new WeakMap(groups.map(group=>[group,group.open]));
   const animations=new WeakMap();
   const change=(group,open)=>{

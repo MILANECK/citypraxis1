@@ -111,12 +111,12 @@ body{background:#fafaf9}.topline{background:#f0f1f2}.header{background:#fafaf9f5
 }
 
 /* Blue appointment actions reveal a soft magenta circle from the lower right. */
-a.button[href^="/termin"]:not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)){
+a.button[href^="/termin"]:not(:is(.appointment-cta,.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)){
   position:relative;
   isolation:isolate;
   overflow:hidden;
 }
-a.button[href^="/termin"]:not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button))::before{
+a.button[href^="/termin"]:not(:is(.appointment-cta,.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button))::before{
   content:"";
   position:absolute;
   inset:0;
@@ -130,10 +130,10 @@ a.button[href^="/termin"]:not(:is(.header-cta,.hero-immersive .hero-actions .but
   transition:opacity .5s ease,transform .65s cubic-bezier(.22,1,.36,1);
 }
 @media(hover:hover) and (pointer:fine){
-  a.button[href^="/termin"]:not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):hover{
+  a.button[href^="/termin"]:not(:is(.appointment-cta,.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):hover{
     background:var(--blue);
   }
-  a.button[href^="/termin"]:not(:is(.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):hover::before{
+  a.button[href^="/termin"]:not(:is(.appointment-cta,.header-cta,.hero-immersive .hero-actions .button,.therapist-profile .button,.contact-banner .button,.home-contact-details .button)):hover::before{
     opacity:1;
     transform:none;
   }
