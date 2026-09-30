@@ -289,40 +289,7 @@ function bindTherapyNavigation(){
   if(!groups.length)return;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   let stopWave=null,stopScroll=null;
-  const aside=groups[0].closest('.therapy-quick-nav');
-  const desktop=matchMedia('(min-width: 901px)');
-  let shift=0,visualTop=0,frame=0,lastTime=0;
-  const settle=now=>{
-    frame=0;
-    if(!desktop.matches||reducedMotion.matches)return;
-    const baseTop=aside.getBoundingClientRect().top-shift;
-    const elapsed=Math.min(64,now-lastTime||16);
-    lastTime=now;
-    visualTop+=(baseTop-visualTop)*(1-Math.exp(-elapsed/240));
-    shift=visualTop-baseTop;
-    if(Math.abs(shift)<.35){shift=0;visualTop=baseTop;aside.style.transform='';}
-    else{aside.style.transform=`translate3d(0,${shift.toFixed(2)}px,0)`;frame=requestAnimationFrame(settle);}
-  };
-  const follow=()=>{if(desktop.matches&&!reducedMotion.matches&&!frame){lastTime=performance.now();frame=requestAnimationFrame(settle);}};
-  const place=()=>{
-    cancelAnimationFrame(frame);frame=0;shift=0;
-    aside.style.transform='';
-    if(!desktop.matches){
-      aside.style.top='';
-      visualTop=aside.getBoundingClientRect().top;
-      return;
-    }
-    aside.style.top=`${Math.max(120,Math.round((innerHeight-aside.offsetHeight)/2))}px`;
-    visualTop=aside.getBoundingClientRect().top;
-  };
-  place();
-  visualTop=aside.getBoundingClientRect().top;
-  const observer=new ResizeObserver(place);
-  observer.observe(aside);
-  desktop.addEventListener('change',place);
-  window.addEventListener('resize',place,{passive:true});
-  window.addEventListener('scroll',follow,{passive:true});
-  therapyNavCleanup=()=>{observer.disconnect();desktop.removeEventListener('change',place);window.removeEventListener('resize',place);window.removeEventListener('scroll',follow);cancelAnimationFrame(frame);aside.style.top='';aside.style.transform='';stopScroll?.();};
+  therapyNavCleanup=()=>stopScroll?.();
   const waveHeading=heading=>{
     stopWave?.();
     if(reducedMotion.matches)return;

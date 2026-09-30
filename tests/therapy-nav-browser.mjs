@@ -46,21 +46,13 @@ try{
 
   await page.evaluate(()=>window.scrollBy({top:-200,behavior:'instant'}));
   await page.waitForTimeout(40);
-  await page.waitForTimeout(850);
-  const sticky=await page.locator('.therapy-quick-nav').evaluate(node=>({top:node.getBoundingClientRect().top,target:Number.parseFloat(getComputedStyle(node).top),height:node.offsetHeight}));
-  assert.ok(Math.abs(sticky.top-sticky.target)<2,'The sidebar should remain steady once magnetized');
-  assert.ok(Math.abs(sticky.target-Math.max(120,(900-sticky.height)/2))<2,'The sidebar should rest near the viewport center');
+  const sticky=await page.locator('.therapy-quick-nav').evaluate(node=>({top:node.getBoundingClientRect().top,bottom:node.getBoundingClientRect().bottom,transform:getComputedStyle(node).transform}));
+  assert.ok(Math.abs(sticky.top-120)<2,'The sidebar should stay anchored below the header');
+  assert.ok(sticky.bottom<=868,'The sidebar should leave room below the viewport');
+  assert.equal(sticky.transform,'none','The whole sidebar should not glide during scrolling');
   await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
-  await page.waitForTimeout(1000);
-  const naturalTop=await page.locator('.therapy-quick-nav').evaluate(node=>node.getBoundingClientRect().top);
-  await page.evaluate(()=>scrollTo({top:550,behavior:'instant'}));
-  await page.waitForTimeout(40);
-  const glideTop=await page.locator('.therapy-quick-nav').evaluate(node=>node.getBoundingClientRect().top);
-  await page.waitForTimeout(1500);
-  const magnetTop=await page.locator('.therapy-quick-nav').evaluate(node=>node.getBoundingClientRect().top);
-  assert.ok(naturalTop>glideTop&&glideTop>magnetTop+100,'The sidebar should glide into place instead of jumping to the sticky position');
-  const magnetShift=await page.locator('.therapy-quick-nav').evaluate(node=>new DOMMatrixReadOnly(getComputedStyle(node).transform).m42);
-  assert.ok(Math.abs(magnetShift)<2,'The sidebar should settle without a lasting offset');
+  const introduction=await page.evaluate(()=>({menu:document.querySelector('.therapy-quick-nav').getBoundingClientRect().top,photo:document.querySelector('.service-intro').getBoundingClientRect().bottom}));
+  assert.ok(introduction.menu>=introduction.photo-1,'The sidebar should stay below the introductory photo');
 
   await page.evaluate(()=>scrollTo({top:1700,behavior:'instant'}));
   await page.waitForTimeout(1300);
@@ -76,11 +68,10 @@ try{
   }));
   const lastOpen=closingFrames.at(-2),firstClosed=closingFrames.at(-1);
   assert.ok(lastOpen?.open&&!firstClosed.open&&Math.abs(firstClosed.top-lastOpen.top)<3,'The menu should finish closing without a final pixel jump');
-  await page.waitForTimeout(1200);
-  const compact=await page.locator('.therapy-quick-nav').evaluate(node=>({top:node.getBoundingClientRect().top,target:Number.parseFloat(getComputedStyle(node).top),height:node.offsetHeight}));
-  assert.ok(compact.target>sticky.target,'A shorter menu should move closer to the viewport center');
-  assert.ok(Math.abs(compact.top-compact.target)<5,'The resized menu should ease into its new position');
-  await page.screenshot({path:'test-results/therapy-nav-magnet.png'});
+  const compact=await page.locator('.therapy-quick-nav').evaluate(node=>({top:node.getBoundingClientRect().top,transform:getComputedStyle(node).transform}));
+  assert.ok(Math.abs(compact.top-120)<2,'Closing a category should not reposition the whole sidebar');
+  assert.equal(compact.transform,'none');
+  await page.screenshot({path:'test-results/therapy-nav-stable.png'});
   await page.setViewportSize({width:800,height:900});
   assert.equal(await page.locator('.therapy-quick-nav').evaluate(node=>getComputedStyle(node).position),'static');
   assert.equal(await page.locator('.therapy-quick-nav').evaluate(node=>getComputedStyle(node).transform),'none');
@@ -101,5 +92,15 @@ try{
   const reducedPosition=await reduced.locator(reducedTarget).evaluate(node=>node.getBoundingClientRect().top);
   assert.ok(reducedPosition>=100&&reducedPosition<=260,'Reduced-motion navigation should put the section below the header');
   assert.equal(await reduced.locator('.therapy-quick-nav').evaluate(node=>getComputedStyle(node).transform),'none');
+
+  const short=await browser.newPage({viewport:{width:1024,height:650},reducedMotion:'reduce'});
+  await short.goto((process.env.QA_ORIGIN||'http://127.0.0.1:3001')+'/leistungen/heilmassage?lang=en');
+  await short.evaluate(()=>scrollTo({top:1700,behavior:'instant'}));
+  const bounded=await short.locator('.therapy-quick-nav').evaluate(node=>{
+    const box=node.getBoundingClientRect(),links=node.querySelector('.therapy-nav-sections'),booking=node.querySelector('.therapy-nav-booking');
+    return {top:box.top,bottom:box.bottom,height:box.height,linksHeight:links.clientHeight,linksContent:links.scrollHeight,bookingBottom:booking.getBoundingClientRect().bottom};
+  });
+  assert.ok(Math.abs(bounded.top-120)<2&&bounded.bottom<=618,'The sticky card should keep clear top and bottom margins on short screens');
+  assert.ok(bounded.linksContent>bounded.linksHeight&&bounded.bookingBottom<=bounded.bottom,'Long links should scroll inside while the appointment button stays visible');
   console.log('Therapy navigation movement and reduced-motion behavior verified');
 }finally{await browser.close();}
