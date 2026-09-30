@@ -13,7 +13,9 @@
 .interior-page :is(.article-body,.clinical-card) h3{font-size:21px;font-weight:500}
 .interior-page .article-body{margin-bottom:48px}
 .interior-page :is(h2,h3,[id]){scroll-margin-top:125px}
-.therapy-heading-wave{color:transparent;-webkit-text-fill-color:transparent;background-image:linear-gradient(90deg,var(--therapy-wave-ink) 36%,var(--pink) 45%,var(--pink) 55%,var(--therapy-wave-ink) 64%);background-size:300% 100%;background-position:100% 0;background-repeat:no-repeat;background-clip:text;-webkit-background-clip:text}
+.therapy-heading-wave{position:relative;color:transparent!important;-webkit-text-fill-color:transparent!important}
+.therapy-wave-overlay{position:absolute;inset:0;pointer-events:none;white-space:pre;color:var(--therapy-wave-ink);-webkit-text-fill-color:currentColor}
+.therapy-wave-glyph{position:absolute;display:block;line-height:inherit;font:inherit;letter-spacing:inherit;will-change:transform;color:var(--therapy-wave-ink);-webkit-text-fill-color:currentColor}
 .interior-page .home-atmosphere-colors{background:radial-gradient(circle 520px at -12% 30%,#a5dbee3d,transparent 75%),radial-gradient(circle 500px at 110% 43%,#bd549426,transparent 76%),radial-gradient(circle 600px at -12% 76%,#d7c4a959,transparent 78%),radial-gradient(circle 570px at 112% 88%,#78c5e040,transparent 78%),radial-gradient(circle 490px at 4% 106%,#cd8caf24,transparent 80%)}
 .interior-page[data-page="/kontakt"] .home-atmosphere-colors{display:none}
 .interior-page:is([data-page="/ueber-uns"],[data-page="/preise"],[data-page="/ablauf-wahltherapie"]) .home-atmosphere-colors{display:none}

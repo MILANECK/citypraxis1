@@ -7,23 +7,35 @@ const browser=await chromium.launch({channel:process.env.QA_BROWSER_CHANNEL||'ch
 try{
   const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
   await page.goto((process.env.QA_ORIGIN||'http://127.0.0.1:3001')+'/leistungen/heilmassage?lang=en');
+  await page.waitForTimeout(1800);
   const link=page.locator('.therapy-nav-group').first().locator('a[href^="#"]').nth(3);
-  await link.click();
   const target=await link.getAttribute('href');
+  const originalTextWidth=await page.locator(target).locator('h2').evaluate(heading=>{const range=document.createRange();range.selectNodeContents(heading.firstChild);return range.getBoundingClientRect().width;});
+  await link.click();
   await page.waitForTimeout(160);
   const early=await page.evaluate(()=>window.scrollY);
   await page.waitForTimeout(570);
   const middle=await page.evaluate(()=>window.scrollY);
+  await page.waitForFunction(()=>[...document.querySelectorAll('.therapy-wave-glyph')].some(glyph=>Math.abs(new DOMMatrixReadOnly(getComputedStyle(glyph).transform).m42)>2));
+  const wavePosition=await page.locator(target).locator('h2').evaluate(heading=>heading.getBoundingClientRect().top);
+  assert.ok(wavePosition>150,'The letter wave should start while the section is still arriving');
+  assert.ok(await page.locator('.therapy-wave-glyph').count()>10,'The heading should animate individual letters');
+  assert.equal(await page.locator(target).locator('h2').evaluate(heading=>getComputedStyle(heading).filter),'none','The selected heading should not remain blurred during the wave');
+  await page.waitForTimeout(180);
+  await page.screenshot({path:'test-results/therapy-wave-mid.png'});
   await page.waitForTimeout(1250);
   const final=await page.evaluate(()=>window.scrollY);
   const destination=await page.locator(target).evaluate(node=>node.getBoundingClientRect().top);
   assert.ok(early<middle&&middle<final,'The page should keep moving gradually toward the section');
   assert.ok(Math.abs(destination-125)<4,'The selected heading should settle below the header');
+  const finalTextWidth=await page.locator(target).locator('h2').evaluate(heading=>{const range=document.createRange();range.selectNodeContents(heading.firstChild);return range.getBoundingClientRect().width;});
+  assert.ok(Math.abs(finalTextWidth-originalTextWidth)<.5,'The heading should keep its exact text width after the wave');
   assert.equal(new URL(page.url()).hash,target);
 
-  await page.evaluate(()=>window.scrollBy(0,200));
+  await page.evaluate(()=>window.scrollBy(0,-200));
+  await page.waitForTimeout(40);
   const lag=await page.locator('.therapy-quick-nav').evaluate(node=>new DOMMatrixReadOnly(getComputedStyle(node).transform).m42);
-  assert.ok(lag>0,'The sidebar should follow the page scroll with a small delay');
+  assert.ok(lag<0,'The sidebar should follow the page scroll with a small delay');
   await page.waitForTimeout(850);
   const settled=await page.locator('.therapy-quick-nav').evaluate(node=>new DOMMatrixReadOnly(getComputedStyle(node).transform).m42);
   assert.ok(Math.abs(settled)<1,'The sidebar should settle back into its sticky position');

@@ -307,12 +307,35 @@ function bindTherapyNavigation(){
     stopWave?.();
     if(reducedMotion.matches)return;
     if(!heading.textContent.trim())return;
-    heading.style.setProperty('--therapy-wave-ink',getComputedStyle(heading).color);
+    const ink=getComputedStyle(heading).color,box=heading.getBoundingClientRect();
+    const overlay=document.createElement('span');overlay.className='therapy-wave-overlay';overlay.setAttribute('aria-hidden','true');
+    const glyphs=[];
+    const walker=document.createTreeWalker(heading,NodeFilter.SHOW_TEXT);
+    for(let node=walker.nextNode();node;node=walker.nextNode()){
+      for(let i=0;i<node.length;i++){
+        const letter=node.textContent[i];
+        if(/\s/u.test(letter))continue;
+        const range=document.createRange();range.setStart(node,i);range.setEnd(node,i+1);
+        const rect=range.getBoundingClientRect();
+        if(!rect.width)continue;
+        const glyph=document.createElement('span');glyph.className='therapy-wave-glyph';glyph.textContent=letter;
+        glyph.style.left=`${rect.left-box.left}px`;glyph.style.top=`${rect.top-box.top}px`;
+        overlay.append(glyph);glyphs.push(glyph);
+      }
+    }
+    if(!glyphs.length)return;
+    heading.style.setProperty('--therapy-wave-ink',ink);
+    heading.append(overlay);
     heading.classList.add('therapy-heading-wave');
-    const animation=heading.animate([{backgroundPosition:'100% 0'},{backgroundPosition:'0% 0'}],{duration:1100,easing:'cubic-bezier(.42,0,.58,1)'});
-    const cleanup=()=>{animation.cancel();heading.classList.remove('therapy-heading-wave');heading.style.removeProperty('--therapy-wave-ink');if(stopWave===cleanup)stopWave=null;};
+    const stagger=Math.min(23,Math.max(8,560/glyphs.length));
+    const animations=glyphs.map((glyph,index)=>glyph.animate([
+      {transform:'translate3d(0,0,0)',color:ink,offset:0},
+      {transform:'translate3d(0,-9px,0)',color:'#951b81',offset:.45},
+      {transform:'translate3d(0,0,0)',color:ink,offset:1}
+    ],{duration:760,delay:index*stagger,easing:'cubic-bezier(.3,0,.2,1)',fill:'both'}));
+    const cleanup=()=>{animations.forEach(animation=>animation.cancel());overlay.remove();heading.classList.remove('therapy-heading-wave');heading.style.removeProperty('--therapy-wave-ink');if(stopWave===cleanup)stopWave=null;};
     stopWave=cleanup;
-    animation.finished.then(()=>{if(stopWave===cleanup)cleanup();},()=>{});
+    Promise.all(animations.map(animation=>animation.finished)).then(()=>{if(stopWave===cleanup)cleanup();},()=>{});
   };
   groups[0].querySelectorAll('a[href^="#"]').forEach(link=>link.addEventListener('click',event=>{
     const target=document.getElementById(link.hash.slice(1));
@@ -320,10 +343,17 @@ function bindTherapyNavigation(){
     event.preventDefault();
     stopScroll?.();
     const heading=target.querySelector('h1,h2,h3')||target;
+    heading.classList.remove('home-reveal-ready','home-reveal-visible','interior-load-reveal');
     if(reducedMotion.matches){if(location.hash!==link.hash)history.pushState(null,'',link.hash);target.scrollIntoView({behavior:'instant',block:'start'});return;}
+    let waved=false;
+    const maybeWave=()=>{
+      if(waved)return;
+      const rect=heading.getBoundingClientRect();
+      if(rect.top<innerHeight*.95&&rect.bottom>100){waved=true;waveHeading(heading);}
+    };
     const finish=()=>{
       if(event.detail===0){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});heading.removeAttribute('tabindex');}
-      waveHeading(heading);
+      if(!waved){waved=true;waveHeading(heading);}
     };
     if(location.hash!==link.hash)history.pushState(null,'',link.hash);
     const start=window.scrollY;
@@ -347,6 +377,7 @@ function bindTherapyNavigation(){
       const progress=Math.min(1,(now-started)/duration);
       const eased=progress<.5?4*progress**3:1-(-2*progress+2)**3/2;
       window.scrollTo({top:start+distance*eased,behavior:'instant'});
+      maybeWave();
       if(progress<1)frame=requestAnimationFrame(step);
       else{removeInterrupts();stopScroll=null;finish();}
     };
