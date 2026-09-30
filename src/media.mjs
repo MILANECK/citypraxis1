@@ -14,7 +14,10 @@ export async function serveFile(req,res,file,type) {
   const info = await stat(file);
   if (!info.isFile()) throw new Error('Not a file');
   const normalized=file.replaceAll('\\','/'),asset=normalized.includes('/assets/'),code=/\.(?:css|js)$/.test(normalized);
-  const headers = {'Content-Type':type,'Cache-Control':asset?'public, max-age=86400, stale-while-revalidate=604800':code?'public, max-age=300, must-revalidate':'no-cache','Accept-Ranges':'bytes'};
+  const fingerprintedAsset=asset&&/\/[a-z0-9._-]+-[a-f0-9]{16,}\.(?:avif|gif|jpe?g|png|svg|webp|woff2?)$/i.test(normalized);
+  const headers = {'Content-Type':type,'Cache-Control':fingerprintedAsset?'public, max-age=31536000, immutable':asset?'public, max-age=86400, stale-while-revalidate=604800':code?'public, max-age=300, must-revalidate':'no-cache','Accept-Ranges':'bytes'};
+  // The current homepage poster is a fingerprinted local file; avoid loading it on subpages.
+  if(type.startsWith('text/html')&&/^\/(?:\?|$)/.test(req.url||''))headers.Link='</assets/hero-poster-69f98965192348a3a466632b.webp>; rel=preload; as=image; fetchpriority=high; type=image/webp';
   let range;
   if (req.headers.range) {
     range = parseRange(req.headers.range,info.size);

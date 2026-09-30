@@ -128,6 +128,9 @@ test('staff authorization, draft isolation, revisions, request handling and sess
     assert.equal((await fetch(origin+'/assets/wordmark-black.png')).status,200);
     const compressedCss=await fetch(origin+'/layout.css',{headers:{'Accept-Encoding':'gzip'}});assert.equal(compressedCss.headers.get('content-encoding'),'gzip');assert.match(compressedCss.headers.get('cache-control'),/max-age=300/);
     const cachedAsset=await fetch(origin+'/assets/wordmark-black.png');assert.match(cachedAsset.headers.get('cache-control'),/max-age=86400/);
+    const fingerprintedPoster=await fetch(origin+'/assets/hero-poster-69f98965192348a3a466632b.webp');assert.match(fingerprintedPoster.headers.get('cache-control'),/max-age=31536000, immutable/);
+    const homepage=await fetch(origin+'/');assert.match(homepage.headers.get('link'),/hero-poster-69f98965192348a3a466632b\.webp.*rel=preload.*fetchpriority=high/);
+    const subpage=await fetch(origin+'/preise');assert.equal(subpage.headers.get('link'),null);
     const compressedContent=await call('content','GET',null,{}, {'Accept-Encoding':'gzip'});assert.equal(compressedContent.headers.get('content-encoding'),'gzip');
     const range=await fetch(origin+'/assets/hero-film.mp4',{headers:{Range:'bytes=0-1'}});assert.equal(range.status,206);assert.equal(range.headers.get('content-type'),'video/mp4');assert.equal((await range.arrayBuffer()).byteLength,2);
     const badRange=await fetch(origin+'/assets/hero-film.mp4',{headers:{Range:'bytes=999999999-'}});assert.equal(badRange.status,416);
