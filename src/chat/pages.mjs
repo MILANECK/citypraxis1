@@ -42,5 +42,8 @@ export function relatedPageLinks(raw,selected,facts,lang){
   const detailPrefix={therapies:'service:',specializations:'specialism:',team:'person:'};
   for(const [id,pattern] of topics)if(pattern.test(raw)&&!ids.includes(id)&&!ids.some(selected=>detailPrefix[id]&&selected.startsWith(detailPrefix[id])))ids.push(id);
   const label=page=>String(lang==='en'?page.titleEn||page.title:page.title).replace(/[\[\]<>\r\n]/g,'').slice(0,75);
-  return [...new Set(ids)].slice(0,3).map(id=>catalog.find(page=>page.id===id)).filter(Boolean).map(page=>`[${label(page)}](${localizedPageUrl(page,lang)})`).join(' · ');
+  const links=[...new Set(ids)].slice(0,3).map(id=>catalog.find(page=>page.id===id)).filter(Boolean).map(page=>`[${label(page)}](${localizedPageUrl(page,lang)})`);
+  if(!links.length)return '';
+  const joined=links.length===1?links[0]:`${links.slice(0,-1).join(', ')}${lang==='en'?' and ':' und '}${links.at(-1)}`;
+  return lang==='en'?`For more details, see ${joined} on our website.`:`Weitere Informationen finden Sie auf unserer Website unter ${joined}.`;
 }

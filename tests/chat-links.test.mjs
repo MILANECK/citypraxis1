@@ -5,6 +5,7 @@ import {formatChatMessage} from '../public/chat-links.js';
 test('published price links become safe, clickable links',()=>{
   assert.equal(formatChatMessage('Details at /preise?lang=en.'),'Details at <a href="/preise?lang=en">/preise?lang=en</a>.');
   assert.equal(formatChatMessage('See [prices](https://www.citypraxis.wien/preise?lang=en).'),'See <a href="/preise?lang=en">prices</a>.');
+  assert.equal(formatChatMessage('For more details, see [Physiotherapy](/leistungen/physiotherapie?lang=en) on our website.'),'For more details, see <a href="/leistungen/physiotherapie?lang=en">Physiotherapy</a> on our website.');
   assert.equal(formatChatMessage('https://citypraxis-wien.onrender.com/preise'),'<a href="/preise">https://citypraxis-wien.onrender.com/preise</a>');
 });
 

@@ -30,10 +30,11 @@ test('administrative questions always receive the relevant localized destination
 });
 
 test('specific catalog choices are localized, deduplicated and bounded',()=>{
-  assert.equal(relatedPageLinks('Tell me about physiotherapy treatments',['service:physiotherapie','service:physiotherapie','made-up'],facts,'en'),'[Physiotherapy](/leistungen/physiotherapie?lang=en)');
-  assert.equal(relatedPageLinks('I have headaches',['specialism:kopfschmerzen'],facts,'en'),'[Headaches](/schwerpunkte/kopfschmerzen?lang=en)');
-  assert.equal(relatedPageLinks('Tell me about Isabella Casny from your team',['person:isabella-casny'],facts,'en'),'[Isabella Casny](/team/isabella-casny?lang=en)');
-  assert.equal(relatedPageLinks('Open the booking form',['booking'],facts,'en'),'[Appointment request](/termin?lang=en#booking-form)');
+  assert.equal(relatedPageLinks('Tell me about physiotherapy treatments',['service:physiotherapie','service:physiotherapie','made-up'],facts,'en'),'For more details, see [Physiotherapy](/leistungen/physiotherapie?lang=en) on our website.');
+  assert.equal(relatedPageLinks('I have headaches',['specialism:kopfschmerzen'],facts,'en'),'For more details, see [Headaches](/schwerpunkte/kopfschmerzen?lang=en) on our website.');
+  assert.equal(relatedPageLinks('Tell me about Isabella Casny from your team',['person:isabella-casny'],facts,'en'),'For more details, see [Isabella Casny](/team/isabella-casny?lang=en) on our website.');
+  assert.equal(relatedPageLinks('Open the booking form',['booking'],facts,'en'),'For more details, see [Appointment request](/termin?lang=en#booking-form) on our website.');
+  assert.equal(relatedPageLinks('Wie sind die Öffnungszeiten?',[],facts,'de'),'Weitere Informationen finden Sie auf unserer Website unter [Öffnungszeiten](/kontakt?lang=de#oeffnungszeiten).');
   assert.equal(relatedPageLinks('Hello',[],facts,'en'),'');
 });
 
