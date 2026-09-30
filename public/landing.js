@@ -406,10 +406,9 @@ function enhanceTeamHover(){
   const measure=()=>{
     const panelWidth=panel.getBoundingClientRect().width,photoWidth=photo.getBoundingClientRect().width;
     panel.style.setProperty('--team-width',`${panelWidth}px`);
-    panel.style.setProperty('--team-photo-shift',`${panelWidth*.44}px`);
-    // Cover both frame endpoints plus its brief elastic stretch and blur bleed.
-    // The fixed canvas prevents object-fit from zooming in and out during the slide.
-    panel.style.setProperty('--team-image-width',`${Math.max(photoWidth,panelWidth*.56)+panelWidth*.075+16}px`);
+    panel.style.setProperty('--team-photo-shift',`${panelWidth-photoWidth}px`);
+    // Keep the source's full width visible in both positions; allow only a small blur bleed.
+    panel.style.setProperty('--team-image-width',`${photoWidth+8}px`);
     panel.style.setProperty('--team-photo-width',`${photoWidth}px`);
     panel.style.setProperty('--team-uncovered',`${panelWidth-photoWidth}px`);
   };
@@ -427,6 +426,7 @@ function enhanceTeamHover(){
 // Suppress hover only for that closing click, so the card can close under the pointer.
 function enhanceSlidingCards(){
   const desktop=matchMedia('(min-width:1001px) and (hover:hover) and (pointer:fine)');
+  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   const cleanups=[];
   document.querySelectorAll('.team-feature.team-hover-ready').forEach(panel=>{
     const button=panel.querySelector('.home-team-plus');
@@ -436,7 +436,14 @@ function enhanceSlidingCards(){
       node.style.setProperty('--home-reveal-delay',`${index*100}ms`);
       node.classList.add('home-reveal-visible');
     });
-    const update=()=>button.setAttribute('aria-expanded',String(desktop.matches&&(panel.classList.contains('is-open')||(panel.matches(':hover')&&!panel.classList.contains('is-click-closed')))));
+    const update=()=>button.setAttribute('aria-expanded',String(desktop.matches&&(panel.classList.contains('is-open')||((panel.matches(':hover')||panel.classList.contains('is-scroll-open'))&&!panel.classList.contains('is-click-closed')))));
+    const scrollObserver=reducedMotion.matches?null:new IntersectionObserver(entries=>{
+      const visible=desktop.matches&&entries[0].intersectionRatio>=.35;
+      panel.classList.toggle('is-scroll-open',visible);
+      if(!visible)panel.classList.remove('is-click-closed');
+      update();
+    },{threshold:[0,.35],rootMargin:'0px 0px -20% 0px'});
+    scrollObserver?.observe(panel);
     const onClick=event=>{
       if(!desktop.matches||event.target.closest('a'))return;
       revealCopy();
@@ -446,7 +453,7 @@ function enhanceSlidingCards(){
       update();
     };
     const onEnter=()=>{revealCopy();update();};
-    const onLeave=()=>{panel.classList.remove('is-click-closed');update();};
+    const onLeave=()=>{if(!panel.classList.contains('is-scroll-open'))panel.classList.remove('is-click-closed');update();};
     const onKey=event=>{
       if(event.key!=='Escape'||!panel.classList.contains('is-open'))return;
       panel.classList.remove('is-open');
@@ -455,7 +462,9 @@ function enhanceSlidingCards(){
       button.focus();
     };
     const onMedia=()=>{
-      panel.classList.remove('is-open','is-click-closed');
+      panel.classList.remove('is-open','is-click-closed','is-scroll-open');
+      scrollObserver?.unobserve(panel);
+      scrollObserver?.observe(panel);
       update();
     };
     panel.addEventListener('click',onClick);
@@ -464,12 +473,13 @@ function enhanceSlidingCards(){
     panel.addEventListener('keydown',onKey);
     desktop.addEventListener('change',onMedia);
     cleanups.push(()=>{
+      scrollObserver?.disconnect();
       panel.removeEventListener('click',onClick);
       panel.removeEventListener('pointerenter',onEnter);
       panel.removeEventListener('pointerleave',onLeave);
       panel.removeEventListener('keydown',onKey);
       desktop.removeEventListener('change',onMedia);
-      panel.classList.remove('is-open','is-click-closed');
+      panel.classList.remove('is-open','is-click-closed','is-scroll-open');
     });
   });
   return ()=>cleanups.forEach(cleanup=>cleanup());
