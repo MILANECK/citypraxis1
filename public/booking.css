@@ -89,6 +89,8 @@
 #booking-form .booking-choice input:checked+span,#booking-form .concern-chip input:checked+span{background:var(--blue);color:#fff}
 #booking-form .booking-choice>span,#booking-form .concern-chip>span{position:relative;isolation:isolate;overflow:hidden;transition:color .38s ease,box-shadow .38s ease}
 #booking-form .booking-choice>span::before,#booking-form .concern-chip>span::before{content:"";position:absolute;z-index:-1;inset:0;border-radius:inherit;background:linear-gradient(115deg,#f9eef6 0%,#efd6e9 55%,#f4e2f0 100%);opacity:0;transition:opacity .38s ease}
+#booking-form .concern-chip>span::before{background:linear-gradient(115deg,#e9f5f9 0%,#d8eef5 55%,#e7f4f9 100%)}
+#booking-form .concern-chip input:focus-visible+span{outline-color:var(--blue)}
 @media(hover:hover) and (pointer:fine){
   #booking-form .booking-choice:hover input:not(:checked)+span,#booking-form .concern-chip:hover input:not(:checked)+span{color:var(--ink);transform:none}
   #booking-form .booking-choice:hover input:not(:checked)+span::before,#booking-form .concern-chip:hover input:not(:checked)+span::before{opacity:1}
