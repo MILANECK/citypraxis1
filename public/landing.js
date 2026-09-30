@@ -422,11 +422,9 @@ function enhanceTeamHover(){
   };
 }
 
-// Hover offers a preview; clicking pins a slider until it is clicked again.
-// Suppress hover only for that closing click, so the card can close under the pointer.
+// Each new pointer entry toggles the team panel; leaving it keeps the chosen state.
 function enhanceSlidingCards(){
   const desktop=matchMedia('(min-width:1001px) and (hover:hover) and (pointer:fine)');
-  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   const cleanups=[];
   document.querySelectorAll('.team-feature.team-hover-ready').forEach(panel=>{
     const button=panel.querySelector('.home-team-plus');
@@ -436,50 +434,43 @@ function enhanceSlidingCards(){
       node.style.setProperty('--home-reveal-delay',`${index*100}ms`);
       node.classList.add('home-reveal-visible');
     });
-    const update=()=>button.setAttribute('aria-expanded',String(desktop.matches&&(panel.classList.contains('is-open')||((panel.matches(':hover')||panel.classList.contains('is-scroll-open'))&&!panel.classList.contains('is-click-closed')))));
-    const scrollObserver=reducedMotion.matches?null:new IntersectionObserver(entries=>{
-      const visible=desktop.matches&&entries[0].intersectionRatio>=.35;
-      panel.classList.toggle('is-scroll-open',visible);
-      if(!visible)panel.classList.remove('is-click-closed');
-      update();
-    },{threshold:[0,.35],rootMargin:'0px 0px -20% 0px'});
-    scrollObserver?.observe(panel);
+    const update=()=>{
+      const open=desktop.matches&&panel.classList.contains('is-open');
+      button.setAttribute('aria-expanded',String(open));
+      button.setAttribute('aria-label',open?(document.documentElement.lang==='en'?'Hide team members':'Teammitglieder ausblenden'):(document.documentElement.lang==='en'?'Show team members':'Teammitglieder anzeigen'));
+    };
     const onClick=event=>{
-      if(!desktop.matches||event.target.closest('a'))return;
+      if(!desktop.matches||event.target!==button&&!button.contains(event.target))return;
       revealCopy();
-      const opening=!panel.classList.contains('is-open');
-      panel.classList.toggle('is-open',opening);
-      panel.classList.toggle('is-click-closed',!opening);
+      panel.classList.toggle('is-open');
       update();
     };
-    const onEnter=()=>{revealCopy();update();};
-    const onLeave=()=>{if(!panel.classList.contains('is-scroll-open'))panel.classList.remove('is-click-closed');update();};
+    const onEnter=()=>{
+      if(!desktop.matches)return;
+      revealCopy();
+      panel.classList.toggle('is-open');
+      update();
+    };
     const onKey=event=>{
       if(event.key!=='Escape'||!panel.classList.contains('is-open'))return;
       panel.classList.remove('is-open');
-      panel.classList.add('is-click-closed');
       update();
       button.focus();
     };
     const onMedia=()=>{
-      panel.classList.remove('is-open','is-click-closed','is-scroll-open');
-      scrollObserver?.unobserve(panel);
-      scrollObserver?.observe(panel);
+      panel.classList.remove('is-open');
       update();
     };
     panel.addEventListener('click',onClick);
     panel.addEventListener('pointerenter',onEnter);
-    panel.addEventListener('pointerleave',onLeave);
     panel.addEventListener('keydown',onKey);
     desktop.addEventListener('change',onMedia);
     cleanups.push(()=>{
-      scrollObserver?.disconnect();
       panel.removeEventListener('click',onClick);
       panel.removeEventListener('pointerenter',onEnter);
-      panel.removeEventListener('pointerleave',onLeave);
       panel.removeEventListener('keydown',onKey);
       desktop.removeEventListener('change',onMedia);
-      panel.classList.remove('is-open','is-click-closed','is-scroll-open');
+      panel.classList.remove('is-open');
     });
   });
   return ()=>cleanups.forEach(cleanup=>cleanup());

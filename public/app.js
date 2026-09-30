@@ -1,5 +1,5 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-2';
-import {enhanceLanding} from './landing.js?v=44';
+import {enhanceLanding} from './landing.js?v=team-hover-toggle-1';
 let landingCleanup,meshShaderCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
