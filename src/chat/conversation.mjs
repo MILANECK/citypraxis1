@@ -87,7 +87,7 @@ function absorbContact(raw,d,stage){
     const local=/^(?:\d[\d ()/.-]{5,}\d|(?:my (?:phone|number) is|meine telefonnummer ist)\s+\d[\d ()/.-]{5,}\d)$/iu.test(raw.trim());
     if(local){try{d.phone=phone(raw.replace(/^(?:my (?:phone|number) is|meine telefonnummer ist)\s+/iu,''));}catch{}}
   }
-  const explicit=/(?:my name is|ich heiße|ich heisse|mein name ist)\s+([\p{L}\p{M}.'’\-]+)\s+([\p{L}\p{M}.'’\-]+)/iu.exec(raw);
+  const explicit=/(?:my name is|ich heiße|ich heisse|mein name ist|(?:^|[,;\n])\s*(?:full name|name|vor-\s*und\s+nachname)\s*[:=])\s*([\p{L}\p{M}.'’\-]+)\s+([\p{L}\p{M}.'’\-]+)/iu.exec(raw);
   if(explicit){try{d.first_name=name(explicit[1]);d.last_name=name(explicit[2]);}catch{}}
 }
 function absorbAIIntake(ai,raw,draft,stage,proactiveAvailability){
@@ -102,7 +102,9 @@ function absorbAIIntake(ai,raw,draft,stage,proactiveAvailability){
   if(!draft.availability&&typeof ai.availability==='string'&&ai.availability.trim())draft.availability=text(ai.availability,200);
   if(ai.patient_status&&['new','existing','unsure'].includes(ai.patient_status))draft.patient_status=ai.patient_status;
   const foldedRaw=raw.normalize('NFD').replace(/\p{M}/gu,'').toLocaleLowerCase();
-  if(stage==='name'&&ai.first_name&&ai.last_name&&foldedRaw.includes(ai.first_name.normalize('NFD').replace(/\p{M}/gu,'').toLocaleLowerCase())&&foldedRaw.includes(ai.last_name.normalize('NFD').replace(/\p{M}/gu,'').toLocaleLowerCase())){
+  const contactBundle=Boolean(contactEmail(raw)||/(?:\+\d|\b0)[\d ()/.-]{6,}\d/u.test(raw));
+  const nameContext=stage==='name'||contactBundle||/(?:my name is|ich heiße|ich heisse|mein name ist|\b(?:full name|name|vor-\s*und\s+nachname)\s*[:=])/iu.test(raw);
+  if(nameContext&&ai.first_name&&ai.last_name&&foldedRaw.includes(ai.first_name.normalize('NFD').replace(/\p{M}/gu,'').toLocaleLowerCase())&&foldedRaw.includes(ai.last_name.normalize('NFD').replace(/\p{M}/gu,'').toLocaleLowerCase())){
     try{draft.first_name=name(ai.first_name);draft.last_name=name(ai.last_name);}catch{}
   }
 }

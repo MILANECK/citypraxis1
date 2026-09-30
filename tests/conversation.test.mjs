@@ -261,6 +261,32 @@ test('contact details can arrive together, missing fields are requested separate
     assert.equal(withReason.ready,true);
   }finally{process.env=old;}
 });
+
+test('contacts supplied before the concern still lead directly to the final review',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const service=createConversationService({fetcher:async(_,options)=>{
+    const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
+    const value=answer({kind:raw.includes('schulter schmerz')?'medical':'appointment',booking_intent:'request',reason:raw.includes('schulter schmerz')?'Schulterschmerzen':null,first_name:raw.includes('Anna Novak')?'Anna':null,last_name:raw.includes('Anna Novak')?'Novak':null,answer:raw.includes('schulter schmerz')?'Eine Physiotherapeutin oder ein Physiotherapeut aus unserem Team kann Ihre Beschwerden persönlich beurteilen.':'Gerne bereite ich Ihre Terminanfrage vor.'});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const turn=async(token,message)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'de',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    for(const contacts of ['Name: Anna Novak\nE-Mail: anna@example.test\nTelefon: +43 699 12682157\nIch möchte einen Termin.','Anna Novak, anna@example.test, +43 699 12682157. Ich möchte einen Termin.']){
+      const token=newSession();
+      const first=await turn(token,contacts);
+      assert.equal(first.ready,false);
+      assert.match(first.message,/Wobei dürfen wir Ihnen/);
+      const review=await turn(token,'schulter schmerz');
+      assert.equal(review.ready,true);
+      assert.ok(review.summary.some(([,value])=>value==='Anna Novak'));
+      assert.ok(review.summary.some(([,value])=>value==='Schulterschmerzen'));
+    }
+    const allInOne=await turn(newSession(),'Anna Novak, anna@example.test, +43 699 12682157. Ich möchte einen Termin wegen schulter schmerz.');
+    assert.equal(allInOne.ready,true);
+    assert.ok(allInOne.summary.some(([,value])=>value==='Anna Novak'));
+    assert.ok(allInOne.summary.some(([,value])=>value==='Schulterschmerzen'));
+  }finally{process.env=old;}
+});
 test('contact intake advances only after a detail is saved and never thanks for a missing field',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   let calls=0;
