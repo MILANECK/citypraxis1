@@ -24,7 +24,7 @@ const $=selector=>root.querySelector(selector),content=$('.chat-content'),status
 function updateLauncher(){
   const active=state.started&&!state.sent&&!state.cancelled&&state.expires>Date.now();
   root.classList.toggle('has-session',active&&!parked);
-  root.classList.toggle('resumed-session',active&&!parked&&resumedSession);
+  root.classList.toggle('resumed-session',active&&!parked&&resumedSession&&!opened);
   $('.chat-launch').setAttribute('aria-label',opened?t('Chat schließen','Close chat'):active?t('Aktiven Chat fortsetzen','Continue active chat'):t('Chat mit uns öffnen','Open chat with us'));
   $('.chat-launch span').textContent=active?t('Chat fortsetzen','Continue chat'):t('Chat mit uns','Chat with us');
 }

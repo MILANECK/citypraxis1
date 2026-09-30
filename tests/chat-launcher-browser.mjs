@@ -34,6 +34,9 @@ try{
   assert.equal(await page.locator('.chat-launch span').textContent(),'Continue chat');
   assert.ok(await launcher.evaluate(el=>el.getBoundingClientRect().width)>170);
   await launcher.click();
+  assert.equal(await page.locator('#cp-chat').evaluate(el=>el.classList.contains('resumed-session')),false);
+  assert.match(await launcher.evaluate(el=>getComputedStyle(el).backgroundImage),/linear-gradient/);
+  assert.equal(await launcher.evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)');
   assert.ok(await page.locator('.conversation-thread').textContent());
 
   await page.locator('.chat-close').click();
