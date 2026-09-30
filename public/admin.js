@@ -56,6 +56,16 @@ function formatDate(value){
   const date=new Date(/[zZ]$|[+-]\d{2}:?\d{2}$/.test(iso)?iso:iso+'Z');
   return Number.isNaN(date.getTime())?'—':new Intl.DateTimeFormat(I18n.language==='en'?'en-GB':'de-AT',{dateStyle:'medium',timeStyle:'short'}).format(date);
 }
+function requestTime(value){
+  const source=String(value||'').trim().replace(' ','T');
+  const timestamp=Date.parse(/[zZ]$|[+-]\d{2}:?\d{2}$/.test(source)?source:source+'Z');
+  return Number.isFinite(timestamp)?timestamp:0;
+}
+function sortRequests(rows,order,language){
+  const collator=new Intl.Collator(language==='en'?'en':'de',{sensitivity:'base',numeric:true});
+  const byDate=(a,b)=>requestTime(b.created_at)-requestTime(a.created_at)||Number(b.id)-Number(a.id);
+  return [...rows].sort((a,b)=>order==='date-asc'?-byDate(a,b):order==='name-asc'||order==='name-desc'?(order==='name-asc'?1:-1)*collator.compare(String(a.name||'').trim(),String(b.name||'').trim())||byDate(a,b):byDate(a,b));
+}
 function capacityRow(label,used,limit){
   const percent=Math.max(0,Math.min(100,used/limit*100));
   const state=percent>=90?'red':percent>=70?'orange':'green';
@@ -117,7 +127,7 @@ function animateRequestDisclosure(details){
 function mediaCard(media,status){
   const preview=media.path.endsWith('.mp4')?`<video controls muted playsinline preload="metadata" src="${esc(media.path)}" aria-label="${esc(media.alt)}"></video>`:`<img src="${esc(media.path)}" alt="${esc(media.alt)}" loading="lazy">`;
   const label={live:'Auf Website',draft:'Im Entwurf',unused:'Nicht verwendet'}[status];
-  return `<article class="admin-panel media-card media-card--${status}"><div class="media-thumb">${preview}</div><div class="media-card-meta"><span class="media-use-badge">${label}</span><span class="media-size" data-media-size="${esc(media.id)}" aria-label="Dateigröße wird geladen">…</span></div><h3 title="${esc(media.name)}">${esc(media.name)}</h3><p>${esc(media.alt)}</p><div class="media-card-actions"><a class="button button-outline" href="/api/admin/media/${encodeURIComponent(media.id)}/download" download>Herunterladen</a><button type="button" class="delete-entry" data-delete-media="${esc(media.id)}">Löschen</button></div></article>`;
+  return `<article class="admin-panel media-card media-card--${status}"><div class="media-thumb">${preview}</div><div class="media-card-meta"><span class="media-use-badge">${label}</span><span class="media-size" data-media-size="${esc(media.id)}" aria-label="Dateigröße wird geladen">…</span></div><h3 title="${esc(media.name)}">${esc(media.name)}</h3><div class="media-card-actions"><a class="button button-outline" href="/api/admin/media/${encodeURIComponent(media.id)}/download" download>Herunterladen</a><button type="button" class="delete-entry" data-delete-media="${esc(media.id)}">Löschen</button></div></article>`;
 }
 function formatMediaSize(bytes){
   const amount=(value,unit)=>`${new Intl.NumberFormat(I18n.language==='en'?'en-GB':'de-AT',{maximumFractionDigits:1}).format(value)} ${unit}`;
@@ -226,28 +236,29 @@ async function render(){
     wireSocialEditor(w.querySelector('[data-social-editor]'));
     $('#social-form').onsubmit=async event=>{event.preventDefault();const form=event.currentTarget,button=$('button[type=submit]',form);button.disabled=true;try{const socialLinks=JSON.parse(form.elements.socialLinks.value||'[]');await api('admin/social-links','PUT',{socialLinks});await refresh();await render();toast('Social-Media-Links veröffentlicht.');}catch(error){$('.editor-message',form).textContent=error.message;button.disabled=false;}};
   } else if(view==='requests') {
-    w.innerHTML=`<div class="toolbar"><p>Gespeicherte Anfragen sind noch keine bestätigten Termine.</p><label class="filter-label">Status<select id="request-filter"><option value="all">Alle Anfragen</option><option value="new">Neu</option><option value="contacted">Kontaktiert</option><option value="confirmed">Bestätigt</option><option value="closed">Abgeschlossen</option></select></label></div><div id="request-list"></div>`;
+    const en=I18n.language==='en';
+    w.innerHTML=`<div class="toolbar request-toolbar"><p>Gespeicherte Anfragen sind noch keine bestätigten Termine.</p><div class="request-toolbar-controls"><label class="filter-label">Status<select id="request-filter"><option value="all">Alle Anfragen</option><option value="new">Neu</option><option value="contacted">Kontaktiert</option><option value="confirmed">Bestätigt</option><option value="closed">Abgeschlossen</option></select></label><label class="filter-label">${en?'Sort by':'Sortieren nach'}<select id="request-sort"><option value="date-desc">${en?'Newest first':'Neueste zuerst'}</option><option value="date-asc">${en?'Oldest first':'Älteste zuerst'}</option><option value="name-asc">${en?'Name A–Z':'Name A–Z'}</option><option value="name-desc">${en?'Name Z–A':'Name Z–A'}</option></select></label></div></div><div id="request-list"></div>`;
     let sourceFilter='all',visibleRequests=requests;
     const sources=document.createElement('div');sources.className='request-source-filters';sources.setAttribute('role','group');sources.setAttribute('aria-label',I18n.language==='en'?'Filter by request source':'Nach Herkunft filtern');$('#request-list',w).before(sources);
-    const exportButton=document.createElement('button');exportButton.className='button button-outline';exportButton.type='button';exportButton.textContent=I18n.language==='en'?'Download CSV':'CSV herunterladen';exportButton.onclick=()=>exportRequestsCsv(visibleRequests);$('.toolbar',w).append(exportButton);
+    const exportButton=document.createElement('button');exportButton.className='button button-outline';exportButton.type='button';exportButton.textContent=I18n.language==='en'?'Download CSV':'CSV herunterladen';exportButton.onclick=()=>exportRequestsCsv(visibleRequests);$('.request-toolbar-controls',w).append(exportButton);
     const count=document.createElement('p');count.className='request-count';count.textContent=I18n.language==='en'?`${requests.length} saved requests. Mark handled requests as Closed to archive them in this list.`:`${requests.length} gespeicherte Anfragen. Bearbeitete Anfragen können Sie hier als „Abgeschlossen“ archivieren.`;$('.toolbar',w).after(count);
     const draw=()=>{const filter=$('#request-filter').value;const list=$('#request-list');const openIds=new Set([...list.querySelectorAll('.request-disclosure[open]')].map(item=>item.dataset.requestId));const matchingStatus=requests.filter(row=>filter==='all'||row.status===filter);
       const en=I18n.language==='en';
       sources.innerHTML=[['all',en?'All':'Alle'],['chatbot','Chat'],['first_appointment',en?'Booking form':'Buchungsformular'],['therapist_profile',en?'Therapist profiles':'Therapeutenprofile']].map(([key,label])=>`<button type="button" data-source-filter="${key}" aria-pressed="${sourceFilter===key}"><span>${label}</span><b>${matchingStatus.filter(row=>key==='all'||requestSource(chatIntake(row))===key).length}</b></button>`).join('');
       sources.querySelectorAll('[data-source-filter]').forEach(button=>button.onclick=()=>{sourceFilter=button.dataset.sourceFilter;draw();sources.querySelector(`[data-source-filter="${sourceFilter}"]`).focus();});
-      const filtered=matchingStatus.filter(row=>sourceFilter==='all'||requestSource(chatIntake(row))===sourceFilter);visibleRequests=filtered;
+      const filtered=sortRequests(matchingStatus.filter(row=>sourceFilter==='all'||requestSource(chatIntake(row))===sourceFilter),$('#request-sort').value,I18n.language);visibleRequests=filtered;
       count.textContent=en?`${filtered.length} of ${requests.length} saved requests · Source counts follow the selected status.`:`${filtered.length} von ${requests.length} gespeicherten Anfragen · Herkunftszähler berücksichtigen den gewählten Status.`;
       list.innerHTML=filtered.map(requestCard).join('')||'<div class="admin-panel empty">Keine Anfragen in dieser Ansicht.</div>';
       list.querySelectorAll('.request-disclosure').forEach(item=>{item.open=openIds.has(item.dataset.requestId);animateRequestDisclosure(item);});
       document.querySelectorAll('[data-retry-notification]').forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api('admin/requests/notify','POST',{id:Number(b.dataset.retryNotification)});await refresh();draw();}catch(e){toast(e.message);b.disabled=false;}});
       document.querySelectorAll('[data-request]').forEach(f=>f.onsubmit=async e=>{e.preventDefault();try{await api('admin/requests','PUT',{id:Number(f.dataset.request),...Object.fromEntries(new FormData(f))});await refresh();draw();toast('Anfrage aktualisiert.');}catch(e){toast(e.message);}});
       document.querySelectorAll('[data-delete-request]').forEach(b=>b.onclick=async()=>{if(!confirm(I18n.translate('Diese Anfrage mit ihren Kontaktdaten endgültig löschen?')))return;try{await api('admin/requests','DELETE',{id:Number(b.dataset.deleteRequest)});await refresh();draw();toast('Anfrage gelöscht.');}catch(e){toast(e.message);}});
-    };$('#request-filter').onchange=draw;draw();
+    };$('#request-filter').onchange=draw;$('#request-sort').onchange=draw;draw();
   } else if(view==='media') {
     const [media,publishedContent]=await Promise.all([api('admin/media'),api('content')]);
-    w.innerHTML=`<div class="admin-panel"><h2>Foto oder Video hochladen</h2><p>Bilder: PNG, JPEG, WebP bis 10 MB. Videos: MP4 (H.264) bis 60 MB. Hintergrundvideos werden stumm abgespielt.</p><form id="upload-form" class="upload-form"><label>Datei<input type="file" name="file" accept="image/png,image/jpeg,image/webp,video/mp4" required></label><label>Beschreibung<input name="alt" required maxlength="300"></label><button class="button">Hochladen ↗</button></form><p role="status" id="upload-status"></p></div><div class="media-grid">${media.map(item=>mediaCard(item,mediaUsageStatus(item.path,publishedContent,content))).join('')}</div>`;
+    w.innerHTML=`<div class="admin-panel"><h2>Foto oder Video hochladen</h2><p>Bilder: PNG, JPEG, WebP bis 10 MB. Videos: MP4 (H.264) bis 60 MB. Hintergrundvideos werden stumm abgespielt.</p><form id="upload-form" class="upload-form"><label>Datei<input type="file" name="file" accept="image/png,image/jpeg,image/webp,video/mp4" required></label><button class="button">Hochladen ↗</button></form><p role="status" id="upload-status"></p></div><div class="media-grid">${media.map(item=>mediaCard(item,mediaUsageStatus(item.path,publishedContent,content))).join('')}</div>`;
     void loadMediaSizes(media,w.querySelector('.media-grid'));
-    $('#upload-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,button=$('button',form),file=$('input[type=file]',form).files[0];button.disabled=true;try{const result=await uploadWithPoster(file,form.elements.alt.value,p=>$('#upload-status').textContent=`Upload: ${p} %`,message=>$('#upload-status').textContent=message);await render();toast(result.posterError?'Video hochgeladen. Standbild bitte separat auswählen.':result.poster?'Video und Standbild hochgeladen.':'Datei hochgeladen.');}catch(error){$('#upload-status').textContent=error.message;button.disabled=false;}};
+    $('#upload-form').onsubmit=async e=>{e.preventDefault();const form=e.currentTarget,button=$('button',form),file=$('input[type=file]',form).files[0];button.disabled=true;try{const result=await uploadWithPoster(file,file.name,p=>$('#upload-status').textContent=`Upload: ${p} %`,message=>$('#upload-status').textContent=message);await render();toast(result.posterError?'Video hochgeladen. Standbild bitte separat auswählen.':result.poster?'Video und Standbild hochgeladen.':'Datei hochgeladen.');}catch(error){$('#upload-status').textContent=error.message;button.disabled=false;}};
     w.querySelectorAll('[data-delete-media]').forEach(button=>button.onclick=async()=>{
       const item=media.find(row=>row.id===button.dataset.deleteMedia);
       if(!item||!confirm(`„${item.name}“ wirklich aus der Mediathek löschen? Verwendete Medien können nicht gelöscht werden.`))return;

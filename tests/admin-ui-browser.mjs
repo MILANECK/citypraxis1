@@ -62,8 +62,8 @@ try{
   await page.locator('[data-view=media]').click();
   await page.locator('.media-card').first().waitFor();
   const before=await page.locator('.media-card').count();
+  assert.equal(await page.locator('#upload-form [name=alt]').count(),0);
   await page.locator('#upload-form input[type=file]').setInputFiles('public/assets/wordmark-white.png');
-  await page.locator('#upload-form [name=alt]').fill('Browser test image');
   await page.locator('#upload-form button').click();
   await page.waitForFunction(count=>document.querySelectorAll('.media-card').length===count+1,before);
   assert.equal(await page.locator('.media-card').count(),before+1);
