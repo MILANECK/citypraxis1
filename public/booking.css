@@ -33,7 +33,7 @@
 #booking-form .concern-chip input:checked+span{background:var(--blue);color:#fff;box-shadow:none}
 #booking-form .custom-symptoms{margin-top:12px}
 #booking-form .check-label{display:flex;align-items:flex-start;gap:10px;font-size:11px;font-weight:400;line-height:1.65;margin:14px 0}
-#booking-form .check-label input{flex:0 0 16px;width:16px;height:16px;min-height:0;margin:2px 0 0;accent-color:var(--pink)}
+#booking-form .check-label input{flex:0 0 16px;width:16px;height:16px;min-height:0;margin:2px 0 0;accent-color:var(--blue)}
 .booking-optional{margin:16px 0 18px;background:#f5f7f8;border-radius:11px}
 .booking-optional>summary{display:flex;justify-content:space-between;gap:12px;align-items:center;cursor:pointer;padding:13px 14px;list-style:none;font-size:12px;font-weight:500}
 .booking-optional>summary::-webkit-details-marker{display:none}
@@ -87,26 +87,25 @@
 #booking-form.compact-booking .therapist-choice-control select:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 #booking-form .booking-choice>span,#booking-form .concern-chip>span{border-radius:14px;background:#eef4f6}
 #booking-form .booking-choice input:checked+span,#booking-form .concern-chip input:checked+span{background:var(--blue);color:#fff}
-#booking-form .booking-choice>span,#booking-form .concern-chip>span{position:relative;isolation:isolate;overflow:hidden;transition:color .38s ease,box-shadow .38s ease}
-#booking-form .booking-choice>span::before,#booking-form .concern-chip>span::before{content:"";position:absolute;z-index:-1;inset:0;border-radius:inherit;background:linear-gradient(115deg,#f9eef6 0%,#efd6e9 55%,#f4e2f0 100%);opacity:0;transition:opacity .38s ease}
-#booking-form .concern-chip>span::before{background:linear-gradient(115deg,#e9f5f9 0%,#d8eef5 55%,#e7f4f9 100%)}
+#booking-form .booking-choice>span,#booking-form .concern-chip>span{transition:background-color .25s ease,color .25s ease,box-shadow .25s ease}
 #booking-form .concern-chip input:focus-visible+span{outline-color:var(--blue)}
 @media(hover:hover) and (pointer:fine){
-  #booking-form .booking-choice:hover input:not(:checked)+span,#booking-form .concern-chip:hover input:not(:checked)+span{color:var(--ink);transform:none}
-  #booking-form .booking-choice:hover input:not(:checked)+span::before,#booking-form .concern-chip:hover input:not(:checked)+span::before{opacity:1}
+  #booking-form .booking-choice:hover input:not(:checked)+span,#booking-form .concern-chip:hover input:not(:checked)+span{background:#dceef5;color:var(--blue);transform:none}
   #booking-form .concern-chip:hover input:checked+span{transform:none}
 }
 #booking-form .booking-optional{background:transparent;border-top:1px solid #dbe4e6;border-bottom:1px solid #dbe4e6;border-radius:0;margin-block:22px}
 #booking-form .booking-optional>summary{padding:14px 0}
 #booking-form .booking-optional-content{padding:0 0 18px}
 #booking-form .booking-optional-actions button,#booking-form .booking-review-actions button,#booking-form .booking-review-choices button,#booking-form .booking-review-toggle,#booking-form button[type=submit]{border-radius:14px}
-#booking-form.compact-booking>button.button[type=submit],.interior-page a.button.appointment-cta{background:linear-gradient(105deg,#741263 0%,var(--pink) 34%,#951b81 52%,var(--blue) 100%);background-size:190% 100%;background-position:100% 50%;transition:background-position .8s cubic-bezier(.22,1,.36,1),transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s ease}
+#booking-form.compact-booking>button.button[type=submit]{background:var(--blue);background-image:none;transition:background-color .3s ease,transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s ease}
+.interior-page a.button.appointment-cta{background:linear-gradient(105deg,#741263 0%,var(--pink) 34%,#951b81 52%,var(--blue) 100%);background-size:190% 100%;background-position:100% 50%;transition:background-position .8s cubic-bezier(.22,1,.36,1),transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s ease}
 #booking-form.compact-booking>button.button[type=submit]::before,.interior-page a.button.appointment-cta::before{display:none}
 #booking-form.compact-booking>button.button[type=submit] .arrow-symbol,.interior-page a.button.appointment-cta .arrow-symbol{transition:transform .45s cubic-bezier(.22,1,.36,1)}
-@media(hover:hover) and (pointer:fine){#booking-form.compact-booking>button.button[type=submit]:hover,.interior-page a.button.appointment-cta:hover{background:linear-gradient(105deg,#741263 0%,var(--pink) 34%,#951b81 52%,var(--blue) 100%);background-size:190% 100%;background-position:0 50%;transform:translateY(-2px);box-shadow:0 10px 24px #951b8130}#booking-form.compact-booking>button.button[type=submit]:hover .arrow-symbol,.interior-page a.button.appointment-cta:hover .arrow-symbol{transform:translate(3px,-3px)}}
+@media(hover:hover) and (pointer:fine){#booking-form.compact-booking>button.button[type=submit]:hover{background:#006f91;box-shadow:0 10px 24px #0085ac30;transform:translateY(-2px)}.interior-page a.button.appointment-cta:hover{background-position:0 50%;transform:translateY(-2px);box-shadow:0 10px 24px #951b8130}#booking-form.compact-booking>button.button[type=submit]:hover .arrow-symbol,.interior-page a.button.appointment-cta:hover .arrow-symbol{transform:translate(3px,-3px)}}
 #booking-form.compact-booking>button.button[type=submit]:focus-visible,.interior-page a.button.appointment-cta:focus-visible{background-position:0 50%}
-@media(prefers-reduced-motion:reduce){#booking-form.compact-booking>button.button[type=submit],#booking-form.compact-booking>button.button[type=submit] .arrow-symbol,.interior-page a.button.appointment-cta,.interior-page a.button.appointment-cta .arrow-symbol,#booking-form .booking-choice>span,#booking-form .concern-chip>span,#booking-form .booking-choice>span::before,#booking-form .concern-chip>span::before{transition:none}#booking-form.compact-booking>button.button[type=submit]:hover,.interior-page a.button.appointment-cta:hover{transform:none}}
+@media(prefers-reduced-motion:reduce){#booking-form.compact-booking>button.button[type=submit],#booking-form.compact-booking>button.button[type=submit] .arrow-symbol,.interior-page a.button.appointment-cta,.interior-page a.button.appointment-cta .arrow-symbol,#booking-form .booking-choice>span,#booking-form .concern-chip>span{transition:none}#booking-form.compact-booking>button.button[type=submit]:hover,.interior-page a.button.appointment-cta:hover{transform:none}}
 #booking-form .booking-review{background:#f1f6f8;border-radius:14px}
+#booking-form .booking-review-choices button:hover,#booking-form .booking-review-actions button:hover{background:var(--blue);color:#fff}
 @media(max-width:767px){
   #booking-form.compact-booking{padding:24px 22px}
 }
