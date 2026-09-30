@@ -340,15 +340,24 @@ function bindTherapyNavigation(){
         if(!rect.width)continue;
         const glyph=document.createElement('span');glyph.className='therapy-wave-glyph';glyph.textContent=letter;
         glyph.style.left=`${rect.left-box.left}px`;glyph.style.top=`${rect.top-box.top}px`;
-        overlay.append(glyph);glyphs.push(glyph);
+        overlay.append(glyph);glyphs.push({glyph,rect});
       }
     }
     if(!glyphs.length)return;
     heading.style.setProperty('--therapy-wave-ink',ink);
     heading.append(overlay);
     heading.classList.add('therapy-heading-wave');
+    const renderedRects=glyphs.map(({glyph})=>{
+      const rendered=document.createRange();rendered.selectNodeContents(glyph);
+      return rendered.getBoundingClientRect();
+    });
+    glyphs.forEach(({glyph,rect},index)=>{
+      const actual=renderedRects[index];
+      glyph.style.left=`${Number.parseFloat(glyph.style.left)+rect.left-actual.left}px`;
+      glyph.style.top=`${Number.parseFloat(glyph.style.top)+rect.top-actual.top}px`;
+    });
     const stagger=Math.min(23,Math.max(8,560/glyphs.length));
-    const animations=glyphs.map((glyph,index)=>glyph.animate([
+    const animations=glyphs.map(({glyph},index)=>glyph.animate([
       {transform:'translate3d(0,0,0)',color:ink,offset:0},
       {transform:'translate3d(0,-9px,0)',color:'#951b81',offset:.45},
       {transform:'translate3d(0,0,0)',color:ink,offset:1}

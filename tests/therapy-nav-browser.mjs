@@ -4,6 +4,16 @@ import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url);
 const {chromium}=require('C:/Users/kovac/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const browser=await chromium.launch({channel:process.env.QA_BROWSER_CHANNEL||'chrome',headless:true});
+const alignment=heading=>heading.evaluate(node=>{
+  const text=node.firstChild,indices=[...text.textContent].map((letter,index)=>/\s/u.test(letter)?null:index).filter(index=>index!==null);
+  return [...node.querySelectorAll('.therapy-wave-glyph')].reduce((worst,glyph,index)=>{
+    const original=document.createRange(),copy=document.createRange();
+    original.setStart(text,indices[index]);original.setEnd(text,indices[index]+1);
+    copy.selectNodeContents(glyph);
+    const before=original.getBoundingClientRect(),animated=copy.getBoundingClientRect(),motion=new DOMMatrixReadOnly(getComputedStyle(glyph).transform);
+    return Math.max(worst,Math.abs(animated.x-motion.m41-before.x),Math.abs(animated.y-motion.m42-before.y));
+  },0);
+});
 try{
   const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
   await page.goto((process.env.QA_ORIGIN||'http://127.0.0.1:3001')+'/leistungen/heilmassage?lang=en');
@@ -21,6 +31,7 @@ try{
   const wavePosition=await page.locator(target).locator('h2').evaluate(heading=>heading.getBoundingClientRect().top);
   assert.ok(wavePosition>150,'The letter wave should start while the section is still arriving');
   assert.ok(await page.locator('.therapy-wave-glyph').count()>10,'The heading should animate individual letters');
+  assert.ok(await alignment(page.locator(target).locator('h2'))<.6,'The H2 wave letters should share the original text baseline');
   assert.equal(await page.locator(target).locator('h2').evaluate(heading=>getComputedStyle(heading).filter),'none','The selected heading should not remain blurred during the wave');
   await page.waitForTimeout(180);
   await page.screenshot({path:'test-results/therapy-wave-mid.png'});
@@ -65,6 +76,11 @@ try{
   await page.setViewportSize({width:1440,height:900});
   await page.waitForTimeout(1000);
   assert.equal(await page.locator('.therapy-quick-nav').evaluate(node=>getComputedStyle(node).position),'sticky');
+  await page.locator('.therapy-nav-group').first().locator('summary').click();
+  const overview=page.locator('.therapy-nav-group').first().locator('a[href="#therapy-overview"]');
+  await overview.click();
+  await page.waitForFunction(()=>document.querySelector('#therapy-overview h1 .therapy-wave-glyph'));
+  assert.ok(await alignment(page.locator('#therapy-overview h1'))<.6,'The H1 wave letters should not jump when the original heading returns');
 
   const reduced=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
   await reduced.goto((process.env.QA_ORIGIN||'http://127.0.0.1:3001')+'/leistungen/heilmassage?lang=en');
