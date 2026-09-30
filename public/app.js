@@ -290,23 +290,39 @@ function bindTherapyNavigation(){
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   let stopWave=null,stopScroll=null;
   const aside=groups[0].closest('.therapy-quick-nav');
-  if(matchMedia('(min-width: 901px)').matches&&!reducedMotion.matches){
-    let lastScroll=window.scrollY,lag=0,frame=0;
-    const settle=()=>{
-      lag*=.86;
-      if(Math.abs(lag)<.2){lag=0;frame=0;}else frame=requestAnimationFrame(settle);
-      aside.style.transform=lag?`translate3d(0,${lag.toFixed(2)}px,0)`:'';
-    };
-    const follow=()=>{
-      const delta=window.scrollY-lastScroll;
-      lastScroll=window.scrollY;
-      if(!delta)return;
-      lag=Math.max(-24,Math.min(36,lag+delta*.25));
-      if(!frame)frame=requestAnimationFrame(settle);
-    };
-    window.addEventListener('scroll',follow,{passive:true});
-    therapyNavCleanup=()=>{window.removeEventListener('scroll',follow);cancelAnimationFrame(frame);aside.style.transform='';stopScroll?.();};
-  }else therapyNavCleanup=()=>stopScroll?.();
+  const desktop=matchMedia('(min-width: 901px)');
+  let shift=0,visualTop=0,frame=0,lastTime=0;
+  const settle=now=>{
+    frame=0;
+    if(!desktop.matches||reducedMotion.matches)return;
+    const baseTop=aside.getBoundingClientRect().top-shift;
+    const elapsed=Math.min(64,now-lastTime||16);
+    lastTime=now;
+    visualTop+=(baseTop-visualTop)*(1-Math.exp(-elapsed/240));
+    shift=visualTop-baseTop;
+    if(Math.abs(shift)<.35){shift=0;visualTop=baseTop;aside.style.transform='';}
+    else{aside.style.transform=`translate3d(0,${shift.toFixed(2)}px,0)`;frame=requestAnimationFrame(settle);}
+  };
+  const follow=()=>{if(desktop.matches&&!reducedMotion.matches&&!frame){lastTime=performance.now();frame=requestAnimationFrame(settle);}};
+  const place=()=>{
+    if(!desktop.matches){
+      cancelAnimationFrame(frame);frame=0;shift=0;
+      aside.style.top='';aside.style.transform='';
+      visualTop=aside.getBoundingClientRect().top;
+      return;
+    }
+    aside.style.top=`${Math.max(120,Math.round((innerHeight-aside.offsetHeight)/2))}px`;
+    if(reducedMotion.matches){aside.style.transform='';shift=0;visualTop=aside.getBoundingClientRect().top;}
+    else follow();
+  };
+  place();
+  visualTop=aside.getBoundingClientRect().top;
+  const observer=new ResizeObserver(place);
+  observer.observe(aside);
+  desktop.addEventListener('change',place);
+  window.addEventListener('resize',place,{passive:true});
+  window.addEventListener('scroll',follow,{passive:true});
+  therapyNavCleanup=()=>{observer.disconnect();desktop.removeEventListener('change',place);window.removeEventListener('resize',place);window.removeEventListener('scroll',follow);cancelAnimationFrame(frame);aside.style.top='';aside.style.transform='';stopScroll?.();};
   const waveHeading=heading=>{
     stopWave?.();
     if(reducedMotion.matches)return;

@@ -7,6 +7,7 @@ const browser=await chromium.launch({channel:process.env.QA_BROWSER_CHANNEL||'ch
 try{
   const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
   await page.goto((process.env.QA_ORIGIN||'http://127.0.0.1:3001')+'/leistungen/heilmassage?lang=en');
+  await page.locator('.cookie-acknowledge').click();
   await page.waitForTimeout(1800);
   const link=page.locator('.therapy-nav-group').first().locator('a[href^="#"]').nth(3);
   const target=await link.getAttribute('href');
@@ -32,13 +33,38 @@ try{
   assert.ok(Math.abs(finalTextWidth-originalTextWidth)<.5,'The heading should keep its exact text width after the wave');
   assert.equal(new URL(page.url()).hash,target);
 
-  await page.evaluate(()=>window.scrollBy(0,-200));
+  await page.evaluate(()=>window.scrollBy({top:-200,behavior:'instant'}));
   await page.waitForTimeout(40);
-  const lag=await page.locator('.therapy-quick-nav').evaluate(node=>new DOMMatrixReadOnly(getComputedStyle(node).transform).m42);
-  assert.ok(lag<0,'The sidebar should follow the page scroll with a small delay');
   await page.waitForTimeout(850);
-  const settled=await page.locator('.therapy-quick-nav').evaluate(node=>new DOMMatrixReadOnly(getComputedStyle(node).transform).m42);
-  assert.ok(Math.abs(settled)<1,'The sidebar should settle back into its sticky position');
+  const sticky=await page.locator('.therapy-quick-nav').evaluate(node=>({top:node.getBoundingClientRect().top,target:Number.parseFloat(getComputedStyle(node).top),height:node.offsetHeight}));
+  assert.ok(Math.abs(sticky.top-sticky.target)<2,'The sidebar should remain steady once magnetized');
+  assert.ok(Math.abs(sticky.target-Math.max(120,(900-sticky.height)/2))<2,'The sidebar should rest near the viewport center');
+  await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+  await page.waitForTimeout(1000);
+  const naturalTop=await page.locator('.therapy-quick-nav').evaluate(node=>node.getBoundingClientRect().top);
+  await page.evaluate(()=>scrollTo({top:550,behavior:'instant'}));
+  await page.waitForTimeout(40);
+  const glideTop=await page.locator('.therapy-quick-nav').evaluate(node=>node.getBoundingClientRect().top);
+  await page.waitForTimeout(1500);
+  const magnetTop=await page.locator('.therapy-quick-nav').evaluate(node=>node.getBoundingClientRect().top);
+  assert.ok(naturalTop>glideTop&&glideTop>magnetTop+100,'The sidebar should glide into place instead of jumping to the sticky position');
+  const magnetShift=await page.locator('.therapy-quick-nav').evaluate(node=>new DOMMatrixReadOnly(getComputedStyle(node).transform).m42);
+  assert.ok(Math.abs(magnetShift)<2,'The sidebar should settle without a lasting offset');
+
+  await page.evaluate(()=>scrollTo({top:1700,behavior:'instant'}));
+  await page.waitForTimeout(1300);
+  await page.locator('.therapy-nav-group').first().locator('summary').click();
+  await page.waitForTimeout(1200);
+  const compact=await page.locator('.therapy-quick-nav').evaluate(node=>({top:node.getBoundingClientRect().top,target:Number.parseFloat(getComputedStyle(node).top),height:node.offsetHeight}));
+  assert.ok(compact.target>sticky.target,'A shorter menu should move closer to the viewport center');
+  assert.ok(Math.abs(compact.top-compact.target)<5,'The resized menu should ease into its new position');
+  await page.screenshot({path:'test-results/therapy-nav-magnet.png'});
+  await page.setViewportSize({width:800,height:900});
+  assert.equal(await page.locator('.therapy-quick-nav').evaluate(node=>getComputedStyle(node).position),'static');
+  assert.equal(await page.locator('.therapy-quick-nav').evaluate(node=>getComputedStyle(node).transform),'none');
+  await page.setViewportSize({width:1440,height:900});
+  await page.waitForTimeout(1000);
+  assert.equal(await page.locator('.therapy-quick-nav').evaluate(node=>getComputedStyle(node).position),'sticky');
 
   const reduced=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
   await reduced.goto((process.env.QA_ORIGIN||'http://127.0.0.1:3001')+'/leistungen/heilmassage?lang=en');
