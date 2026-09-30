@@ -1,6 +1,6 @@
 import {editorialPage,editorialPages} from './page-copy.js?v=landing-2';
 import {enhanceLanding} from './landing.js?v=team-hover-toggle-1';
-let landingCleanup,meshShaderCleanup;
+let landingCleanup,meshShaderCleanup,therapyNavCleanup;
 const $ = (selector, root = document) => root.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const externalUrl=value=>{try{const url=new URL(value);return ['https:','http:'].includes(url.protocol)?url.href:'';}catch{return '';}};
@@ -280,10 +280,29 @@ function chatPrivacyInfo(){
   return `<section id="digitaler-empfang" class="article-body" data-no-translate><h2>${en?'Digital reception':'Digitaler Empfang'}</h2><p>${en?'The digital assistant prepares administrative requests for the Citypraxis team. Starting a request is voluntary. With your consent, we process your contact details, your request, availability preferences and any health information you choose to share. Please provide only a short description, without medical reports.':'Der digitale Assistent bereitet organisatorische Anfragen für das Citypraxis-Team vor. Die Nutzung ist freiwillig. Mit Ihrem Einverständnis verarbeiten wir Ihre Kontaktdaten, Ihr Anliegen, Terminwünsche und freiwillig mitgeteilte Gesundheitsangaben. Bitte geben Sie nur eine kurze Beschreibung ohne medizinische Befunde ein.'}</p><p>${en?'The draft is kept in this browser tab and temporarily in server memory for a 30-minute session. A server restart can end the session. It is cleared after submission, restart or session expiry; an expired draft is not restored. Only after you review and send your request are the summary and conversation stored in the existing practice request database (Supabase), accessible to authorized reception staff and owners. Requests can be deleted by the practice. Contact us to withdraw consent or ask about your data; withdrawal does not affect processing already carried out.':'Der Entwurf wird in diesem Browser-Tab und vorübergehend im Arbeitsspeicher des Servers für eine Sitzung von 30 Minuten gespeichert. Ein Serverneustart kann die Sitzung beenden. Nach Absenden, Neustart oder Sitzungsablauf wird er gelöscht; abgelaufene Entwürfe werden nicht wiederhergestellt. Erst nach Ihrer Prüfung und dem Absenden werden Zusammenfassung und Gesprächsverlauf in der bestehenden Praxis-Anfragedatenbank (Supabase) gespeichert. Berechtigte EmpfangsmitarbeiterInnen und InhaberInnen haben Zugriff; die Praxis kann Anfragen löschen. Für Widerruf oder Auskunft zu Ihren Daten kontaktieren Sie uns bitte. Ein Widerruf betrifft nicht die bereits erfolgte Verarbeitung.'}</p><p>${en?'The conversational assistant uses OpenAI to process messages, which may contain health information. Recognized email addresses and phone numbers are removed where possible before transmission; this does not guarantee anonymity. We request that API responses are not stored, but provider security retention may still apply. You can use the appointment form instead. The assistant provides no medical advice and cannot confirm appointments. Please review your summary before submitting.':'Der dialogbasierte Assistent nutzt OpenAI zur Verarbeitung von Nachrichten, die Gesundheitsangaben enthalten können. Erkannte E-Mail-Adressen und Telefonnummern werden vor der Übermittlung nach Möglichkeit entfernt; dies garantiert keine Anonymität. Wir fordern keine Speicherung der API-Antworten an; Sicherheitsaufbewahrung beim Anbieter kann dennoch erfolgen. Alternativ können Sie das Terminformular nutzen. Der Assistent gibt keine medizinische Beratung und bestätigt keine Termine. Bitte prüfen Sie die Zusammenfassung vor dem Absenden.'}</p><p>${en?'When you send a request through the appointment form or chat, its details are stored in Supabase. If email delivery is configured, your contact details, selected concerns, any voluntary health information and contact preferences are also forwarded to the practice’s reception email address through Resend. The email identifies whether you used the general appointment form, a therapist profile or the chatbot. The secretary contacts you by phone or email; submitting a request does not book an appointment. This chat is not continuously monitored and is not an emergency service.':'Wenn Sie eine Anfrage über das Terminformular oder den Chat absenden, werden Ihre Angaben in Supabase gespeichert. Bei eingerichtetem E-Mail-Versand werden außerdem Kontaktdaten, ausgewählte Beschwerden, freiwillige Gesundheitsangaben und Kontaktwünsche über Resend an die Empfangsadresse der Praxis weitergeleitet. Die E-Mail kennzeichnet den Zugang über Erstterminformular, Therapeutenprofil oder Chatbot. Das Sekretariat meldet sich telefonisch oder per E-Mail; eine Anfrage ist keine Terminbuchung. Dieser Chat wird nicht laufend überwacht und ist kein Notfalldienst.'}</p><p>${en?'When email delivery is enabled, we may also send a copy of your submitted request to the email address you provide through Resend. This copy includes the contact details and concerns in your request. Delivery depends on the configured sender; the on-screen submission confirmation remains valid even if the copy cannot be emailed.':'Bei eingerichtetem E-Mail-Versand können wir Ihnen über Resend auch eine Kopie Ihrer abgesendeten Anfrage an die angegebene E-Mail-Adresse senden. Diese Kopie enthält die Kontaktdaten und Anliegen Ihrer Anfrage. Der Versand hängt von der eingerichteten Absenderadresse ab; die Bestätigung auf der Website gilt auch dann, wenn die Kopie nicht per E-Mail zugestellt werden kann.'}</p></section>`;
 }
 function bindTherapyNavigation(){
+  therapyNavCleanup?.();therapyNavCleanup=null;
   const groups=[...document.querySelectorAll('.therapy-quick-nav .therapy-nav-group')];
   if(!groups.length)return;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
-  let headingObserver=null,stopWave=null;
+  let stopWave=null,stopScroll=null;
+  const aside=groups[0].closest('.therapy-quick-nav');
+  if(matchMedia('(min-width: 901px)').matches&&!reducedMotion.matches){
+    let lastScroll=window.scrollY,lag=0,frame=0;
+    const settle=()=>{
+      lag*=.86;
+      if(Math.abs(lag)<.2){lag=0;frame=0;}else frame=requestAnimationFrame(settle);
+      aside.style.transform=lag?`translate3d(0,${lag.toFixed(2)}px,0)`:'';
+    };
+    const follow=()=>{
+      const delta=window.scrollY-lastScroll;
+      lastScroll=window.scrollY;
+      if(!delta)return;
+      lag=Math.max(-24,Math.min(36,lag+delta*.25));
+      if(!frame)frame=requestAnimationFrame(settle);
+    };
+    window.addEventListener('scroll',follow,{passive:true});
+    therapyNavCleanup=()=>{window.removeEventListener('scroll',follow);cancelAnimationFrame(frame);aside.style.transform='';stopScroll?.();};
+  }else therapyNavCleanup=()=>stopScroll?.();
   const waveHeading=heading=>{
     stopWave?.();
     if(reducedMotion.matches)return;
@@ -299,18 +318,39 @@ function bindTherapyNavigation(){
     const target=document.getElementById(link.hash.slice(1));
     if(!target)return;
     event.preventDefault();
-    headingObserver?.disconnect();
+    stopScroll?.();
     const heading=target.querySelector('h1,h2,h3')||target;
     if(reducedMotion.matches){if(location.hash!==link.hash)history.pushState(null,'',link.hash);target.scrollIntoView({behavior:'instant',block:'start'});return;}
-    headingObserver=new IntersectionObserver(entries=>{
-      if(!entries[0].isIntersecting)return;
-      headingObserver.disconnect();headingObserver=null;
+    const finish=()=>{
       if(event.detail===0){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});heading.removeAttribute('tabindex');}
       waveHeading(heading);
-    },{rootMargin:'-120px 0px -30% 0px'});
-    headingObserver.observe(heading);
+    };
     if(location.hash!==link.hash)history.pushState(null,'',link.hash);
-    target.scrollIntoView({behavior:'smooth',block:'start'});
+    const start=window.scrollY;
+    const end=Math.max(0,Math.min(document.documentElement.scrollHeight-innerHeight,start+target.getBoundingClientRect().top-125));
+    const distance=end-start;
+    if(Math.abs(distance)<2){finish();return;}
+    const duration=Math.min(1900,Math.max(1150,1000+Math.abs(distance)*.23));
+    const started=performance.now();
+    let frame=0;
+    const interrupt=()=>{cancelAnimationFrame(frame);removeInterrupts();stopScroll=null;};
+    const removeInterrupts=()=>{
+      window.removeEventListener('wheel',interrupt);
+      window.removeEventListener('touchstart',interrupt);
+      window.removeEventListener('keydown',interrupt);
+    };
+    window.addEventListener('wheel',interrupt,{passive:true,once:true});
+    window.addEventListener('touchstart',interrupt,{passive:true,once:true});
+    window.addEventListener('keydown',interrupt,{once:true});
+    stopScroll=interrupt;
+    const step=now=>{
+      const progress=Math.min(1,(now-started)/duration);
+      const eased=progress<.5?4*progress**3:1-(-2*progress+2)**3/2;
+      window.scrollTo({top:start+distance*eased,behavior:'instant'});
+      if(progress<1)frame=requestAnimationFrame(step);
+      else{removeInterrupts();stopScroll=null;finish();}
+    };
+    frame=requestAnimationFrame(step);
   }));
   const desired=new WeakMap(groups.map(group=>[group,group.open]));
   const animations=new WeakMap();
