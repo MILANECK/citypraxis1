@@ -390,18 +390,24 @@ function bindTherapyNavigation(){
     desired.set(group,open);
     group.open=true;
     group.classList.toggle('is-closing',!open);
-    const finish=()=>{group.open=open;group.classList.remove('is-closing');content.style.removeProperty('overflow');};
+    const finish=()=>{
+      group.open=open;group.classList.remove('is-closing');
+      for(const property of ['height','opacity','padding-bottom','overflow'])content.style.removeProperty(property);
+    };
     if(reducedMotion.matches){finish();return;}
     const end=open?content.scrollHeight:0;
-    const endPadding=open?getComputedStyle(content).paddingBottom:'0px';
+    const endPadding=open?'18px':'0px';
     if(Math.abs(start-end)<1&&Math.abs(Number.parseFloat(startPadding)-Number.parseFloat(endPadding))<.5){finish();return;}
     content.style.overflow='hidden';
-    const animation=content.animate([{height:`${start}px`,opacity:startOpacity,paddingBottom:startPadding},{height:`${end}px`,opacity:open?1:0,paddingBottom:endPadding}],{duration:open?460:360,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'});
+    content.style.height=`${end}px`;
+    content.style.opacity=open?'1':'0';
+    content.style.paddingBottom=endPadding;
+    const animation=content.animate([{height:`${start}px`,opacity:startOpacity,paddingBottom:startPadding},{height:`${end}px`,opacity:open?1:0,paddingBottom:endPadding}],{duration:open?540:480,easing:'cubic-bezier(.42,0,.2,1)'});
     animations.set(group,animation);
-    animation.onfinish=()=>{
+    animation.finished.then(()=>{
       if(animations.get(group)!==animation)return;
-      animation.cancel();animations.delete(group);finish();
-    };
+      finish();animation.cancel();animations.delete(group);
+    },()=>{});
   };
   groups.forEach(group=>group.querySelector('summary').addEventListener('click',event=>{
     event.preventDefault();

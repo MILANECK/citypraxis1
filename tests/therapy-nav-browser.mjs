@@ -71,6 +71,31 @@ try{
   const compact=await page.locator('.therapy-quick-nav').evaluate(node=>({top:node.getBoundingClientRect().top,transform:getComputedStyle(node).transform}));
   assert.ok(Math.abs(compact.top-120)<2,'Closing a category should not reposition the whole sidebar');
   assert.equal(compact.transform,'none');
+  for(const index of [1,2]){
+    for(const open of [true,false]){
+      const frames=await page.evaluate(({index})=>new Promise(resolve=>{
+        const group=document.querySelectorAll('.therapy-nav-group')[index],content=group.querySelector('nav'),frames=[];
+        const start=performance.now();
+        group.querySelector('summary').click();
+        const sample=()=>{
+          frames.push({height:group.getBoundingClientRect().height,active:content.getAnimations().length>0,time:performance.now()-start});
+          if(frames.at(-1).active)requestAnimationFrame(sample);
+          else resolve(frames);
+        };
+        requestAnimationFrame(sample);
+      }),{index});
+      assert.ok(frames.at(-1).time>=430,`Category ${index+1} should ${open?'open':'close'} gently`);
+      assert.ok(Math.abs(frames.at(-1).height-frames.at(-2).height)<2,`Category ${index+1} should ${open?'open':'close'} without an end jump (${frames.at(-2).height} to ${frames.at(-1).height})`);
+    }
+  }
+  const quicklyToggled=page.locator('.therapy-nav-group').nth(1);
+  await quicklyToggled.locator('summary').click();
+  await page.waitForTimeout(150);
+  await quicklyToggled.locator('summary').click();
+  await page.waitForTimeout(150);
+  await quicklyToggled.locator('summary').click();
+  await page.waitForTimeout(600);
+  assert.ok(await quicklyToggled.evaluate(group=>group.open&&Math.abs(group.querySelector('nav').getBoundingClientRect().height-group.querySelector('nav').scrollHeight)<1),'Quickly reversing a category should settle at its natural full height');
   await page.screenshot({path:'test-results/therapy-nav-stable.png'});
   await page.setViewportSize({width:800,height:900});
   assert.equal(await page.locator('.therapy-quick-nav').evaluate(node=>getComputedStyle(node).position),'static');
