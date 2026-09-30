@@ -80,6 +80,11 @@ export function composeReply(answer,followUp='',links=''){
   return [lead,links,followUp].filter(Boolean).join('\n\n');
 }
 const contactEmail=raw=>/[^\s@]+@[^\s@]+\.[a-z]{2,63}/i.exec(raw)?.[0]?.replace(/[.,;!?]+$/,'');
+function introductionFullName(raw){
+  const introduction=/(?:^|[^\p{L}\p{M}])(?:i['’]?m|i am)\s+([\p{L}\p{M}.'’\-]+)\s+([\p{L}\p{M}.'’\-]+)(?=\s*(?:[,;.!?]|\band\b|$))/iu.exec(raw);
+  if(!introduction||/^(?:a|an|the|in|on|at|from|not|so|very|having|feeling|experiencing|suffering|looking|trying|hoping|wondering|seeking|needing|ready|interested|happy|sad|worried|concerned|sick|unwell)$/iu.test(introduction[1]))return null;
+  try{return {first_name:name(introduction[1]),last_name:name(introduction[2])};}catch{return null;}
+}
 function absorbContact(raw,d,stage){
   const foundEmail=contactEmail(raw);if(foundEmail&&emailValid(foundEmail))d.email=foundEmail.toLowerCase();
   for(const match of raw.matchAll(/(?:\+\d|\b0)[\d ()/.-]{6,}\d/g)){try{d.phone=phone(match[0]);break;}catch{}}
@@ -89,6 +94,7 @@ function absorbContact(raw,d,stage){
   }
   const explicit=/(?:my name is|ich heiße|ich heisse|mein name ist|(?:^|[,;\n])\s*(?:full name|name|vor-\s*und\s+nachname)\s*[:=])\s*([\p{L}\p{M}.'’\-]+)\s+([\p{L}\p{M}.'’\-]+)/iu.exec(raw);
   if(explicit){try{d.first_name=name(explicit[1]);d.last_name=name(explicit[2]);}catch{}}
+  else{const introduction=introductionFullName(raw);if(introduction)Object.assign(d,introduction);}
 }
 function absorbAIIntake(ai,raw,draft,stage,proactiveAvailability){
   if(!['appointment','practice_question','medical'].includes(ai.kind))return;
@@ -103,7 +109,7 @@ function absorbAIIntake(ai,raw,draft,stage,proactiveAvailability){
   if(ai.patient_status&&['new','existing','unsure'].includes(ai.patient_status))draft.patient_status=ai.patient_status;
   const foldedRaw=raw.normalize('NFD').replace(/\p{M}/gu,'').toLocaleLowerCase();
   const contactBundle=Boolean(contactEmail(raw)||/(?:\+\d|\b0)[\d ()/.-]{6,}\d/u.test(raw));
-  const nameContext=stage==='name'||contactBundle||/(?:my name is|ich heiße|ich heisse|mein name ist|\b(?:full name|name|vor-\s*und\s+nachname)\s*[:=])/iu.test(raw);
+  const nameContext=stage==='name'||contactBundle||Boolean(introductionFullName(raw))||/(?:my name is|ich heiße|ich heisse|mein name ist|\b(?:full name|name|vor-\s*und\s+nachname)\s*[:=])/iu.test(raw);
   if(nameContext&&ai.first_name&&ai.last_name&&foldedRaw.includes(ai.first_name.normalize('NFD').replace(/\p{M}/gu,'').toLocaleLowerCase())&&foldedRaw.includes(ai.last_name.normalize('NFD').replace(/\p{M}/gu,'').toLocaleLowerCase())){
     try{draft.first_name=name(ai.first_name);draft.last_name=name(ai.last_name);}catch{}
   }

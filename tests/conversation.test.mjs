@@ -287,6 +287,30 @@ test('contacts supplied before the concern still lead directly to the final revi
     assert.ok(allInOne.summary.some(([,value])=>value==='Schulterschmerzen'));
   }finally{process.env=old;}
 });
+
+test('a full name in the opening I am introduction is retained through appointment review',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const service=createConversationService({fetcher:async(_,options)=>{
+    const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
+    const value=answer({kind:'medical',booking_intent:'request',reason:/shoulder/i.test(raw)?'Shoulder pain':null,answer:'A physiotherapist can assess your shoulder pain in person.'});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const turn=async(token,message)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    for(const introduction of ["hello Im neils Schreiber , I have a shoulderpain , and would like an appointment", "Hello, I'm Neil Schreiber. My shoulder hurts and I would like an appointment."]){
+      const token=newSession();
+      const first=await turn(token,introduction);
+      assert.equal(first.ready,false);
+      assert.doesNotMatch(first.message,/full first and last name|first and last name, please/i);
+      assert.match(first.message,/email address and your phone number/i);
+      const review=await turn(token,'neils@example.test +43 699 12682157');
+      assert.equal(review.ready,true);
+      assert.ok(review.summary.some(([,value])=>value===(/neils Schreiber/i.test(introduction)?'neils Schreiber':'Neil Schreiber')));
+    }
+    const symptomOnly=await turn(newSession(),"I'm having shoulder pain and would like an appointment.");
+    assert.match(symptomOnly.message,/first and last name/i);
+  }finally{process.env=old;}
+});
 test('contact intake advances only after a detail is saved and never thanks for a missing field',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   let calls=0;
