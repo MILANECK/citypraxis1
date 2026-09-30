@@ -29,6 +29,18 @@ try{
   await page.screenshot({path:'test-results/back-to-top-desktop.png'});
   const start=await page.evaluate(()=>scrollY);
   assert.ok(start>500);
+  await page.evaluate(()=>{
+    window.__topMotion=[];
+    let previous=scrollY,started=false;
+    const capture=time=>{
+      const current=scrollY;
+      if(current<previous-1)started=true;
+      if(started)window.__topMotion.push({time,y:current});
+      previous=current;
+      if(current>0||!started)requestAnimationFrame(capture);
+    };
+    requestAnimationFrame(capture);
+  });
   await top.click();
   await page.waitForTimeout(250);
   const early=await page.evaluate(()=>scrollY);
@@ -37,6 +49,10 @@ try{
   assert.ok(start>early&&early>middle&&middle>0,'The return should animate upward gradually');
   await page.waitForTimeout(2200);
   assert.ok(await page.evaluate(()=>scrollY)<2,'The return should end at the top');
+  const samples=await page.evaluate(()=>window.__topMotion);
+  const elapsed=samples.at(-1).time-samples[0].time;
+  const at=fraction=>samples.find(sample=>sample.time-samples[0].time>=elapsed*fraction)?.y??0;
+  assert.ok(at(.42)-at(.58)>(at(.82)-at(.98))*2,'The scroll should visibly slow down near the top');
 
   const mobile=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});
   await mobile.goto(origin+'/kontakt?lang=en');

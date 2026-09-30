@@ -64,7 +64,18 @@ try{
 
   await page.evaluate(()=>scrollTo({top:1700,behavior:'instant'}));
   await page.waitForTimeout(1300);
-  await page.locator('.therapy-nav-group').first().locator('summary').click();
+  const closingFrames=await page.evaluate(()=>new Promise(resolve=>{
+    const group=document.querySelector('.therapy-nav-group'),next=group.nextElementSibling,frames=[];
+    const sample=()=>{
+      frames.push({open:group.open,top:next.getBoundingClientRect().top});
+      if(!group.open)resolve(frames);
+      else requestAnimationFrame(sample);
+    };
+    group.querySelector('summary').click();
+    requestAnimationFrame(sample);
+  }));
+  const lastOpen=closingFrames.at(-2),firstClosed=closingFrames.at(-1);
+  assert.ok(lastOpen?.open&&!firstClosed.open&&Math.abs(firstClosed.top-lastOpen.top)<3,'The menu should finish closing without a final pixel jump');
   await page.waitForTimeout(1200);
   const compact=await page.locator('.therapy-quick-nav').evaluate(node=>({top:node.getBoundingClientRect().top,target:Number.parseFloat(getComputedStyle(node).top),height:node.offsetHeight}));
   assert.ok(compact.target>sticky.target,'A shorter menu should move closer to the viewport center');

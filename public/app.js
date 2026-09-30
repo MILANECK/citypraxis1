@@ -305,15 +305,15 @@ function bindTherapyNavigation(){
   };
   const follow=()=>{if(desktop.matches&&!reducedMotion.matches&&!frame){lastTime=performance.now();frame=requestAnimationFrame(settle);}};
   const place=()=>{
+    cancelAnimationFrame(frame);frame=0;shift=0;
+    aside.style.transform='';
     if(!desktop.matches){
-      cancelAnimationFrame(frame);frame=0;shift=0;
-      aside.style.top='';aside.style.transform='';
+      aside.style.top='';
       visualTop=aside.getBoundingClientRect().top;
       return;
     }
     aside.style.top=`${Math.max(120,Math.round((innerHeight-aside.offsetHeight)/2))}px`;
-    if(reducedMotion.matches){aside.style.transform='';shift=0;visualTop=aside.getBoundingClientRect().top;}
-    else follow();
+    visualTop=aside.getBoundingClientRect().top;
   };
   place();
   visualTop=aside.getBoundingClientRect().top;
@@ -404,7 +404,7 @@ function bindTherapyNavigation(){
     stopScroll=interrupt;
     const step=now=>{
       const progress=Math.min(1,(now-started)/duration);
-      const eased=progress<.5?4*progress**3:1-(-2*progress+2)**3/2;
+      const eased=progress**3*(progress*(progress*6-15)+10);
       window.scrollTo({top:start+distance*eased,behavior:'instant'});
       maybeWave();
       if(progress<1)frame=requestAnimationFrame(step);
@@ -418,6 +418,7 @@ function bindTherapyNavigation(){
     const content=group.querySelector('nav');
     const start=group.open?content.getBoundingClientRect().height:0;
     const startOpacity=group.open?Number(getComputedStyle(content).opacity):0;
+    const startPadding=group.open?getComputedStyle(content).paddingBottom:'0px';
     animations.get(group)?.cancel();
     desired.set(group,open);
     group.open=true;
@@ -425,9 +426,10 @@ function bindTherapyNavigation(){
     const finish=()=>{group.open=open;group.classList.remove('is-closing');content.style.removeProperty('overflow');};
     if(reducedMotion.matches){finish();return;}
     const end=open?content.scrollHeight:0;
-    if(Math.abs(start-end)<1){finish();return;}
+    const endPadding=open?getComputedStyle(content).paddingBottom:'0px';
+    if(Math.abs(start-end)<1&&Math.abs(Number.parseFloat(startPadding)-Number.parseFloat(endPadding))<.5){finish();return;}
     content.style.overflow='hidden';
-    const animation=content.animate([{height:`${start}px`,opacity:startOpacity},{height:`${end}px`,opacity:open?1:0}],{duration:open?460:360,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'});
+    const animation=content.animate([{height:`${start}px`,opacity:startOpacity,paddingBottom:startPadding},{height:`${end}px`,opacity:open?1:0,paddingBottom:endPadding}],{duration:open?460:360,easing:'cubic-bezier(.22,1,.36,1)',fill:'forwards'});
     animations.set(group,animation);
     animation.onfinish=()=>{
       if(animations.get(group)!==animation)return;
@@ -591,7 +593,7 @@ function bind() {
     window.addEventListener('keydown',stop,{once:true});
     const step=now=>{
       const progress=Math.min(1,(now-started)/duration);
-      const eased=(1-Math.cos(Math.PI*progress))/2;
+      const eased=progress**3*(progress*(progress*6-15)+10);
       window.scrollTo({top:start*(1-eased),behavior:'instant'});
       if(progress<1)frame=requestAnimationFrame(step);
       else stop();
