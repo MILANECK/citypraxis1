@@ -373,7 +373,7 @@ function bind() {
         const row=entry.target,panel=row.closest('.clinical-card'),started=performance.now();
         const reveal=()=>{
           if(!row.isConnected)return;
-          if(panel&&(panel.classList.contains('interior-load-reveal')||panel.classList.contains('home-reveal-ready'))&&performance.now()-started<4000){
+          if(panel&&(panel.classList.contains('interior-load-reveal')||panel.classList.contains('home-reveal-ready'))&&Number.parseFloat(getComputedStyle(panel).opacity)<.75&&performance.now()-started<4000){
             requestAnimationFrame(reveal);
             return;
           }
@@ -382,7 +382,7 @@ function bind() {
         requestAnimationFrame(reveal);
         bandObserver.unobserve(row);
       });
-    },{threshold:.15,rootMargin:'0px 0px -48% 0px'});
+    },{threshold:.01,rootMargin:'0px 0px -28% 0px'});
     document.querySelectorAll('#main .reimbursement-table').forEach(table=>{
       [...table.querySelectorAll('tbody tr:nth-child(even)')].forEach((row,index)=>{
         row.classList.add('price-band-reveal');

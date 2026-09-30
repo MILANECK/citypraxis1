@@ -154,6 +154,17 @@
 .interior-page .price-category-tabs button{border:0;border-radius:12px;background:#eef4f6;font-family:inherit;font-size:13px;font-weight:500;padding:13px 18px}
 .interior-page .price-category-tabs button[aria-selected="true"]{background:var(--blue);color:#fff}
 .interior-page .price-table :is(th,td){padding-block:20px;font-size:15px}
+.interior-page[data-page="/preise"] .price-category-tabs button{font-size:13px;font-weight:500;letter-spacing:-.01em}
+.interior-page[data-page="/preise"] .reimbursement-table{font-family:Rubik,Arial,sans-serif;font-size:15px;line-height:1.5;color:var(--ink)}
+.interior-page[data-page="/preise"] .reimbursement-table caption{font-size:13px;line-height:1.5;font-weight:400;color:var(--muted)}
+.interior-page[data-page="/preise"] .reimbursement-table thead th{font-size:13px;font-weight:500;letter-spacing:0}
+.interior-page[data-page="/preise"] .reimbursement-table tbody th[scope="row"]{font-size:15px;line-height:1.5;font-weight:500;letter-spacing:-.012em}
+.interior-page[data-page="/preise"] .price-table tbody th strong{font-weight:500}
+.interior-page[data-page="/preise"] .price-table th small{font-size:13px;line-height:1.5}
+.interior-page[data-page="/preise"] .reimbursement-table tbody td{font-size:15px;line-height:1.5;font-weight:400}
+.interior-page[data-page="/preise"] .reimbursement-table:not(.price-table) tbody td,.interior-page[data-page="/preise"] .price-amount{font-variant-numeric:tabular-nums}
+.interior-page[data-page="/preise"] .price-amount{font-weight:500}
+.interior-page[data-page="/preise"] .price-footnote{font-size:14px;line-height:1.75}
 .interior-page .private-practice-note{border:0;border-radius:14px;background:#f5f2ed;padding:20px 24px}
 .interior-page .source-date{background:#eef4f6;font-size:13px}
 .interior-page .process-grid{gap:22px;margin-block:56px 72px}
