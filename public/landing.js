@@ -408,6 +408,8 @@ function enhanceTeamHover(){
     panel.style.setProperty('--team-width',`${panelWidth}px`);
     panel.style.setProperty('--team-photo-shift',`${panelWidth-photoWidth}px`);
     panel.style.setProperty('--team-photo-width',`${photoWidth}px`);
+    // Pre-size the image for the widest frame of the slide, then never resize it mid-animation.
+    panel.style.setProperty('--team-image-width',`${photoWidth+(panelWidth-photoWidth)*.23+10}px`);
     panel.style.setProperty('--team-uncovered',`${panelWidth-photoWidth}px`);
   };
   const observer=new ResizeObserver(measure);
@@ -416,7 +418,7 @@ function enhanceTeamHover(){
   panel.classList.add('team-hover-ready');
   return ()=>{
     observer.disconnect();whiteCopy.remove();panel.classList.remove('team-hover-ready');
-    ['--team-width','--team-photo-width','--team-uncovered','--team-photo-shift'].forEach(name=>panel.style.removeProperty(name));
+    ['--team-width','--team-photo-width','--team-uncovered','--team-photo-shift','--team-image-width'].forEach(name=>panel.style.removeProperty(name));
   };
 }
 
