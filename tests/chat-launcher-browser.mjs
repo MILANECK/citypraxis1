@@ -22,6 +22,8 @@ try{
   await page.waitForFunction(()=>document.querySelector('#cp-chat')?.classList.contains('has-session'));
   assert.match(await launcher.evaluate(el=>getComputedStyle(el).backgroundImage),/linear-gradient/);
   assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).display),'block');
+  assert.equal(await launcher.getAttribute('aria-label'),'Minimise chat');
+  assert.equal(await page.locator('.chat-launch span').evaluate(el=>getComputedStyle(el).display),'none');
   assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).animationName),'none');
   assert.deepEqual(await page.locator('.chat-writing-line').evaluateAll(els=>els.map(el=>getComputedStyle(el).animationName)),['chat-line-write','chat-line-write','chat-line-write']);
   await page.locator('#conversation-input').fill('Hello');
@@ -39,17 +41,29 @@ try{
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).color),'rgb(255, 255, 255)');
   assert.ok(await page.locator('.conversation-thread').textContent());
 
-  await page.locator('.chat-close').click();
-  assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(34, 35, 68)');
-  assert.equal(await page.locator('.chat-launch-icon').evaluate(el=>getComputedStyle(el).display),'block');
+  assert.equal(await page.locator('.chat-minimise').getAttribute('aria-label'),'Minimise chat');
+  assert.equal(await page.locator('.chat-close').getAttribute('aria-label'),'End chat');
+  await page.locator('.chat-minimise').click();
+  assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(220, 238, 245)');
+  assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).display),'block');
+  assert.equal(await page.locator('.chat-launch span').textContent(),'Continue chat');
   await page.reload();
   await page.waitForFunction(()=>document.querySelector('#cp-chat')?.classList.contains('resumed-session'));
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(220, 238, 245)');
-  assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).display),'block');
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.locator('.chat-launch span').evaluate(el=>getComputedStyle(el).display),'block');
   assert.ok(await launcher.evaluate(el=>{const bounds=el.getBoundingClientRect();return bounds.left>=0&&bounds.right<=innerWidth;}));
-  console.log('Original idle launcher, animated lines, typing pause, page-to-page continuation, close and resumed session verified.');
+  await launcher.click();
+  assert.match(await launcher.evaluate(el=>getComputedStyle(el).backgroundImage),/linear-gradient/);
+  await page.locator('.chat-close').click();
+  assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(34, 35, 68)');
+  assert.equal(await page.locator('.chat-launch-icon').evaluate(el=>getComputedStyle(el).display),'block');
+  assert.equal(await page.locator('.chat-launch span').textContent(),'Chat with us');
+  assert.equal(await page.evaluate(()=>sessionStorage.getItem('citypraxis-conversation-v2')),null);
+  await page.reload();
+  assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(34, 35, 68)');
+  assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).display),'none');
+  console.log('Active, minimised and ended chat states verified across navigation and reload.');
 }finally{
   await browser.close();
 }
