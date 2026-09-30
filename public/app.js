@@ -287,29 +287,13 @@ function bindTherapyNavigation(){
   const waveHeading=heading=>{
     stopWave?.();
     if(reducedMotion.matches)return;
-    const label=heading.textContent.trim();
-    if(!label)return;
-    const original=[...heading.childNodes].map(node=>node.cloneNode(true));
-    const previousLabel=heading.getAttribute('aria-label');
-    const color=getComputedStyle(heading).color;
-    const letters=[],words=[];
-    heading.setAttribute('aria-label',label);
-    for(const part of label.split(/(\s+)/u)){
-      if(!part)continue;
-      if(/^\s+$/u.test(part)){words.push(document.createTextNode(part));continue;}
-      const word=document.createElement('span');word.className='therapy-heading-word';word.setAttribute('aria-hidden','true');
-      for(const character of part){const span=document.createElement('span');span.textContent=character;span.className='therapy-heading-letter';letters.push({span,index:letters.length});word.append(span);}
-      words.push(word);
-    }
-    heading.replaceChildren(...words);
-    const animations=letters.map(({span,index})=>span.animate([
-      {color,transform:'translateY(0) scale(1)'},
-      {color:'var(--pink)',transform:'translateY(-3px) scale(1.08)',offset:.48},
-      {color,transform:'translateY(0) scale(1)'}
-    ],{delay:index*28,duration:680,easing:'cubic-bezier(.22,1,.36,1)'}));
-    const cleanup=()=>{animations.forEach(animation=>animation.cancel());heading.replaceChildren(...original);if(previousLabel===null)heading.removeAttribute('aria-label');else heading.setAttribute('aria-label',previousLabel);if(stopWave===cleanup)stopWave=null;};
+    if(!heading.textContent.trim())return;
+    heading.style.setProperty('--therapy-wave-ink',getComputedStyle(heading).color);
+    heading.classList.add('therapy-heading-wave');
+    const animation=heading.animate([{backgroundPosition:'100% 0'},{backgroundPosition:'0% 0'}],{duration:1100,easing:'cubic-bezier(.42,0,.58,1)'});
+    const cleanup=()=>{animation.cancel();heading.classList.remove('therapy-heading-wave');heading.style.removeProperty('--therapy-wave-ink');if(stopWave===cleanup)stopWave=null;};
     stopWave=cleanup;
-    Promise.allSettled(animations.map(animation=>animation.finished)).then(()=>{if(stopWave===cleanup)cleanup();});
+    animation.finished.then(()=>{if(stopWave===cleanup)cleanup();},()=>{});
   };
   groups[0].querySelectorAll('a[href^="#"]').forEach(link=>link.addEventListener('click',event=>{
     const target=document.getElementById(link.hash.slice(1));
