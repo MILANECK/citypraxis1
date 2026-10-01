@@ -281,7 +281,7 @@ Speichern|Save
 Löschen|Delete
 Keine Anfragen in dieser Ansicht.|No requests in this view.
 Anfrage aktualisiert.|Request updated.
-Diese Anfrage mit ihren Kontaktdaten endgültig löschen?|Permanently delete this request and its contact details?
+Diese Anfrage endgültig löschen? Die zugehörige E-Mail muss separat gelöscht werden.|Permanently delete this request? The related email must be deleted separately.
 Anfrage gelöscht.|Request deleted.
 Foto oder Video hochladen|Upload photo or video
 Bilder: PNG, JPEG, WebP bis 10 MB. Videos: MP4 (H.264) bis 60 MB. Hintergrundvideos werden stumm abgespielt.|Images: PNG, JPEG, WebP up to 10 MB. Videos: MP4 (H.264) up to 60 MB. Background videos play without sound.

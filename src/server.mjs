@@ -214,7 +214,7 @@ export function createApp(db = openDatabase()) {
         if (assignee && !db.prepare("SELECT id FROM users WHERE id=? AND active=1 AND role IN ('owner','reception')").get(assignee)) return json(400,{error:'Ungültige Zuweisung.'});
         db.prepare('UPDATE requests SET status=?,assignee=?,updated_at=CURRENT_TIMESTAMP WHERE id=?').run(body.status,assignee,Number(body.id)); audit(user,`request ${body.status}`,`request/${body.id}`); return json(200,{ok:true});
       }
-      if (path === '/api/admin/requests' && req.method === 'DELETE' && owner) { db.prepare('DELETE FROM requests WHERE id=?').run(Number(body.id)); audit(user,'delete request',`request/${body.id}`); return json(200,{ok:true}); }
+      if (path === '/api/admin/requests' && req.method === 'DELETE' && reception) { db.prepare('DELETE FROM requests WHERE id=?').run(Number(body.id)); audit(user,'delete request',`request/${body.id}`); return json(200,{ok:true}); }
       if (path === '/api/admin/staff' && req.method === 'GET' && reception) return json(200,db.prepare("SELECT id,name FROM users WHERE active=1 AND role IN ('owner','reception')").all());
       if (path === '/api/admin/users' && owner) {
         if (req.method === 'GET') return json(200,db.prepare('SELECT id,name,email,role,active FROM users').all());
