@@ -20,7 +20,8 @@ export function enhanceLanding({preview=false}={}){
   // Reveal readable pieces individually; never animate both a text block and its parent.
   const targets=[...document.querySelectorAll([
     '.home-section-intro>.eyebrow','.home-section-intro>h2','.home-section-intro>p',
-    '.home-therapies .therapy-card','.home-section-link','.home-team-photo',
+    // Carousel cards must remain visible even when an in-app browser misses a reveal event.
+    '.home-section-link','.home-team-photo',
     '.team-feature-copy>.eyebrow','.team-feature-copy>h2','.team-feature-copy>p','.team-feature-copy>.text-link',
     '.home-people .section-heading>div>*','.home-people .review-quote','.home-people .review-card blockquote','.home-people .review-card figcaption',
     '.home-distinction-copy>.eyebrow','.home-distinction-copy>h2','.home-distinction-benefits li',
