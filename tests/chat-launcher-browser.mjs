@@ -90,6 +90,10 @@ try{
   await page.reload();
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(34, 35, 68)');
   assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).display),'none');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await launcher.click();
+  assert.equal(await page.locator('.chat-window').evaluate(el=>getComputedStyle(el).transitionDuration),'0s');
+  assert.equal(await page.locator('#cp-chat').evaluate(el=>el.classList.contains('is-morphing')),false);
   console.log('Active, minimised and ended chat states verified across navigation and reload.');
 }finally{
   await browser.close();

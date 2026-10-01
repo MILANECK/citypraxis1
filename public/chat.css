@@ -34,8 +34,13 @@
 #cp-chat.is-open .chat-launch span{display:none}
 #cp-chat.is-open:not(.has-session) .chat-launch::before{opacity:1;transform:translateX(0)}
 #cp-chat.is-open:not(.has-session) .chat-launch::after{animation:none;opacity:0}
-.chat-window{position:fixed;right:24px;bottom:90px;width:400px;max-width:calc(100% - 32px);height:min(650px,calc(100dvh - 115px));display:flex;flex-direction:column;background:#fff;border:1px solid #e3e5e7;border-radius:24px;overflow:hidden;box-shadow:0 20px 70px #22234426;transform:translateY(18px) scale(.98);transform-origin:bottom right;opacity:0;visibility:hidden;transition:transform .38s cubic-bezier(.22,1,.36,1),opacity .28s ease,visibility .38s}
-.is-open .chat-window{transform:translateY(0) scale(1);opacity:1;visibility:visible}
+/* Inspired by the public Skiper UI 46 gooey menu preview: https://skiper-ui.com/v1/skiper46 */
+.chat-goo-defs{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+.chat-window{position:fixed;right:24px;bottom:90px;width:400px;max-width:calc(100% - 32px);height:min(650px,calc(100dvh - 115px));display:flex;flex-direction:column;background:#fff;border:1px solid #e3e5e7;border-radius:999px;overflow:hidden;box-shadow:0 20px 70px #22234426;transform:translate3d(var(--chat-origin-x,-29px),var(--chat-origin-y,66px),0) scale(var(--chat-origin-scale-x,.145),var(--chat-origin-scale-y,.09));transform-origin:bottom right;opacity:0;visibility:hidden;pointer-events:none;transition:transform .58s cubic-bezier(.18,1.12,.38,1),border-radius .22s ease-out,opacity .2s ease,visibility .58s}
+.is-open .chat-window{transform:translate3d(0,0,0) scale(1);border-radius:24px;opacity:1;visibility:visible;pointer-events:auto}
+.chat-window>.chat-heading,.chat-window>.chat-scroll,.chat-window>.chat-footer{opacity:0;transition:opacity .12s ease}
+.is-open .chat-window>.chat-heading,.is-open .chat-window>.chat-scroll,.is-open .chat-window>.chat-footer{opacity:1;transition:opacity .24s ease .08s}
+#cp-chat.is-morphing .chat-window{filter:url(#chat-goo);will-change:transform,opacity}
 .chat-heading{display:flex;align-items:center;gap:12px;padding:20px;background:#f6f4f1;border-bottom:1px solid #e7e4df;flex-shrink:0}
 .chat-heading img{object-fit:contain}.chat-heading strong{font-size:15px;display:block}.chat-heading small{font-size:11px;color:var(--chat-muted)}
 .chat-minimise,.chat-close{display:grid;place-items:center;padding:0;flex-shrink:0;background:transparent;color:var(--chat-ink);border:0;border-radius:50%;width:34px;height:34px;line-height:1}.chat-minimise{margin-left:auto}.chat-minimise:hover,.chat-close:hover{background:#e7e4df}
@@ -144,7 +149,7 @@
 #cp-chat .conversation-locked button:disabled{background:#a7c3cc;opacity:1;cursor:not-allowed}
 @media(max-height:740px){.conversation-preview .conversation-thread{margin-bottom:12px}.conversation-unlock{padding:11px 13px}}
 
-.chat-window:has(.conversation-preview){height:min(530px,calc(100dvh - 115px));transition:height .38s cubic-bezier(.22,1,.36,1),transform .38s cubic-bezier(.22,1,.36,1),opacity .28s ease,visibility .38s}
+.chat-window:has(.conversation-preview){height:min(530px,calc(100dvh - 115px));transition:height .38s cubic-bezier(.22,1,.36,1),transform .58s cubic-bezier(.18,1.12,.38,1),border-radius .22s ease-out,opacity .2s ease,visibility .58s}
 #cp-chat .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 @media(max-width:767px){.chat-window:has(.conversation-preview){height:min(540px,calc(100dvh - 168px - env(safe-area-inset-bottom)))}}
 @media(max-height:600px){.chat-window:has(.conversation-preview){height:calc(100dvh - 24px)}}
@@ -157,6 +162,7 @@
   .chat-launch span,#cp-chat.is-open .chat-launch span{display:block}
   .chat-launch .chat-launch-icon{position:absolute;inset:0;margin:auto}
   .chat-window{bottom:calc(160px + env(safe-area-inset-bottom));height:min(610px,calc(100dvh - 176px - env(safe-area-inset-bottom)))}
+  #cp-chat.is-open .chat-window{border-radius:20px}
   .chat-window:has(.conversation-preview){height:min(540px,calc(100dvh - 176px - env(safe-area-inset-bottom)))}
 }
 @media(max-width:767px) and (max-height:600px){.chat-window,.chat-window:has(.conversation-preview){bottom:12px;height:calc(100dvh - 24px)}}
@@ -166,8 +172,6 @@
 @media(max-width:767px){#cp-chat.keyboard-visible .chat-window{bottom:calc(var(--chat-keyboard-inset,0px) + 12px);height:min(610px,calc(var(--chat-visible-height,100dvh) - 52px))}#cp-chat.keyboard-visible .chat-launch{visibility:hidden}}
 
 @media(min-width:768px){
-  .chat-window{border:0;transform:translate3d(0,52px,0) scaleY(.94);transform-origin:bottom center;will-change:transform,opacity;transition:transform .36s cubic-bezier(.45,0,.2,1),opacity .25s ease,visibility .36s}
-  .is-open .chat-window{transform:translate3d(0,0,0) scaleY(1)}
-  .chat-window:has(.conversation-preview){transition:height .38s cubic-bezier(.22,1,.36,1),transform .36s cubic-bezier(.45,0,.2,1),opacity .25s ease,visibility .36s}
+  .chat-window{border:0}
   .chat-heading{border-bottom:0}
 }
