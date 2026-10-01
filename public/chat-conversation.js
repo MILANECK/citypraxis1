@@ -17,7 +17,7 @@ const clear=()=>{try{sessionStorage.removeItem(storageKey);}catch{}};
 const root=document.createElement('div');root.id='cp-chat';root.dataset.noTranslate='';
 root.innerHTML=`<div class="chat-backdrop" aria-hidden="true"></div><button class="chat-launch" aria-expanded="false" aria-controls="chat-window" aria-label="${t('Chat mit uns öffnen','Open chat with us')}"><picture class="chat-launch-icon"><source media="(prefers-reduced-motion: reduce)" srcset="/assets/icons/chat-still.svg"><img src="/assets/icons/chat-animated.svg?v=chat-interval-1" alt="" width="32" height="30"></picture><span>${t('Chat mit uns','Chat with us')}</span></button><section id="chat-window" class="chat-window" role="dialog" aria-labelledby="chat-title" aria-hidden="true" inert><header class="chat-heading"><img src="/assets/logo-symbol.png" width="30" height="42" alt=""><div><strong id="chat-title">${t('Digitaler Empfang','Digital receptionist')}</strong><small>Citypraxis · ${t('Anfragen vorbereiten','Prepare your request')}</small></div><button type="button" class="chat-close" aria-label="${t('Chat schließen','Close chat')}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header><div class="chat-scroll"><div class="chat-content"></div><p class="chat-status" role="status" aria-live="polite"></p></div><div class="chat-footer"><button type="button" data-reset>${t('Neu beginnen','Start again')}</button><a href="/datenschutz?lang=${siteLang}#digitaler-empfang">${t('Datenschutz','Privacy')}</a><span>${t('Keine Notfallhilfe','Not for emergencies')}</span></div></section>`;
 const launcherIcon=root.querySelector('.chat-launch-icon');
-launcherIcon.insertAdjacentHTML('afterend','<svg class="chat-active-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path class="chat-writing-line" d="M5 8h14"/><path class="chat-writing-line" d="M5 12h10"/><path class="chat-writing-line" d="M5 16h12"/></svg>');
+launcherIcon.insertAdjacentHTML('afterend','<svg class="chat-active-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path class="chat-writing-line" d="M5 8h14"/><path class="chat-writing-line" d="M7 12h10"/><path class="chat-writing-line" d="M6 16h12"/></svg>');
 const closeButton=root.querySelector('.chat-close');
 closeButton.insertAdjacentHTML('beforebegin',`<button type="button" class="chat-minimise" aria-label="${t('Chat minimieren','Minimise chat')}" title="${t('Chat minimieren','Minimise chat')}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button>`);
 closeButton.setAttribute('aria-label',t('Chat beenden','End chat'));
@@ -47,7 +47,24 @@ function syncLanguage(result){
   $('.chat-footer span').textContent=t('Keine Notfallhilfe','Not for emergencies');
 }
 function scrollEnd(){requestAnimationFrame(()=>{const scroll=$('.chat-scroll'),review=$('.conversation-review');scroll.scrollTop=!state.started?0:state.ready&&review?review.getBoundingClientRect().top-scroll.getBoundingClientRect().top+scroll.scrollTop-20:scroll.scrollHeight;});}
-function setOpen(value){opened=value;root.classList.toggle('is-open',value);$('.chat-launch').setAttribute('aria-expanded',String(value));panel.setAttribute('aria-hidden',String(!value));panel.inert=!value;updateLauncher();if(value){$('.chat-minimise').focus();scrollEnd();}else $('.chat-launch').focus();}
+function setOpen(value){opened=value;root.classList.toggle('is-open',value);$('.chat-launch').setAttribute('aria-expanded',String(value));panel.setAttribute('aria-hidden',String(!value));panel.inert=!value;updateLauncher();syncChatKeyboard();if(value){$('.chat-minimise').focus();scrollEnd();}else $('.chat-launch').focus();}
+let mobileViewportWidth=window.innerWidth,mobileViewportHeight=window.visualViewport?.height||window.innerHeight;
+function syncChatKeyboard(){
+  const viewport=window.visualViewport,visibleHeight=viewport?.height||window.innerHeight;
+  if(window.innerWidth!==mobileViewportWidth){mobileViewportWidth=window.innerWidth;mobileViewportHeight=visibleHeight;}
+  else mobileViewportHeight=Math.max(mobileViewportHeight,visibleHeight);
+  const focused=root.contains(document.activeElement)&&document.activeElement?.matches('textarea:not(:disabled),input:not([type=checkbox])');
+  const keyboardVisible=window.innerWidth<=767&&opened&&focused&&mobileViewportHeight-visibleHeight>120;
+  root.classList.toggle('keyboard-visible',keyboardVisible);
+  if(!keyboardVisible)return;
+  root.style.setProperty('--chat-visible-height',`${Math.round(visibleHeight)}px`);
+  root.style.setProperty('--chat-keyboard-inset',`${Math.max(0,Math.round(window.innerHeight-visibleHeight-(viewport?.offsetTop||0)))}px`);
+}
+root.addEventListener('focusin',()=>requestAnimationFrame(syncChatKeyboard));
+root.addEventListener('focusout',()=>requestAnimationFrame(syncChatKeyboard));
+window.addEventListener('resize',syncChatKeyboard);
+window.visualViewport?.addEventListener('resize',syncChatKeyboard);
+window.visualViewport?.addEventListener('scroll',syncChatKeyboard);
 async function api(route,body){
   const response=await fetch(`/api/chat/${route}`,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify({token:state.token,language:lang,...body}):undefined,signal:AbortSignal.timeout(20000)});
   const result=await response.json();if(!response.ok){const error=new Error(errors()[result.code]||t('Das hat nicht geklappt. Bitte versuchen Sie es erneut.','That did not work. Please try again.'));error.code=result.code;throw error;}return result;
