@@ -56,11 +56,20 @@ try{
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.locator('.chat-launch span').evaluate(el=>getComputedStyle(el).display),'block');
   assert.ok(await launcher.evaluate(el=>{const bounds=el.getBoundingClientRect();return bounds.left>=0&&bounds.right<=innerWidth;}));
-  assert.ok(await page.locator('.chat-active-icon').evaluate(el=>{const icon=el.getBoundingClientRect(),phone=document.querySelector('.mobile-call').getBoundingClientRect();return Math.abs(icon.left+icon.width/2-(phone.left-39))<2;}));
+  const mobileActionsAligned=()=>page.evaluate(()=>{
+    const chat=document.querySelector('.chat-launch').getBoundingClientRect();
+    const icon=document.querySelector('.chat-active-icon').getBoundingClientRect();
+    const phone=document.querySelector('.mobile-call').getBoundingClientRect();
+    const appointment=document.querySelector('.mobile-appointment').getBoundingClientRect();
+    const firstGap=phone.left-chat.right,secondGap=appointment.left-phone.right;
+    return Math.abs(icon.left+icon.width/2-innerWidth/2)<1&&Math.abs(firstGap-secondGap)<1&&appointment.right<=innerWidth-8;
+  });
+  assert.ok(await mobileActionsAligned());
   await page.setViewportSize({width:320,height:700});
   await page.waitForFunction(()=>document.querySelector('.chat-launch')?.getBoundingClientRect().width<=153);
   assert.ok(await launcher.evaluate(el=>el.getBoundingClientRect().left>=0));
   assert.ok(await page.locator('.chat-launch span').evaluate(el=>el.scrollWidth<=el.clientWidth));
+  assert.ok(await mobileActionsAligned());
   await page.setViewportSize({width:390,height:844});
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).display),'flex');
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).borderTopLeftRadius),'40px');
@@ -90,6 +99,11 @@ try{
   await page.reload();
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(34, 35, 68)');
   assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).display),'none');
+  for(const width of [390,320]){
+    await page.setViewportSize({width,height:844});
+    await page.waitForFunction(()=>{const button=document.querySelector('.chat-launch')?.getBoundingClientRect();return button&&Math.abs(button.left+button.width/2-innerWidth/2)<1;});
+    assert.ok(await launcher.evaluate(el=>Math.abs(el.getBoundingClientRect().left+el.getBoundingClientRect().width/2-innerWidth/2)<1));
+  }
   console.log('Active, minimised and ended chat states verified across navigation and reload.');
 }finally{
   await browser.close();

@@ -547,9 +547,10 @@ footer{background:#f6f4f1;color:var(--ink)}
 @media(max-width:767px){.booking-layout{gap:95px}#booking-form::before{top:-34px;width:calc(var(--booking-folder-width,140px) - 42px);height:36px}#booking-form::after{top:-34px;right:calc(var(--booking-folder-width,140px) - 58px);width:58px;height:34px;clip-path:path("M0 34 C14 34 18 32 24 27 C37 16 39 0 58 0 L58 34 Z")}.booking-folder{top:-23px;right:12px;width:calc(var(--booking-folder-width,140px) - 92px)}.booking-folder-name{font-size:12px}}
 @media(prefers-reduced-motion:reduce){#booking-form::before,#booking-form::after,.booking-folder{transition:none;transform:none}#booking-form.has-folder .booking-folder{transform:none}}
 
-/* Compact mobile contact actions float below the chat launcher. */
+/* Compact mobile contact actions sit evenly beside the centered chat launcher. */
 @media(max-width:767px){
-  .mobile-booking{--mobile-action-size:58px;--mobile-action-gap:10px;left:auto;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));width:auto;display:flex;align-items:center;justify-content:flex-end;gap:var(--mobile-action-gap);padding:0;background:transparent;border:0;box-shadow:none;z-index:54;transition:opacity .2s ease}
+  :root{--mobile-action-radius:clamp(26px,calc(13.75px + 4vw),29px);--mobile-action-size:calc(var(--mobile-action-radius) + var(--mobile-action-radius));--mobile-action-gap:clamp(8px,calc(20vw - 56px),10px);--mobile-action-step:calc(var(--mobile-action-size) + var(--mobile-action-gap))}
+  .mobile-booking{left:auto;right:calc(50vw - var(--mobile-action-radius) - var(--mobile-action-step) - var(--mobile-action-step));bottom:calc(16px + env(safe-area-inset-bottom));width:auto;display:flex;align-items:center;justify-content:flex-end;gap:var(--mobile-action-gap);padding:0;background:transparent;border:0;box-shadow:none;z-index:54;transition:opacity .2s ease}
   .mobile-booking>a,.mobile-booking>a:first-child{display:grid;place-items:center;flex:none;width:var(--mobile-action-size);height:var(--mobile-action-size);min-height:var(--mobile-action-size);max-width:none;padding:0;border:0;border-radius:50%;box-shadow:0 6px 24px #22234425;transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s ease}
   .mobile-booking .mobile-call{background:#fff;color:var(--blue)}
   .mobile-booking .mobile-call img{display:block;width:25px;height:25px}
