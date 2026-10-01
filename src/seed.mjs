@@ -1,4 +1,5 @@
 import {childrenService} from './therapy-catalog.mjs';
+import { retentionDe, retentionEn } from '../public/privacy-retention.js';
 
 const appointmentConcerns=[{title:'Kiefer',titleEn:'Jaw'},{title:'Kopf & Migräne',titleEn:'Headaches & migraine'},{title:'Tinnitus',titleEn:'Tinnitus'},{title:'Schwindel',titleEn:'Dizziness'},{title:'Unfall & OP',titleEn:'Injury & surgery'},{title:'Kindergesundheit',titleEn:"Children's health"},{title:'Logopädie',titleEn:'Speech therapy'},{title:'Massage',titleEn:'Massage'},{title:'Andere Beschwerden',titleEn:'Other concern',custom:true}];
 const priceList=[
@@ -112,7 +113,9 @@ Bitte übermitteln Sie über das Formular keine Befunde, Diagnosen oder ausführ
 ## Speicherung und Empfänger
 Die Website wird bei Render Services, Inc. betrieben. Inhalte, Benutzerkonten und Terminanfragen werden über Supabase verarbeitet und gespeichert. Für den Versand von Terminanfragen und gegebenenfalls einer Kopie an Sie verwenden wir Resend. Der freiwillige digitale Empfang verwendet OpenAI zur Verarbeitung von Chatnachrichten. Diese Dienste können Daten auch außerhalb des Europäischen Wirtschaftsraums verarbeiten. Einzelheiten zum Chat und zum E-Mail-Versand finden Sie unten unter „Digitaler Empfang“.
 
-Abgesendete Terminanfragen werden nicht automatisch gelöscht. Sobald ein Termin vereinbart und die erforderlichen Angaben in das separate Praxissystem übernommen wurden, löscht der Empfang die Website-Anfrage manuell. Anfragen ohne zustande gekommenen Termin werden mindestens monatlich geprüft und, sofern keine weitere Bearbeitung erforderlich ist, nach ungefähr einem Monat manuell gelöscht. Die zugehörige E-Mail im Empfangspostfach muss gesondert gelöscht werden; bereits versendete Kopien und Sicherungen werden dadurch nicht entfernt. Gesetzliche Aufbewahrungspflichten bleiben unberührt. Administrationskonten bleiben bis zu ihrer Deaktivierung gespeichert. Die Aufbewahrung technischer Protokolle richtet sich nach den Einstellungen des jeweiligen Anbieters.
+${retentionDe}
+
+Administrationskonten bleiben bis zu ihrer Deaktivierung gespeichert. Die Aufbewahrung technischer Protokolle richtet sich nach den Einstellungen des jeweiligen Anbieters.
 
 ## Cookies und lokale Speicherung
 Diese Website verwendet keine Analyse- oder Marketing-Cookies. Technisch notwendige Speicherungen werden für die gewählte Sprache, die sichere Anmeldung im internen Verwaltungsbereich, den Schutz vor unbefugten Anfragen und das Merken dieses Datenschutzhinweises eingesetzt. Sie sind für die von Ihnen angeforderte Funktion erforderlich. Die Rechtsgrundlage ist § 165 Abs. 3 TKG 2021; die anschließende Verarbeitung erfolgt gemäß Art. 6 Abs. 1 lit. f DSGVO beziehungsweise bei der Anmeldung zur Vertragserfüllung.
@@ -133,7 +136,7 @@ Sie können außerdem Beschwerde bei der Österreichischen Datenschutzbehörde e
 ## Datensicherheit und Aktualität
 Wir treffen angemessene technische und organisatorische Maßnahmen zum Schutz Ihrer Daten. Diese Datenschutzerklärung wird angepasst, wenn sich Funktionen, Anbieter oder rechtliche Anforderungen ändern.
 
-Stand: 22. September 2026`;
+Stand: 1. Oktober 2026`;
 const privacyEn=`## Controller
 Isabella Casny
 Citypraxis – Practice for Physiotherapy & Osteopathy
@@ -152,7 +155,9 @@ Please do not submit medical reports, diagnoses or detailed medical histories th
 ## Storage and recipients
 The website is hosted by Render Services, Inc. Content, user accounts and appointment requests are processed and stored using Supabase. We use Resend to deliver appointment-request messages and, if enabled, a copy to you. The optional digital receptionist uses OpenAI to process chat messages. These services may also process data outside the European Economic Area. Further details about chat and email appear in the “Digital reception” section below.
 
-Submitted appointment requests are not deleted automatically. Once an appointment is arranged and the necessary details have been transferred to the practice's separate system, reception manually deletes the website request. Requests that do not lead to an appointment are reviewed at least monthly and, if no further follow-up is needed, manually deleted after about one month. The related email in the reception inbox must be deleted separately; copies already sent and backups are not removed by this action. Statutory retention obligations remain unaffected. Administrative accounts remain stored until deactivated. Technical-log retention depends on each provider's settings.
+${retentionEn}
+
+Administrative accounts remain stored until deactivated. Technical-log retention depends on each provider's settings.
 
 ## Cookies and local storage
 This website does not use analytics or marketing cookies. Technically necessary storage is used for the selected language, secure sign-in to the internal administration area, protection against unauthorised requests and to remember this privacy notice. It is required for the function you request. The legal basis is section 165(3) of the Austrian Telecommunications Act 2021; subsequent processing is based on Article 6(1)(f) GDPR or, for sign-in, performance of a contract.
@@ -173,7 +178,7 @@ You may also lodge a complaint with the Austrian Data Protection Authority: Bari
 ## Security and updates
 We use appropriate technical and organisational measures to protect your data. This notice is updated when functions, providers or legal requirements change.
 
-Last updated: 22 September 2026`;
+Last updated: 1 October 2026`;
 
 export const seed = {
   settings: [{ id: 'practice', title: 'Praxisinformationen', email: 'info@citypraxis.wien', phone: '+43 699 12682157', address: 'Stubenbastei 12/11', city: '1010 Wien', hours: 'Termine nach Vereinbarung', saturday: 'Samstag 08:30–12:30 Uhr', payment: 'Bitte bezahlen Sie Ihre Behandlung vor Ort in bar.', acute: 'Akuttermin benötigt? Rufen Sie uns an.', acuteAvailable: false, appointmentConcerns }],

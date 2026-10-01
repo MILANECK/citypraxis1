@@ -78,6 +78,8 @@ The site is deployed on Render. Use test contact data during review. All request
 
 The final real team roster, current tariffs and practice approval of the legal notices remain outstanding. Team sample identities and portraits are clearly labelled. Anna Katharina Plank's information is from the user-supplied card; its email differs from the printed name and should be confirmed. Draft Impressum and Datenschutz text exists, but the legal operator, provider settings, manual retention procedure and published Admin copy still require verification. The actual data flow and the owner's decisions are recorded in [data-protection operations](docs/data-protection-operations.md). Original clinical descriptions and training claims have been restored; insurance information is labelled as carried over from the earlier website. The reimbursement table retains its original April 2023 date; it is not presented as current 2026 pricing. No review ratings are fabricated.
 
+The public Datenschutz page displays the shared retention text for form, chat and direct-email enquiries even when the CMS still holds an older published paragraph. New seed content uses the same text. The practice should review the published legal notice and save the approved wording in Admin; the public-page fallback does not edit the database record.
+
 For a public service, complete the legal/privacy content, hosting and HTTPS setup, email notifications, backup scheduling, retention and operational review. This is a website CMS and scheduling-request inbox, not a clinical-record system. Keep patient diagnoses/documents out of it.
 
 ## Assets
