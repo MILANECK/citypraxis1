@@ -60,10 +60,7 @@ Für den Inhalt verantwortlich: Isabella Casny.
 Die Inhalte dieser Website werden mit Sorgfalt erstellt und regelmäßig geprüft. Sie dienen der allgemeinen Information und ersetzen keine individuelle medizinische Beratung, Untersuchung oder Behandlung. Für Inhalte externer Websites, auf die verlinkt wird, sind ausschließlich deren Betreiber verantwortlich. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar. Hinweise auf problematische Links richten Sie bitte an info@citypraxis.wien.
 
 ## Urheberrecht
-Texte, Gestaltung, Fotos und sonstige Inhalte dieser Website sind urheberrechtlich geschützt, soweit nicht anders gekennzeichnet. Eine Verwendung außerhalb der gesetzlichen Grenzen bedarf der vorherigen Zustimmung der jeweiligen Rechteinhaberin oder des jeweiligen Rechteinhabers.
-
-## Gestaltung und Umsetzung
-Konzept und Inhalte: Isabella Casny`;
+Texte, Gestaltung, Fotos und sonstige Inhalte dieser Website sind urheberrechtlich geschützt, soweit nicht anders gekennzeichnet. Eine Verwendung außerhalb der gesetzlichen Grenzen bedarf der vorherigen Zustimmung der jeweiligen Rechteinhaberin oder des jeweiligen Rechteinhabers.`;
 const imprintEn=`## Service provider and media owner
 Isabella Casny
 Citypraxis – Practice for Physiotherapy & Osteopathy
@@ -96,10 +93,7 @@ Responsible for content: Isabella Casny.
 The content of this website is prepared with care and reviewed regularly. It provides general information and does not replace individual medical advice, examination or treatment. The operators of linked external websites are solely responsible for their content. No unlawful content was apparent when a link was added. Please report problematic links to info@citypraxis.wien.
 
 ## Copyright
-Texts, design, photographs and other content on this website are protected by copyright unless stated otherwise. Use beyond statutory limits requires the prior consent of the respective rights holder.
-
-## Design and implementation
-Concept and content: Isabella Casny`;
+Texts, design, photographs and other content on this website are protected by copyright unless stated otherwise. Use beyond statutory limits requires the prior consent of the respective rights holder.`;
 const privacyDe=`## Verantwortliche
 Isabella Casny
 Citypraxis – Praxis für Physiotherapie & Osteopathie
@@ -111,14 +105,14 @@ E-Mail: info@citypraxis.wien
 Beim Besuch der Website verarbeitet unser Hostinganbieter technisch notwendige Verbindungsdaten, insbesondere IP-Adresse, Datum und Uhrzeit, aufgerufene Adresse, übertragene Datenmenge, Browser und Betriebssystem. Diese Serverprotokolle dienen der sicheren und stabilen Bereitstellung der Website sowie der Fehleranalyse. Rechtsgrundlage ist unser berechtigtes Interesse an einem sicheren Webauftritt gemäß Art. 6 Abs. 1 lit. f DSGVO.
 
 ## Terminanfragen
-Wenn Sie das Terminanfrageformular verwenden, verarbeiten wir Ihren Namen, Ihre E-Mail-Adresse, optional Ihre Telefonnummer, Ihre bevorzugte Kontaktzeit, die ausgewählte Anliegen-Kategorie, eine freiwillige Kurzbeschreibung und die Angabe, ob Sie einen Akuttermin wünschen. Diese Daten verwenden wir ausschließlich, um Ihre Anfrage zu beantworten und einen Termin vorzubereiten. Rechtsgrundlage für Kontakt- und Termindaten ist Art. 6 Abs. 1 lit. b DSGVO. Soweit Ihre freiwilligen Angaben Gesundheitsdaten erkennen lassen, verarbeiten wir diese aufgrund Ihrer ausdrücklichen Einwilligung gemäß Art. 9 Abs. 2 lit. a DSGVO. Sie können diese Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen.
+Wenn Sie das Terminanfrageformular verwenden, verarbeiten wir Ihren Namen, Ihre E-Mail-Adresse und Ihre Telefonnummer als Pflichtangaben. Anliegen-Kategorien, eine kurze Beschreibung und die Angabe eines dringenden Terminwunsches sind freiwillig. Diese Daten verwenden wir, um Ihre Anfrage zu beantworten und einen Termin vorzubereiten. Rechtsgrundlage für Kontakt- und Termindaten ist Art. 6 Abs. 1 lit. b DSGVO. Soweit Ihre freiwilligen Angaben Gesundheitsdaten erkennen lassen, verarbeiten wir diese aufgrund Ihrer ausdrücklichen Einwilligung gemäß Art. 9 Abs. 2 lit. a DSGVO. Sie können diese Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen.
 
 Bitte übermitteln Sie über das Formular keine Befunde, Diagnosen oder ausführlichen Krankengeschichten. Eine Anfrage ist noch keine Terminbestätigung.
 
 ## Speicherung und Empfänger
-Die Website wird bei Render Services, Inc. betrieben. Inhalte, Benutzerkonten und Terminanfragen werden über Supabase verarbeitet und gespeichert. Diese Anbieter handeln als technische Dienstleister in unserem Auftrag. Soweit Daten außerhalb des Europäischen Wirtschaftsraums verarbeitet werden, werden die nach der DSGVO vorgesehenen Garantien, insbesondere Standardvertragsklauseln, eingesetzt. Weitere Empfänger erhalten Ihre Daten nur, wenn dies gesetzlich erforderlich ist oder Sie eingewilligt haben.
+Die Website wird bei Render Services, Inc. betrieben. Inhalte, Benutzerkonten und Terminanfragen werden über Supabase verarbeitet und gespeichert. Für den Versand von Terminanfragen und gegebenenfalls einer Kopie an Sie verwenden wir Resend. Der freiwillige digitale Empfang verwendet OpenAI zur Verarbeitung von Chatnachrichten. Diese Dienste können Daten auch außerhalb des Europäischen Wirtschaftsraums verarbeiten. Einzelheiten zum Chat und zum E-Mail-Versand finden Sie unten unter „Digitaler Empfang“.
 
-Terminanfragen speichern wir nur so lange, wie dies zur Bearbeitung, Terminorganisation und zur Abwehr oder Geltendmachung möglicher Ansprüche erforderlich ist. Gesetzliche Aufbewahrungspflichten bleiben unberührt. Administrationskonten bleiben bis zu ihrer Deaktivierung gespeichert. Technische Protokolle werden nur für den zur Sicherheit und Fehleranalyse erforderlichen Zeitraum vorgehalten.
+Abgesendete Terminanfragen werden derzeit nicht automatisch nach einer festen Frist gelöscht. Die Praxis kann sie im internen Verwaltungsbereich einzeln löschen. Die konkrete Aufbewahrungsfrist und das Verfahren für E-Mail-Kopien und Sicherungen werden von der Praxis festgelegt; bis dahin sollten keine Gesundheitsberichte oder ausführlichen Krankengeschichten übermittelt werden. Gesetzliche Aufbewahrungspflichten bleiben unberührt. Administrationskonten bleiben bis zu ihrer Deaktivierung gespeichert. Die Aufbewahrung technischer Protokolle richtet sich nach den Einstellungen des jeweiligen Anbieters.
 
 ## Cookies und lokale Speicherung
 Diese Website verwendet keine Analyse- oder Marketing-Cookies. Technisch notwendige Speicherungen werden für die gewählte Sprache, die sichere Anmeldung im internen Verwaltungsbereich, den Schutz vor unbefugten Anfragen und das Merken dieses Datenschutzhinweises eingesetzt. Sie sind für die von Ihnen angeforderte Funktion erforderlich. Die Rechtsgrundlage ist § 165 Abs. 3 TKG 2021; die anschließende Verarbeitung erfolgt gemäß Art. 6 Abs. 1 lit. f DSGVO beziehungsweise bei der Anmeldung zur Vertragserfüllung.
@@ -151,14 +145,14 @@ Email: info@citypraxis.wien
 When you access the website, our hosting provider processes technically necessary connection data, including your IP address, date and time, requested address, amount of data transferred, browser and operating system. These server logs support secure and stable delivery and error analysis. The legal basis is our legitimate interest in a secure website under Article 6(1)(f) GDPR.
 
 ## Appointment requests
-When you use the appointment form, we process your name, email address, optional telephone number, preferred contact time, selected concern category, voluntary short description and whether you request an urgent appointment. We use this information solely to respond and prepare an appointment. The legal basis for contact and scheduling data is Article 6(1)(b) GDPR. Where voluntary information reveals health data, we process it on the basis of your explicit consent under Article 9(2)(a) GDPR. You may withdraw consent at any time for the future.
+When you use the appointment request form, your name, email address and phone number are required. Concern categories, a short description and an urgent-request flag are optional. We use this information to respond and prepare an appointment. The legal basis for contact and scheduling data is Article 6(1)(b) GDPR. Where voluntary information reveals health data, we process it on the basis of your explicit consent under Article 9(2)(a) GDPR. You may withdraw consent at any time for the future.
 
 Please do not submit medical reports, diagnoses or detailed medical histories through the form. A request is not yet an appointment confirmation.
 
 ## Storage and recipients
-The website is hosted by Render Services, Inc. Content, user accounts and appointment requests are processed and stored using Supabase. These providers act as technical service providers on our behalf. Where data is processed outside the European Economic Area, the safeguards required by the GDPR, in particular standard contractual clauses, are used. Data is disclosed to other recipients only where required by law or with your consent.
+The website is hosted by Render Services, Inc. Content, user accounts and appointment requests are processed and stored using Supabase. We use Resend to deliver appointment-request messages and, if enabled, a copy to you. The optional digital receptionist uses OpenAI to process chat messages. These services may also process data outside the European Economic Area. Further details about chat and email appear in the “Digital reception” section below.
 
-We keep appointment requests only as long as needed to handle the request, organise an appointment and establish, exercise or defend possible legal claims. Statutory retention obligations remain unaffected. Administrative accounts remain stored until deactivated. Technical logs are retained only for the period needed for security and error analysis.
+Submitted appointment requests are currently not deleted automatically after a fixed period. The practice can delete individual requests in the internal administration area. The practice still needs to approve a specific retention period and a process for email copies and backups; until then, please do not send medical reports or detailed medical histories. Statutory retention obligations remain unaffected. Administrative accounts remain stored until deactivated. Technical-log retention depends on each provider's settings.
 
 ## Cookies and local storage
 This website does not use analytics or marketing cookies. Technically necessary storage is used for the selected language, secure sign-in to the internal administration area, protection against unauthorised requests and to remember this privacy notice. It is required for the function you request. The legal basis is section 165(3) of the Austrian Telecommunications Act 2021; subsequent processing is based on Article 6(1)(f) GDPR or, for sign-in, performance of a contract.
