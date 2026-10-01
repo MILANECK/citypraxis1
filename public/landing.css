@@ -312,9 +312,11 @@
   .public-page .home-section-intro{margin-bottom:32px}
   .public-page .home-section-intro h2{font-size:36px;line-height:1.08;margin:16px 0 20px}
   .public-page .home-section-intro p{font-size:13px;max-width:380px}
-  .public-page .therapy-grid{grid-template-columns:repeat(5,minmax(230px,68vw));gap:14px;width:calc(100% + 40px);margin-inline:-20px;padding:16px 20px 48px;scroll-padding-inline:20px;scrollbar-width:none}
+  /* Definite card sizes keep the carousel visible if mobile grid painting fails. */
+  .public-page .therapy-grid{display:flex;align-items:stretch;gap:14px;width:calc(100% + 40px);margin-inline:-20px;padding:16px 20px 48px;scroll-padding-inline:20px;scrollbar-width:none}
   .public-page .therapy-grid::-webkit-scrollbar{display:none}
-  .public-page .therapy-card{aspect-ratio:.74;max-height:400px;border-radius:20px}
+  .public-page .home-therapies .therapy-grid>.therapy-card{flex:0 0 68vw;min-width:230px;min-height:310px;aspect-ratio:.74;max-height:400px;border-radius:20px;opacity:1;visibility:visible;transform:none;translate:none;isolation:auto}
+  .public-page .home-therapies .therapy-card-media>img{transform:none;backface-visibility:visible}
   .public-page .therapy-card h3{font-size:19px}
   .public-page .therapy-carousel-dots{display:flex;align-items:center;justify-content:center;gap:0;margin:0 auto 6px}
   .public-page .therapy-carousel-dots button{display:grid;place-items:center;width:24px;height:24px;padding:0;border:0;border-radius:99px;background:transparent;cursor:pointer}

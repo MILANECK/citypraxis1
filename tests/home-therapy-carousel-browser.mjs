@@ -17,8 +17,11 @@ try{
   await page.locator('.home-therapies').scrollIntoViewIfNeeded();
   const cards=page.locator('.home-therapies .therapy-card');
   assert.equal(await cards.first().evaluate(node=>getComputedStyle(node).opacity),'1');
-  await cards.first().evaluate(node=>node.classList.add('home-reveal-ready'));
-  assert.equal(await cards.first().evaluate(node=>getComputedStyle(node).opacity),'1','A stale reveal class must not hide the carousel on mobile');
+  await cards.first().evaluate(node=>node.classList.add('home-reveal-ready','therapy-reveal'));
+  const fallback=await cards.first().evaluate(node=>({opacity:getComputedStyle(node).opacity,height:node.getBoundingClientRect().height,layout:getComputedStyle(node.parentElement).display}));
+  assert.equal(fallback.opacity,'1','Stale reveal classes must not hide the carousel on mobile');
+  assert.ok(fallback.height>=310,'Mobile cards must keep a definite height');
+  assert.equal(fallback.layout,'flex','The mobile carousel must use the stable flex layout');
   await page.locator('.therapy-carousel-dots button').nth(1).click();
   await page.waitForTimeout(700);
   assert.equal(await cards.nth(1).evaluate(node=>getComputedStyle(node).opacity),'1');
