@@ -16,7 +16,6 @@ const persist=()=>{try{if(state.started&&!state.sent)sessionStorage.setItem(stor
 const clear=()=>{try{sessionStorage.removeItem(storageKey);}catch{}};
 const root=document.createElement('div');root.id='cp-chat';root.dataset.noTranslate='';
 root.innerHTML=`<div class="chat-backdrop" aria-hidden="true"></div><button class="chat-launch" aria-expanded="false" aria-controls="chat-window" aria-label="${t('Chat mit uns öffnen','Open chat with us')}"><picture class="chat-launch-icon"><source media="(prefers-reduced-motion: reduce)" srcset="/assets/icons/chat-still.svg"><img src="/assets/icons/chat-animated.svg?v=chat-interval-1" alt="" width="32" height="30"></picture><span>${t('Chat mit uns','Chat with us')}</span></button><section id="chat-window" class="chat-window" role="dialog" aria-labelledby="chat-title" aria-hidden="true" inert><header class="chat-heading"><img src="/assets/logo-symbol.png" width="30" height="42" alt=""><div><strong id="chat-title">${t('Digitaler Empfang','Digital receptionist')}</strong><small>Citypraxis · ${t('Anfragen vorbereiten','Prepare your request')}</small></div><button type="button" class="chat-close" aria-label="${t('Chat schließen','Close chat')}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header><div class="chat-scroll"><div class="chat-content"></div><p class="chat-status" role="status" aria-live="polite"></p></div><div class="chat-footer"><button type="button" data-reset>${t('Neu beginnen','Start again')}</button><a href="/datenschutz?lang=${siteLang}#digitaler-empfang">${t('Datenschutz','Privacy')}</a><span>${t('Keine Notfallhilfe','Not for emergencies')}</span></div></section>`;
-root.insertAdjacentHTML('afterbegin','<svg class="chat-goo-defs" aria-hidden="true" focusable="false"><defs><filter id="chat-goo"><feGaussianBlur in="SourceGraphic" stdDeviation="4.4" result="blur"/><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -7" result="goo"/><feBlend in="SourceGraphic" in2="goo"/></filter></defs></svg>');
 const launcherIcon=root.querySelector('.chat-launch-icon');
 launcherIcon.insertAdjacentHTML('afterend','<svg class="chat-active-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path class="chat-writing-line" d="M6 8h14"/><path class="chat-writing-line" d="M6 12h10"/><path class="chat-writing-line" d="M6 16h12"/></svg>');
 const closeButton=root.querySelector('.chat-close');
@@ -48,21 +47,7 @@ function syncLanguage(result){
   $('.chat-footer span').textContent=t('Keine Notfallhilfe','Not for emergencies');
 }
 function scrollEnd(){requestAnimationFrame(()=>{const scroll=$('.chat-scroll'),review=$('.conversation-review');scroll.scrollTop=!state.started?0:state.ready&&review?review.getBoundingClientRect().top-scroll.getBoundingClientRect().top+scroll.scrollTop-20:scroll.scrollHeight;});}
-let morphTimer;
-function syncChatOrigin(){
-  const launch=$('.chat-launch').getBoundingClientRect(),style=getComputedStyle(panel);
-  const panelRight=window.innerWidth-parseFloat(style.right),panelBottom=window.innerHeight-parseFloat(style.bottom);
-  panel.style.setProperty('--chat-origin-x',`${Math.round(launch.right-panelRight)}px`);
-  panel.style.setProperty('--chat-origin-y',`${Math.round(launch.bottom-panelBottom)}px`);
-  panel.style.setProperty('--chat-origin-scale-x',String(launch.width/panel.offsetWidth));
-  panel.style.setProperty('--chat-origin-scale-y',String(launch.height/panel.offsetHeight));
-}
-function setOpen(value,{returnFocus=true}={}){
-  syncChatOrigin();
-  clearTimeout(morphTimer);
-  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){root.classList.add('is-morphing');morphTimer=setTimeout(()=>root.classList.remove('is-morphing'),620);}
-  opened=value;root.classList.toggle('is-open',value);$('.chat-launch').setAttribute('aria-expanded',String(value));panel.setAttribute('aria-hidden',String(!value));panel.inert=!value;updateLauncher();syncChatKeyboard();if(value){$('.chat-minimise').focus();scrollEnd();}else if(returnFocus)$('.chat-launch').focus();else if(root.contains(document.activeElement))document.activeElement.blur();
-}
+function setOpen(value,{returnFocus=true}={}){opened=value;root.classList.toggle('is-open',value);$('.chat-launch').setAttribute('aria-expanded',String(value));panel.setAttribute('aria-hidden',String(!value));panel.inert=!value;updateLauncher();syncChatKeyboard();if(value){$('.chat-minimise').focus();scrollEnd();}else if(returnFocus)$('.chat-launch').focus();else if(root.contains(document.activeElement))document.activeElement.blur();}
 let mobileViewportWidth=window.innerWidth,mobileViewportHeight=window.visualViewport?.height||window.innerHeight;
 function syncChatKeyboard(){
   const viewport=window.visualViewport,visibleHeight=viewport?.height||window.innerHeight;
