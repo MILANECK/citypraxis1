@@ -26,6 +26,7 @@ try{
   assert.equal(await page.locator('.chat-launch span').evaluate(el=>getComputedStyle(el).display),'none');
   assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).animationName),'none');
   assert.deepEqual(await page.locator('.chat-writing-line').evaluateAll(els=>els.map(el=>getComputedStyle(el).animationName)),['chat-line-write','chat-line-write','chat-line-write']);
+  assert.deepEqual(await page.locator('.chat-writing-line').evaluateAll(els=>els.map(el=>el.getBBox().x)),[6,6,6]);
   await page.locator('#conversation-input').fill('Hello');
   assert.deepEqual(await page.locator('.chat-writing-line').evaluateAll(els=>els.map(el=>getComputedStyle(el).animationName)),['none','none','none']);
   await page.locator('#conversation-input').fill('');
@@ -59,9 +60,15 @@ try{
   assert.ok(await launcher.evaluate(el=>el.getBoundingClientRect().left>=0));
   assert.ok(await page.locator('.chat-launch span').evaluate(el=>el.scrollWidth<=el.clientWidth));
   await page.setViewportSize({width:390,height:844});
+  assert.equal(await launcher.evaluate(el=>getComputedStyle(el).display),'flex');
+  const minimisedIconCenter=await page.locator('.chat-active-icon').evaluate(el=>{const bounds=el.getBoundingClientRect();return bounds.left+bounds.width/2;});
   await launcher.click();
   assert.match(await launcher.evaluate(el=>getComputedStyle(el).backgroundImage),/linear-gradient/);
+  assert.equal(await launcher.evaluate(el=>getComputedStyle(el).display),'flex');
+  assert.equal(await page.locator('.chat-launch span').evaluate(el=>getComputedStyle(el).display),'block');
+  assert.match(await launcher.evaluate(el=>getComputedStyle(el).transitionProperty),/width/);
   await page.waitForFunction(()=>Math.abs(document.querySelector('.chat-launch')?.getBoundingClientRect().width-58)<1);
+  assert.ok(Math.abs(await page.locator('.chat-active-icon').evaluate(el=>{const bounds=el.getBoundingClientRect();return bounds.left+bounds.width/2;})-minimisedIconCenter)<1);
   assert.ok(await page.locator('.chat-active-icon').evaluate(el=>{const icon=el.getBoundingClientRect(),button=el.closest('button').getBoundingClientRect();return Math.abs(icon.left+icon.width/2-button.left-button.width/2)<1;}));
   await page.locator('#conversation-input').focus();
   await page.setViewportSize({width:390,height:500});
