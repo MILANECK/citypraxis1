@@ -63,10 +63,12 @@ try{
   assert.ok(await page.locator('.chat-launch span').evaluate(el=>el.scrollWidth<=el.clientWidth));
   await page.setViewportSize({width:390,height:844});
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).display),'flex');
+  assert.equal(await launcher.evaluate(el=>getComputedStyle(el).borderTopLeftRadius),'40px');
   const minimisedIconCenter=await page.locator('.chat-active-icon').evaluate(el=>{const bounds=el.getBoundingClientRect();return bounds.left+bounds.width/2;});
   await launcher.click();
   assert.match(await launcher.evaluate(el=>getComputedStyle(el).backgroundImage),/linear-gradient/);
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).display),'flex');
+  assert.equal(await launcher.evaluate(el=>getComputedStyle(el).borderTopLeftRadius),'40px');
   assert.equal(await page.locator('.chat-launch span').evaluate(el=>getComputedStyle(el).display),'block');
   assert.match(await launcher.evaluate(el=>getComputedStyle(el).transitionProperty),/width/);
   await page.waitForFunction(()=>Math.abs(document.querySelector('.chat-launch')?.getBoundingClientRect().width-58)<1);
@@ -75,8 +77,8 @@ try{
   await page.locator('.chat-minimise').click();
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).outlineStyle),'none');
   await launcher.click();
-  await page.locator('#conversation-input').focus();
   await page.setViewportSize({width:390,height:500});
+  await page.locator('#conversation-input').click();
   await page.waitForFunction(()=>document.querySelector('#cp-chat')?.classList.contains('keyboard-visible'));
   assert.ok(await page.locator('.chat-window').evaluate(el=>{const bounds=el.getBoundingClientRect();return bounds.top>=35&&bounds.top<=55&&bounds.bottom<=innerHeight-10;}));
   await page.setViewportSize({width:390,height:844});
