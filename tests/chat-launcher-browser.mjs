@@ -46,6 +46,8 @@ try{
   assert.equal(await page.locator('.chat-close').getAttribute('aria-label'),'End chat');
   await page.locator('.chat-minimise').click();
   assert.equal(await launcher.evaluate(el=>getComputedStyle(el).backgroundColor),'rgb(220, 238, 245)');
+  assert.equal(await launcher.evaluate(el=>el===document.activeElement),false);
+  assert.equal(await launcher.evaluate(el=>getComputedStyle(el).outlineStyle),'none');
   assert.equal(await page.locator('.chat-active-icon').evaluate(el=>getComputedStyle(el).display),'block');
   assert.equal(await page.locator('.chat-launch span').textContent(),'Continue chat');
   await page.reload();
@@ -70,6 +72,9 @@ try{
   await page.waitForFunction(()=>Math.abs(document.querySelector('.chat-launch')?.getBoundingClientRect().width-58)<1);
   assert.ok(Math.abs(await page.locator('.chat-active-icon').evaluate(el=>{const bounds=el.getBoundingClientRect();return bounds.left+bounds.width/2;})-minimisedIconCenter)<1);
   assert.ok(await page.locator('.chat-active-icon').evaluate(el=>{const icon=el.getBoundingClientRect(),button=el.closest('button').getBoundingClientRect();return Math.abs(icon.left+icon.width/2-button.left-button.width/2)<1;}));
+  await page.locator('.chat-minimise').click();
+  assert.equal(await launcher.evaluate(el=>getComputedStyle(el).outlineStyle),'none');
+  await launcher.click();
   await page.locator('#conversation-input').focus();
   await page.setViewportSize({width:390,height:500});
   await page.waitForFunction(()=>document.querySelector('#cp-chat')?.classList.contains('keyboard-visible'));
