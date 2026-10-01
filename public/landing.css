@@ -201,6 +201,8 @@
 .public-page .footer-top{position:relative;z-index:1;padding-block:0 44px;gap:40px}
 .public-page .footer-top h3{font-family:Rubik,Arial,sans-serif;font-size:12px;font-weight:600;margin-bottom:18px;color:var(--home-ink)}
 .public-page .footer-top p,.public-page .footer-top a{font-size:12px;line-height:1.85;color:var(--home-muted)}
+.public-page .footer-top a.footer-action{display:inline-flex;align-items:center;gap:6px;font-weight:500}
+.public-page .footer-top .footer-action .arrow-symbol{width:14px;height:14px;flex-basis:14px}
 .public-page .footer-top>div:first-child>p{font-family:Rubik,Arial,sans-serif;font-size:25px;line-height:1.2;color:var(--home-ink);margin-top:22px}
 .public-page .footer-logo{width:200px;max-width:100%}
 .public-page .footer-identity{display:flex;align-items:center;gap:12px;margin-bottom:22px}.public-page .footer-identity .footer-symbol{display:block;width:34px;height:auto;margin:0;order:-1}.public-page .footer-identity .footer-logo{width:190px;margin:0}
