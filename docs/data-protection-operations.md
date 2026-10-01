@@ -20,6 +20,10 @@ Provider defaults are separate from the practice's own deletion policy: OpenAI's
 
 ## Owner decisions to record
 
+### Publicly verifiable identity clues
+
+The [previous Citypraxis website](https://citypraxis.wien/) publishes the practice address **Stubenbastei 12/11, 1010 Wien**, `info@citypraxis.wien` and **0699 12682157**. It describes physiotherapy, osteopathy, speech therapy and massage, but its available page text does not identify the legal website operator or provide an Impressum or Datenschutz link. The [Physio Austria therapist listing](https://www.physioaustria.at/print/view/pdf/therapist_full_view/embed_1?view_args%5B0%5D=2347) independently associates **Isabella Casny** with Citypraxis and the same contact details. This supports the contact details in the draft notice, but does not establish that she is the sole legal controller of the new website or confirm the asserted MA 15 decision, register details, VAT ID, or company status.
+
 1. **Controller and imprint.** Confirm the legal name, practice address, phone, professional registration, supervisory authority and whether a company-register number or VAT ID applies. The current seeded legal notice names Isabella Casny; this must be verified against the actual operator. Record who is responsible for rights requests at `info@citypraxis.wien`.
 2. **Retention.** Approve a concrete rule for open, closed and abandoned requests and for full chat transcripts. A candidate is monthly review of open requests and deletion of closed requests 90 days after closure, subject to any documented legal hold. This is a proposal, **not an active deletion rule**. Decide whether to keep a minimal non-medical record of the request after transcript deletion. Document separate mailbox and backup retention.
 3. **Providers and regions.** Confirm the production Render and Supabase regions, account owners, active processing agreements and any third-country transfers for Render, Supabase, OpenAI and Resend. Review Google Maps separately. A selected EU database region does not by itself establish EU-only processing by every provider or subprocessor.
