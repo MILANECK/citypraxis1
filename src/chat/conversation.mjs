@@ -25,11 +25,12 @@ The application appends ONE follow-up prompt. It first invites booking, asks for
 const responseSchema={type:'object',additionalProperties:false,properties:{kind:{type:'string',enum:['appointment','practice_question','off_topic','medical','emergency','compliment']},input_language:{type:'string',enum:['de','en','mixed','other','unclear']},answer:{type:'string'},related_pages:{type:'array',items:{type:'string'},maxItems:3},booking_intent:{type:'string',enum:['request','defer','unspecified']},reason:{type:['string','null']},availability:{type:['string','null']},first_name:{type:['string','null']},last_name:{type:['string','null']},patient_status:{type:['string','null'],enum:[null,'new','existing','unsure']}},required:['kind','input_language','answer','related_pages','booking_intent','reason','availability','first_name','last_name','patient_status']};
 const localized=(lang,de,en)=>lang==='en'?en:de;
 const bookingMethodQuestion=raw=>/^(?:how\s+(?:(?:do|can|could|should|would)\s+i|to)\s+(?:(?:make|send|submit)\s+(?:(?:an?|the)\s+)?(?:appointment(?: request)?|booking|request)|(?:book|request)\s+(?:(?:an?|the)\s+)?(?:appointment|booking))|where\s+(?:can|do)\s+i\s+(?:book|make|send|submit|request)\s+(?:(?:an?|the)\s+)?(?:appointment|booking|request)|wie\s+(?:(?:kann|soll|möchte)\s+ich\s+(?:einen?|eine)\s+(?:termin|terminanfrage)\s+(?:buchen|vereinbaren|anfragen|stellen)|(?:buche|vereinbare|stelle)\s+ich\s+(?:einen?|eine)\s+(?:termin|terminanfrage)))\s*[?.!]*$/iu.test(raw.trim());
+const directBookingRequest=raw=>/^(?:(?:erst)?termin(?:anfrage)?\s+(?:bitte\s+)?(?:buchen|machen|stellen|vorbereiten)|(?:bitte\s+)?(?:eine\s+)?terminanfrage\s+(?:jetzt\s+)?(?:machen|stellen|vorbereiten)|bitte\s+eine\s+terminanfrage|ich\s+(?:möchte|will|brauche)\s+(?:jetzt\s+)?(?:einen?|eine)\s+(?:termin|terminanfrage)\s+(?:buchen|machen|stellen|vorbereiten)|i\s+(?:want|need|would like)\s+to\s+(?:book|make|prepare|submit)\s+(?:an?\s+)?(?:appointment|booking|appointment request))\s*[.!\s]*$/iu.test(raw.trim());
 const chatBookingChoice=raw=>/^(?:yes(?: please)?|sure|okay|ok|here|in (?:the )?chat|(?:continue|do it|let'?s do it|let'?s continue)(?: here| in (?:the )?chat)?|ja(?: bitte)?|gerne|hier|im chat|(?:weiter|machen wir weiter)(?: hier| im chat)?)[.!\s]*$/iu.test(raw);
 const bookingFormLink=lang=>`[${localized(lang,'Formular für Terminanfragen','appointment request form')}](${localizedPageUrl(chatPages().find(page=>page.id==='booking'),lang)})`;
 const languagePrompt='Which language would you prefer for this chat: German or English? / Möchten Sie auf Deutsch oder Englisch weiterschreiben?';
 const selectedLanguage=raw=>/^(?:(?:de|deutsch|german|auf deutsch|in german)(?: bitte| please)?|(?:ich möchte|ich bevorzuge|i prefer|i would prefer|i'd prefer|let's use) (?:deutsch|german))[.!\s]*$/iu.test(raw)?'de':/^(?:(?:en|englisch|english|auf englisch|in english)(?: bitte| please)?|(?:ich möchte|ich bevorzuge|i prefer|i would prefer|i'd prefer|let's use) (?:englisch|english))[.!\s]*$/iu.test(raw)?'en':null;
-const fixedMessageLanguage=raw=>/^(?:hallo|guten (?:tag|morgen|abend)|servus|grüß gott|ich möchte|ich brauche|ich hätte gerne|kann ich|bitte einen? termin)\b/iu.test(raw)?'de':/^(?:hello|hi|hey|good (?:morning|afternoon|evening)|i want|i need|i(?:'d| would) like|can i (?:book|make|request)|please (?:book|make))\b/iu.test(raw)?'en':null;
+const fixedMessageLanguage=raw=>/^(?:hallo|guten (?:tag|morgen|abend)|servus|grüß gott|ich möchte|ich brauche|ich hätte gerne|kann ich|bitte einen? termin|bitte eine terminanfrage|(?:erst)?termin(?:anfrage)?\s+(?:(?:bitte|jetzt)\s+)?(?:buchen|machen|stellen|vorbereiten)|wie\s+(?:kann|soll|möchte|buche|vereinbare|stelle))\b/iu.test(raw)?'de':/^(?:hello|hi|hey|good (?:morning|afternoon|evening)|i want|i need|i(?:'d| would) like|can i (?:book|make|request)|please (?:book|make))\b/iu.test(raw)?'en':null;
 function clearMessageLanguage(raw){
   const english=(raw.match(/\b(?:i|my|me|you|your|we|our|have|am|need|want|would|could|can|what|when|where|how|are|with|about|an|the|some|please|appointment|pricing|price|pain|hurts|thinking|give)\b/giu)||[]).length;
   const german=(raw.match(/\b(?:hallo|ich|mein|meine|mir|sie|ihr|habe|haben|und|möchte|brauche|termin|wegen|rückenschmerzen|schmerzen|preise|wie|wann|wo|kann|eine|einen|für|mit|deutsch)\b/giu)||[]).length;
@@ -362,7 +363,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         forcedLanguage ||= lang;
       }
       if(forcedLanguage){lang=forcedLanguage;s.language=lang;s.languageResolved=true;}
-      if(fixedMessageLanguage(raw)&&(/^(?:hallo|guten (?:tag|morgen|abend)|servus|grüß gott|hello|hi|hey|good (?:morning|afternoon|evening))[.!\s]*$/iu.test(raw)||/\b(?:appointment|booking|termin|ersttermin)\b/iu.test(raw))){lang=fixedMessageLanguage(raw);s.language=lang;}
+      if(fixedMessageLanguage(raw)&&(/^(?:hallo|guten (?:tag|morgen|abend)|servus|grüß gott|hello|hi|hey|good (?:morning|afternoon|evening))[.!\s]*$/iu.test(raw)||/\b(?:appointment|booking|termin|ersttermin)\b/iu.test(raw)||bookingMethodQuestion(raw)||directBookingRequest(raw))){lang=fixedMessageLanguage(raw);s.language=lang;}
       const draft={...s.draft};
       if(rememberedReason&&!draft.reason)draft.reason=rememberedReason;
       absorbContact(raw,draft,stage);
@@ -379,7 +380,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const declined=declinesContact(raw,stage)&&!draft[stage==='name'?'first_name':stage];
       const simpleGreeting=/^(?:hello|hi|hey|good morning|good afternoon|good evening|hallo|guten tag|guten morgen|guten abend|servus|grüß gott)[.!\s]*$/iu.test(raw);
       const directPageLink=pageFollowUp(raw,s.messages,lang);
-      const simpleAppointment=stage==='reason'&&/^(?:(?:i want|i need|i(?:'d| would) like|can i (?:book|make|request)|please (?:book|make)) (?:an? )?(?:appointment|booking)(?: (?:please|at (?:citypraxis|your (?:practice|praxis))))?|(?:ich möchte|ich brauche|ich hätte gerne|kann ich|bitte) (?:einen? )?(?:termin|ersttermin)(?: (?:bitte|vereinbaren|buchen))?)[.!\s]*$/iu.test(raw);
+      const simpleAppointment=directBookingRequest(raw)||stage==='reason'&&/^(?:(?:i want|i need|i(?:'d| would) like|can i (?:book|make|request)|please (?:book|make)) (?:an? )?(?:appointment|booking)(?: (?:please|at (?:citypraxis|your (?:practice|praxis))))?|(?:ich möchte|ich brauche|ich hätte gerne|kann ich|bitte) (?:einen? )?(?:termin|ersttermin)(?: (?:bitte|vereinbaren|buchen))?)[.!\s]*$/iu.test(raw);
       const continueInChat=s.bookingChoicePrompted&&chatBookingChoice(raw);
       s.bookingChoicePrompted=false;
       if(declined){
@@ -401,8 +402,9 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         draft.bookingApproved=true;draft.bookingDeclined=false;
         answer=localized(lang,'Gerne, wir bereiten die Terminanfrage hier im Chat vor.','Of course, let’s prepare your appointment request here in chat.');
       }else if(simpleAppointment){
+        const alreadyPreparing=draft.bookingApproved;
         draft.bookingApproved=true;draft.bookingDeclined=false;
-        answer=localized(lang,'Gerne helfe ich Ihnen, eine Terminanfrage für die Citypraxis vorzubereiten.','Of course, I can help you request an appointment at CityPraxis.');
+        answer=alreadyPreparing?localized(lang,'Ihre Terminanfrage ist bereits begonnen; ich verwende die Angaben, die Sie mir schon gegeben haben.','Your appointment request is already underway; I’ll use the details you’ve shared.'):localized(lang,'Ja, gerne bereite ich Ihre Terminanfrage jetzt vor.','Of course, I can prepare your appointment request now.');
       }else if(staleAffirmation){
         clarificationRequested=true;s.awaitingBookingConfirmation=true;
         answer=localized(lang,'Nur zur Sicherheit: Möchten Sie jetzt eine neue Terminanfrage vorbereiten?','Just to confirm: would you like to start a new appointment request now?');
