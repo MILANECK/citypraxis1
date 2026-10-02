@@ -24,8 +24,11 @@ try{
       assert.ok(row.every(item=>Math.abs(item.y-row[0].y)<2),`${lang}: all four footer cells in a row should align vertically`);
       assert.ok(row.every((item,index)=>Math.abs(item.x-layout.heads[index].x)<2),`${lang}: all footer rows should share column edges`);
     }
-    assert.ok(layout.bottom.every((item,index)=>Math.abs(item.x-layout.heads[index].x)<2),`${lang}: bottom links should align with the four columns`);
-    assert.ok(layout.heads[1].x>540&&layout.heads[2].x-layout.heads[1].x<300,`${lang}: information columns should be grouped on the right`);
+    assert.ok(Math.abs(layout.bottom[0].x-layout.heads[0].x)<2,`${lang}: copyright should align with the logo`);
+    assert.ok(Math.abs(layout.bottom[1].x-layout.heads[2].x)<2,`${lang}: legal links should begin below contact details`);
+    assert.ok(Math.abs(layout.bottom[2].x-layout.heads[3].x)<2,`${lang}: cookie link should begin below the final column`);
+    assert.ok(Math.abs(layout.bottom[3].right-layout.heads[3].right)<2,`${lang}: practice login should end at the final column edge`);
+    assert.ok(layout.heads[1].x>700&&layout.heads[2].x-layout.heads[1].x<200,`${lang}: information columns should match the compact reference layout`);
     assert.ok(Math.abs(layout.line.x-layout.heads[0].x)<2,`${lang}: rule should begin at the first column`);
     assert.equal(layout.overflow,0,`${lang}: footer should not overflow the viewport`);
     await page.close();
