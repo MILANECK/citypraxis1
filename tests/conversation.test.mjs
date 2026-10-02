@@ -91,7 +91,7 @@ test('a greeting stays welcoming and a direct appointment request starts with th
     assert.equal((await turn('hello')).message,'Hello! How can I help you?');
     const request=await turn('I want an appointment');
     assert.match(request.message,/prepare your appointment request now/);
-    assert.match(request.message,/What would you like CityPraxis to help you with\?/);
+    assert.match(request.message,/What is the reason for your appointment request\?/);
     assert.doesNotMatch(request.message,/One sentence is enough|first and last name|confirmed/i);
     assert.equal((await turn('Hallo','de')).message,'Hallo! Wie kann ich Ihnen helfen?');
     assert.equal(calls,0);
@@ -107,13 +107,13 @@ test('a booking how-to question offers the form and chat without starting intake
     assert.equal(guidance.ready,false);
     assert.match(guidance.message,/\[appointment request form\]\(\/termin\?lang=en#booking-form\)/);
     assert.match(guidance.message,/here in chat/);
-    assert.doesNotMatch(guidance.message,/What would you like CityPraxis to help you with\?/);
-    assert.match((await turn(english,'continue here','en')).message,/What would you like CityPraxis to help you with\?/);
+    assert.doesNotMatch(guidance.message,/What is the reason for your appointment request\?/);
+    assert.match((await turn(english,'continue here','en')).message,/What is the reason for your appointment request\?/);
     const german=newSession();
     const germanGuidance=await turn(german,'Wie kann ich einen Termin buchen?','de');
     assert.match(germanGuidance.message,/\[Formular für Terminanfragen\]\(\/termin\?lang=de#booking-form\)/);
     assert.match(germanGuidance.message,/hier im Chat/);
-    assert.match((await turn(german,'im Chat','de')).message,/Wobei dürfen wir Ihnen in der Citypraxis helfen\?/);
+    assert.match((await turn(german,'im Chat','de')).message,/Was ist der Anlass für Ihre Terminanfrage\?/);
     const moreGuidance=await turn(newSession(),'wie stelle ich eine Terminanfrage','en');
     assert.equal(moreGuidance.language,'de');
     assert.match(moreGuidance.message,/\[Formular für Terminanfragen\]\(\/termin\?lang=de#booking-form\)/);
@@ -129,7 +129,7 @@ test('short German booking requests use already supplied details and reach revie
   }});
   const turn=async(token,message,language='de')=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{
-    for(const request of ['Ersttermin bitte buchen','Terminanfrage jetzt machen','bitte eine Terminanfrage','Termin buchen','ich möchte jetzt einen Termin buchen']){
+    for(const request of ['Ersttermin bitte buchen','Terminanfrage jetzt machen','bitte eine Terminanfrage','Termin buchen','ich möchte jetzt einen Termin buchen','Ich hätte gern einen Termin.','Können Sie mir einen Termin geben?']){
       const token=newSession();
       const first=await turn(token,'Mein Name ist Anna Novak, anna@example.test, +43 699 12682157. Ich habe Schulterschmerzen.');
       assert.equal(first.ready,false);
@@ -141,12 +141,43 @@ test('short German booking requests use already supplied details and reach revie
     const withoutDetails=newSession();
     const beginning=await turn(withoutDetails,'Termin buchen');
     assert.equal(beginning.ready,false);
-    assert.match(beginning.message,/Wobei dürfen wir Ihnen in der Citypraxis helfen\?/);
-    assert.match((await turn(withoutDetails,'Terminanfrage jetzt machen')).message,/Wobei dürfen wir Ihnen in der Citypraxis helfen\?/);
+    assert.match(beginning.message,/Was ist der Anlass für Ihre Terminanfrage\?/);
+    assert.match((await turn(withoutDetails,'Terminanfrage jetzt machen')).message,/Was ist der Anlass für Ihre Terminanfrage\?/);
     const germanOnEnglishSite=await turn(newSession(),'Terminanfrage jetzt machen','en');
     assert.equal(germanOnEnglishSite.language,'de');
-    assert.match(germanOnEnglishSite.message,/Wobei dürfen wir Ihnen in der Citypraxis helfen\?/);
-    assert.equal(calls,5);
+    assert.match(germanOnEnglishSite.message,/Was ist der Anlass für Ihre Terminanfrage\?/);
+    assert.equal(calls,7);
+  }finally{process.env=old;}
+});
+test('common German and English booking wording starts intake or offers both paths',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let aiCalls=0;const service=createConversationService({fetcher:async()=>{aiCalls++;throw Error('Common booking wording should not need AI');}});
+  const turn=async(message,siteLanguage)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:newSession(),language:siteLanguage,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const requests={
+      de:['Ich möchte einen Termin.','Ich hätte gern einen Termin.','Ich würde gerne einen Termin ausmachen.','Ich brauche einen Termin.','Können Sie mir bitte einen Termin geben?','Kann ich einen Termin vereinbaren?','Ich will eine Terminanfrage stellen.','Termin vereinbaren.','Bitte um einen Termin.','Ich möchte mich für einen Termin anmelden.','Bitte machen Sie mir eine Terminanfrage.'],
+      en:["I'd like an appointment.",'I need an appointment.','Please submit an appointment request.','Could you help me book an appointment?','Can I request an appointment?','I want to make a booking.','Please book me an appointment.']
+    };
+    for(const [language,phrases] of Object.entries(requests))for(const phrase of phrases){
+      const result=await turn(phrase,language==='de'?'en':'de');
+      assert.equal(result.status,200,phrase);
+      assert.equal(result.language,language,phrase);
+      assert.match(result.message,language==='de'?/Was ist der Anlass für Ihre Terminanfrage\?/:/What is the reason for your appointment request\?/,phrase);
+      assert.equal(result.ready,false,phrase);
+    }
+    const methods={
+      de:['Wie kann ich einen Termin vereinbaren?','Wie bekomme ich einen Termin?','Wie funktioniert die Terminanfrage?','Wo kann ich eine Terminanfrage stellen?','Kann ich die Terminanfrage über das Formular stellen?'],
+      en:['How do I request an appointment?','Where can I book?','How does booking work?','Can I use your booking form?']
+    };
+    for(const [language,phrases] of Object.entries(methods))for(const phrase of phrases){
+      const result=await turn(phrase,language==='de'?'en':'de');
+      assert.equal(result.status,200,phrase);
+      assert.equal(result.language,language,phrase);
+      assert.match(result.message,language==='de'?/\[Formular für Terminanfragen\]\(\/termin\?lang=de#booking-form\)/:/\[appointment request form\]\(\/termin\?lang=en#booking-form\)/,phrase);
+      assert.match(result.message,language==='de'?/hier im Chat/:/here in chat/,phrase);
+      assert.doesNotMatch(result.message,/Was ist der Anlass|What is the reason/);
+    }
+    assert.equal(aiCalls,0);
   }finally{process.env=old;}
 });
 test('a first-name greeting still requires a full name before the request can be sent',async()=>{
@@ -324,6 +355,29 @@ test('asking about free appointment slots proactively reoffers a request after p
     assert.doesNotMatch(availability.message,/first and last name/);
   }finally{process.env=old;}
 });
+test('availability questions in both languages do not silently approve booking intake',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const service=createConversationService({fetcher:async(_,options)=>{
+    const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage,german=/[äöüß]|\b(?:Ich|Haben|Termin)\b/iu.test(raw);
+    const value=/Nackenschmerzen|neck pain/iu.test(raw)
+      ?answer({kind:'medical',input_language:german?'de':'en',booking_intent:'unspecified',reason:german?'Nackenschmerzen':'Neck pain',answer:german?'Unser Team kann Ihr Anliegen persönlich besprechen.':'Our team can discuss your concern in person.'})
+      :answer({kind:'practice_question',input_language:german?'de':'en',booking_intent:'request',answer:german?'Unser Empfangsteam kann einen passenden Termin mit Ihnen vereinbaren.':'Our reception team can arrange a suitable time with you.'});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const turn=async(token,language,message)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    for(const [language,concern,question,invitation] of [
+      ['de','Ich habe Nackenschmerzen.','Haben Sie einen Termin frei?',/Möchten Sie, dass ich eine Terminanfrage/],
+      ['en','I have neck pain.','Are any appointments available?',/Would you like me to prepare an appointment request/]
+    ]){
+      const token=newSession();await turn(token,language,concern);
+      const response=await turn(token,language,question);
+      assert.equal(response.ready,false);
+      assert.match(response.message,invitation);
+      assert.doesNotMatch(response.message,/Vor- und Nachnamen|first and last name/);
+    }
+  }finally{process.env=old;}
+});
 test('an affirmative appointment answer moves directly to the name',async()=>{
   const previous={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   let calls=0;const service=createConversationService({getFacts:async()=>conversationFacts({}),fetcher:async()=>{calls++;return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({booking_intent:'unspecified',reason:'Shoulder concern',answer:'Thank you. Our team can clarify the next step.'}))}]}]})};}});
@@ -360,7 +414,7 @@ test('contact details can arrive together, missing fields are requested separate
     const noReason=newSession();await turn(noReason,'I want an appointment');
     const contacts=await turn(noReason,'My name is Anna Novak, anna@example.test, +43 699 12682157');
     assert.equal(contacts.ready,false);
-    assert.match(contacts.message,/What would you like CityPraxis to help you with/);
+    assert.match(contacts.message,/What is the reason for your appointment request/);
     let finish;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/finish',{token:noReason,confirmed:true},(status,data)=>finish={status,...data});
     assert.equal(finish.code,'invalid_request');
     const withReason=await turn(noReason,'I have headaches');
@@ -381,7 +435,7 @@ test('contacts supplied before the concern still lead directly to the final revi
       const token=newSession();
       const first=await turn(token,contacts);
       assert.equal(first.ready,false);
-      assert.match(first.message,/Wobei dürfen wir Ihnen/);
+      assert.match(first.message,/Was ist der Anlass für Ihre Terminanfrage/);
       const review=await turn(token,'schulter schmerz');
       assert.equal(review.ready,true);
       assert.ok(review.summary.some(([,value])=>value==='Anna Novak'));
@@ -532,6 +586,35 @@ test('a short yes after declining and changing topics asks again before starting
     assert.equal(explicit.ready,false);
   }finally{process.env=old;}
 });
+test('German booking consent, uncertainty and decline follow the same safeguards as English',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let aiCalls=0;const service=createConversationService({fetcher:async(_,options)=>{
+    aiCalls++;const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
+    const value=/Rückenschmerzen/iu.test(raw)
+      ?answer({kind:'medical',input_language:'de',booking_intent:'unspecified',reason:'Rückenschmerzen',answer:'Unser Team kann Ihr Anliegen persönlich besprechen.'})
+      :/keinen Termin/iu.test(raw)
+        ?answer({kind:'practice_question',input_language:'de',booking_intent:'defer',answer:'Gerne beantworte ich zunächst Ihre Fragen.'})
+        :answer({kind:'practice_question',input_language:/^Wie teuer/iu.test(raw)?'de':'en',booking_intent:'unspecified',answer:'Die Preise finden Sie auf unserer Website.',related_pages:[]});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const turn=async(token,message,language='de')=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const token=newSession();
+    assert.match((await turn(token,'Ich habe Rückenschmerzen.')).message,/Möchten Sie, dass ich eine Terminanfrage/);
+    const declined=await turn(token,'Nein, ich möchte keinen Termin.');
+    assert.doesNotMatch(declined.message,/Vor- und Nachnamen/);
+    await turn(token,'Wie teuer ist es, einen Termin zu buchen?');
+    const clarification=await turn(token,'Ja.');
+    assert.match(clarification.message,/Nur zur Sicherheit/);
+    assert.doesNotMatch(clarification.message,/Vor- und Nachnamen/);
+    assert.match((await turn(token,'Vielleicht.')).message,/noch nichts vor/);
+    assert.match((await turn(token,'Ja bitte.')).message,/Vor- und Nachnamen/);
+    const fresh=newSession();
+    await turn(fresh,'Ich habe Rückenschmerzen.');
+    assert.match((await turn(fresh,'Natürlich.')).message,/Vor- und Nachnamen/);
+    assert.equal(aiCalls,4);
+  }finally{process.env=old;}
+});
 test('conversational reception validates, reviews, edits and submits exactly once',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';delete process.env.RESEND_API_KEY;
   let value=answer({reason:'Shoulder concern',first_name:'Test',last_name:'Visitor'}),calls=0,saved=[];
@@ -586,9 +669,9 @@ test('AI errors, malformed output, boundaries, limits and concurrent requests ar
     assert.match(offTopicGerman.message,/Ich beantworte gern Ihre Fragen zur Citypraxis/);
     assert.match(offTopicGerman.message,/Was möchten Sie wissen\?/);
     value=answer({kind:'compliment',answer:'Thank you for saying that!'});
-    assert.equal((await call(newSession(),'I think this chat is very good.')).message,'Thank you.\n\nWhat would you like CityPraxis to help you with?');
+    assert.equal((await call(newSession(),'I think this chat is very good.')).message,'Thank you.');
     value=answer({kind:'compliment',answer:'Das freut uns sehr!'});
-    assert.equal((await call(newSession(),'Euer Team ist sehr freundlich.',{language:'de'})).message,'Danke.\n\nWobei dürfen wir Ihnen in der Citypraxis helfen?');
+    assert.equal((await call(newSession(),'Euer Team ist sehr freundlich.',{language:'de'})).message,'Danke.');
     const aiCallsBeforeEmergency=calls;assert.equal((await call(token,'I cannot breathe')).emergency,true);assert.equal(calls,aiCallsBeforeEmergency);
     const germanEmergency=await call(newSession(),'Ich habe Atemnot',{language:'en'});
     assert.equal(germanEmergency.emergency,true);assert.equal(germanEmergency.language,'de');assert.match(germanEmergency.message,/Dieser Chat ist kein Notfalldienst/);
