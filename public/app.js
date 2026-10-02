@@ -363,15 +363,16 @@ function bindTherapyNavigation(){
     stopWave?.();
     const heading=target.querySelector('h1,h2,h3')||target;
     heading.classList.remove('home-reveal-ready','home-reveal-visible','interior-load-reveal');
-    if(reducedMotion.matches){if(location.hash!==link.hash)history.pushState(null,'',link.hash);target.scrollIntoView({behavior:'instant',block:'start'});return;}
+    const start=window.scrollY;
+    const headingBox=heading.getBoundingClientRect();
+    const end=Math.max(0,Math.min(document.documentElement.scrollHeight-innerHeight,start+headingBox.top+headingBox.height/2-innerHeight/2));
+    if(reducedMotion.matches){if(location.hash!==link.hash)history.pushState(null,'',link.hash);window.scrollTo({top:end,behavior:'instant'});return;}
     const finish=()=>{
       if(event.detail===0){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});heading.removeAttribute('tabindex');}
       // Let the final scroll position paint before animating the stationary heading.
       pendingWaveFrame=requestAnimationFrame(()=>{pendingWaveFrame=requestAnimationFrame(()=>{pendingWaveFrame=0;waveHeading(heading);});});
     };
     if(location.hash!==link.hash)history.pushState(null,'',link.hash);
-    const start=window.scrollY;
-    const end=Math.max(0,Math.min(document.documentElement.scrollHeight-innerHeight,start+target.getBoundingClientRect().top-125));
     const distance=end-start;
     if(Math.abs(distance)<2){finish();return;}
     const duration=Math.min(1900,Math.max(1150,1000+Math.abs(distance)*.23));

@@ -30,8 +30,8 @@ try{
   const middle=await page.evaluate(()=>window.scrollY);
   assert.equal(await page.locator(target).locator('.therapy-wave-glyph').count(),0,'The wave must remain paused until scrolling ends');
   await page.waitForFunction(()=>[...document.querySelectorAll('.therapy-wave-glyph')].some(glyph=>Math.abs(new DOMMatrixReadOnly(getComputedStyle(glyph).transform).m42)>2));
-  const wavePosition=await page.locator(target).locator('h2').evaluate(heading=>heading.getBoundingClientRect().top);
-  assert.ok(Math.abs(wavePosition-125)<4,'The letter wave should start at the settled section position');
+  const wavePosition=await page.locator(target).locator('h2').evaluate(heading=>{const box=heading.getBoundingClientRect();return box.top+box.height/2;});
+  assert.ok(Math.abs(wavePosition-450)<4,'The letter wave should start with the selected heading at the viewport center');
   const waveScroll=await page.evaluate(()=>scrollY);
   await page.waitForTimeout(160);
   assert.ok(Math.abs(await page.evaluate(()=>scrollY)-waveScroll)<2,'The page should remain stationary while the wave is visible');
@@ -42,9 +42,9 @@ try{
   await page.screenshot({path:'test-results/therapy-wave-mid.png'});
   await page.waitForTimeout(1250);
   const final=await page.evaluate(()=>window.scrollY);
-  const destination=await page.locator(target).evaluate(node=>node.getBoundingClientRect().top);
+  const destination=await page.locator(target).locator('h2').evaluate(heading=>{const box=heading.getBoundingClientRect();return box.top+box.height/2;});
   assert.ok(early<middle&&middle<final,'The page should keep moving gradually toward the section');
-  assert.ok(Math.abs(destination-125)<4,'The selected heading should settle below the header');
+  assert.ok(Math.abs(destination-450)<4,'The selected heading should settle at the viewport center');
   const finalTextWidth=await page.locator(target).locator('h2').evaluate(heading=>{const range=document.createRange();range.selectNodeContents(heading.firstChild);return range.getBoundingClientRect().width;});
   assert.ok(Math.abs(finalTextWidth-originalTextWidth)<.5,'The heading should keep its exact text width after the wave');
   assert.equal(new URL(page.url()).hash,target);
@@ -119,8 +119,8 @@ try{
   const reducedLink=reduced.locator('.therapy-nav-group').first().locator('a[href^="#"]').nth(3);
   await reducedLink.click();
   const reducedTarget=await reducedLink.getAttribute('href');
-  const reducedPosition=await reduced.locator(reducedTarget).evaluate(node=>node.getBoundingClientRect().top);
-  assert.ok(reducedPosition>=100&&reducedPosition<=260,'Reduced-motion navigation should put the section below the header');
+  const reducedPosition=await reduced.locator(reducedTarget).locator('h2').evaluate(heading=>{const box=heading.getBoundingClientRect();return box.top+box.height/2;});
+  assert.ok(Math.abs(reducedPosition-450)<4,'Reduced-motion navigation should center the selected heading');
   assert.equal(await reduced.locator('.therapy-quick-nav').evaluate(node=>getComputedStyle(node).transform),'none');
 
   const short=await browser.newPage({viewport:{width:1024,height:650},reducedMotion:'reduce'});
