@@ -34,12 +34,17 @@ try{
     assert.equal(layout.overflow,0,`${lang}: footer should not overflow the viewport`);
     await page.close();
   }
-  for(const width of [1024,390]){
+  for(const [width,lang] of [[1024,'en'],[390,'en'],[390,'de']]){
     const page=await browser.newPage({viewport:{width,height:900}});
-    await page.goto(origin+'/?lang=en');
+    await page.goto(`${origin}/?lang=${lang}`);
     await page.locator('.cookie-acknowledge').click();
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
     assert.equal(overflow,0,`${width}px: footer layout should not cause horizontal overflow`);
+    if(width===390){
+      const linkTops=await page.locator('.footer-bottom').evaluate(node=>[...node.querySelectorAll('a,button')].map(item=>item.getBoundingClientRect().y));
+      assert.equal(linkTops.length,4,`${lang}: expected all footer links`);
+      assert.ok(linkTops.every(y=>Math.abs(y-linkTops[0])<1),`${lang}: mobile footer links should share one line`);
+    }
     await page.close();
   }
   console.log('Footer rows, columns, lower links, and responsive widths verified');
