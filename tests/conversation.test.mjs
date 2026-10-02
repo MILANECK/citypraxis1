@@ -5,7 +5,7 @@ import {CONVERSATION_LIMIT,createConversationService,conversationFacts,composeRe
 import {childrenService} from '../src/therapy-catalog.mjs';
 import {newSession} from '../src/chat/security.mjs';
 
-const answer=(changes={})=>({kind:'appointment',answer:'',related_pages:[],booking_intent:'request',reason:null,availability:null,first_name:null,last_name:null,patient_status:null,...changes});
+const answer=(changes={})=>({kind:'appointment',answer:'',related_pages:[],booking_intent:'request',needs_clarification:false,reason:null,availability:null,first_name:null,last_name:null,patient_status:null,...changes});
 
 test('answers include catalog links, preserve link follow-up context and reject invented destinations',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
@@ -82,6 +82,95 @@ test('published Vienna hours distinguish open, closed and unknown periods',()=>{
   assert.equal(practiceHoursStatus(hours,new Date('2026-09-23T21:00:00Z')).open,false);
   assert.equal(practiceHoursStatus(hours,new Date('2026-09-27T10:00:00Z')).open,false);
   assert.equal(practiceHoursStatus({},new Date('2026-09-23T10:00:00Z')).open,null);
+});
+test('unclear booking wording asks once and waits for a clear chat or form choice',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let calls=0;
+  const service=createConversationService({fetcher:async(_,options)=>{
+    calls++;
+    const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
+    const value=raw.includes('termin neck')
+      ?answer({input_language:'en',needs_clarification:true,reason:'neck pain',patient_status:'existing',first_name:'Deinen',last_name:'Praxis',answer:'You should try massage.'})
+      :answer({kind:'practice_question',booking_intent:'unspecified',answer:'Our prices are on the website.'});
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
+  }});
+  const turn=async(token,message)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const token=newSession();
+    const unclear=await turn(token,'I need termin neck yesterday pain maybe massage');
+    assert.equal(unclear.clarification,'booking');
+    assert.match(unclear.message,/would you like to request an appointment/i);
+    assert.doesNotMatch(unclear.message,/massage|first and last name|Deinen Praxis/i);
+    const confirmed=await turn(token,'Yes, request an appointment');
+    assert.match(confirmed.message,/appointment request form.*here in chat/s);
+    assert.doesNotMatch(confirmed.message,/massage|Deinen Praxis/i);
+    const chat=await turn(token,'continue here');
+    assert.match(chat.message,/first and last name/i);
+    assert.equal(calls,1);
+    const corrected=newSession();await turn(corrected,'I need termin neck yesterday pain maybe massage');
+    const no=await turn(corrected,'No, let me clarify');
+    assert.match(no.message,/What would you like help with instead/i);
+    const prices=await turn(corrected,'I meant the prices.');
+    assert.match(prices.message,/prices are on the website/i);
+    assert.doesNotMatch(prices.message,/would you like to request an appointment/i);
+  }finally{process.env=old;}
+});
+test('clear typos and broken German stay on the existing booking path without invented names',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let calls=0;
+  const service=createConversationService({fetcher:async()=>{calls++;throw Error('Clear booking requests should use deterministic routing');}});
+  const turn=async(message,language='en')=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:newSession(),language,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const typo=await turn('I want an apointment');
+    assert.match(typo.message,/appointment request form.*here in chat/s);
+    const broken=await turn('Halo ich mochte buchung im deinen praxis','en');
+    assert.equal(broken.language,'de');
+    assert.match(broken.message,/Formular für Terminanfragen.*hier im Chat/s);
+    assert.doesNotMatch(broken.message,/deinen praxis|Vor- und Nachnamen erfahren/i);
+    assert.equal(calls,0);
+  }finally{process.env=old;}
+});
+test('symptoms, model guesses and treatment suggestions never approve intake or choose therapy',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const service=createConversationService({fetcher:async()=>({ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({kind:'medical',booking_intent:'request',reason:'back pain',patient_status:'existing',first_name:'False',last_name:'Name',answer:'You should try massage.'}))}]}]})})});
+  let result;
+  try{
+    await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:newSession(),language:'en',message:'I have back pain',consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});
+    assert.equal(result.ready,false);
+    assert.match(result.message,/assess your concern/i);
+    assert.match(result.message,/Would you like me to prepare an appointment request/i);
+    assert.doesNotMatch(result.message,/massage|False Name|first and last name/i);
+  }finally{process.env=old;}
+});
+test('a clear request inside a long message keeps verified contact data and ignores invented status',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const service=createConversationService({fetcher:async()=>({ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({kind:'medical',input_language:'en',booking_intent:'unspecified',reason:'neck pain',patient_status:'existing',first_name:'False',last_name:'Name',answer:'One of our clinicians can assess this in person.'}))}]}]})})});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const first=await turn('Hello, I am Anna Novak. My neck hurts since yesterday and I am unsure what treatment I need. I would like an appointment at CityPraxis.');
+    assert.equal(first.ready,false);
+    assert.match(first.message,/email address and your phone number/i);
+    assert.doesNotMatch(first.message,/False Name|which treatment/i);
+    const review=await turn('anna@example.test +43 699 12682157');
+    assert.equal(review.ready,true);
+    assert.ok(review.summary.some(([,value])=>value==='Anna Novak'));
+    assert.deepEqual(review.summary.find(([key])=>key==='Patient status (self-reported)'),['Patient status (self-reported)','I’m not sure']);
+  }finally{process.env=old;}
+});
+test('invalid and conflicting contact details stay in validation rather than guessed intake',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const service=createConversationService({fetcher:async()=>({ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({needs_clarification:true,answer:'I have your email.'}))}]}]})})});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    await turn('I want an appointment');await turn('continue here');await turn('Anna Novak');
+    const invalid=await turn('anna@');
+    assert.equal(invalid.message,'Please enter a valid email address.');
+    const conflict=await turn('anna@example.test or anna@other.test');
+    assert.match(conflict.message,/Which one should we use/i);
+    assert.equal(conflict.ready,false);
+    const selected=await turn('anna@example.test');
+    assert.match(selected.message,/phone number/i);
+  }finally{process.env=old;}
 });
 test('a greeting stays welcoming and a direct appointment request offers both paths',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
@@ -674,8 +763,8 @@ test('conversational reception validates, reviews, edits and submits exactly onc
   const turn=(message,extra={})=>call('turn',{message,consent:true,turnKey:randomUUID(),...extra});
   try{
     assert.equal((await call('turn',{message:'Hi',turnKey:randomUUID()})).code,'consent_required');assert.equal(calls,0);
-    const key=randomUUID();const first=await turn('My name is Test Visitor. Shoulder concern.',{turnKey:key});assert.match(first.message,/email address/);assert.equal(first.ready,false);
-    assert.deepEqual(await turn('My name is Test Visitor. Shoulder concern.',{turnKey:key}),first);assert.equal(calls,1);
+    const key=randomUUID();const first=await turn('My name is Test Visitor. I want an appointment for a shoulder concern.',{turnKey:key});assert.match(first.message,/email address/);assert.equal(first.ready,false);
+    assert.deepEqual(await turn('My name is Test Visitor. I want an appointment for a shoulder concern.',{turnKey:key}),first);assert.equal(calls,1);
     assert.equal((await turn('Changed',{turnKey:key})).code,'invalid_request');
     assert.equal((await call('finish',{confirmed:true})).code,'invalid_request');assert.equal(saved.length,0);
     assert.match((await turn('test@example.test')).message,/phone number/);

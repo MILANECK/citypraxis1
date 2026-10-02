@@ -15,7 +15,7 @@ test('recent chatbot requests offer update, additional appointment or cancellati
     if(String(url).includes('/v1/responses')){
       const raw=JSON.parse(JSON.parse(options.body).input).visitorMessage;
       const reason=/elbow/i.test(raw)?'Elbow pain':/shoulder/i.test(raw)?'Shoulder pain':null;
-      const value={kind:'appointment',input_language:'en',answer:'I can help prepare your request.',related_pages:[],booking_intent:'unspecified',reason,availability:null,first_name:null,last_name:null,patient_status:null};
+      const value={kind:'appointment',input_language:'en',answer:'I can help prepare your request.',related_pages:[],booking_intent:'unspecified',needs_clarification:false,reason,availability:null,first_name:null,last_name:null,patient_status:null};
       return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
     }
     if(String(url).includes('resend.com/emails')){mails.push({key:options.headers['Idempotency-Key'],...JSON.parse(options.body)});return {ok:true,json:async()=>({id:randomUUID()})};}
