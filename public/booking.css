@@ -51,7 +51,8 @@
 #booking-form .form-message:empty{display:none}
 #booking-form .therapist-picker{padding-bottom:16px;margin-bottom:18px}
 #booking-form .therapist-choice-note{font-size:11px;margin:8px 0 0}
-#booking-form .therapist-choice-portrait{width:46px;flex-basis:46px;height:54px}
+#booking-form .therapist-choice-portrait{width:55px;flex-basis:55px;height:65px}
+#booking-form .therapist-choice-portrait img{object-position:center 12%;transform:scale(1.4);transform-origin:center 22%}
 #booking-form .therapist-choice-control strong{font-size:14px}
 @media(max-width:1000px){
   .booking-gradient-stage>.booking-layout{width:calc(100% - 48px);gap:30px;grid-template-columns:.8fr 1.2fr}
