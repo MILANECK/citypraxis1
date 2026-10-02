@@ -25,11 +25,16 @@ try{
   await link.click();
   await page.waitForTimeout(160);
   const early=await page.evaluate(()=>window.scrollY);
+  assert.equal(await page.locator(target).locator('.therapy-wave-glyph').count(),0,'The wave must wait while the page scrolls');
   await page.waitForTimeout(570);
   const middle=await page.evaluate(()=>window.scrollY);
+  assert.equal(await page.locator(target).locator('.therapy-wave-glyph').count(),0,'The wave must remain paused until scrolling ends');
   await page.waitForFunction(()=>[...document.querySelectorAll('.therapy-wave-glyph')].some(glyph=>Math.abs(new DOMMatrixReadOnly(getComputedStyle(glyph).transform).m42)>2));
   const wavePosition=await page.locator(target).locator('h2').evaluate(heading=>heading.getBoundingClientRect().top);
-  assert.ok(wavePosition>150,'The letter wave should start while the section is still arriving');
+  assert.ok(Math.abs(wavePosition-125)<4,'The letter wave should start at the settled section position');
+  const waveScroll=await page.evaluate(()=>scrollY);
+  await page.waitForTimeout(160);
+  assert.ok(Math.abs(await page.evaluate(()=>scrollY)-waveScroll)<2,'The page should remain stationary while the wave is visible');
   assert.ok(await page.locator('.therapy-wave-glyph').count()>10,'The heading should animate individual letters');
   assert.ok(await alignment(page.locator(target).locator('h2'))<.6,'The H2 wave letters should share the original text baseline');
   assert.equal(await page.locator(target).locator('h2').evaluate(heading=>getComputedStyle(heading).filter),'none','The selected heading should not remain blurred during the wave');

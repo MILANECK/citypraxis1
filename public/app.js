@@ -299,8 +299,9 @@ function bindTherapyNavigation(){
   const groups=[...document.querySelectorAll('.therapy-quick-nav .therapy-nav-group')];
   if(!groups.length)return;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
-  let stopWave=null,stopScroll=null;
-  therapyNavCleanup=()=>stopScroll?.();
+  let stopWave=null,stopScroll=null,pendingWaveFrame=0;
+  const cancelPendingWave=()=>{if(pendingWaveFrame)cancelAnimationFrame(pendingWaveFrame);pendingWaveFrame=0;};
+  therapyNavCleanup=()=>{stopScroll?.();cancelPendingWave();stopWave?.();};
   const waveHeading=heading=>{
     stopWave?.();
     if(reducedMotion.matches)return;
@@ -349,18 +350,15 @@ function bindTherapyNavigation(){
     if(!target)return;
     event.preventDefault();
     stopScroll?.();
+    cancelPendingWave();
+    stopWave?.();
     const heading=target.querySelector('h1,h2,h3')||target;
     heading.classList.remove('home-reveal-ready','home-reveal-visible','interior-load-reveal');
     if(reducedMotion.matches){if(location.hash!==link.hash)history.pushState(null,'',link.hash);target.scrollIntoView({behavior:'instant',block:'start'});return;}
-    let waved=false;
-    const maybeWave=()=>{
-      if(waved)return;
-      const rect=heading.getBoundingClientRect();
-      if(rect.top<innerHeight*.95&&rect.bottom>100){waved=true;waveHeading(heading);}
-    };
     const finish=()=>{
       if(event.detail===0){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});heading.removeAttribute('tabindex');}
-      if(!waved){waved=true;waveHeading(heading);}
+      // Let the final scroll position paint before animating the stationary heading.
+      pendingWaveFrame=requestAnimationFrame(()=>{pendingWaveFrame=requestAnimationFrame(()=>{pendingWaveFrame=0;waveHeading(heading);});});
     };
     if(location.hash!==link.hash)history.pushState(null,'',link.hash);
     const start=window.scrollY;
@@ -384,7 +382,6 @@ function bindTherapyNavigation(){
       const progress=Math.min(1,(now-started)/duration);
       const eased=progress**3*(progress*(progress*6-15)+10);
       window.scrollTo({top:start+distance*eased,behavior:'instant'});
-      maybeWave();
       if(progress<1)frame=requestAnimationFrame(step);
       else{removeInterrupts();stopScroll=null;finish();}
     };
