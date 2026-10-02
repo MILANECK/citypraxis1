@@ -367,18 +367,23 @@ function bindTherapyNavigation(){
     const headingBox=heading.getBoundingClientRect();
     const end=Math.max(0,Math.min(document.documentElement.scrollHeight-innerHeight,start+headingBox.top+headingBox.height/2-innerHeight/2));
     if(reducedMotion.matches){if(location.hash!==link.hash)history.pushState(null,'',link.hash);window.scrollTo({top:end,behavior:'instant'});return;}
+    let waveQueued=false;
+    const queueWave=()=>{
+      if(waveQueued)return;
+      waveQueued=true;
+      pendingWaveFrame=requestAnimationFrame(()=>{pendingWaveFrame=0;waveHeading(heading);});
+    };
     const finish=()=>{
       if(event.detail===0){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});heading.removeAttribute('tabindex');}
-      // Let the final scroll position paint before animating the stationary heading.
-      pendingWaveFrame=requestAnimationFrame(()=>{pendingWaveFrame=requestAnimationFrame(()=>{pendingWaveFrame=0;waveHeading(heading);});});
+      queueWave();
     };
     if(location.hash!==link.hash)history.pushState(null,'',link.hash);
     const distance=end-start;
     if(Math.abs(distance)<2){finish();return;}
-    const duration=Math.min(1900,Math.max(1150,1000+Math.abs(distance)*.23));
+    const duration=Math.min(1500,Math.max(850,780+Math.abs(distance)*.16));
     const started=performance.now();
     let frame=0;
-    const interrupt=()=>{cancelAnimationFrame(frame);removeInterrupts();stopScroll=null;};
+    const interrupt=()=>{cancelAnimationFrame(frame);cancelPendingWave();stopWave?.();removeInterrupts();stopScroll=null;};
     const removeInterrupts=()=>{
       window.removeEventListener('wheel',interrupt);
       window.removeEventListener('touchstart',interrupt);
@@ -390,8 +395,10 @@ function bindTherapyNavigation(){
     stopScroll=interrupt;
     const step=now=>{
       const progress=Math.min(1,(now-started)/duration);
-      const eased=progress**3*(progress*(progress*6-15)+10);
+      const shifted=1-(1-progress)**1.3;
+      const eased=shifted**3*(shifted*(shifted*6-15)+10);
       window.scrollTo({top:start+distance*eased,behavior:'instant'});
+      if(progress>=.8)queueWave();
       if(progress<1)frame=requestAnimationFrame(step);
       else{removeInterrupts();stopScroll=null;finish();}
     };
