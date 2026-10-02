@@ -28,7 +28,8 @@ try{
     assert.ok(Math.abs(layout.bottom[1].x-layout.heads[2].x)<2,`${lang}: legal links should begin below contact details`);
     assert.ok(Math.abs(layout.bottom[2].x-layout.heads[3].x)<2,`${lang}: cookie link should begin below the final column`);
     assert.ok(Math.abs(layout.bottom[3].right-layout.heads[3].right)<2,`${lang}: practice login should end at the final column edge`);
-    assert.ok(layout.heads[1].x>700&&layout.heads[2].x-layout.heads[1].x<200,`${lang}: information columns should match the compact reference layout`);
+    const faqStart=await page.locator('.home-faq .faq-list summary').last().evaluate(node=>node.getBoundingClientRect().x);
+    assert.ok(Math.abs(layout.heads[1].x-faqStart)<3,`${lang}: Visit us should begin directly below the FAQ questions`);
     assert.ok(Math.abs(layout.line.x-layout.heads[0].x)<2,`${lang}: rule should begin at the first column`);
     assert.equal(layout.overflow,0,`${lang}: footer should not overflow the viewport`);
     await page.close();
