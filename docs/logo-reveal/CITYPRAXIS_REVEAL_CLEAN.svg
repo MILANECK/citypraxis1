@@ -15,13 +15,12 @@
       <stop offset="0" stop-color="#8f2580"/><stop offset=".994" stop-color="#db3793"/>
     </linearGradient>
 
-    <!-- Non-overlapping clips remove the two premature magenta junction artifacts
-         without changing the supplied artwork. -->
+    <!-- A small overlap makes the loop cover the upright at both joins. -->
     <clipPath id="clipPinkBar" clipPathUnits="userSpaceOnUse">
       <rect x="968.55" y="620" width="33.35" height="845"/>
     </clipPath>
     <clipPath id="clipPinkLoop" clipPathUnits="userSpaceOnUse">
-      <rect x="1001.75" y="620" width="285" height="560"/>
+      <rect x="996" y="620" width="291" height="560"/>
     </clipPath>
 
     <mask id="mBlueMain" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="2000">
@@ -49,7 +48,7 @@
       <path clip-path="url(#clipPinkBar)"
             fill="none" stroke="white" stroke-width="72" stroke-linecap="butt" stroke-linejoin="round"
             pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="100"
-            d="M985 646 L985 1458">
+            d="M985 620 L985 1458">
         <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2.10s" begin="0.34s"
                  calcMode="spline" keyTimes="0;1" keySplines="0.78 0 0.16 1" fill="freeze"/>
       </path>
@@ -60,7 +59,7 @@
       <path clip-path="url(#clipPinkLoop)"
             fill="none" stroke="white" stroke-width="72" stroke-linecap="butt" stroke-linejoin="round"
             pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="100"
-            d="M1001.8 646 C1124 647 1184 686 1204 776 C1230 891 1219 1008 1175 1068 C1132 1126 1066 1144 1001.8 1146">
+            d="M995 646 C1124 647 1184 686 1204 776 C1230 891 1219 1008 1175 1068 C1132 1126 1066 1144 995 1146">
         <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2.45s" begin="0.76s"
                  calcMode="spline" keyTimes="0;1" keySplines="0.78 0 0.16 1" fill="freeze"/>
       </path>
