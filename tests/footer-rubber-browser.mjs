@@ -30,7 +30,7 @@ try{
   const deeperMove=await offset(desktop);
   assert.ok(deeperMove>42&&deeperMove<=72,`Continued scrolling should pull the wordmark farther down (${deeperMove}px)`);
   assert.ok(Math.abs(await desktop.evaluate(()=>scrollY)-bottom)<2,'The page itself should stay at the bottom');
-  await desktop.waitForTimeout(1600);
+  await desktop.waitForTimeout(2600);
   assert.ok(Math.abs(await offset(desktop))<.3,'The wordmark should settle back after scrolling stops');
 
   await desktop.setViewportSize({width:390,height:844});

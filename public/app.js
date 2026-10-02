@@ -434,10 +434,10 @@ function bindFooterRubber(){
   const reset=()=>{if(frame)cancelAnimationFrame(frame);frame=0;pull=0;follow=0;position=0;lastFrame=0;watermark.style.removeProperty('transform');};
   const animate=now=>{
     const elapsed=Math.min(40,now-(lastFrame||now));lastFrame=now;
-    if(now-lastInput>140)pull*=Math.pow(.92,elapsed/16.7);
-    const ease=1-Math.pow(.82,elapsed/16.7);
-    follow+=(pull-follow)*ease;
-    position+=(follow-position)*ease;
+    if(now-lastInput>140)pull*=Math.pow(.94,elapsed/16.7);
+    const entering=pull>follow;
+    follow+=(pull-follow)*(1-Math.pow(entering?.73:.87,elapsed/16.7));
+    position+=(follow-position)*(1-Math.pow(entering?.82:.88,elapsed/16.7));
     if(pull<.08&&follow<.08&&position<.08){reset();return;}
     watermark.style.transform=`translate3d(0,${position.toFixed(2)}px,0)`;
     frame=requestAnimationFrame(animate);
