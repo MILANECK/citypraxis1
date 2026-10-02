@@ -25,6 +25,7 @@ try{
       assert.ok(row.every((item,index)=>Math.abs(item.x-layout.heads[index].x)<2),`${lang}: all footer rows should share column edges`);
     }
     assert.ok(layout.bottom.every((item,index)=>Math.abs(item.x-layout.heads[index].x)<2),`${lang}: bottom links should align with the four columns`);
+    assert.ok(layout.heads[1].x>540&&layout.heads[2].x-layout.heads[1].x<300,`${lang}: information columns should be grouped on the right`);
     assert.ok(Math.abs(layout.line.x-layout.heads[0].x)<2,`${lang}: rule should begin at the first column`);
     assert.equal(layout.overflow,0,`${lang}: footer should not overflow the viewport`);
     await page.close();
