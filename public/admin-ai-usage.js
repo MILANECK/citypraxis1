@@ -28,7 +28,7 @@ export function showAIUsage(panel,data,language='de'){
     if(data.exceeded)note(t('Monthly budget exceeded.','Monatsbudget überschritten.'));
   }
   if(!costAvailable){
-    const setup=t('Actual OpenAI costs are not connected yet. Add OPENAI_ADMIN_KEY and OPENAI_PROJECT_ID to the server environment.','Die tatsächlichen OpenAI-Kosten sind noch nicht verbunden. OPENAI_ADMIN_KEY und OPENAI_PROJECT_ID in der Serverumgebung eintragen.');
+    const setup=t('Cost data is unavailable.','Kostendaten sind nicht verfügbar.');
     const errors={permission:t('OpenAI did not authorize the cost report. Check the admin key permissions.','OpenAI hat den Kostenbericht nicht autorisiert. Bitte die Berechtigungen des Admin-Schlüssels prüfen.'),upstream:t('OpenAI reported costs could not be retrieved right now.','Die von OpenAI gemeldeten Kosten konnten gerade nicht abgerufen werden.'),incomplete:t('OpenAI returned an incomplete cost report. Try refreshing later.','OpenAI hat einen unvollständigen Kostenbericht zurückgegeben. Bitte später erneut laden.')};
     note(['not_configured','project_not_configured'].includes(data.costReason)?setup:errors[data.costReason]||errors.upstream);
   }else{

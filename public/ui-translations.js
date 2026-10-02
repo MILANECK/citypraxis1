@@ -94,15 +94,6 @@ Rückerstattung laut bisheriger Praxiswebsite|Reimbursement as listed on the ori
 Leistung|Service
 ERFAHRUNGEN MIT DER CITYPRAXIS|EXPERIENCES AT CITYPRAXIS
 Stimmen aus der Praxis.|Voices from our practice.
-Bewertungen folgen in Kürze.|Reviews coming soon.
-Sterne-Platzhalter, noch keine Bewertung|Placeholder stars, no review yet
-BEWERTUNGS-VORSCHAU|REVIEW PREVIEW
-Hier erscheint eine freigegebene Bewertung aus unserer Praxis.|An approved review from our practice will appear here.
-Name und Quelle der Bewertung|Reviewer name and source
-Beispielportrait – kein tatsächliches Teammitglied|Sample portrait — not an actual team member
-Noch kein Portrait hinterlegt|No portrait added yet
-Fiktives Profil|Fictional profile
-Beispielbild|Sample photo
 Finden Sie einen ersten Einblick in unsere Schwerpunkte.|Get an introduction to our specializations.
 Vier Fachrichtungen, ergänzt durch Bewegung in der Gruppe.|Four disciplines, complemented by group exercise.
 Mehr erfahren|Learn more
@@ -129,7 +120,6 @@ Kosten und Informationen zur Wahltherapie.|Fees and information about private th
 Preise & Rückerstattung ansehen|View prices & reimbursement
 Zur Behandlung|View treatment
 Unser Team|Our team
-Entwurf mit Beispielportraits.|Draft with sample portraits.
 Fiktive Profile sind entsprechend gekennzeichnet.|Fictional profiles are labelled accordingly.
 Diese Seite wird vor Veröffentlichung vervollständigt.|This page will be completed before publication.
 Dies ist eine lokale Entwicklungsvorschau. Bitte verwenden Sie keine echten Patientendaten.|This is a local development preview. Please do not use real patient data.
@@ -169,7 +159,6 @@ Qualifikationen|Qualifications
 Biografie|Biography
 Teamfoto (leere Auswahl entfernt das Foto)|Team photo (leave empty to remove photo)
 Foto ist ein Platzhalter|Photo is a placeholder
-Fiktives Beispielprofil|Fictional sample profile
 Anzeigename|Display name
 Freigegebene Bewertung (Originalwortlaut)|Approved review (original wording)
 Sterne|Stars
@@ -256,12 +245,6 @@ Veröffentlichte Inhalte|Published content
 Auf Ihrer Website sichtbar|Visible on your website
 Offene Entwürfe|Pending drafts
 Noch nicht veröffentlicht|Not yet published
-EIN GUTER AUFTRITT BEGINNT HIER|YOUR WEBSITE STARTS HERE
-Ihre Praxis.|Your practice.
-Ihre Inhalte.|Your content.
-Bearbeiten Sie Texte und speichern Sie zunächst einen Entwurf. Erst mit „Veröffentlichen“ wird die Änderung auf der Website sichtbar.|Edit content and save a draft first. Changes only appear on the website when you select Publish.
-Vor dem öffentlichen Start|Before going live
-Teamprofile, aktuelle Tarife, vollständiges Impressum und Datenschutz ergänzen. Öffnungszeiten und Zahlungsinformationen prüfen. Die Terminanfragen werden lokal gespeichert; ein E-Mail-Versand ist noch nicht eingerichtet.|Complete team profiles, current fees, legal notice and privacy information. Check opening hours and payment details. Appointment requests are stored locally; email delivery has not yet been configured.
 Entwürfe bleiben intern, bis Sie sie veröffentlichen.|Drafts remain private until you publish them.
 Neuer Eintrag|New entry
 Reihenfolge|Display order

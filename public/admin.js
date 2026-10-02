@@ -1,4 +1,4 @@
-import {showAIUsage} from './admin-ai-usage.js?v=4';
+import {showAIUsage} from './admin-ai-usage.js?v=5';
 import {renderChatIntake,chatIntake} from './admin-chat.js?v=conversation-2';
 import {requestSource,normalizeAppointmentConcerns} from './request-summary.js?v=team-capacity-1';
 import {progressMeter} from './progress-meter.js?v=1';
@@ -168,7 +168,7 @@ async function render(){
     $('#edit-hero').onclick=()=>editContent('pages',h);
   } else if(view==='overview'){
     const items=Object.values(content).flat(),dirty=items.filter(i=>i.dirty).length;
-    w.innerHTML=`<p class="admin-intro">Hier behalten Sie Ihre Website und die nächsten Schritte im Blick.</p><div class="stat-grid">${canRequests()?`<div class="stat"><span>Neue Anfragen</span><strong>${requests.filter(r=>r.status==='new').length}</strong><small>Warten auf Rückmeldung</small></div>`:''}${canEdit()?`<div class="stat"><span>Veröffentlichte Inhalte</span><strong>${items.filter(i=>i.published).length}</strong><small>Auf Ihrer Website sichtbar</small></div><div class="stat"><span>Offene Entwürfe</span><strong>${dirty}</strong><small>Noch nicht veröffentlicht</small></div>`:''}</div><section class="admin-panel capacity-panel" id="capacity-panel"><span class="eyebrow">${I18n.language==='en'?'SITE CAPACITY':'SPEICHERPLATZ DER WEBSITE'}</span><h2>${I18n.language==='en'?'Available space':'Verfügbarer Speicher'}</h2><div class="capacity-content" aria-live="polite">${I18n.language==='en'?'Checking usage…':'Auslastung wird geprüft …'}</div></section><section class="admin-panel ai-usage-panel" id="ai-usage-panel" aria-live="polite"></section><section class="admin-panel welcome-panel"><div><span class="eyebrow">EIN GUTER AUFTRITT BEGINNT HIER</span><h2>Ihre Praxis.<br>Ihre Inhalte.</h2><p>Bearbeiten Sie Texte und speichern Sie zunächst einen Entwurf. Erst mit „Veröffentlichen“ wird die Änderung auf der Website sichtbar.</p><a class="button" href="/" target="_blank" rel="noopener">Website ansehen ↗</a></div><img src="/assets/logo-full.png" alt="Citypraxis Logo"></section><div class="admin-panel"><h3>Vor dem öffentlichen Start</h3><p>Teamprofile, aktuelle Tarife, vollständiges Impressum und Datenschutz ergänzen. Öffnungszeiten und Zahlungsinformationen prüfen. Terminanfragen werden in der Praxisdatenbank gespeichert. Den E-Mail-Versandstatus finden Sie bei jeder neuen Anfrage.</p></div>`;
+    w.innerHTML=`<div class="stat-grid">${canRequests()?`<div class="stat"><span>Neue Anfragen</span><strong>${requests.filter(r=>r.status==='new').length}</strong><small>Warten auf Rückmeldung</small></div>`:''}${canEdit()?`<div class="stat"><span>Veröffentlichte Inhalte</span><strong>${items.filter(i=>i.published).length}</strong><small>Auf Ihrer Website sichtbar</small></div><div class="stat"><span>Offene Entwürfe</span><strong>${dirty}</strong><small>Noch nicht veröffentlicht</small></div>`:''}</div><section class="admin-panel capacity-panel" id="capacity-panel"><span class="eyebrow">${I18n.language==='en'?'SITE CAPACITY':'SPEICHERPLATZ DER WEBSITE'}</span><h2>${I18n.language==='en'?'Available space':'Verfügbarer Speicher'}</h2><div class="capacity-content" aria-live="polite">${I18n.language==='en'?'Checking usage…':'Auslastung wird geprüft …'}</div></section><section class="admin-panel ai-usage-panel" id="ai-usage-panel" aria-live="polite"></section>`;
     const aiPanel=$('#ai-usage-panel',w);
     showAIUsage(aiPanel,{loading:true},I18n.language);
     api('admin/ai-usage').then(data=>showAIUsage(aiPanel,data,I18n.language)).catch(()=>showAIUsage(aiPanel,{available:false},I18n.language));
@@ -228,7 +228,7 @@ async function render(){
     document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>removeContent(collection,records.find(r=>r.id===b.dataset.remove)));
     if(collection==='reviews'){
       $('#new-content').disabled=records.length>=3;
-      $('.toolbar p').textContent=I18n.language==='en'?`${records.length} / 3 reviews. Only published reviews with confirmed matching name, rating and original wording appear on the website. Sample entries remain hidden.`:`${records.length} / 3 Bewertungen. Nur veröffentlichte, nach Name, Sternen und Originaltext bestätigte Bewertungen erscheinen auf der Website. Beispiele bleiben verborgen.`;
+      $('.toolbar p').textContent=I18n.language==='en'?`${records.length} / 3 reviews`:`${records.length} / 3 Bewertungen`;
     }
     if(collection==='team')$('#new-content').disabled=records.length>=20;
     $('#new-content')?.addEventListener('click',()=>editContent(view));document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editContent(view,records.find(r=>r.id===b.dataset.edit)));

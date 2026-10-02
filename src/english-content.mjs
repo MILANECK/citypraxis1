@@ -79,8 +79,6 @@ Please note that we reserve agreed appointments exclusively for you. If you need
 We ask for your understanding that appointments not cancelled at least 24 hours in advance on working days will be charged at the full price of the booked treatment.
 
 Thank you for your understanding!`},
-    impressum:{title:'Legal notice',intro:'The details for this new website will be added before publication.',body:'Practice contact: info@citypraxis.wien\nStubenbastei 12/11, 1010 Vienna\n\nThis local draft does not yet contain a complete legal notice.'},
-    datenschutz:{title:'Privacy',intro:'Privacy information will be added before publication.',body:'Local development version: appointment requests are saved in the local database. Use test data only in the preview. The final privacy policy, retention periods and responsibilities must be established before public operation.'}
   },
   symptoms:{
     hirnnervenprobleme:{title:'Cranial Nerve Disorders',subtitle:'',intro:'',body:''},

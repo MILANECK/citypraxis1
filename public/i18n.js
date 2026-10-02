@@ -14,7 +14,7 @@
     const core = trimmed.replace(/^[←+]\s*|\s*(?:↗︎?|→|Ⅱ|▷)$/g, '').trim();
     if (dictionary[core]) return value.replace(core, dictionary[core]);
     return value.replace(/^Guten Tag, (.+)\.$/, 'Hello, $1.').replace(/^Vielen Dank, (.+)\.$/, 'Thank you, $1.')
-      .replace(/(\d) von 5 Sternen/g, '$1 out of 5 stars').replace(/ – Team ansehen/g, ' – View team').replace(/\(Beispielprofil\)/g, '(sample profile)')
+      .replace(/(\d) von 5 Sternen/g, '$1 out of 5 stars').replace(/ – Team ansehen/g, ' – View team')
       .replace(/ in der Citypraxis$/, ' at Citypraxis').replace(/(\d+) Minuten/g, '$1 minutes').replace(/^Leistungen \/ /, 'Therapies / ').replace(/^ANFRAGE #/, 'REQUEST #').replace(/· AKUT$/, '· URGENT')
       .replace(/^Stand der übernommenen Tabelle: (.*?) – alle Angaben ohne Gewähr\. Diese Beträge sind Rückerstattungen, keine Behandlungspreise\. Aktuelle Beträge bitte bei Ihrer Versicherung prüfen\.$/, 'Original table dated $1 — information without guarantee. These are reimbursements, not treatment fees. Please check current amounts with your insurer.');
   }
