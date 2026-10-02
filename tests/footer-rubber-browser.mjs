@@ -19,9 +19,16 @@ try{
   await desktop.evaluate(()=>scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));
   const bottom=await desktop.evaluate(()=>scrollY);
   await desktop.mouse.wheel(0,180);
+  await desktop.waitForTimeout(25);
+  const earlyMove=await offset(desktop);
   await desktop.waitForTimeout(100);
   const moved=await offset(desktop);
-  assert.ok(moved>12&&moved<=42,`The footer wordmark should stretch clearly at the page end (${moved}px)`);
+  assert.ok(moved>earlyMove+5,`The footer wordmark should ease in gently (${earlyMove}px, then ${moved}px)`);
+  assert.ok(moved>12&&moved<=72,`The footer wordmark should stretch clearly at the page end (${moved}px)`);
+  await desktop.mouse.wheel(0,180);
+  await desktop.waitForTimeout(180);
+  const deeperMove=await offset(desktop);
+  assert.ok(deeperMove>42&&deeperMove<=72,`Continued scrolling should pull the wordmark farther down (${deeperMove}px)`);
   assert.ok(Math.abs(await desktop.evaluate(()=>scrollY)-bottom)<2,'The page itself should stay at the bottom');
   await desktop.waitForTimeout(1600);
   assert.ok(Math.abs(await offset(desktop))<.3,'The wordmark should settle back after scrolling stops');

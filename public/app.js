@@ -430,13 +430,15 @@ function bindFooterRubber(){
   const watermark=footer?.querySelector('.home-footer-watermark');
   if(!watermark)return;
   const desktop=matchMedia('(min-width: 901px) and (prefers-reduced-motion: no-preference)');
-  let pull=0,position=0,frame=0,lastFrame=0,lastInput=0;
-  const reset=()=>{if(frame)cancelAnimationFrame(frame);frame=0;pull=0;position=0;lastFrame=0;watermark.style.removeProperty('transform');};
+  let pull=0,follow=0,position=0,frame=0,lastFrame=0,lastInput=0;
+  const reset=()=>{if(frame)cancelAnimationFrame(frame);frame=0;pull=0;follow=0;position=0;lastFrame=0;watermark.style.removeProperty('transform');};
   const animate=now=>{
     const elapsed=Math.min(40,now-(lastFrame||now));lastFrame=now;
-    if(now-lastInput>70)pull*=Math.pow(.94,elapsed/16.7);
-    position+=(pull-position)*(1-Math.pow(.7,elapsed/16.7));
-    if(pull<.08&&position<.08){reset();return;}
+    if(now-lastInput>140)pull*=Math.pow(.92,elapsed/16.7);
+    const ease=1-Math.pow(.82,elapsed/16.7);
+    follow+=(pull-follow)*ease;
+    position+=(follow-position)*ease;
+    if(pull<.08&&follow<.08&&position<.08){reset();return;}
     watermark.style.transform=`translate3d(0,${position.toFixed(2)}px,0)`;
     frame=requestAnimationFrame(animate);
   };
@@ -448,7 +450,7 @@ function bindFooterRubber(){
     const remaining=Math.max(0,root.scrollHeight-innerHeight-scrollY);
     const overshoot=pixels-remaining;
     if(overshoot<=0&&remaining>2)return;
-    pull=Math.min(42,pull+Math.min(180,remaining<=2?pixels:overshoot)*.22);
+    pull=Math.min(72,pull+Math.min(180,remaining<=2?pixels:overshoot)*.35);
     lastInput=performance.now();
     if(!frame)frame=requestAnimationFrame(animate);
   };
