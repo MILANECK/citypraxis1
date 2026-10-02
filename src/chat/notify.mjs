@@ -44,9 +44,19 @@ export async function notifyPatient(row,fetcher=fetch){
 export async function notifyRequest(row,store,fetcher=fetch){
   if(!emailConfigured())return 'not_configured';
   if(row.notification_status==='sent')return 'sent';
+  let staffRecipients=[];
+  // Resend's shared test sender cannot deliver to additional staff addresses.
+  if(!/@resend\.dev\b/i.test(process.env.CHAT_NOTIFY_FROM)){
+    try{staffRecipients=await store.notificationRecipients?.()||[];}catch{/* Keep configured delivery available if staff lookup fails. */}
+  }
+  const recipients=new Map();
+  for(const value of [...process.env.CHAT_NOTIFY_TO.split(','),...staffRecipients]){
+    const address=String(value||'').trim();
+    if(address&&!recipients.has(address.toLowerCase()))recipients.set(address.toLowerCase(),address);
+  }
   let status='failed';
   try{
-    const response=await fetcher('https://api.resend.com/emails',{method:'POST',signal:AbortSignal.timeout(6000),headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`citypraxis-request-${row.intake?.repeat_notification_key||row.submission_key}`},body:JSON.stringify({from:process.env.CHAT_NOTIFY_FROM,to:process.env.CHAT_NOTIFY_TO.split(',').map(x=>x.trim()),...requestEmail(row)})});
+    const response=await fetcher('https://api.resend.com/emails',{method:'POST',signal:AbortSignal.timeout(6000),headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`citypraxis-request-${row.intake?.repeat_notification_key||row.submission_key}`},body:JSON.stringify({from:process.env.CHAT_NOTIFY_FROM,to:[...recipients.values()],...requestEmail(row)})});
     if(response.ok)status='sent';
   }catch{/* Delivery failure must never discard the stored request. */}
   try{await store.notification(row.id,status);}catch{/* The pending state remains visible for staff to retry. */}

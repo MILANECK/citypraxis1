@@ -11,7 +11,8 @@ export function sqliteChatStore(db){
       const result=db.prepare("UPDATE requests SET name=?,email=?,phone=?,preference=?,acute=?,intake=?,notification_status=?,updated_at=? WHERE id=? AND status!='closed'").run(row.name,row.email,row.phone,row.preference,row.acute?1:0,JSON.stringify(row.intake),row.notification_status,new Date().toISOString(),id);
       return result.changes?decode(db.prepare('SELECT * FROM requests WHERE id=?').get(id)):null;
     },
-    async notification(id,status){db.prepare('UPDATE requests SET notification_status=? WHERE id=?').run(status,id);}
+    async notification(id,status){db.prepare('UPDATE requests SET notification_status=? WHERE id=?').run(status,id);},
+    async notificationRecipients(){return db.prepare("SELECT email FROM users WHERE active=1 AND role='reception'").all().map(user=>user.email);}
   };
 }
 export function supabaseChatStore(client){
@@ -33,6 +34,7 @@ export function supabaseChatStore(client){
       const rows=await client.rest('appointment_requests',`?id=eq.${encodeURIComponent(id)}&status=neq.closed&select=*`,{method:'PATCH',prefer:'return=representation',body:{name:row.name,email:row.email,phone:row.phone,preference:row.preference,acute:row.acute||false,intake:row.intake,notification_status:row.notification_status,updated_at:new Date().toISOString()}});
       return rows?.[0]||null;
     },
-    async notification(id,status){await client.rest('appointment_requests',`?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:{notification_status:status}});}
+    async notification(id,status){await client.rest('appointment_requests',`?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body:{notification_status:status}});},
+    async notificationRecipients(){return (await client.rest('staff_profiles','?active=eq.true&role=eq.reception&select=email')).map(user=>user.email);}
   };
 }

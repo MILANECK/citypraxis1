@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {openDatabase,contentSnapshot} from '../src/database.mjs';
 import {createApp} from '../src/server.mjs';
-import {sqliteChatStore} from '../src/chat/store.mjs';
+import {sqliteChatStore,supabaseChatStore} from '../src/chat/store.mjs';
 import {createChatService} from '../src/chat/service.mjs';
 import {requestEmail,patientConfirmationEmail,patientReceiptConfigured,notifyPatient,notifyRequest} from '../src/chat/notify.mjs';
 import {requestPreference} from '../src/appointment-preference.mjs';
@@ -82,6 +82,44 @@ test('patient copy contains submitted details without admin links and works for 
     assert.deepEqual(sent[1].mail.to,[other.email]);
     assert.equal(sent[1].mail.from,process.env.PATIENT_CONFIRMATION_FROM);
   }finally{for(const key of keys)if(env[key]===undefined)delete process.env[key];else process.env[key]=env[key];}
+});
+
+test('active reception accounts also receive one office email without duplicate recipients',async()=>{
+  const keys=['RESEND_API_KEY','CHAT_NOTIFY_FROM','CHAT_NOTIFY_TO'];
+  const previous=Object.fromEntries(keys.map(key=>[key,process.env[key]]));
+  Object.assign(process.env,{RESEND_API_KEY:'test-key',CHAT_NOTIFY_FROM:'Citypraxis <sender@example.test>',CHAT_NOTIFY_TO:'owner@example.test'});
+  const db=openDatabase(':memory:');
+  const add=db.prepare('INSERT INTO users(email,name,password,role,active) VALUES(?,?,?,?,?)');
+  add.run('info@citypraxis.wien','Lisa','unused','reception',1);
+  add.run('editor@example.test','Editor','unused','editor',1);
+  add.run('inactive@example.test','Former Reception','unused','reception',0);
+  const store=sqliteChatStore(db),sent=[];
+  const fetcher=async(_url,options)=>{sent.push(JSON.parse(options.body));return Response.json({id:'accepted'});};
+  const row={id:42,name:'Test Patient',email:'patient@example.test',phone:'+4369912682157',submission_key:'reception-mail-1',notification_status:'pending',intake:{kind:'appointment_form'}};
+  try{
+    assert.deepEqual(await store.notificationRecipients(),['info@citypraxis.wien']);
+    assert.equal(await notifyRequest(row,store,fetcher),'sent');
+    assert.deepEqual(sent[0].to,['owner@example.test','info@citypraxis.wien']);
+    process.env.CHAT_NOTIFY_TO='owner@example.test, INFO@CITYPRAXIS.WIEN';
+    assert.equal(await notifyRequest({...row,submission_key:'reception-mail-2'},store,fetcher),'sent');
+    assert.deepEqual(sent[1].to,['owner@example.test','INFO@CITYPRAXIS.WIEN']);
+    db.prepare("UPDATE users SET active=0 WHERE email='info@citypraxis.wien'").run();
+    assert.equal(await notifyRequest({...row,submission_key:'reception-mail-3'},store,fetcher),'sent');
+    assert.deepEqual(sent[2].to,['owner@example.test','INFO@CITYPRAXIS.WIEN']);
+    process.env.CHAT_NOTIFY_TO='owner@example.test';
+    assert.equal(await notifyRequest({...row,submission_key:'reception-mail-4'},store,fetcher),'sent');
+    assert.deepEqual(sent[3].to,['owner@example.test']);
+    const fallback={notificationRecipients:async()=>{throw Error('Staff lookup unavailable');},notification:async()=>{}};
+    assert.equal(await notifyRequest({...row,submission_key:'reception-mail-5'},fallback,fetcher),'sent');
+    assert.deepEqual(sent[4].to,['owner@example.test']);
+    const queries=[];
+    const supabaseStore=supabaseChatStore({rest:async(table,query)=>{queries.push([table,query]);return [{email:'info@citypraxis.wien'}];}});
+    assert.deepEqual(await supabaseStore.notificationRecipients(),['info@citypraxis.wien']);
+    assert.deepEqual(queries,[['staff_profiles','?active=eq.true&role=eq.reception&select=email']]);
+    process.env.CHAT_NOTIFY_FROM='Citypraxis <onboarding@resend.dev>';
+    assert.equal(await notifyRequest({...row,submission_key:'reception-mail-6'},store,fetcher),'sent');
+    assert.deepEqual(sent[5].to,['owner@example.test']);
+  }finally{db.close();for(const key of keys)if(previous[key]===undefined)delete process.env[key];else process.env[key]=previous[key];}
 });
 
 test('first appointment, therapist and chatbot notify once after storage; failure and retry preserve the request',async()=>{
