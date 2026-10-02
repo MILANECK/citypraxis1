@@ -164,12 +164,12 @@
 
 /* A single, legible pricing panel followed by a compact FAQ. */
 .public-page .home-price-wrap{padding-block:20px 86px}
-.public-page .home-price-panel{position:relative;display:grid;grid-template-columns:1.1fr 1fr;align-items:start;gap:64px;padding:55px 32px;border-radius:26px;overflow:hidden;background:#ffffffb8;box-shadow:0 12px 50px #25313805}
+.public-page .home-price-panel{position:relative;display:grid;grid-template-columns:minmax(0,calc(50% - 64px)) minmax(0,1fr);align-items:start;gap:64px;padding:55px 32px;border-radius:26px;overflow:hidden;background:#ffffffb8;box-shadow:0 12px 50px #25313805}
 .public-page .home-price-panel .eyebrow{display:block;color:var(--pink)}
 .public-page .home-price-copy h2{font-size:50px;line-height:1.08;margin:20px 0}
 .public-page .home-price-copy p{font-size:14px;max-width:390px;margin:0 0 20px}
 .public-page .home-price-figure{position:relative;border-left:0;padding-left:60px}
-.public-page .home-price-figure>.home-scroll-line{width:1px;height:100%;transform-origin:center top}
+.public-page .home-price-figure>.home-scroll-line{bottom:0;width:1px;height:auto;transform-origin:center top}
 .public-page .home-price-label{display:block;line-height:1.6;font-size:10px;letter-spacing:.15em;font-weight:600;color:#66665e}
 .public-page .home-price-range{display:flex;align-items:baseline;gap:10px;white-space:nowrap;font:400 clamp(54px,5.8vw,82px)/1.15 Rubik,Arial,sans-serif;letter-spacing:-.04em;color:var(--blue);margin:16px 0 5px}
 .public-page .home-price-value{font:inherit;font-variant-numeric:tabular-nums}
@@ -177,7 +177,7 @@
 .public-page .home-price-range>small{font-size:.45em;margin-left:4px}
 .public-page .home-price-figure p{font-size:12px;margin:0 0 24px}
 .public-page .home-price-note{display:block;font-size:11px;line-height:1.7;color:#666b68;max-width:300px}
-.public-page .home-faq{display:grid;grid-template-columns:.85fr 1.15fr;gap:100px;padding-block:18px 104px;align-items:start}
+.public-page .home-faq{display:grid;grid-template-columns:minmax(0,calc(50% - 100px)) minmax(0,1fr);gap:100px;padding-block:18px 104px;align-items:start}
 .public-page .home-faq-intro h2{font-size:clamp(40px,4.2vw,56px);line-height:1.07;margin:20px 0}
 .public-page .home-faq-intro p{font-size:14px;max-width:330px;margin:0 0 22px}
 .public-page .home-faq .faq-list details{padding:0;border-radius:0;background:transparent;border-bottom:0;margin:0;position:relative}
@@ -198,7 +198,7 @@
 .public-page .home-faq .faq-list p{font-size:14px;line-height:1.8;margin:0}
 
 .public-page footer{position:relative;isolation:isolate;overflow:hidden;z-index:1;background:transparent;padding:72px 0 140px;color:var(--home-ink)}
-.public-page .footer-top{position:relative;z-index:1;grid-template-columns:minmax(0,1fr) 160px 190px 250px;column-gap:50px;row-gap:18px;padding-block:0 38px}
+.public-page .footer-top{position:relative;z-index:1;grid-template-columns:minmax(0,calc(50% - 50px)) 130px 160px minmax(0,1fr);column-gap:50px;row-gap:18px;padding-block:0 38px}
 .public-page .footer-top>.footer-col{display:contents}
 .public-page .footer-top>.footer-col:nth-child(1)>.footer-cell{grid-column:1}
 .public-page .footer-top>.footer-col:nth-child(2)>.footer-cell{grid-column:2}
@@ -218,7 +218,7 @@
 .public-page .footer-identity{display:flex;align-items:center;gap:12px;margin:0}.public-page .footer-identity .footer-symbol{display:block;width:34px;height:auto;margin:0;order:-1}.public-page .footer-identity .footer-logo{width:190px;margin:0}
 .public-page .footer-top .footer-social{margin:0}
 .public-page .footer-top .footer-social a{width:32px;height:32px;border:0;background:#fff;color:var(--blue)}
-.public-page .footer-bottom{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) 160px 190px 250px;column-gap:50px;align-items:center;border-top:1px solid #d9d5cd;padding-top:22px;font-size:10px}
+.public-page .footer-bottom{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,calc(50% - 50px)) 130px 160px minmax(0,1fr);column-gap:50px;align-items:center;border-top:1px solid #d9d5cd;padding-top:22px;font-size:10px}
 .public-page .footer-bottom>span{grid-column:1;grid-row:1}
 .public-page .footer-bottom>.footer-bottom-legal{display:flex;grid-column:3;grid-row:1;gap:58px;margin:0}
 .public-page .footer-bottom>.cookie-settings-link{grid-column:4;grid-row:1;justify-self:start;padding:0;border:0;background:none}
@@ -280,10 +280,10 @@
   .public-page .team-feature{gap:40px;grid-template-columns:1.15fr 1fr;min-height:440px}
   .public-page .home-team-photo{height:auto;aspect-ratio:1400/785}
   .public-page .home-distinction-benefits li{font-size:16px}
-  .public-page .home-price-panel{padding:44px 32px;gap:35px}
+  .public-page .home-price-panel{grid-template-columns:minmax(0,calc(50% - 35px)) minmax(0,1fr);padding:44px 32px;gap:35px}
   .public-page .home-price-figure{padding-left:35px}
   .public-page .home-price-range{font-size:64px}
-  .public-page .home-faq{gap:55px}
+  .public-page .home-faq{grid-template-columns:minmax(0,calc(50% - 55px)) minmax(0,1fr);gap:55px}
 }
 @media(max-width:1000px){
   .public-page .team-feature{min-height:0}
@@ -370,7 +370,7 @@
   .public-page .home-price-copy h2{font-size:36px;margin:16px 0}
   .public-page .home-price-copy p{font-size:13px}
   .public-page .home-price-figure{border:0;padding:26px 0 0}
-  .public-page .home-price-figure>.home-scroll-line{width:100%;height:1px;transform-origin:left center}
+  .public-page .home-price-figure>.home-scroll-line{bottom:auto;width:100%;height:1px;transform-origin:left center}
   .public-page .home-price-figure>.home-scroll-line.home-reveal-ready{scale:0 1}
   .public-page .home-price-figure>.home-scroll-line.home-reveal-visible{scale:1}
   .public-page .home-price-range{font-size:70px;margin-top:12px}
