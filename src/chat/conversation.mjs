@@ -24,7 +24,7 @@ The application appends ONE follow-up prompt. It invites booking when appropriat
 
 const responseSchema={type:'object',additionalProperties:false,properties:{kind:{type:'string',enum:['appointment','practice_question','off_topic','medical','emergency','compliment']},input_language:{type:'string',enum:['de','en','mixed','other','unclear']},answer:{type:'string'},related_pages:{type:'array',items:{type:'string'},maxItems:3},booking_intent:{type:'string',enum:['request','defer','unspecified']},reason:{type:['string','null']},availability:{type:['string','null']},first_name:{type:['string','null']},last_name:{type:['string','null']},patient_status:{type:['string','null'],enum:[null,'new','existing','unsure']}},required:['kind','input_language','answer','related_pages','booking_intent','reason','availability','first_name','last_name','patient_status']};
 const localized=(lang,de,en)=>lang==='en'?en:de;
-const bookingPhrase=raw=>raw.trim().replace(/^(?:hallo|guten tag|hello|hi)[,!\s]+/iu,'').replace(/[.!?\s]+$/u,'').replace(/\s+/gu,' ');
+const bookingPhrase=raw=>raw.trim().replace(/^halo\b/iu,'hallo').replace(/\bmochte\b/giu,'möchte').replace(/^(?:hallo|guten tag|hello|hi)[,!\s]+/iu,'').replace(/[.!?\s]+$/u,'').replace(/\s+/gu,' ');
 const bookingMethods={
   de:[
     /^(?:wie|wo)\b(?=.{0,110}\b(?:termin(?:anfrage|vereinbarung)?|ersttermin|buchen|buchung)\b)(?=.{0,110}\b(?:buche|buchen|vereinbare|vereinbaren|ausmache|ausmachen|mache|machen|stelle|stellen|bekomme|bekommen|erhalte|erhalten|anfrage|anfragen|funktioniert|geht)\b).{0,110}$/iu,
@@ -71,10 +71,13 @@ const languagePrompt='Which language would you prefer for this chat: German or E
 const selectedLanguage=raw=>/^(?:(?:de|deutsch|german|auf deutsch|in german)(?: bitte| please)?|(?:ich möchte|ich bevorzuge|i prefer|i would prefer|i'd prefer|let's use) (?:deutsch|german))[.!\s]*$/iu.test(raw)?'de':/^(?:(?:en|englisch|english|auf englisch|in english)(?: bitte| please)?|(?:ich möchte|ich bevorzuge|i prefer|i would prefer|i'd prefer|let's use) (?:englisch|english))[.!\s]*$/iu.test(raw)?'en':null;
 const fixedMessageLanguage=raw=>/^(?:hallo|guten (?:tag|morgen|abend)|servus|grüß gott|ich möchte|ich brauche|ich hätte gerne|kann ich|bitte einen? termin|bitte eine terminanfrage|(?:erst)?termin(?:anfrage)?\s+(?:(?:bitte|jetzt)\s+)?(?:buchen|machen|stellen|vorbereiten)|wie\s+(?:kann|soll|möchte|buche|vereinbare|stelle))\b/iu.test(raw)?'de':/^(?:hello|hi|hey|good (?:morning|afternoon|evening)|i want|i need|i(?:'d| would) like|can i (?:book|make|request)|please (?:book|make))\b/iu.test(raw)?'en':null;
 function clearMessageLanguage(raw){
-  const english=(raw.match(/\b(?:i|my|me|you|your|we|our|have|am|need|want|would|could|can|what|when|where|how|are|with|about|an|the|some|please|appointment|pricing|price|pain|hurts|thinking|give)\b/giu)||[]).length;
-  const german=(raw.match(/\b(?:hallo|ich|mein|meine|mir|sie|ihr|habe|haben|und|möchte|brauche|termin|wegen|rückenschmerzen|schmerzen|preise|wie|wann|wo|kann|eine|einen|für|mit|deutsch)\b/giu)||[]).length;
+  const words=raw.toLocaleLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/ß/gu,'ss').match(/[a-z]+/gu)||[];
+  const englishWords=new Set(['i','my','me','you','your','we','our','have','am','need','want','would','could','can','what','when','where','how','are','with','about','an','the','some','please','appointment','pricing','price','pain','hurts','thinking','give']);
+  const germanWords=new Set(['hallo','halo','ich','mein','meine','meinen','mir','mich','sie','ihnen','ihr','ihre','habe','haben','und','mochte','moechte','gerne','gern','brauche','brauchen','termin','terminanfrage','buchung','buchen','machen','wegen','ruckenschmerzen','schmerzen','preise','preis','wie','wann','wo','kann','konnen','eine','einen','einem','ein','fur','mit','deutsch','bitte','mochten','vereinbaren','anfrage','hilfe','bei','behandlung','vorbereiten','senden','schicken','wurde','hatte','bekomme','der','die','das','den','dem','des','ist','wir','uns','unser','nicht','noch','zur','zum','auch','aber','oder','muss','wollen','will','konnten','koennten']);
+  const english=words.filter(word=>englishWords.has(word)).length;
+  const german=words.filter(word=>germanWords.has(word)).length;
+  if(german>=3&&german>english*2&&words.some(word=>['ich','mein','meine','mir','mich','sie','ihnen','mochte','moechte','brauche','wegen'].includes(word)))return 'de';
   if(english>=3&&german===0&&/\b(?:i\s+(?:have|am|need|want)|i['’]?m\b|my\b|can\s+you\b|could\s+you\b|would\s+you\b|what\b|when\b|where\b|how\b)/iu.test(raw))return 'en';
-  if(german>=3&&english===0&&/\b(?:ich|mein|meine|mir|sie|ihr|möchte|brauche|wegen)\b/iu.test(raw))return 'de';
   return null;
 }
 const emergencyLanguage=(raw,fallback)=>/\b(?:atemnot|keine luft|nicht atmen|starke brustschmerzen|starke blutung|herzinfarkt|schlaganfall|umbringen)\b/iu.test(raw)?'de':/\b(?:can't breathe|cannot breathe|not breathing|chest pain|severe bleeding|kill myself|suicid\w*|stroke now)\b/iu.test(raw)?'en':fallback;

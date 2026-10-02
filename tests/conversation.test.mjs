@@ -160,7 +160,7 @@ test('common German and English booking wording starts intake or offers both pat
   const turn=async(message,siteLanguage)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:newSession(),language:siteLanguage,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{
     const requests={
-      de:['Ich möchte einen Termin.','Ich möchte ein buchung machen','Ich hätte gern einen Termin.','Ich würde gerne einen Termin ausmachen.','Ich brauche einen Termin.','Können Sie mir bitte einen Termin geben?','Kann ich einen Termin vereinbaren?','Ich will eine Terminanfrage stellen.','Termin vereinbaren.','Bitte um einen Termin.','Ich möchte mich für einen Termin anmelden.','Bitte machen Sie mir eine Terminanfrage.'],
+      de:['Ich möchte einen Termin.','Ich möchte ein buchung machen','Halo ich mochte gerne ein buchung machen','Halo , ich mochte gerne ein buchung machen','ich mochte gerne ein buchung machen','Ich hätte gern einen Termin.','Ich würde gerne einen Termin ausmachen.','Ich brauche einen Termin.','Können Sie mir bitte einen Termin geben?','Kann ich einen Termin vereinbaren?','Ich will eine Terminanfrage stellen.','Termin vereinbaren.','Bitte um einen Termin.','Ich möchte mich für einen Termin anmelden.','Bitte machen Sie mir eine Terminanfrage.'],
       en:["I'd like an appointment.",'I need an appointment.','Please submit an appointment request.','Could you help me book an appointment?','Can I request an appointment?','I want to make a booking.','Please book me an appointment.']
     };
     for(const [language,phrases] of Object.entries(requests))for(const phrase of phrases){
@@ -308,6 +308,19 @@ test('a mistaken mixed-language model result cannot trap an English chat in repe
     assert.doesNotMatch(first.message,/Which language would you prefer/i);
     const followUp=await turn('Physiotherapy');
     assert.doesNotMatch(followUp.message,/Which language would you prefer/i);
+  }finally{process.env=old;}
+});
+test('clearly German wording without umlauts stays German even if the model calls it mixed',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const service=createConversationService({fetcher:async(_,options)=>{
+    const input=JSON.parse(JSON.parse(options.body).input);
+    assert.equal(input.forcedLanguage,'de');
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({kind:'practice_question',input_language:'mixed',booking_intent:'unspecified',answer:''}))}]}]})};
+  }});
+  let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:newSession(),language:'en',message:'Halo ich mochte gerne eine Auskunft wegen meiner Behandlung',consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});
+  try{
+    assert.equal(result.language,'de');
+    assert.doesNotMatch(result.message,/Which language would you prefer|German or English/);
   }finally{process.env=old;}
 });
 test('mixed-language appointment details survive the language choice',async()=>{
