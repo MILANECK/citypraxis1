@@ -198,16 +198,30 @@
 .public-page .home-faq .faq-list p{font-size:14px;line-height:1.8;margin:0}
 
 .public-page footer{position:relative;isolation:isolate;overflow:hidden;z-index:1;background:transparent;padding:72px 0 140px;color:var(--home-ink)}
-.public-page .footer-top{position:relative;z-index:1;padding-block:0 44px;gap:40px}
-.public-page .footer-top h3{font-family:Rubik,Arial,sans-serif;font-size:12px;font-weight:600;margin-bottom:18px;color:var(--home-ink)}
+.public-page .footer-top{position:relative;z-index:1;grid-template-columns:1.15fr repeat(3,minmax(0,1fr));column-gap:40px;row-gap:18px;padding-block:0 38px}
+.public-page .footer-top>.footer-col{display:contents}
+.public-page .footer-top>.footer-col:nth-child(1)>.footer-cell{grid-column:1}
+.public-page .footer-top>.footer-col:nth-child(2)>.footer-cell{grid-column:2}
+.public-page .footer-top>.footer-col:nth-child(3)>.footer-cell{grid-column:3}
+.public-page .footer-top>.footer-col:nth-child(4)>.footer-cell{grid-column:4}
+.public-page .footer-cell-head{grid-row:1}
+.public-page .footer-cell-main{grid-row:2}
+.public-page .footer-cell-tail{grid-row:3}
+.public-page .footer-cell{min-width:0}
+.public-page .footer-cell :is(p,h3){margin:0}
+.public-page .footer-top h3{font-family:Rubik,Arial,sans-serif;font-size:12px;font-weight:600;color:var(--home-ink)}
 .public-page .footer-top p,.public-page .footer-top a{font-size:12px;line-height:1.85;color:var(--home-muted)}
 .public-page .footer-top a.footer-action{display:inline-flex;align-items:center;gap:6px;font-weight:500}
 .public-page .footer-top .footer-action .arrow-symbol{width:14px;height:14px;flex-basis:14px}
-.public-page .footer-top>div:first-child>p{font-family:Rubik,Arial,sans-serif;font-size:25px;line-height:1.2;color:var(--home-ink);margin-top:22px}
+.public-page .footer-top>.footer-col:first-child .footer-cell-main p{font-family:Rubik,Arial,sans-serif;font-size:25px;line-height:1.2;color:var(--home-ink)}
 .public-page .footer-logo{width:200px;max-width:100%}
-.public-page .footer-identity{display:flex;align-items:center;gap:12px;margin-bottom:22px}.public-page .footer-identity .footer-symbol{display:block;width:34px;height:auto;margin:0;order:-1}.public-page .footer-identity .footer-logo{width:190px;margin:0}
+.public-page .footer-identity{display:flex;align-items:center;gap:12px;margin:0}.public-page .footer-identity .footer-symbol{display:block;width:34px;height:auto;margin:0;order:-1}.public-page .footer-identity .footer-logo{width:190px;margin:0}
+.public-page .footer-top .footer-social{margin:0}
 .public-page .footer-top .footer-social a{width:32px;height:32px;border:0;background:#fff;color:var(--blue)}
-.public-page .footer-bottom{position:relative;z-index:1;border-top:1px solid #d9d5cd;padding-top:22px;font-size:10px;gap:22px;align-items:center}
+.public-page .footer-bottom{position:relative;z-index:1;display:grid;grid-template-columns:1.15fr repeat(3,minmax(0,1fr));column-gap:40px;align-items:center;border-top:1px solid #d9d5cd;padding-top:22px;font-size:10px}
+.public-page .footer-bottom>div{display:flex;gap:20px;margin:0}
+.public-page .footer-bottom>.cookie-settings-link{justify-self:start;padding:0;border:0;background:none}
+.public-page .footer-bottom>a{justify-self:start;white-space:nowrap}
 .public-page .footer-bottom a,.public-page .cookie-settings-link{font-size:10px;color:var(--home-muted)}
 .public-page .home-footer-watermark{position:absolute;bottom:-2.5vw;left:4%;width:92%;opacity:.055;pointer-events:none;z-index:0}
 .public-page .home-footer-watermark img{width:100%;height:auto;filter:sepia(.3)}
@@ -250,6 +264,10 @@
   .public-page .header .header-cta{display:inline-flex;margin-left:auto}
   .public-page .header .language-toggle{margin-left:0}
   .public-page .container,.public-page .hero-quick-strip{width:calc(100% - 64px)}
+  .public-page .footer-top{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 36px}
+  .public-page .footer-top>.footer-col{display:block}
+  .public-page .footer-cell+.footer-cell{margin-top:16px}
+  .public-page .footer-bottom{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 36px}
   .public-page .therapy-grid{grid-template-columns:repeat(5,minmax(190px,1fr));overflow-x:auto;padding:0 1px 24px;scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:#ccdfe5 transparent}
   /* Keep horizontally scrolled cards visible if a cached reveal script misses an intersection. */
   .public-page .home-therapies .therapy-card.home-reveal-ready{opacity:1;translate:none}
@@ -360,13 +378,16 @@
   .public-page .home-faq .faq-list p{font-size:13px}
   .public-page footer{padding:48px 0 110px}
   .public-page .footer-top{grid-template-columns:1fr 1fr;gap:28px 20px;padding-bottom:30px}
-  .public-page .footer-top>div:first-child{grid-column:1/-1}
+  .public-page .footer-top>.footer-col{display:block}
+  .public-page .footer-top>.footer-col:first-child{grid-column:1/-1}
+  .public-page .footer-cell+.footer-cell{margin-top:16px}
   .public-page .footer-identity{gap:10px}
   .public-page .footer-identity .footer-logo{width:clamp(210px,65vw,270px)}
   .public-page .footer-identity .footer-symbol{width:40px}
-  .public-page .footer-top>div:first-child>p{font-size:25px;margin:16px 0}
+  .public-page .footer-top>.footer-col:first-child .footer-cell-main p{font-size:25px}
   .public-page .footer-top p,.public-page .footer-top a{font-size:11px}
-  .public-page .footer-bottom{display:flex;align-items:flex-start;flex-direction:column;gap:16px}
+  .public-page .footer-bottom{display:flex;align-items:flex-start;flex-wrap:wrap;gap:16px 24px}
+  .public-page .footer-bottom>span{width:100%}
   .public-page .footer-bottom>div{gap:12px 18px;flex-wrap:wrap}
   .public-page .home-footer-watermark{bottom:30px;width:94%;left:3%;opacity:.06}
 }

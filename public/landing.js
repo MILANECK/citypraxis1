@@ -26,7 +26,7 @@ export function enhanceLanding({preview=false}={}){
     '.home-people .section-heading>div>*','.home-people .review-quote','.home-people .review-card blockquote','.home-people .review-card figcaption',
     '.home-distinction-copy>.eyebrow','.home-distinction-copy>h2','.home-distinction-benefits li',
     '.home-price-copy>*','.home-price-figure>*','.home-faq-intro>*','.home-faq .faq-list>details',
-    '.home-scroll-line','.footer-top>div','.footer-bottom',
+    '.home-scroll-line','.footer-top','.footer-bottom',
     // Interior templates share the rhythm, while forms and dense tables stay ready to use.
     '.interior-page .article>.eyebrow','.interior-page .article>h1','.interior-page .article>.article-intro',
     '.interior-page .article>.article-body>*','.interior-page .listing-card',
