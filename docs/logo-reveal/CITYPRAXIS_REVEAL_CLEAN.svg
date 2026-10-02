@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2"
+     viewBox="0 0 2000 2000" width="1000" height="1000"
+     preserveAspectRatio="xMidYMid meet" role="img" aria-label="CityPraxis animated logo">
+  <defs>
+    <linearGradient id="g1" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(580.444,-335.119,1028.49,1781.397,49.887,220.224)">
+      <stop offset="0" stop-color="#48a4d0"/><stop offset="1" stop-color="#33bfcb"/>
+    </linearGradient>
+    <linearGradient id="g2" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(138.026,-79.689,25.836,44.749,771.673,917.15)">
+      <stop offset="0" stop-color="#48a4d0"/><stop offset="1" stop-color="#33bfcb"/>
+    </linearGradient>
+    <linearGradient id="g3" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(60.509,-104.805,33.977,19.617,1061.303,941.995)">
+      <stop offset="0" stop-color="#8f2580"/><stop offset=".994" stop-color="#db3793"/>
+    </linearGradient>
+    <linearGradient id="g4" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(427.196,-739.926,2260.218,1304.937,-239.267,761.387)">
+      <stop offset="0" stop-color="#8f2580"/><stop offset=".994" stop-color="#db3793"/>
+    </linearGradient>
+
+    <!-- Non-overlapping clips remove the two premature magenta junction artifacts
+         without changing the supplied artwork. -->
+    <clipPath id="clipPinkBar" clipPathUnits="userSpaceOnUse">
+      <rect x="968.55" y="620" width="33.35" height="845"/>
+    </clipPath>
+    <clipPath id="clipPinkLoop" clipPathUnits="userSpaceOnUse">
+      <rect x="1001.75" y="620" width="285" height="560"/>
+    </clipPath>
+
+    <mask id="mBlueMain" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="2000">
+      <rect width="2000" height="2000" fill="black"/>
+      <path fill="none" stroke="white" stroke-width="72" stroke-linecap="butt" stroke-linejoin="round"
+            pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="100"
+            d="M986.8 532 C848 547 770 601 742 707 C704 853 711 1054 787 1190 C835 1275 904 1335 986 1369">
+        <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2.55s" begin="0.12s"
+                 calcMode="spline" keyTimes="0;1" keySplines="0.78 0 0.16 1" fill="freeze"/>
+      </path>
+    </mask>
+
+    <mask id="mBlueEye" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="2000">
+      <rect width="2000" height="2000" fill="black"/>
+      <path fill="none" stroke="white" stroke-width="78" stroke-linecap="butt" stroke-linejoin="round"
+            pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="100"
+            d="M787 887 Q857 929 921 887">
+        <animate attributeName="stroke-dashoffset" from="100" to="0" dur="1.05s" begin="1.38s"
+                 calcMode="spline" keyTimes="0;1" keySplines="0.78 0 0.16 1" fill="freeze"/>
+      </path>
+    </mask>
+
+    <mask id="mPinkBar" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="2000">
+      <rect width="2000" height="2000" fill="black"/>
+      <path clip-path="url(#clipPinkBar)"
+            fill="none" stroke="white" stroke-width="72" stroke-linecap="butt" stroke-linejoin="round"
+            pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="100"
+            d="M985 646 L985 1458">
+        <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2.10s" begin="0.34s"
+                 calcMode="spline" keyTimes="0;1" keySplines="0.78 0 0.16 1" fill="freeze"/>
+      </path>
+    </mask>
+
+    <mask id="mPinkLoop" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="2000">
+      <rect width="2000" height="2000" fill="black"/>
+      <path clip-path="url(#clipPinkLoop)"
+            fill="none" stroke="white" stroke-width="72" stroke-linecap="butt" stroke-linejoin="round"
+            pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="100"
+            d="M1001.8 646 C1124 647 1184 686 1204 776 C1230 891 1219 1008 1175 1068 C1132 1126 1066 1144 1001.8 1146">
+        <animate attributeName="stroke-dashoffset" from="100" to="0" dur="2.45s" begin="0.76s"
+                 calcMode="spline" keyTimes="0;1" keySplines="0.78 0 0.16 1" fill="freeze"/>
+      </path>
+    </mask>
+
+    <mask id="mPinkEye" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="2000">
+      <rect width="2000" height="2000" fill="black"/>
+      <path fill="none" stroke="white" stroke-width="82" stroke-linecap="butt" stroke-linejoin="round"
+            pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="100"
+            d="M1175 912 Q1104 870 1041 912">
+        <animate attributeName="stroke-dashoffset" from="100" to="0" dur="1.08s" begin="1.86s"
+                 calcMode="spline" keyTimes="0;1" keySplines="0.78 0 0.16 1" fill="freeze"/>
+      </path>
+    </mask>
+  </defs>
+
+  <!-- Exact supplied 50%-scale artwork. -->
+  <path mask="url(#mBlueMain)" fill="url(#g1)" d="m828.75 1195.39c-83.3-109.59-99.66-347.51-62.24-492.51 33.88-131.24 221.08-154.79 222.96-155.01l-3.84-32.95c-8.63 1.01-211.64 26.32-251.24 179.67-39.31 152.36-21.07 403.74 67.96 520.87 89.99 118.4 175.23 154.85 178.81 156.34l12.8-30.59c-0.8-0.34-81.08-35.15-165.21-145.82z"/>
+  <path mask="url(#mBlueEye)" fill="url(#g2)" d="m798.7 875.37l-22.61 24.28c2.77 2.57 28.56 25.16 81.7 25.16 42.37 0 72.08-23.35 73.32-24.34l-20.7-25.92c-0.21 0.17-22.23 17.09-52.62 17.09-40.1 0-58.5-15.75-59.09-16.27z"/>
+  <path mask="url(#mPinkEye)" fill="url(#g3)" d="m1163.44 923.7l22.61-24.26c-2.77-2.58-28.54-25.16-81.68-25.16-42.37 0-72.08 23.34-73.32 24.33l20.69 25.92c0.22-0.17 22.24-17.08 52.63-17.08 40.1 0 58.47 15.74 59.07 16.25z"/>
+
+  <!-- Same exact magenta artwork, split only at the mask level so junctions cannot leak early. -->
+  <path mask="url(#mPinkBar)" fill="url(#g4)" d="m1206.76 728.21c-52.93-100.8-219.95-99.21-227.12-99.18l-3.96-0.01h-7.06v443.24h33.17v-409.2c43.78 2.97 142.07 16.72 175.59 80.57 36.57 69.67 47.62 239.26-12.65 321.86-45.29 62.04-130.02 72.57-162.94 74.25l-33.17-1.14v320.16h33.17v-285.75c37.14-1.51 134.88-12.8 189.73-87.97 68.34-93.65 56.53-278.15 15.24-356.83z"/>
+  <path mask="url(#mPinkLoop)" fill="url(#g4)" d="m1206.76 728.21c-52.93-100.8-219.95-99.21-227.12-99.18l-3.96-0.01h-7.06v443.24h33.17v-409.2c43.78 2.97 142.07 16.72 175.59 80.57 36.57 69.67 47.62 239.26-12.65 321.86-45.29 62.04-130.02 72.57-162.94 74.25l-33.17-1.14v320.16h33.17v-285.75c37.14-1.51 134.88-12.8 189.73-87.97 68.34-93.65 56.53-278.15 15.24-356.83z"/>
+</svg>
