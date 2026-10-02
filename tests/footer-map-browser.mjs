@@ -9,6 +9,9 @@ try{
   const page=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'no-preference'});
   await page.goto(origin+'/kontakt?lang=en');
   await page.locator('.cookie-acknowledge').click();
+  assert.equal(await page.locator('.contact-map iframe').count(),0,'Google Maps must not load before an explicit click');
+  await page.locator('.map-load').click();
+  assert.match(await page.locator('.contact-map iframe').getAttribute('src'),/^https:\/\/www\.google\.com\/maps/);
   const details=page.locator('.map-details details');
   await details.locator('summary').click();
   await page.waitForTimeout(900);

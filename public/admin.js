@@ -14,7 +14,7 @@ const fields={
   symptoms:[['title','Name'],['subtitle','Kurzzeile'],['intro','Einleitung','textarea'],['body','Beschreibung','textarea'],['service','Leistung (URL-Kürzel)'],['icon','Symbol','select',['jaw','head','ear','balance','movement']]],
   services:[['title','Name'],['tag','Dachzeile'],['intro','Einleitung','textarea'],['body','Beschreibung (## bis ###### Überschriften, - Aufzählung)','textarea'],['methods','Methoden (pro Zeile: Titel|Beschreibung)','textarea'],['image','Therapiefoto / Kartenbild','media-image'],['related','Verwandte Leistungen (URL-Kürzel, mit Komma getrennt)']],
   team:[['title','Name'],['cardLabel','Zusatz auf Teamkarte (z. B. Praxisleitung)'],['role','Fachrichtung'],['bookable','Buchungsanfragen über dieses Profil aktivieren','checkbox'],['qualifications','Qualifikationen','textarea'],['body','Persönliche Vorstellung','textarea'],['specialties','Behandlungsschwerpunkte (eine Zeile mit - pro Punkt)','textarea'],['methods','Angebot & Methoden (eine Zeile mit - pro Punkt)','textarea'],['career','Beruflicher Werdegang (eine Zeile mit - pro Station)','textarea'],['phone','Telefon'],['email','E-Mail','email'],['image','Teamfoto (leere Auswahl entfernt das Foto)','media-image']],
-  reviews:[['title','Anzeigename'],['body','Freigegebene Bewertung (Originalwortlaut)','textarea'],['rating','Sterne','rating'],['source','Quelle (z. B. Google oder direktes Feedback)'],['sourceUrl','Link zur Originalbewertung (optional)','url']],
+  reviews:[['title','Anzeigename'],['body','Freigegebene Bewertung (Originalwortlaut)','textarea'],['rating','Sterne','rating'],['source','Quelle (z. B. Google oder direktes Feedback)'],['sourceUrl','Link zur Originalbewertung (optional)','url'],['verified','Echtheit geprüft: Name, Sterne und Text stimmen mit der veröffentlichten Originalbewertung überein','checkbox']],
   faqs:[['title','Frage'],['body','Antwort','textarea']],
   prices:[['category','Kategorie'],['title','Behandlung / Preisposition'],['duration','Terminart oder Dauer'],['amount','Preis in Euro','number'],['details','Zusatzinformation','textarea']],
   reimbursements:[['title','Leistung'],['oegkk','ÖGKK (€)'],['bvaeb','BVAEB (€)'],['kfa','KFA (€)'],['svs','SVS (€)'],['asOf','Tabellenstand (MM/JJJJ)']],
@@ -228,7 +228,7 @@ async function render(){
     document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>removeContent(collection,records.find(r=>r.id===b.dataset.remove)));
     if(collection==='reviews'){
       $('#new-content').disabled=records.length>=3;
-      $('.toolbar p').textContent=I18n.language==='en'?`${records.length} / 3 reviews. Edit each review separately, or delete one to replace it. Drafts stay private until published.`:`${records.length} / 3 Bewertungen. Jede Bewertung ist einzeln bearbeitbar. Zum Ersetzen können Sie eine löschen. Entwürfe bleiben bis zur Veröffentlichung privat.`;
+      $('.toolbar p').textContent=I18n.language==='en'?`${records.length} / 3 reviews. Only published reviews with confirmed matching name, rating and original wording appear on the website. Sample entries remain hidden.`:`${records.length} / 3 Bewertungen. Nur veröffentlichte, nach Name, Sternen und Originaltext bestätigte Bewertungen erscheinen auf der Website. Beispiele bleiben verborgen.`;
     }
     if(collection==='team')$('#new-content').disabled=records.length>=20;
     $('#new-content')?.addEventListener('click',()=>editContent(view));document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editContent(view,records.find(r=>r.id===b.dataset.edit)));

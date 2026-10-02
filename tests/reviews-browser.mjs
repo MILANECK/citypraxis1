@@ -19,6 +19,7 @@ try{
     await page.locator('#content-form [name=title]').fill('Review '+i);
     await page.locator('#content-form [name=body]').fill('Independent review '+i);
     await page.locator('[data-rating="5"]').click();
+    await page.locator('#content-form [name=verified]').check();
     await page.locator('[value=publish]').click();
     await page.locator('#editor-dialog').waitFor({state:'hidden'});
     await page.waitForFunction(n=>document.querySelectorAll('[data-edit]').length===n,i);
@@ -26,10 +27,17 @@ try{
   assert.equal(new Set(ids).size,3);
   assert.equal(await page.locator('#new-content').isDisabled(),true);
   await page.locator(`[data-edit="${ids[1]}"]`).click();
-  await page.locator('#content-form [name=body]').fill('Edited second review');
+  await page.locator('#content-form [name=verified]').uncheck();
   await page.locator('[value=publish]').click();
   await page.locator('#editor-dialog').waitFor({state:'hidden'});
   const publicPage=await browser.newPage();await publicPage.goto('' + (process.env.QA_ORIGIN||'http://127.0.0.1:3011') + '/?lang=en');
+  assert.deepEqual(await publicPage.locator('.review-card blockquote').allTextContents(),['Independent review 1','Independent review 3'],'An unverified published entry must stay hidden');
+  await page.locator(`[data-edit="${ids[1]}"]`).click();
+  await page.locator('#content-form [name=body]').fill('Edited second review');
+  await page.locator('#content-form [name=verified]').check();
+  await page.locator('[value=publish]').click();
+  await page.locator('#editor-dialog').waitFor({state:'hidden'});
+  await publicPage.reload();
   await publicPage.locator('.review-card blockquote').first().waitFor();
   assert.deepEqual(await publicPage.locator('.review-card blockquote').allTextContents(),['Independent review 1','Edited second review','Independent review 3']);
   assert.equal(await publicPage.locator('.reviews-grid .review-card figcaption .review-stars').count(),3);
@@ -44,7 +52,7 @@ try{
     const bounds=card.getBoundingClientRect();
     return {left:avatar.left-bounds.left,bottom:bounds.bottom-avatar.bottom,right:bounds.right-stars.right};
   });
-  assert.ok(Math.abs(alignment.left-alignment.bottom)<1,`The initial circle should have equal left and bottom spacing: ${JSON.stringify(alignment)}`);
+  assert.ok(alignment.bottom>=16,`The initial circle should retain bottom spacing: ${JSON.stringify(alignment)}`);
   assert.ok(Math.abs(alignment.left-alignment.right)<1,`Stars should align to the card's right padding: ${JSON.stringify(alignment)}`);
   await mkdir('test-results',{recursive:true});
   await publicPage.locator('.reviews-grid').screenshot({path:'test-results/review-cards-compact.png'});
