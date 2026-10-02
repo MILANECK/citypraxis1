@@ -441,12 +441,14 @@ function bindFooterRubber(){
     frame=requestAnimationFrame(animate);
   };
   const onWheel=event=>{
-    if(!desktop.matches||!footer.contains(event.target))return;
+    if(!desktop.matches||event.target instanceof Element&&event.target.closest('.chat-window, dialog, .therapy-nav-sections, .clinical-aside'))return;
     if(event.deltaY<=0){pull=0;return;}
     const root=document.documentElement;
-    if(root.scrollHeight-innerHeight-scrollY>2)return;
     const pixels=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
-    pull=Math.min(18,pull+Math.min(120,pixels)*.07);
+    const remaining=Math.max(0,root.scrollHeight-innerHeight-scrollY);
+    const overshoot=pixels-remaining;
+    if(overshoot<=0&&remaining>2)return;
+    pull=Math.min(42,pull+Math.min(180,remaining<=2?pixels:overshoot)*.22);
     lastInput=performance.now();
     if(!frame)frame=requestAnimationFrame(animate);
   };
