@@ -10,6 +10,8 @@ try{
   await page.goto(origin+'/kontakt?lang=en');
   await page.locator('.cookie-acknowledge').click();
   assert.equal(await page.locator('.contact-map iframe').count(),0,'Google Maps must not load before an explicit click');
+  assert.equal(await page.locator('.contact-map .map-preview').count(),1,'A local map preview should be visible before Google Maps loads');
+  assert.ok(await page.locator('.contact-map .map-preview').evaluate(image=>image.complete&&image.naturalWidth>0),'The local map preview should load successfully');
   await page.locator('.map-load').click();
   assert.match(await page.locator('.contact-map iframe').getAttribute('src'),/^https:\/\/www\.google\.com\/maps/);
   const details=page.locator('.map-details details');
