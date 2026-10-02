@@ -160,7 +160,7 @@ test('common German and English booking wording starts intake or offers both pat
   const turn=async(message,siteLanguage)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:newSession(),language:siteLanguage,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{
     const requests={
-      de:['Ich möchte einen Termin.','Ich möchte ein buchung machen','Halo ich mochte gerne ein buchung machen','Halo , ich mochte gerne ein buchung machen','ich mochte gerne ein buchung machen','Ich hätte gern einen Termin.','Ich würde gerne einen Termin ausmachen.','Ich brauche einen Termin.','Können Sie mir bitte einen Termin geben?','Kann ich einen Termin vereinbaren?','Ich will eine Terminanfrage stellen.','Termin vereinbaren.','Bitte um einen Termin.','Ich möchte mich für einen Termin anmelden.','Bitte machen Sie mir eine Terminanfrage.'],
+      de:['Ich möchte einen Termin.','Ich möchte ein buchung machen','Halo ich mochte gerne ein buchung machen','Halo , ich mochte gerne ein buchung machen','ich mochte gerne ein buchung machen','Hello ich mochte buchung im deinen praxis','Ich möchte eine Buchung in eurer Praxis','Ich hätte gern einen Termin.','Ich würde gerne einen Termin ausmachen.','Ich brauche einen Termin.','Können Sie mir bitte einen Termin geben?','Kann ich einen Termin vereinbaren?','Ich will eine Terminanfrage stellen.','Termin vereinbaren.','Bitte um einen Termin.','Ich möchte mich für einen Termin anmelden.','Bitte machen Sie mir eine Terminanfrage.'],
       en:["I'd like an appointment.",'I need an appointment.','Please submit an appointment request.','Could you help me book an appointment?','Can I request an appointment?','I want to make a booking.','Please book me an appointment.']
     };
     for(const [language,phrases] of Object.entries(requests))for(const phrase of phrases){
@@ -168,6 +168,7 @@ test('common German and English booking wording starts intake or offers both pat
       assert.equal(result.status,200,phrase);
       assert.equal(result.language,language,phrase);
       assert.match(result.message,language==='de'?/Formular für Terminanfragen.*hier im Chat/:/appointment request form.*here in chat/,phrase);
+      assert.doesNotMatch(result.message,/Vielen Dank, deinen praxis/i,phrase);
       assert.doesNotMatch(result.message,/Was ist der Anlass|What is the reason/,phrase);
       assert.equal(result.ready,false,phrase);
     }
@@ -184,6 +185,32 @@ test('common German and English booking wording starts intake or offers both pat
       assert.doesNotMatch(result.message,/Was ist der Anlass|What is the reason/);
     }
     assert.equal(aiCalls,0);
+  }finally{process.env=old;}
+});
+test('German im is never treated as the English name introduction Im',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const service=createConversationService({fetcher:async()=>({ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({kind:'medical',input_language:'de',booking_intent:'unspecified',reason:'Schmerzen im Rücken',first_name:'unteren',last_name:'Rücken',answer:'Unser Team kann Ihr Anliegen persönlich besprechen.'}))}]}]})})});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const first=await turn('Ich habe Schmerzen im unteren Rücken.');
+    assert.equal(first.language,'de');
+    assert.doesNotMatch(first.message,/Vielen Dank, unteren Rücken/i);
+    assert.match(first.message,/Möchten Sie, dass ich eine Terminanfrage/);
+    const next=await turn('Ja bitte.');
+    assert.match(next.message,/Vor- und Nachnamen/);
+  }finally{process.env=old;}
+});
+test('imperfect booking fallback does not treat German refusals or information questions as requests',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let aiCalls=0;
+  const service=createConversationService({fetcher:async()=>{aiCalls++;return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({kind:'practice_question',input_language:'de',booking_intent:'unspecified',answer:'Gerne beantworte ich Ihre Frage.'}))}]}]})};}});
+  try{
+    for(const message of ['Ich möchte keine Buchung.','Ich möchte wissen, wie eine Buchung funktioniert.']){
+      let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:newSession(),language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});
+      assert.equal(result.language,'de');
+      assert.doesNotMatch(result.message,/Formular für Terminanfragen.*hier im Chat/);
+    }
+    assert.equal(aiCalls,2);
   }finally{process.env=old;}
 });
 test('a first-name greeting still requires a full name before the request can be sent',async()=>{
