@@ -65,7 +65,7 @@
         if(value!==translated)el.setAttribute(attr,translated);
       }
       const href = el.getAttribute('href');
-      if (href?.startsWith('/') && !href.startsWith('//') && !el.hasAttribute('data-language') && !/^\/(assets|uploads|api)\//.test(href)) {
+      if (href?.startsWith('/') && !href.startsWith('//') && !el.hasAttribute('data-language') && !el.closest('#cp-chat') && !/^\/(assets|uploads|api)\//.test(href)) {
         const url = new URL(href, location.origin); url.searchParams.set('lang', language);
         const next = url.pathname + url.search + url.hash;
         if (href !== next) el.setAttribute('href', next);
