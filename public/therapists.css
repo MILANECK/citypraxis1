@@ -15,7 +15,7 @@
 .team-profile-prompt{position:relative;top:3px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--blue);font-size:12px;margin-top:auto;padding-top:15px}
 .team-profile-prompt .arrow-symbol{transform:translateX(1px)}
 .team-directory .team-portrait{overflow:hidden}
-.team-profile-link .team-photo{object-position:center 22%;transform-origin:50% 28%;transition:transform .68s cubic-bezier(.22,1,.36,1),filter .45s ease}
+.team-profile-link .team-photo{object-position:center 22%;transform-origin:50% 0;transition:transform .68s cubic-bezier(.22,1,.36,1),filter .45s ease}
 @media(hover:hover) and (pointer:fine){.team-profile-link:hover .team-photo{transform:scale(1.035);filter:brightness(1.025)}}
 .team-directory .team-person.team-reveal{opacity:0}
 .team-directory .team-person.team-reveal.is-visible{animation:team-card-enter 1.05s cubic-bezier(.35,0,.22,1) both;animation-delay:var(--team-delay,0ms)}
