@@ -97,6 +97,26 @@ test('a greeting stays welcoming and a direct appointment request starts with th
     assert.equal(calls,0);
   }finally{process.env=old;}
 });
+test('a booking how-to question offers the form and chat without starting intake',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  let calls=0;const service=createConversationService({fetcher:async()=>{calls++;throw Error('Booking guidance should not require AI');}});
+  const turn=async(token,message,language)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    const english=newSession();
+    const guidance=await turn(english,'how should I make the booking','en');
+    assert.equal(guidance.ready,false);
+    assert.match(guidance.message,/\[appointment request form\]\(\/termin\?lang=en#booking-form\)/);
+    assert.match(guidance.message,/here in chat/);
+    assert.doesNotMatch(guidance.message,/What would you like CityPraxis to help you with\?/);
+    assert.match((await turn(english,'continue here','en')).message,/What would you like CityPraxis to help you with\?/);
+    const german=newSession();
+    const germanGuidance=await turn(german,'Wie kann ich einen Termin buchen?','de');
+    assert.match(germanGuidance.message,/\[Formular für Terminanfragen\]\(\/termin\?lang=de#booking-form\)/);
+    assert.match(germanGuidance.message,/hier im Chat/);
+    assert.match((await turn(german,'im Chat','de')).message,/Wobei dürfen wir Ihnen in der Citypraxis helfen\?/);
+    assert.equal(calls,0);
+  }finally{process.env=old;}
+});
 test('a first-name greeting still requires a full name before the request can be sent',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   let aiCalls=0;
