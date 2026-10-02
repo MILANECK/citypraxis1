@@ -220,12 +220,10 @@
 .public-page .footer-top .footer-social a{width:32px;height:32px;border:0;background:#fff;color:var(--blue)}
 .public-page .footer-bottom{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,calc(50% - 50px)) 130px 160px minmax(0,1fr);column-gap:50px;align-items:center;border-top:1px solid #d9d5cd;padding-top:22px;font-size:10px}
 .public-page .footer-bottom>span{grid-column:1;grid-row:1}
-.public-page .footer-bottom>.footer-bottom-legal{display:flex;grid-column:3;grid-row:1;gap:58px;margin:0}
-.public-page .footer-bottom>.cookie-settings-link{grid-column:4;grid-row:1;justify-self:start;padding:0;border:0;background:none}
-.public-page .footer-bottom>a{grid-column:4;grid-row:1;justify-self:end;white-space:nowrap}
-.public-page .footer-bottom a,.public-page .cookie-settings-link{font-size:10px;color:var(--home-muted)}
-.public-page .footer-bottom>a{display:inline-flex;align-items:center;gap:6px}
-.public-page .footer-bottom>a .arrow-symbol{width:14px;height:14px;flex-basis:14px}
+.public-page .footer-bottom-links{display:flex;grid-column:3/5;grid-row:1;align-items:center;justify-content:space-between;gap:16px;min-width:0}
+.public-page .footer-bottom-links>a,.public-page .footer-bottom-links>.cookie-settings-link{font-size:10px;line-height:1.4;color:var(--home-muted);white-space:nowrap}
+.public-page .footer-bottom-links>a:last-child{display:inline-flex;align-items:center;gap:6px}
+.public-page .footer-bottom-links>a:last-child .arrow-symbol{width:14px;height:14px;flex-basis:14px}
 .public-page .home-footer-watermark{position:absolute;bottom:-2.5vw;left:4%;width:92%;opacity:.055;pointer-events:none;z-index:0}
 .public-page .home-footer-watermark img{width:100%;height:auto;filter:sepia(.3)}
 .public-page .home-footer-watermark.watermark-waiting img{opacity:0;translate:0 64px;transition:opacity 1.3s ease .16s,translate 1.45s cubic-bezier(.22,1,.36,1) .16s}
@@ -272,8 +270,7 @@
   .public-page .footer-cell+.footer-cell{margin-top:16px}
   .public-page .footer-bottom{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 36px}
   .public-page .footer-bottom>*{grid-column:auto;grid-row:auto}
-  .public-page .footer-bottom>.footer-bottom-legal{gap:20px}
-  .public-page .footer-bottom>a{justify-self:start}
+  .public-page .footer-bottom-links{grid-column:auto;grid-row:auto}
   .public-page .therapy-grid{grid-template-columns:repeat(5,minmax(190px,1fr));overflow-x:auto;padding:0 1px 24px;scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:#ccdfe5 transparent}
   /* Keep horizontally scrolled cards visible if a cached reveal script misses an intersection. */
   .public-page .home-therapies .therapy-card.home-reveal-ready{opacity:1;translate:none}
@@ -394,7 +391,7 @@
   .public-page .footer-top p,.public-page .footer-top a{font-size:11px}
   .public-page .footer-bottom{display:flex;align-items:center;flex-wrap:wrap;gap:16px 24px;line-height:1.4}
   .public-page .footer-bottom>span{width:100%}
-  .public-page .footer-bottom>div{gap:12px 18px;flex-wrap:wrap}
+  .public-page .footer-bottom-links{width:100%;gap:12px 18px;flex-wrap:wrap}
   .public-page .home-footer-watermark{bottom:30px;width:94%;left:3%;opacity:.06}
 }
 @media(max-width:360px){
