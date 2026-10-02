@@ -18,9 +18,9 @@ REASON: Headaches, pain and recovery after an operation are each sufficient self
 GENERAL PHYSICAL COMPLAINTS: If someone describes a vague or hard-to-name physical problem or feeling, including stiffness, pain, tension, restricted movement, discomfort or similar symptoms, treat it as a medical concern even if they do not ask for a diagnosis. Use a calm, professional, general tone; describe it neutrally (say "stiffness" or "feeling stiff," not "so stiff" unless the visitor used that emphasis). Lead with what the practice can do: one of our physiotherapists can assess the concern in person and recommend next steps. Do not speculate about causes or recommend a treatment. Do not list what you cannot do or add a diagnosis disclaimer unless the visitor asks what is causing it or asks for a diagnosis. For that direct question, use at most one brief first-person limitation, then explain that a physiotherapist can assess them in person. The application will offer to prepare an appointment request; do not repeat the offer in your answer. Symptoms alone do not mean the visitor has agreed to proceed.
 AVAILABILITY: If someone asks about free slots, current times or the next appointment, mention the calendar limitation only once: "I can't access the live calendar here, but I can help prepare an appointment request." Then say our reception team can contact them to arrange a suitable time. Never say that you can book or confirm a specific appointment. If the same message also mentions a physical concern, focus on the assessment and next step; do not repeat separate disclaimers about diagnosis, calendar access and slot confirmation. This enquiry alone is not consent to start collecting personal details. The application appends one clear invitation to get started; do not ask a second booking question.
 If a visitor declines a contact method or declines to provide a contact detail, respect that choice. Full name, email and phone are required for the current appointment request process. Explain this requirement politely. Never promise that another contact channel replaces a required detail. Do not repeat a declined request; answer other CityPraxis questions normally. The application tracks the refusal and suppresses its follow-up question until the visitor supplies the missing detail.
-For a greeting, greet back and ask how you can help; a greeting is not off-topic. When asked how to make an appointment request, explain that the visitor can use the online form or prepare the request here in chat, and select the booking page. Asking how does not mean they chose to start the chat intake. For an appointment request, warmly agree to prepare it; the application asks for the reason if it is not known, then requests the necessary contact details. Never say you have booked or can guarantee an appointment.
+For a greeting, greet back and ask how you can help; a greeting is not off-topic. When asked how to make an appointment request, explain that the visitor can use the online form or prepare the request here in chat, and select the booking page. Asking how does not mean they chose to start the chat intake. For a direct appointment request without a stated reason, the application offers the form or assisted chat before collecting details. After the visitor chooses chat, it requests missing contact details and then the reason if still unknown. Never say you have booked or can guarantee an appointment.
 For a standalone, relevant compliment about CityPraxis, its team, services, or this chat, use kind compliment and do not add any question or appointment prompt. The application replies only "Thank you." (German: "Danke."). If a message combines a compliment with a question or request, address the question or request instead of treating it as a standalone compliment.
-The application appends ONE follow-up prompt. It first invites booking, asks for the reason if missing, then invites the visitor to send their full name, email and phone together. If any detail remains missing or invalid, it asks for that field separately before review. Do not ask intake questions or invite booking in answer. Do not duplicate a sentence or restate a question in other words. A short stage answer such as a name or "flexible" is appointment information. The supplied practice-local time and published hours can tell you whether the practice is currently closed. Do not promise exactly when staff will reply. Return the required JSON only.`;
+The application appends ONE follow-up prompt. It invites booking when appropriate. For assisted chat chosen after a form-or-chat offer, it asks for missing full name, email and phone first, then the reason if still unknown. In other conversations, it uses already supplied details and asks only for what is missing. Do not ask intake questions or invite booking in answer. Do not duplicate a sentence or restate a question in other words. A short stage answer such as a name or "flexible" is appointment information. The supplied practice-local time and published hours can tell you whether the practice is currently closed. Do not promise exactly when staff will reply. Return the required JSON only.`;
 
 const responseSchema={type:'object',additionalProperties:false,properties:{kind:{type:'string',enum:['appointment','practice_question','off_topic','medical','emergency','compliment']},input_language:{type:'string',enum:['de','en','mixed','other','unclear']},answer:{type:'string'},related_pages:{type:'array',items:{type:'string'},maxItems:3},booking_intent:{type:'string',enum:['request','defer','unspecified']},reason:{type:['string','null']},availability:{type:['string','null']},first_name:{type:['string','null']},last_name:{type:['string','null']},patient_status:{type:['string','null'],enum:[null,'new','existing','unsure']}},required:['kind','input_language','answer','related_pages','booking_intent','reason','availability','first_name','last_name','patient_status']};
 const localized=(lang,de,en)=>lang==='en'?en:de;
@@ -37,7 +37,7 @@ const bookingMethods={
 };
 const bookingRequests={
   de:[
-    /^ich (?:möchte|moechte|will|brauche|benötige|benoetige|hätte|haette|würde|wuerde)(?: (?:jetzt|gerne?|bitte))? (?:einen?|eine) (?:ersttermin|terminanfrage|termin|behandlungstermin)(?: (?:buchen|vereinbaren|ausmachen|machen|stellen|vorbereiten|senden))?$/iu,
+    /^ich (?:möchte|moechte|will|brauche|benötige|benoetige|hätte|haette|würde|wuerde)(?: (?:jetzt|gerne?|bitte))? ein(?:e|en)? (?:ersttermin|terminanfrage|termin|behandlungstermin|buchung)(?: (?:buchen|vereinbaren|ausmachen|machen|stellen|vorbereiten|senden))?$/iu,
     /^ich (?:möchte|moechte|würde|wuerde) (?:mich )?(?:gerne? )?(?:für|fuer) (?:einen?|eine) (?:termin|terminanfrage) (?:anmelden|vormerken)$/iu,
     /^(?:kann|können|koennen|könnte|koennte|würden|wuerden) (?:ich|sie mir) (?:bitte )?(?:einen?|eine) (?:ersttermin|terminanfrage|termin)(?: (?:buchen|geben|vereinbaren|ausmachen|machen|stellen|vorbereiten))?$/iu,
     /^(?:ersttermin|terminanfrage|termin) (?:(?:bitte|jetzt) )?(?:buchen|vereinbaren|ausmachen|machen|stellen|vorbereiten|senden)$/iu,
@@ -59,7 +59,14 @@ function bookingMessage(raw){
   return null;
 }
 const chatBookingChoice=raw=>/^(?:yes(?: please)?|sure|okay|ok|here|in (?:the )?chat|(?:continue|do it|let'?s do it|let'?s continue)(?: here| in (?:the )?chat)?|ja(?: bitte)?|gerne|hier|im chat|(?:weiter|machen wir weiter)(?: hier| im chat)?)[.!\s]*$/iu.test(raw);
+const formBookingChoice=raw=>/^(?:the |your |online )?(?:form|website form|booking form|appointment request form)(?: please)?[.!\s]*$|^(?:das |online[ -])?(?:formular|onlineformular)(?: bitte)?[.!\s]*$/iu.test(raw);
 const bookingFormLink=lang=>`[${localized(lang,'Formular für Terminanfragen','appointment request form')}](${localizedPageUrl(chatPages().find(page=>page.id==='booking'),lang)})`;
+const bookingOptions=(lang,draft={})=>{
+  const missing=[!draft.first_name||!draft.last_name?'name':null,!draft.email?'email':null,!draft.phone?'phone':null].filter(Boolean);
+  const labels={name:localized(lang,'Ihren vollständigen Vor- und Nachnamen','your full first and last name'),email:localized(lang,'Ihre E-Mail-Adresse','your email address'),phone:localized(lang,'Ihre Telefonnummer mit Ländervorwahl','your phone number with country code')};
+  const details=missing.length?localized(lang,`Wenn Sie hier weitermachen möchten, benötige ich noch ${missing.map(key=>labels[key]).join(', ').replace(/, ([^,]+)$/u,' und $1')}. `,`To continue here, I'll need ${missing.map(key=>labels[key]).join(', ').replace(/, ([^,]+)$/u,' and $1')}. `):'';
+  return localized(lang,`Gerne. Sie können Ihre Terminanfrage über unser ${bookingFormLink(lang)} senden oder sie hier im Chat mit mir vorbereiten. ${details}Was ist Ihnen lieber?`,`Of course. You can send an appointment request using our ${bookingFormLink(lang)} or prepare it with me here in chat. ${details}Which would you prefer?`);
+};
 const languagePrompt='Which language would you prefer for this chat: German or English? / Möchten Sie auf Deutsch oder Englisch weiterschreiben?';
 const selectedLanguage=raw=>/^(?:(?:de|deutsch|german|auf deutsch|in german)(?: bitte| please)?|(?:ich möchte|ich bevorzuge|i prefer|i would prefer|i'd prefer|let's use) (?:deutsch|german))[.!\s]*$/iu.test(raw)?'de':/^(?:(?:en|englisch|english|auf englisch|in english)(?: bitte| please)?|(?:ich möchte|ich bevorzuge|i prefer|i would prefer|i'd prefer|let's use) (?:englisch|english))[.!\s]*$/iu.test(raw)?'en':null;
 const fixedMessageLanguage=raw=>/^(?:hallo|guten (?:tag|morgen|abend)|servus|grüß gott|ich möchte|ich brauche|ich hätte gerne|kann ich|bitte einen? termin|bitte eine terminanfrage|(?:erst)?termin(?:anfrage)?\s+(?:(?:bitte|jetzt)\s+)?(?:buchen|machen|stellen|vorbereiten)|wie\s+(?:kann|soll|möchte|buche|vereinbare|stelle))\b/iu.test(raw)?'de':/^(?:hello|hi|hey|good (?:morning|afternoon|evening)|i want|i need|i(?:'d| would) like|can i (?:book|make|request)|please (?:book|make))\b/iu.test(raw)?'en':null;
@@ -72,7 +79,7 @@ function clearMessageLanguage(raw){
 }
 const emergencyLanguage=(raw,fallback)=>/\b(?:atemnot|keine luft|nicht atmen|starke brustschmerzen|starke blutung|herzinfarkt|schlaganfall|umbringen)\b/iu.test(raw)?'de':/\b(?:can't breathe|cannot breathe|not breathing|chest pain|severe bleeding|kill myself|suicid\w*|stroke now)\b/iu.test(raw)?'en':fallback;
 const question=(slot,lang)=>({proceed:localized(lang,'Möchten Sie, dass ich eine Terminanfrage für unser Sekretariat vorbereite?','Would you like me to prepare an appointment request for our reception team?'),reason:localized(lang,'Was ist der Anlass für Ihre Terminanfrage? Beschreiben Sie bitte kurz Ihr Anliegen oder die gewünschte Behandlung.','What is the reason for your appointment request? Please briefly describe your concern or the treatment you are seeking.'),name:localized(lang,'Darf ich bitte Ihren Vor- und Nachnamen erfahren?','May I have your first and last name, please?'),email:localized(lang,'Unter welcher E-Mail-Adresse dürfen wir Sie kontaktieren?','Which email address may our reception team use to contact you?'),phone:localized(lang,'Unter welcher Telefonnummer mit Vorwahl erreichen wir Sie?','Could you also share your phone number, including the country code, please?'),availability:localized(lang,'Welche Tage oder Uhrzeiten würden Ihnen für einen Termin passen? Sie können auch flexibel angeben.','Which days or times would suit an appointment? You can also say flexible.')})[slot]||'';
-const nextSlot=d=>!d.reason?'reason':!d.bookingApproved?'proceed':!d.first_name||!d.last_name?'name':!d.email?'email':!d.phone?'phone':'review';
+const nextSlot=d=>d.contactFirst&&d.bookingApproved?(!d.first_name||!d.last_name?'name':!d.email?'email':!d.phone?'phone':!d.reason?'reason':'review'):!d.reason?'reason':!d.bookingApproved?'proceed':!d.first_name||!d.last_name?'name':!d.email?'email':!d.phone?'phone':'review';
 const contactSlots=new Set(['name','email','phone']);
 function contactQuestion(d,lang){
   const missing=[!d.first_name||!d.last_name?'name':null,!d.email?'email':null,!d.phone?'phone':null].filter(Boolean);
@@ -407,7 +414,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       let ai=null,answer='',kind='appointment',facts={};
       const wasAwaitingBookingConfirmation=s.awaitingBookingConfirmation===true;
       s.awaitingBookingConfirmation=false;
-      let clarificationRequested=false;
+      let clarificationRequested=false,suppressFollowUp=false;
       const staleAffirmation=stage==='proceed'&&s.draft.bookingDeclined&&!wasAwaitingBookingConfirmation&&shortAffirmation(raw);
       const ambiguousAfterClarification=stage==='proceed'&&s.draft.bookingDeclined&&wasAwaitingBookingConfirmation&&shortAffirmation(raw)&&!clearAffirmation(raw);
       const confirmedAfterClarification=stage==='proceed'&&s.draft.bookingDeclined&&wasAwaitingBookingConfirmation&&clearAffirmation(raw);
@@ -415,7 +422,9 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const simpleGreeting=/^(?:hello|hi|hey|good morning|good afternoon|good evening|hallo|guten tag|guten morgen|guten abend|servus|grüß gott)[.!\s]*$/iu.test(raw);
       const directPageLink=pageFollowUp(raw,s.messages,lang);
       const simpleAppointment=booking?.kind==='request'||stage==='reason'&&/^(?:(?:i want|i need|i(?:'d| would) like|can i (?:book|make|request)|please (?:book|make)) (?:an? )?(?:appointment|booking)(?: (?:please|at (?:citypraxis|your (?:practice|praxis))))?|(?:ich möchte|ich brauche|ich hätte gerne|kann ich|bitte) (?:einen? )?(?:termin|ersttermin)(?: (?:bitte|vereinbaren|buchen))?)[.!\s]*$/iu.test(raw);
-      const continueInChat=s.bookingChoicePrompted&&chatBookingChoice(raw);
+      const wasChoosingBooking=s.bookingChoicePrompted===true;
+      const continueInChat=wasChoosingBooking&&(chatBookingChoice(raw)||booking?.kind==='request');
+      const chooseForm=wasChoosingBooking&&formBookingChoice(raw);
       s.bookingChoicePrompted=false;
       if(declined){
         draft.refusedContact=stage;
@@ -429,12 +438,16 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       }else if(earlyName){
         if(earlyName.language){lang=earlyName.language;s.language=lang;}
         kind='greeting';answer=localized(lang,`Hallo, ${earlyName.value}! Wie kann ich Ihnen helfen?`,`Hello, ${earlyName.value}! How can I help you?`);
-      }else if(!draft.bookingApproved&&booking?.kind==='method'){
-        kind='practice_question';s.bookingChoicePrompted=true;
-        answer=localized(lang,`Sie können unser ${bookingFormLink(lang)} nutzen oder Ihre Terminanfrage hier im Chat mit mir vorbereiten. Was ist Ihnen lieber?`,`You can use our ${bookingFormLink(lang)} or prepare an appointment request with me here in chat. Which would you prefer?`);
+      }else if(chooseForm){
+        kind='practice_question';suppressFollowUp=true;
+        answer=localized(lang,`Gerne, hier ist unser ${bookingFormLink(lang)}.`,`Of course, here is our ${bookingFormLink(lang)}.`);
       }else if(continueInChat){
-        draft.bookingApproved=true;draft.bookingDeclined=false;
+        draft.bookingApproved=true;draft.bookingDeclined=false;draft.contactFirst=true;
         answer=localized(lang,'Gerne, wir bereiten die Terminanfrage hier im Chat vor.','Of course, let’s prepare your appointment request here in chat.');
+      }else if(!draft.bookingApproved&&(booking?.kind==='method'||simpleAppointment&&!draft.reason)){
+        kind='practice_question';s.bookingChoicePrompted=true;suppressFollowUp=true;
+        draft.contactFirst=true;draft.bookingDeclined=false;
+        answer=bookingOptions(lang,draft);
       }else if(simpleAppointment){
         const alreadyPreparing=draft.bookingApproved;
         draft.bookingApproved=true;draft.bookingDeclined=false;
@@ -482,6 +495,10 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
           clarificationRequested=true;s.awaitingBookingConfirmation=true;
         }
         absorbAIIntake(ai,raw,draft,stage,proactiveAvailability);
+        if(stage==='reason'&&kind==='appointment'&&ai.booking_intent==='request'&&!draft.reason){
+          if(wasChoosingBooking){draft.bookingApproved=true;draft.bookingDeclined=false;draft.contactFirst=true;answer=localized(lang,'Gerne, wir bereiten die Terminanfrage hier im Chat vor.','Of course, let’s prepare your appointment request here in chat.');}
+          else{draft.bookingApproved=false;draft.bookingDeclined=false;draft.contactFirst=true;kind='practice_question';s.bookingChoicePrompted=true;suppressFollowUp=true;answer=bookingOptions(lang,draft);}
+        }
       }
       if(acceptedStage(draft,stage)&&['off_topic','compliment'].includes(kind)){kind='appointment';answer='';}
       if(kind==='medical')answer=politeMedicalBoundary(answer||localized(lang,'Eine Physiotherapeutin oder ein Physiotherapeut aus unserem Team kann Ihr Anliegen persönlich beurteilen und die nächsten Schritte empfehlen.','One of our physiotherapists can assess this in person and recommend next steps.'),lang);
@@ -490,7 +507,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       if(!declined&&draft.refusedContact&&draft[draft.refusedContact==='name'?'first_name':draft.refusedContact])delete draft.refusedContact;
       if(!declined&&['appointment','practice_question','medical'].includes(kind)){
         const suppliedName=draft.first_name&&draft.last_name&&(!s.draft.first_name||!s.draft.last_name);
-        if(suppliedName&&!answer.includes(`${draft.first_name} ${draft.last_name}`)){
+        if(suppliedName&&!suppressFollowUp&&!answer.includes(`${draft.first_name} ${draft.last_name}`)){
           answer=briefAcknowledgement(answer)?namedAcknowledgement(draft,lang):`${namedAcknowledgement(draft,lang)} ${answer}`.trim();
         }else if(briefAcknowledgement(answer)&&['email','phone','availability'].includes(stage))answer=contactAcknowledgement(stage,lang);
         else if(!answer&&['email','phone','availability'].includes(stage))answer=contactAcknowledgement(stage,lang);
@@ -502,7 +519,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const slot=nextSlot(s.draft),ready=slot==='review';
       const retry=stage===slot&&['name','email','phone'].includes(stage)&&!declined&&(contactAttempt(raw,stage)||briefAcknowledgement(answer)||/\b(?:thank|thanks|danke|got it|erhalten|notiert)\b/iu.test(answer));
       if(retry)answer=retryContact(stage,lang);
-      let followUp=clarificationRequested?'':retry||['greeting','off_topic','compliment'].includes(kind)?'':ready?localized(lang,'Vielen Dank. Ihre Anfrage ist vorbereitet. Bitte prüfen Sie die Angaben unten. Nach dem Absenden meldet sich unser Sekretariat zur Terminvereinbarung.','Your request is ready to review below. Once you send it, our reception team will contact you to arrange an appointment. Thank you!'):s.draft.bookingDeclined||s.draft.refusedContact===slot?'':kind==='practice_question'&&!s.draft.reason?'':slot==='proceed'&&s.bookingPrompted&&!proactiveAvailability?'':question(slot,lang);
+      let followUp=clarificationRequested||suppressFollowUp?'':retry||['greeting','off_topic','compliment'].includes(kind)?'':ready?localized(lang,'Vielen Dank. Ihre Anfrage ist vorbereitet. Bitte prüfen Sie die Angaben unten. Nach dem Absenden meldet sich unser Sekretariat zur Terminvereinbarung.','Your request is ready to review below. Once you send it, our reception team will contact you to arrange an appointment. Thank you!'):s.draft.bookingDeclined||s.draft.refusedContact===slot?'':kind==='practice_question'&&!s.draft.reason?'':slot==='proceed'&&s.bookingPrompted&&!proactiveAvailability?'':question(slot,lang);
       if(followUp&&contactSlots.has(slot)&&!s.contactPrompted&&!s.editSnapshot){followUp=contactQuestion(s.draft,lang);s.contactPrompted=true;}
       if(followUp===question('proceed',lang))s.bookingPrompted=true;
       const links=ai&&!retry&&!clarificationRequested&&['appointment','practice_question','medical'].includes(kind)?relatedPageLinks(raw,ai.related_pages,facts,lang):'';

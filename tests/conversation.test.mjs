@@ -83,16 +83,16 @@ test('published Vienna hours distinguish open, closed and unknown periods',()=>{
   assert.equal(practiceHoursStatus(hours,new Date('2026-09-27T10:00:00Z')).open,false);
   assert.equal(practiceHoursStatus({},new Date('2026-09-23T10:00:00Z')).open,null);
 });
-test('a greeting stays welcoming and a direct appointment request starts with the concern',async()=>{
+test('a greeting stays welcoming and a direct appointment request offers both paths',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
   let calls=0;const service=createConversationService({fetcher:async()=>{calls++;throw Error('A simple greeting or appointment request should not require AI');}});
   const token=newSession();const turn=async(message,language='en')=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{
     assert.equal((await turn('hello')).message,'Hello! How can I help you?');
     const request=await turn('I want an appointment');
-    assert.match(request.message,/prepare your appointment request now/);
-    assert.match(request.message,/What is the reason for your appointment request\?/);
-    assert.doesNotMatch(request.message,/One sentence is enough|first and last name|confirmed/i);
+    assert.match(request.message,/\[appointment request form\].*here in chat/);
+    assert.match(request.message,/first and last name.*email address.*phone number with country code/);
+    assert.doesNotMatch(request.message,/What is the reason|confirmed/i);
     assert.equal((await turn('Hallo','de')).message,'Hallo! Wie kann ich Ihnen helfen?');
     assert.equal(calls,0);
   }finally{process.env=old;}
@@ -108,12 +108,17 @@ test('a booking how-to question offers the form and chat without starting intake
     assert.match(guidance.message,/\[appointment request form\]\(\/termin\?lang=en#booking-form\)/);
     assert.match(guidance.message,/here in chat/);
     assert.doesNotMatch(guidance.message,/What is the reason for your appointment request\?/);
-    assert.match((await turn(english,'continue here','en')).message,/What is the reason for your appointment request\?/);
+    assert.match((await turn(english,'continue here','en')).message,/first and last name.*email address.*phone number with country code/s);
+    const formChoice=newSession();await turn(formChoice,'I want an appointment','en');
+    const formReply=await turn(formChoice,'the form','en');
+    assert.match(formReply.message,/\[appointment request form\]\(\/termin\?lang=en#booking-form\)/);
+    assert.doesNotMatch(formReply.message,/first and last name|What is the reason/);
+    assert.equal(formReply.ready,false);
     const german=newSession();
     const germanGuidance=await turn(german,'Wie kann ich einen Termin buchen?','de');
     assert.match(germanGuidance.message,/\[Formular für Terminanfragen\]\(\/termin\?lang=de#booking-form\)/);
     assert.match(germanGuidance.message,/hier im Chat/);
-    assert.match((await turn(german,'im Chat','de')).message,/Was ist der Anlass für Ihre Terminanfrage\?/);
+    assert.match((await turn(german,'im Chat','de')).message,/Vor- und Nachnamen.*E-Mail-Adresse.*Telefonnummer mit Ländervorwahl/s);
     const moreGuidance=await turn(newSession(),'wie stelle ich eine Terminanfrage','en');
     assert.equal(moreGuidance.language,'de');
     assert.match(moreGuidance.message,/\[Formular für Terminanfragen\]\(\/termin\?lang=de#booking-form\)/);
@@ -141,11 +146,11 @@ test('short German booking requests use already supplied details and reach revie
     const withoutDetails=newSession();
     const beginning=await turn(withoutDetails,'Termin buchen');
     assert.equal(beginning.ready,false);
-    assert.match(beginning.message,/Was ist der Anlass für Ihre Terminanfrage\?/);
-    assert.match((await turn(withoutDetails,'Terminanfrage jetzt machen')).message,/Was ist der Anlass für Ihre Terminanfrage\?/);
+    assert.match(beginning.message,/Formular für Terminanfragen/);
+    assert.match((await turn(withoutDetails,'Terminanfrage jetzt machen')).message,/Vor- und Nachnamen.*E-Mail-Adresse.*Telefonnummer mit Ländervorwahl/s);
     const germanOnEnglishSite=await turn(newSession(),'Terminanfrage jetzt machen','en');
     assert.equal(germanOnEnglishSite.language,'de');
-    assert.match(germanOnEnglishSite.message,/Was ist der Anlass für Ihre Terminanfrage\?/);
+    assert.match(germanOnEnglishSite.message,/Formular für Terminanfragen/);
     assert.equal(calls,7);
   }finally{process.env=old;}
 });
@@ -155,14 +160,15 @@ test('common German and English booking wording starts intake or offers both pat
   const turn=async(message,siteLanguage)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:newSession(),language:siteLanguage,message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
   try{
     const requests={
-      de:['Ich möchte einen Termin.','Ich hätte gern einen Termin.','Ich würde gerne einen Termin ausmachen.','Ich brauche einen Termin.','Können Sie mir bitte einen Termin geben?','Kann ich einen Termin vereinbaren?','Ich will eine Terminanfrage stellen.','Termin vereinbaren.','Bitte um einen Termin.','Ich möchte mich für einen Termin anmelden.','Bitte machen Sie mir eine Terminanfrage.'],
+      de:['Ich möchte einen Termin.','Ich möchte ein buchung machen','Ich hätte gern einen Termin.','Ich würde gerne einen Termin ausmachen.','Ich brauche einen Termin.','Können Sie mir bitte einen Termin geben?','Kann ich einen Termin vereinbaren?','Ich will eine Terminanfrage stellen.','Termin vereinbaren.','Bitte um einen Termin.','Ich möchte mich für einen Termin anmelden.','Bitte machen Sie mir eine Terminanfrage.'],
       en:["I'd like an appointment.",'I need an appointment.','Please submit an appointment request.','Could you help me book an appointment?','Can I request an appointment?','I want to make a booking.','Please book me an appointment.']
     };
     for(const [language,phrases] of Object.entries(requests))for(const phrase of phrases){
       const result=await turn(phrase,language==='de'?'en':'de');
       assert.equal(result.status,200,phrase);
       assert.equal(result.language,language,phrase);
-      assert.match(result.message,language==='de'?/Was ist der Anlass für Ihre Terminanfrage\?/:/What is the reason for your appointment request\?/,phrase);
+      assert.match(result.message,language==='de'?/Formular für Terminanfragen.*hier im Chat/:/appointment request form.*here in chat/,phrase);
+      assert.doesNotMatch(result.message,/Was ist der Anlass|What is the reason/,phrase);
       assert.equal(result.ready,false,phrase);
     }
     const methods={
@@ -411,7 +417,7 @@ test('contact details can arrive together, missing fields are requested separate
       assert.match(partial.message,new RegExp(missing,'i'));
       assert.equal((await turn(token,reply)).ready,true);
     }
-    const noReason=newSession();await turn(noReason,'I want an appointment');
+    const noReason=newSession();await turn(noReason,'I want an appointment');await turn(noReason,'continue here');
     const contacts=await turn(noReason,'My name is Anna Novak, anna@example.test, +43 699 12682157');
     assert.equal(contacts.ready,false);
     assert.match(contacts.message,/What is the reason for your appointment request/);
@@ -435,7 +441,10 @@ test('contacts supplied before the concern still lead directly to the final revi
       const token=newSession();
       const first=await turn(token,contacts);
       assert.equal(first.ready,false);
-      assert.match(first.message,/Was ist der Anlass für Ihre Terminanfrage/);
+      assert.match(first.message,/Formular für Terminanfragen/);
+      assert.doesNotMatch(first.message,/Vor- und Nachnamen.*E-Mail-Adresse.*Telefonnummer/);
+      const chosen=await turn(token,'im Chat');
+      assert.match(chosen.message,/Was ist der Anlass für Ihre Terminanfrage/);
       const review=await turn(token,'schulter schmerz');
       assert.equal(review.ready,true);
       assert.ok(review.summary.some(([,value])=>value==='Anna Novak'));
@@ -500,7 +509,7 @@ test('contact intake advances only after a detail is saved and never thanks for 
     const localNumber=await turn('699 12682157',local);
     assert.equal(localNumber.ready,true);
     assert.deepEqual(localNumber.summary.find(([key])=>key==='Phone'),['Phone','+4369912682157']);
-    assert.equal(calls,5);
+    assert.equal(calls,4);
   }finally{process.env=old;}
 });
 test('a refused contact detail is respected while supplied names and later details receive distinct acknowledgements',async()=>{
