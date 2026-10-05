@@ -280,13 +280,16 @@ test('common German and English booking wording starts intake or offers both pat
 });
 test('German follow-ups avoid a repeated Gerne opener and keep team answers in the practice voice',async()=>{
   const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  assert.deepEqual(conversationFacts({team:[{role:'Physiotherapeutin'},{role:'Logopädin'},{role:'Physiotherapeut',fictional:true}]}).publishedTeamCounts,{profiles:2,physiotherapists:1});
   const replies=[
     'Gerne, unser Team stellt seine Qualifikationen auf der Website vor.',
     'Gerne erkläre ich Ihnen, was CRAFTA bedeutet.',
     'Laut den vorliegenden Teamangaben sind acht Physiotherapeuten abgeführt.'
   ];
   const service=createConversationService({getFacts:async()=>conversationFacts({team:Array.from({length:8},(_,index)=>({title:`Beispiel ${index+1}`,role:'Physiotherapeutin'}))}),fetcher:async(_,options)=>{
-    assert.match(JSON.parse(options.body).instructions,/Auf unserer Teamseite stellen wir/);
+    const payload=JSON.parse(options.body),input=JSON.parse(payload.input);
+    assert.match(payload.instructions,/In unserem Team arbeiten/);
+    assert.deepEqual(input.publishedFacts.publishedTeamCounts,{profiles:8,physiotherapists:8});
     return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({kind:'practice_question',input_language:'de',booking_intent:'unspecified',answer:replies.shift()}))}]}]})};
   }});
   const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'de',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
@@ -294,7 +297,7 @@ test('German follow-ups avoid a repeated Gerne opener and keep team answers in t
     assert.match((await turn('Welche Qualifikationen hat Ihr Team?')).message,/^Gerne, unser Team/);
     assert.match((await turn('Was ist CRAFTA?')).message,/^Ich erkläre Ihnen/);
     const team=await turn('Wie viele Physiotherapeuten gibt es?');
-    assert.match(team.message,/^Auf unserer Teamseite stellen wir acht Physiotherapeuten vor\./);
+    assert.match(team.message,/^Zu unserem Team gehören acht Physiotherapeuten\./);
     assert.doesNotMatch(team.message,/Teamangaben|abgeführt/u);
   }finally{process.env=old;}
 });
