@@ -257,6 +257,7 @@ test('common German and English booking wording starts intake or offers both pat
       assert.equal(result.status,200,phrase);
       assert.equal(result.language,language,phrase);
       assert.match(result.message,language==='de'?/Formular für Terminanfragen.*hier im Chat/:/appointment request form.*here in chat/,phrase);
+      assert.doesNotMatch(result.message,/^(?:Gerne|Of course)[,.!]/u,phrase);
       assert.doesNotMatch(result.message,/Vielen Dank, deinen praxis/i,phrase);
       assert.doesNotMatch(result.message,/Was ist der Anlass|What is the reason/,phrase);
       assert.equal(result.ready,false,phrase);
@@ -270,10 +271,31 @@ test('common German and English booking wording starts intake or offers both pat
       assert.equal(result.status,200,phrase);
       assert.equal(result.language,language,phrase);
       assert.match(result.message,language==='de'?/\[Formular für Terminanfragen\]\(\/termin\?lang=de#booking-form\)/:/\[appointment request form\]\(\/termin\?lang=en#booking-form\)/,phrase);
+      assert.doesNotMatch(result.message,/^(?:Gerne|Of course)[,.!]/u,phrase);
       assert.match(result.message,language==='de'?/hier im Chat/:/here in chat/,phrase);
       assert.doesNotMatch(result.message,/Was ist der Anlass|What is the reason/);
     }
     assert.equal(aiCalls,0);
+  }finally{process.env=old;}
+});
+test('German follow-ups avoid a repeated Gerne opener and keep team answers in the practice voice',async()=>{
+  const old={...process.env};process.env.OPENAI_API_KEY='fixture';process.env.CHAT_AI_ENABLED='true';
+  const replies=[
+    'Gerne, unser Team stellt seine Qualifikationen auf der Website vor.',
+    'Gerne erkläre ich Ihnen, was CRAFTA bedeutet.',
+    'Laut den vorliegenden Teamangaben sind acht Physiotherapeuten abgeführt.'
+  ];
+  const service=createConversationService({getFacts:async()=>conversationFacts({team:Array.from({length:8},(_,index)=>({title:`Beispiel ${index+1}`,role:'Physiotherapeutin'}))}),fetcher:async(_,options)=>{
+    assert.match(JSON.parse(options.body).instructions,/Auf unserer Teamseite stellen wir/);
+    return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(answer({kind:'practice_question',input_language:'de',booking_intent:'unspecified',answer:replies.shift()}))}]}]})};
+  }});
+  const token=newSession();const turn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token,language:'de',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
+  try{
+    assert.match((await turn('Welche Qualifikationen hat Ihr Team?')).message,/^Gerne, unser Team/);
+    assert.match((await turn('Was ist CRAFTA?')).message,/^Ich erkläre Ihnen/);
+    const team=await turn('Wie viele Physiotherapeuten gibt es?');
+    assert.match(team.message,/^Auf unserer Teamseite stellen wir acht Physiotherapeuten vor\./);
+    assert.doesNotMatch(team.message,/Teamangaben|abgeführt/u);
   }finally{process.env=old;}
 });
 test('German im is never treated as the English name introduction Im',async()=>{
