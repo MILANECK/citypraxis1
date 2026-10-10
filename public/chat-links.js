@@ -1,6 +1,6 @@
 const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const allowedHosts=new Set(['citypraxis-wien.onrender.com','citypraxis.wien','www.citypraxis.wien']);
-const allowedPaths=new Set(['/preise','/ablauf-wahltherapie','/kontakt','/ueber-uns','/datenschutz','/termin','/leistungen','/schwerpunkte','/impressum']);
+const allowedPaths=new Set(['/','/preise','/ablauf-wahltherapie','/kontakt','/ueber-uns','/datenschutz','/termin','/leistungen','/schwerpunkte','/impressum']);
 const linkPattern=/\[([^\]\n]{1,100})\]\((https?:\/\/[^\s)]+|\/[^\s)]+)\)|https?:\/\/[^\s<]+|(?<![\w/])\/[^\s<)]+/giu;
 
 function safePageUrl(value,origin){

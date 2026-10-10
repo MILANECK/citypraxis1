@@ -29,6 +29,21 @@ test('administrative questions always receive the relevant localized destination
   ])assert.ok(relatedPageLinks(raw,[],facts,lang).includes(`](${path})`),raw);
 });
 
+test('reasons to choose Citypraxis prioritize its strengths section within the link limit',()=>{
+  const questions={
+    en:['Why are you better , why should I choose you for my treatment ?', 'I would like to ask about your treatments and , why you are better as your competition ?', 'What makes Citypraxis special?', 'What sets you apart?', 'What are your advantages?'],
+    de:['Warum sollte ich mich für Citypraxis entscheiden?', 'Was zeichnet die Citypraxis aus?', 'Was unterscheidet euch von anderen Praxen?', 'Was sind eure Vorteile?']
+  };
+  for(const [lang,phrases] of Object.entries(questions))for(const raw of phrases){
+    const links=relatedPageLinks(raw,['team','therapies','specializations'],facts,lang);
+    assert.match(links,new RegExp(`\\(/\\?lang=${lang}#home-distinction-title\\)`),raw);
+    assert.equal((links.match(/\]\(/g)||[]).length,3);
+    assert.ok(links.indexOf('#home-distinction-title')<links.indexOf('/ueber-uns'));
+  }
+  assert.match(relatedPageLinks('Give me a reason to come here',['strengths'],facts,'en'),/What makes Citypraxis special/);
+  assert.doesNotMatch(relatedPageLinks('What are your physiotherapy prices?',[],facts,'en'),/home-distinction-title/);
+});
+
 test('specific catalog choices are localized, deduplicated and bounded',()=>{
   assert.equal(relatedPageLinks('Tell me about physiotherapy treatments',['service:physiotherapie','service:physiotherapie','made-up'],facts,'en'),'For more details, see [Physiotherapy](/leistungen/physiotherapie?lang=en) on our website.');
   assert.equal(relatedPageLinks('I have headaches',['specialism:kopfschmerzen'],facts,'en'),'For more details, see [Headaches](/schwerpunkte/kopfschmerzen?lang=en) on our website.');

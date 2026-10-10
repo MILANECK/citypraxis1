@@ -1,5 +1,5 @@
 import {choices} from '/chat-model.js';
-import {formatChatMessage} from '/chat-links.js?v=chat-continue-1';
+import {formatChatMessage} from '/chat-links.js?v=practice-strengths-1';
 const siteLang=window.I18n?.language==='en'?'en':'de';
 let lang=siteLang,en=lang==='en';
 const t=(de,english)=>en?english:de;
@@ -207,7 +207,7 @@ $('.chat-minimise').onclick=event=>setOpen(false,{returnFocus:event.detail===0})
 closeButton.onclick=event=>{if(busy)return;clear();lang=siteLang;en=lang==='en';state=blank();syncLanguage({language:lang});status.textContent='';render();setOpen(false,{returnFocus:event.detail===0});};
 root.addEventListener('input',event=>{if(event.target.matches('.conversation-compose textarea'))root.classList.toggle('is-composing',Boolean(event.target.value.trim()));});
 $('.chat-backdrop').onclick=()=>setOpen(false,{returnFocus:false});
-root.addEventListener('click',event=>{if(event.target instanceof Element&&event.target.closest('a[href*="#booking-form"]'))setOpen(false);});
+root.addEventListener('click',event=>{if(event.target instanceof Element&&event.target.closest('a[href*="#booking-form"],a[href*="#home-distinction-title"]'))setOpen(false);});
 root.addEventListener('keydown',event=>{if(event.key==='Escape'&&opened){event.preventDefault();setOpen(false);}});
 $('[data-reset]').onclick=()=>{if(busy)return;if(state.started&&!state.sent&&!confirm(t('Diesen Entwurf verwerfen und neu beginnen?','Discard this draft and start again?')))return;clear();lang=siteLang;en=lang==='en';state=blank();syncLanguage({language:lang});status.textContent='';render();};
 render();

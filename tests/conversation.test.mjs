@@ -672,7 +672,7 @@ test('a refused contact detail is respected while supplied names and later detai
   const facts=conversationFacts({settings:[{address:'Stubenbastei 12/11',city:'1010 Wien',phone:'+43 699 12682157',email:'info@citypraxis.wien'}]});
   const service=createConversationService({getFacts:async()=>facts,fetcher:async(_,options)=>{
     calls++;const input=JSON.parse(JSON.parse(options.body).input),raw=input.visitorMessage;
-    const value=raw.includes('shoulder')?answer({reason:'Shoulder concern',answer:'I see.'}):raw.includes('Michael Black')?answer({first_name:'Michael',last_name:'Black',answer:'Perfect, thank you.'}):raw.includes('price')?answer({kind:'practice_question',booking_intent:'unspecified',answer:'Our reception team can explain current prices.'}):raw==='Afternoons'?answer({availability:'Afternoons'}):answer({answer:'Perfect, thank you.'});
+    const value=raw.includes('shoulder')?answer({booking_choice:input.awaitingBookingChoice?'chat':'unspecified',reason:'Shoulder concern',answer:'I see.'}):raw.includes('Michael Black')?answer({first_name:'Michael',last_name:'Black',answer:'Perfect, thank you.'}):raw.includes('price')?answer({kind:'practice_question',booking_intent:'unspecified',answer:'Our reception team can explain current prices.'}):raw==='Afternoons'?answer({availability:'Afternoons'}):answer({answer:'Perfect, thank you.'});
     return {ok:true,json:async()=>({status:'completed',output:[{content:[{type:'output_text',text:JSON.stringify(value)}]}]})};
   }});
   const token=newSession();const turn=async(message,session=token)=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:session,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
@@ -825,12 +825,12 @@ test('AI errors, malformed output, boundaries, limits and concurrent requests ar
   try{
     const token=newSession();
     const offTopic=(await call(token,'Write a recipe')).message;
-    assert.match(offTopic,/^I’m happy to answer questions about CityPraxis, our treatments, our team, or appointments\. What would you like to know\?$/);
+    assert.match(offTopic,/^I’m happy to answer questions about CityPraxis, our treatments, our team, or appointments\. How can I help you\?$/);
     assert.doesNotMatch(offTopic,/sorry|only help/i);
     value=answer({kind:'off_topic'});
     const offTopicGerman=await call(newSession(),'Schreib mir ein Rezept.',{language:'de'});
     assert.match(offTopicGerman.message,/Ich beantworte gern Ihre Fragen zur Citypraxis/);
-    assert.match(offTopicGerman.message,/Was möchten Sie wissen\?/);
+    assert.match(offTopicGerman.message,/Wie kann ich Ihnen helfen\?/);
     value=answer({kind:'compliment',answer:'Thank you for saying that!'});
     assert.equal((await call(newSession(),'I think this chat is very good.')).message,'Thank you.');
     value=answer({kind:'compliment',answer:'Das freut uns sehr!'});

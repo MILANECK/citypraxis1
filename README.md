@@ -35,6 +35,12 @@ Create staff accounts through Admin → Benutzer & Rollen or Supabase Auth. Open
 - Removable content entries have a Delete button in the list and editor header, with a confirmation dialog. The homepage, About page and practice settings are required records and stay protected.
 - The contact panel includes a locally served light location sketch (labelled not to scale) and an external directions link. An accurate geocoded map remains pending approval of the external address lookup.
 
+## Browser colour schemes
+
+The public site and administration declare `color-scheme: only light` in HTML and shared CSS to preserve the designed palette and light form controls in browsers that respect the automatic-darkening opt-out. The HTML declaration is available before styles load; the shared stylesheet URL is versioned to refresh cached copies.
+
+Samsung Internet's forced dark mode can override website colour declarations depending on its version and settings. After deployment, recheck `/termin` on the affected Galaxy A54 with Samsung Internet's dark mode enabled, including the header logo, text over the gradient, urgent appointment card and form controls. If the browser still recolours the page, its dark-webpage setting must be disabled to view the intended palette.
+
 ## Languages
 
 Use **DE / EN** in the public header or the admin header/login page. The choice is remembered in this browser; explicit links such as `/?lang=en` and `/admin?lang=en` override the saved preference. Internal links retain the language, including draft preview and urgent appointment parameters.

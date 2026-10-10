@@ -17,7 +17,7 @@ test('chat link rendering escapes text and rejects outside URLs',()=>{
 
 test('section and detail links follow a new deployment domain automatically',()=>{
   const origin='https://new-practice.example';
-  for(const path of ['/kontakt?lang=en#oeffnungszeiten','/leistungen/physiotherapie?lang=de','/schwerpunkte/kopfschmerzen?lang=en','/team/isabella-casny?lang=en','/ueber-uns?lang=de#team','/termin?lang=en#booking-form']){
+  for(const path of ['/?lang=en#home-distinction-title','/kontakt?lang=en#oeffnungszeiten','/leistungen/physiotherapie?lang=de','/schwerpunkte/kopfschmerzen?lang=en','/team/isabella-casny?lang=en','/ueber-uns?lang=de#team','/termin?lang=en#booking-form']){
     assert.equal(formatChatMessage(`[More](${path})`,origin),`<a href="${path}">More</a>`);
     assert.equal(formatChatMessage(`[More](${origin}${path})`,origin),`<a href="${path}">More</a>`);
   }
