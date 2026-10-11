@@ -8,6 +8,7 @@ import originalContent from './original-content.json' with {type:'json'};
 import { englishContent } from './english-content.mjs';
 import { importTherapistsSqlite } from './therapist-import.mjs';
 import { normalizeAppointmentConcerns } from '../public/request-summary.js';
+import {applyReferralContent,referralContentTargets} from './referral-content.mjs';
 
 export const collections = Object.keys(seed);
 export function passwordHash(password) {
@@ -226,6 +227,22 @@ export function openDatabase(file = process.env.DB_PATH || resolve('data/citypra
         }
       }
       db.prepare('INSERT INTO migrations(version) VALUES(13)').run();db.exec('COMMIT');
+    }catch(error){db.exec('ROLLBACK');throw error;}
+  }
+  if(!db.prepare('SELECT version FROM migrations WHERE version=14').get()){
+    db.exec('BEGIN');
+    try{
+      for(const [collection,id] of referralContentTargets){
+        const row=db.prepare('SELECT draft,published FROM content WHERE collection=? AND id=?').get(collection,id);
+        if(!row)continue;
+        const change=value=>value?JSON.stringify(applyReferralContent(collection,id,JSON.parse(value))):null;
+        const draft=change(row.draft),published=change(row.published);
+        if(draft!==row.draft||published!==row.published){
+          db.prepare('INSERT INTO revisions(collection,entity_id,snapshot,actor) VALUES(?,?,?,?)').run(collection,id,row.draft,'Owner-confirmed referral policy 2026-10-11');
+          db.prepare('UPDATE content SET draft=?,published=? WHERE collection=? AND id=?').run(draft,published,collection,id);
+        }
+      }
+      db.prepare('INSERT INTO migrations(version) VALUES(14)').run();db.exec('COMMIT');
     }catch(error){db.exec('ROLLBACK');throw error;}
   }
   return db;

@@ -6,6 +6,7 @@ import {join} from 'node:path';
 import vm from 'node:vm';
 import {openDatabase,contentSnapshot} from '../src/database.mjs';
 import originals from '../src/original-content.json' with {type:'json'};
+import {referralContentTargets} from '../src/referral-content.mjs';
 
 function client(search='',saved=null){
  const stored=new Map(saved?[['citypraxis-language',saved]]:[]);
@@ -45,7 +46,7 @@ test('English migration preserves original clinical text and publication state; 
   const content=contentSnapshot(db);
   for(const item of originals.filter(item=>item.collection!=='prices'&&item.id!=='rueckenfit')){
    const row=content[item.collection].find(r=>r.id===item.id);
-   if(item.data.body&&item.id!=='physiotherapie')assert.equal(row.body,item.data.body);
+   if(item.data.body&&!referralContentTargets.some(([collection,id])=>item.collection===collection&&item.id===id))assert.equal(row.body,item.data.body);
    assert.ok(row.titleEn,`${item.collection}/${item.id} needs an English title`);
    if(item.data.body)assert.ok(row.bodyEn,`${item.id} needs an English body`);
   }

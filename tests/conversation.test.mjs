@@ -740,7 +740,7 @@ test('a short yes after declining and changing topics asks again before starting
     const confirmed=await turn('Yes');
     assert.match(confirmed.message,/first and last name/);
     assert.equal(confirmed.ready,false);
-    assert.equal(calls,4);
+    assert.equal(calls,3); // The focused referral question is answered without AI.
     const newRequestSession=newSession();
     const anotherTurn=async message=>{let result;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/turn',{token:newRequestSession,language:'en',message,consent:true,turnKey:randomUUID()},(status,data)=>result={status,...data});return result;};
     await anotherTurn('Back stiffness');

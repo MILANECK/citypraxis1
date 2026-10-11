@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {parseRange,mediaType} from '../src/media.mjs';
 import {openDatabase,contentSnapshot} from '../src/database.mjs';
 import original from '../src/original-content.json' with {type:'json'};
+import {referralContentTargets} from '../src/referral-content.mjs';
 test('video ranges include Safari/open/suffix requests and reject invalid ranges',()=>{
   assert.deepEqual(parseRange('bytes=0-1',100),{start:0,end:1});
   assert.deepEqual(parseRange('bytes=40-',100),{start:40,end:99});
@@ -15,7 +16,7 @@ test('media signatures reject mismatched uploads',()=>{
 });
 test('source migration retains original medical paragraphs and dated reimbursement amounts',()=>{
   const db=openDatabase(':memory:');const content=contentSnapshot(db);
-  for(const entry of original.filter(entry=>entry.collection!=='prices'&&entry.id!=='rueckenfit')){const migrated=content[entry.collection].find(r=>r.id===entry.id);assert.ok(migrated,entry.id);for(const key of ['intro','body'])if(entry.data[key]&&!(entry.id==='about'&&key==='intro')&&!(entry.id==='physiotherapie'&&key==='body'))assert.equal(migrated[key],entry.data[key]);}
+  for(const entry of original.filter(entry=>entry.collection!=='prices'&&entry.id!=='rueckenfit')){const migrated=content[entry.collection].find(r=>r.id===entry.id);assert.ok(migrated,entry.id);for(const key of ['intro','body'])if(entry.data[key]&&!(entry.id==='about'&&key==='intro')&&!(key==='body'&&referralContentTargets.some(([collection,id])=>entry.collection===collection&&entry.id===id)))assert.equal(migrated[key],entry.data[key]);}
   assert.equal(content.services.some(item=>item.id==='rueckenfit'),false);
   assert.equal(content.services.find(r=>r.id==='crafta').body.includes('Hirnnervenprobleme'),true);
   assert.equal(content.reimbursements.length,7);assert.equal(content.reimbursements[0].asOf,'04/2023');assert.equal(content.prices.some(p=>p.id==='rueckenfit'),false);assert.equal(content.prices.find(p=>p.id==='physio-ersttermin-casny').amount,160);

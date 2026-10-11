@@ -53,7 +53,7 @@ export function relatedPageLinks(raw,selected,facts,lang){
   const topics=[
     ['hours',/öffnungszeit|oeffnungszeit|opening\s*(?:hours|times)|\bhours\b|\b(?:you|practice|clinic)\b.{0,20}\b(?:open|closed|close)\b|\b(?:open|closed)\s+(?:on|today|tomorrow|at|during|until)\b|\b(?:geöffnet|offen|geschlossen)\b/iu],
     ['prices',/\b(?:prices?|costs?|fees?|preise?|kosten|gebühren|reimbursement|refund|insurance|payment|pay|cash|rückerstattung|erstattung|krankenkasse|zahlung|bezahlen|barzahlung)\b/iu],
-    ['visit',/\b(?:first visit|first appointment|referral|prescription|cancellation|cancel|ersttermin|erstbesuch|verordnung|überweisung|absag\w*|storn\w*)\b/iu],
+    ['visit',/(?<![\p{L}\p{N}_])(?:first visit|first appointment|referrals?|prescriptions?|cancellation|cancel|ersttermin|erstbesuch|verordnung(?:sschein|en)?|zuweisung|überweisung|ueberweisung|absag\w*|storn\w*)(?![\p{L}\p{N}_])/iu],
     ['contact',/\b(?:address|location|directions|parking|where are you|how (?:do|can) i (?:get|reach)|adresse|anfahrt|parken|wo (?:sind|ist|finde))\b/iu],
     ['privacy',/\b(?:privacy|personal data|data protection|datenschutz|personenbezogen\w*|daten speichern)\b/iu],
     ['therapies',/\b(?:therapies|treatments|therapien|behandlungen|leistungen)\b/iu],

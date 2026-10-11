@@ -10,6 +10,8 @@ import {structuredResponse} from './response.mjs';
 import {fullName,explicitFullName,nameSegment,selfReportedPatientStatus,receiptLanguage,contactPreference,requestedTreatment,existingAppointmentChange,fieldReference,rememberFields} from './conversation-details.mjs';
 import {availabilityUpdate,requestedEdits,pauseRequested,resumeRequested,asksMissingDetails,asksDraftSummary,informationOnly,mentionsExistingAppointment,ambiguousCancellation,proxyDetails} from './conversation-updates.mjs';
 import {retentionCopy,replaceLegacyRetention} from '../../public/privacy-retention.js';
+import {referralPolicy,focusedReferralReply} from '../referral-policy.mjs';
+import {applyReferralContent} from '../referral-content.mjs';
 
 export const CONVERSATION_LIMIT=30;
 export const CONVERSATION_PROMPT=`You are CityPraxis's digital receptionist in Vienna. Speak as the practice's representative: use "I" for what you personally do in chat and "we/our team/our practice" for CityPraxis facts and actions. Your introduction already identifies you as digital. Do not repeat this identity in replies unless asked; never pretend to be a human clinician.
@@ -29,7 +31,7 @@ BOOKING CHOICE: When awaitingBookingChoice is true, classify the visitor's CURRE
 WHOLE MESSAGE: Extract any explicitly supplied reason and availability from the entire current message regardless of currentStage. A phone number, contact preference or receipt-language preference can share a message with a treatment request and preferred time; process all of them. Keep receipt language separate from chat language. Do not include intake questions for already supplied fields in answer; the application generates the next missing-field question from its saved state.
 For a standalone, relevant compliment about CityPraxis, its team, services, or this chat, use kind compliment and do not add any question or appointment prompt. The application replies only "Thank you." (German: "Danke."). If a message combines a compliment with a question or request, address the question or request instead of treating it as a standalone compliment.
 DETAILS AND FOLLOW-UPS: Preserve an explicitly requested therapy together with the visitor's concern in reason, even when fees or duration are also asked. A later addition or correction is newly supplied information. Treat change instructions, pauses, deletion instructions and quoted/hypothetical preferences as instructions, never literal availability. When editing, previousAvailability contains the value before the edit: preserve the unchanged day or time in a partial correction. Ask a focused clarification if a clock value lacks an AM/PM interpretation. Extract availability only when the visitor states their own preferred time, never from a question about opening hours or current slots; use the latest correction. Do not store literal references such as "same as before" as availability. knownFields records validated contact fields already held by the application, although their values are masked; never deny that we received one just because it is outside the six recent messages. Receipt language and preferred contact are separate from chat language and required contact details. Never promise successful email delivery or a change to an existing appointment. For an existing appointment change/cancellation, direct the visitor to reception instead of starting a new appointment request.
-PUBLISHED ANSWERS: For treatment duration, inspect the matching publishedFacts.samplePrices.duration and distinguish first and follow-up visits; do not claim durations are unpublished when present. The published cancellation charge applies to cancellation; do not extend it to rescheduling or every change unless a separately published policy explicitly says that. For reimbursement, explain the published historical date and lack of guaranteed current coverage before linking. For privacy, use requestRetention as the current published retention policy, including manual deletion and the distinction between drafts, submitted requests, mailboxes and provider logs. When a visitor asks how team qualifications or practice strengths help them, explain their practical value using published facts rather than repeating the same list. A price, privacy, appointment-process or other practice question deserves a direct answer before a link.
+PUBLISHED ANSWERS: For referral questions use publishedFacts.referralPolicy: physiotherapy, osteopathy and speech/language therapy require a medical referral/prescription (Verordnung, Zuweisung or Überweisung); therapeutic massage does not require one, although a visitor may have one. Ask visitors to bring their referral to the FIRST appointment at the practice and kindly remind them not to send it here in chat. Do not collect referral documents or introduce a referral-status intake question. Explain the applicable treatment rule directly before linking to visit or the relevant service page. Acknowledging that they have a referral never supplies missing contacts or authorizes sending. Do not infer insurance reimbursement or prescribe a number of sessions from the referral rule. For treatment duration, inspect the matching publishedFacts.samplePrices.duration and distinguish first and follow-up visits; do not claim durations are unpublished when present. The published cancellation charge applies to cancellation; do not extend it to rescheduling or every change unless a separately published policy explicitly says that. For reimbursement, explain the published historical date and lack of guaranteed current coverage before linking. For privacy, use requestRetention as the current published retention policy, including manual deletion and the distinction between drafts, submitted requests, mailboxes and provider logs. When a visitor asks how team qualifications or practice strengths help them, explain their practical value using published facts rather than repeating the same list. A price, privacy, appointment-process or other practice question deserves a direct answer before a link.
 The application appends ONE follow-up prompt. It invites booking when appropriate. For assisted chat chosen after a form-or-chat offer, it asks for missing full name, email and phone first, then the reason if still unknown. In other conversations, it uses already supplied details and asks only for what is missing. Do not ask intake questions or invite booking in answer. Do not duplicate a sentence or restate a question in other words. A short stage answer such as a name or "flexible" is appointment information. The supplied practice-local time and published hours can tell you whether the practice is currently closed. Do not promise exactly when staff will reply. Return the required JSON only.`;
 
 const responseSchema={type:'object',additionalProperties:false,properties:{kind:{type:'string',enum:['appointment','practice_question','off_topic','medical','emergency','compliment']},input_language:{type:'string',enum:['de','en','mixed','other','unclear']},answer:{type:'string'},related_pages:{type:'array',items:{type:'string'},maxItems:3},booking_intent:{type:'string',enum:['request','defer','unspecified']},booking_choice:{type:'string',enum:['chat','form','decline','unspecified']},needs_clarification:{type:'boolean'},reason:{type:['string','null']},availability:{type:['string','null']},first_name:{type:['string','null']},last_name:{type:['string','null']},patient_status:{type:['string','null'],enum:[null,'new','existing','unsure']}},required:['kind','input_language','answer','related_pages','booking_intent','booking_choice','needs_clarification','reason','availability','first_name','last_name','patient_status']};
@@ -381,6 +383,7 @@ function contactRefusalReply(lang,facts={}){
   return localized(lang,`Das verstehe ich. Für eine Terminanfrage benötigt unser Empfangsteam jedoch Ihren vollständigen Namen, Ihre E-Mail-Adresse und Ihre Telefonnummer. Ohne alle drei Angaben können wir die Anfrage hier leider nicht abschließen. ${deContact}`,`I understand. To prepare an appointment request, our reception team does need your full name, email address and phone number. Without all three, we’re unfortunately unable to complete it here. ${enContact}`);
 }
 export function conversationFacts(content={}){
+  content={...content,...Object.fromEntries(['services','pages','faqs'].map(collection=>[collection,(content?.[collection]||[]).map(record=>applyReferralContent(collection,record.id,record))]))};
   const s=content?.settings?.[0]||{};
   const copy=(rows,fields,max=2500)=>(rows||[]).slice(0,40).map(row=>Object.fromEntries(fields.filter(k=>row[k]).map(k=>[k,plain(row[k],max)])));
   const strengths=practiceStrengths(content);
@@ -389,6 +392,7 @@ export function conversationFacts(content={}){
     address:[s.address,s.city].filter(Boolean).join(', '),phone:s.phone,email:s.email,
     openingHours:Object.fromEntries(['monday','tuesday','wednesday','thursday','friday','saturdayHours','sunday'].map(k=>[k,s[k]||'Not published'])),
     appointmentPolicy:'By arrangement only. Requests are not bookings; the secretary arranges a date by phone or email. No live calendar or medical records are connected. A dedicated therapist is assigned AFTER the first appointment, not when making a request. Never promise a time or assign/change a therapist.',
+    referralPolicy:{...referralPolicy},
     payment:s.payment,paymentEn:s.paymentEn,
     services:copy(content?.services,['id','title','titleEn','intro','introEn','body','bodyEn']),
     specialisms:copy(content?.symptoms,['id','title','titleEn','intro','introEn','body','bodyEn']),
@@ -612,7 +616,8 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const submittedName=stage==='name'?(standaloneFullName(raw)||bundledFullName(raw)):null;
       if(submittedName)Object.assign(draft,submittedName);
       const earlyName=stage==='reason'&&s.messages.length<=2&&!s.bookingChoicePrompted?openingGivenName(raw):null;
-      let ai=null,answer='',kind='appointment',facts={};
+      let ai=null,answer='',kind='appointment',facts={},referralHandled=false;
+      const focusedReferral=focusedReferralReply(raw,lang,s.messages);
       const wasAwaitingBookingConfirmation=s.awaitingBookingConfirmation===true;
       s.awaitingBookingConfirmation=false;
       let clarificationRequested=false,suppressFollowUp=false;
@@ -691,6 +696,9 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         answer=contactRefusalReply(lang,facts);
       }else if(directPageLink){
         kind='practice_question';answer=directPageLink;
+      }else if(focusedReferral){
+        lang=focusedReferral.language;s.language=lang;s.languageResolved=true;
+        kind='practice_question';answer=focusedReferral.answer;facts=await getFacts();ai={related_pages:['visit']};referralHandled=true;
       }else if(simpleGreeting){
         kind='greeting';answer=localized(lang,'Hallo! Wie kann ich Ihnen helfen?','Hello! How can I help you?');
       }else if(earlyName){
@@ -830,7 +838,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       }
       answer=withoutCollectedQuestions(answer,draft);
       if(!answer&&acceptedStage(draft,stage))answer=stage==='name'?namedAcknowledgement(draft,lang):contactAcknowledgement(stage,lang);
-      const treatment=requestedTreatment(raw);
+      const treatment=referralHandled?null:requestedTreatment(raw);
       if(treatment&&!draft.reason?.toLocaleLowerCase().includes(treatment.toLocaleLowerCase()))draft.reason=[draft.reason,treatment].filter(Boolean).join('; ').slice(0,500);
       if(['appointment','practice_question','medical'].includes(kind)||acceptedStage(draft,stage)){
         rememberFields(s,s.draft,draft);s.draft=draft;
