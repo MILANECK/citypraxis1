@@ -51,8 +51,8 @@ test('choosing chat advances through contact details to the reason and review',(
   assertChatIntake(await turn(token,'I want to continue'),'en');
   const contact=await turn(token,'Anna Novak, anna@example.test, +43 699 12682157');
   assert.equal(contact.ready,false);
-  assert.match(contact.message,/What is the reason for your appointment request/);
-  assert.doesNotMatch(contact.message,/Which would you prefer|first and last name|email address|phone number/);
+  assert.match(contact.message,/To complete your appointment request.*concern/s);
+  assert.doesNotMatch(contact.message,/Which would you prefer|May I have your first|Which email address|Could you also share your phone/);
   const review=await turn(token,'I have headaches');
   assert.equal(review.ready,true);
   for(const detail of ['Anna Novak','anna@example.test','+4369912682157','Headaches'])assert.ok(review.summary.some(([,value])=>value===detail),detail);

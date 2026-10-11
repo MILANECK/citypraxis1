@@ -7,6 +7,7 @@ import {summaryRows} from '../../public/chat-model.js';
 import {chatPages,localizedPageUrl,relatedPageLinks,practiceStrengths} from './pages.mjs';
 import {matchingRecent,recentCutoff} from './recent-requests.mjs';
 import {structuredResponse} from './response.mjs';
+import {receivedContactFields,contactDetailsAcknowledgement,contactAcknowledgement,namedAcknowledgement,withContactAcknowledgement} from './intake-tone.mjs';
 import {fullName,explicitFullName,nameSegment,selfReportedPatientStatus,receiptLanguage,contactPreference,requestedTreatment,existingAppointmentChange,fieldReference,rememberFields} from './conversation-details.mjs';
 import {availabilityUpdate,requestedEdits,pauseRequested,resumeRequested,asksMissingDetails,asksDraftSummary,informationOnly,mentionsExistingAppointment,ambiguousCancellation,proxyDetails} from './conversation-updates.mjs';
 import {retentionCopy,replaceLegacyRetention} from '../../public/privacy-retention.js';
@@ -142,7 +143,7 @@ function clearMessageLanguage(raw){
   return null;
 }
 const emergencyLanguage=(raw,fallback)=>/\b(?:atemnot|keine luft|nicht atmen|starke brustschmerzen|starke blutung|herzinfarkt|schlaganfall|umbringen)\b/iu.test(raw)?'de':/\b(?:can't breathe|cannot breathe|not breathing|chest pain|severe bleeding|kill myself|suicid\w*|stroke now)\b/iu.test(raw)?'en':fallback;
-const question=(slot,lang)=>({proceed:localized(lang,'Möchten Sie, dass ich eine Terminanfrage für unser Sekretariat vorbereite?','Would you like me to prepare an appointment request for our reception team?'),reason:localized(lang,'Was ist der Anlass für Ihre Terminanfrage? Beschreiben Sie bitte kurz Ihr Anliegen oder die gewünschte Behandlung.','What is the reason for your appointment request? Please briefly describe your concern or the treatment you are seeking.'),name:localized(lang,'Darf ich bitte Ihren Vor- und Nachnamen erfahren?','May I have your first and last name, please?'),email:localized(lang,'Unter welcher E-Mail-Adresse dürfen wir Sie kontaktieren?','Which email address may our reception team use to contact you?'),phone:localized(lang,'Unter welcher Telefonnummer mit Vorwahl erreichen wir Sie?','Could you also share your phone number, including the country code, please?'),availability:localized(lang,'Welche Tage oder Uhrzeiten würden Ihnen für einen Termin passen? Sie können auch flexibel angeben.','Which days or times would suit an appointment? You can also say flexible.')})[slot]||'';
+const question=(slot,lang)=>({proceed:localized(lang,'Möchten Sie, dass ich eine Terminanfrage für unser Sekretariat vorbereite?','Would you like me to prepare an appointment request for our reception team?'),reason:localized(lang,'Damit ich Ihre Terminanfrage vervollständigen kann, erzählen Sie mir bitte kurz von Ihrem Anliegen oder der gewünschten Behandlung. Ein paar Worte reichen aus.','To complete your appointment request, could you tell me a little about your concern or the treatment you’re looking for? A few words are enough.'),name:localized(lang,'Darf ich bitte Ihren Vor- und Nachnamen erfahren?','May I have your first and last name, please?'),email:localized(lang,'Unter welcher E-Mail-Adresse dürfen wir Sie kontaktieren?','Which email address may our reception team use to contact you?'),phone:localized(lang,'Unter welcher Telefonnummer mit Vorwahl erreichen wir Sie?','Could you also share your phone number, including the country code, please?'),availability:localized(lang,'Welche Tage oder Uhrzeiten würden Ihnen für einen Termin passen? Sie können auch flexibel angeben.','Which days or times would suit an appointment? You can also say flexible.')})[slot]||'';
 const nextSlot=d=>d.contactFirst&&d.bookingApproved?(!d.first_name||!d.last_name?'name':!d.email?'email':!d.phone?'phone':!d.reason?'reason':'review'):!d.reason?'reason':!d.bookingApproved?'proceed':!d.first_name||!d.last_name?'name':!d.email?'email':!d.phone?'phone':'review';
 const contactSlots=new Set(['name','email','phone']);
 function contactQuestion(d,lang){
@@ -347,10 +348,6 @@ function declinesContact(raw,stage){
   return bareNo||(refusal&&(target.test(raw)||pronoun||allContacts||other?.test(raw)))||alternative;
 }
 const briefAcknowledgement=answer=>/^(?:(?:perfect|great|okay|ok|got it|sure|of course|perfekt|gut|verstanden)[,.!\s]*)?(?:(?:thank you|thanks|danke|vielen dank)[,.!\s]*)?$/iu.test(answer.trim());
-function contactAcknowledgement(stage,lang){
-  return stage==='email'?localized(lang,'Danke, ich habe Ihre E-Mail-Adresse.','Thank you, I have your email.'):stage==='phone'?localized(lang,'Alles klar, danke.','Got it, thank you.'):stage==='availability'?localized(lang,'Danke, das hilft uns weiter.','Thank you, that helps.'):localized(lang,'Danke.','Thank you.');
-}
-function namedAcknowledgement(d,lang){const addressed=d.contact_name||`${d.first_name} ${d.last_name}`;return localized(lang,`Vielen Dank, ${addressed}.`,`Great, thank you, ${addressed}.`);}
 function polishGermanReply(answer,history){
   answer=answer.replace(/\bLaut den vorliegenden Teamangaben sind\s+([^.!?]{1,100}?)\s+(?:abgeführt|aufgeführt)([.!?]?)/iu,(_,people,punctuation)=>`Zu unserem Team gehören ${people}${punctuation||'.'}`);
   if(!/^Gerne\b/u.test(answer)||!history.filter(item=>item.role==='assistant').slice(-3).some(item=>/^Gerne\b/u.test(item.text)))return answer;
@@ -666,7 +663,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       }else if(emailPrefix){
         answer=localized(lang,'Ich habe den Anfang der E-Mail-Adresse. Bitte senden Sie noch den Domainnamen nach dem @.','I have the start of the email address. Please send the domain after the @.');suppressFollowUp=true;
       }else if(previousFragment?.turn===s.turns&&draft.email&&draft.email!==s.draft.email){
-        answer=contactAcknowledgement('email',lang);
+        answer=contactAcknowledgement('email',lang,s.messages);
       }else if(proxy){
         answer=proxy.patient?localized(lang,`Ich bereite die Anfrage für ${draft.first_name} ${draft.last_name} vor und halte Ihre Angaben als Kontaktperson getrennt.`,`I’ll prepare the request for ${draft.first_name} ${draft.last_name}, keeping your details separate as the contact person.`):localized(lang,'Ich vermerke, dass Sie für eine andere Person anfragen. Wie lautet der vollständige Name der Patientin oder des Patienten?','I’ll note that you’re asking for someone else. What is the patient’s full name?');
         if(!proxy.patient)suppressFollowUp=true;
@@ -830,14 +827,16 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       }
       if(!declined&&draft.refusedContact&&draft[draft.refusedContact==='name'?'first_name':draft.refusedContact])delete draft.refusedContact;
       if(!declined&&['appointment','practice_question','medical'].includes(kind)){
-        const suppliedName=draft.first_name&&draft.last_name&&(!s.draft.first_name||!s.draft.last_name);
-        if(suppliedName&&!suppressFollowUp&&!answer.includes(`${draft.first_name} ${draft.last_name}`)){
-          answer=briefAcknowledgement(answer)?namedAcknowledgement(draft,lang):`${namedAcknowledgement(draft,lang)} ${answer}`.trim();
-        }else if(briefAcknowledgement(answer)&&['email','phone','availability'].includes(stage))answer=contactAcknowledgement(stage,lang);
-        else if(!answer&&['email','phone','availability'].includes(stage))answer=contactAcknowledgement(stage,lang);
+        const received=receivedContactFields(s.draft,draft);
+        if(received.length){
+          const acknowledgement=contactDetailsAcknowledgement(received,draft,lang,s.messages);
+          const onlyContact=contactOnly(raw,'phone')||emailValid(raw.trim().replace(/[.!?]+$/u,''))||stage==='name'&&Boolean(standaloneFullName(raw));
+          const repeatedPreparation=answer===localized(lang,'Ich bereite Ihre Terminanfrage hier im Chat vor.','I can prepare your appointment request here in chat.');
+          answer=onlyContact||briefAcknowledgement(answer)||repeatedPreparation?acknowledgement:withContactAcknowledgement(answer,acknowledgement,draft);
+        }else if((briefAcknowledgement(answer)||!answer)&&['email','phone','availability'].includes(stage)&&(stage!=='availability'||draft.availability))answer=contactAcknowledgement(stage,lang,s.messages);
       }
       answer=withoutCollectedQuestions(answer,draft);
-      if(!answer&&acceptedStage(draft,stage))answer=stage==='name'?namedAcknowledgement(draft,lang):contactAcknowledgement(stage,lang);
+      if(!answer&&acceptedStage(draft,stage))answer=stage==='name'?namedAcknowledgement(draft,lang,s.messages):contactAcknowledgement(stage,lang,s.messages);
       const treatment=referralHandled?null:requestedTreatment(raw);
       if(treatment&&!draft.reason?.toLocaleLowerCase().includes(treatment.toLocaleLowerCase()))draft.reason=[draft.reason,treatment].filter(Boolean).join('; ').slice(0,500);
       if(['appointment','practice_question','medical'].includes(kind)||acceptedStage(draft,stage)){
@@ -855,7 +854,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const attemptedContact=contactAttempt(raw,stage)&&(stage!=='name'||!ai||ai.kind==='appointment');
       const retry=stage===slot&&['name','email','phone'].includes(stage)&&!declined&&!suppressFollowUp&&!reference&&!preferredContact&&(stage!=='phone'||!contactEmail(raw))&&(attemptedContact||briefAcknowledgement(answer));
       if(retry)answer=retryContact(stage,lang);
-      let followUp=clarificationRequested||suppressFollowUp||s.paused?'':retry||['greeting','off_topic','compliment'].includes(kind)?'':ready?localized(lang,'Vielen Dank. Ihre Anfrage ist vorbereitet. Bitte prüfen Sie die Angaben unten. Nach dem Absenden meldet sich unser Sekretariat zur Terminvereinbarung.','Your request is ready to review below. Once you send it, our reception team will contact you to arrange an appointment. Thank you!'):s.draft.bookingDeclined||s.draft.refusedContact===slot?'':!s.draft.bookingApproved&&!s.draft.reason?'':slot==='proceed'&&s.bookingPrompted&&!proactiveAvailability?'':question(slot,lang);
+      let followUp=clarificationRequested||suppressFollowUp||s.paused?'':retry||['greeting','off_topic','compliment'].includes(kind)?'':ready?localized(lang,'Ihre Anfrage ist vorbereitet. Bitte prüfen Sie die Angaben unten. Nach dem Absenden meldet sich unser Sekretariat zur Terminvereinbarung.','Your request is ready to review below. Once you send it, our reception team will contact you to arrange an appointment.'):s.draft.bookingDeclined||s.draft.refusedContact===slot?'':!s.draft.bookingApproved&&!s.draft.reason?'':slot==='proceed'&&s.bookingPrompted&&!proactiveAvailability?'':question(slot,lang);
       if(followUp&&contactSlots.has(slot)&&!s.contactPrompted&&!s.editSnapshot){followUp=contactQuestion(s.draft,lang);s.contactPrompted=true;}
       if(followUp===question('proceed',lang))s.bookingPrompted=true;
       const links=ai&&!retry&&!clarificationRequested&&['appointment','practice_question','medical'].includes(kind)?relatedPageLinks(raw,ai.related_pages,facts,lang):'';

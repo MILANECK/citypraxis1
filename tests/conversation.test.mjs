@@ -182,7 +182,7 @@ test('a greeting stays welcoming and a direct appointment request offers both pa
     const request=await turn('I want an appointment');
     assert.match(request.message,/\[appointment request form\].*here in chat/);
     assert.match(request.message,/first and last name.*email address.*phone number with country code/);
-    assert.doesNotMatch(request.message,/What is the reason|confirmed/i);
+    assert.doesNotMatch(request.message,/To complete your appointment request|confirmed/i);
     assert.equal((await turn('Hallo','de')).message,'Hallo! Wie kann ich Ihnen helfen?');
     assert.equal(calls,0);
   }finally{process.env=old;}
@@ -197,12 +197,12 @@ test('a booking how-to question offers the form and chat without starting intake
     assert.equal(guidance.ready,false);
     assert.match(guidance.message,/\[appointment request form\]\(\/termin\?lang=en#booking-form\)/);
     assert.match(guidance.message,/here in chat/);
-    assert.doesNotMatch(guidance.message,/What is the reason for your appointment request\?/);
+    assert.doesNotMatch(guidance.message,/To complete your appointment request/);
     assert.match((await turn(english,'continue here','en')).message,/first and last name.*email address.*phone number with country code/s);
     const formChoice=newSession();await turn(formChoice,'I want an appointment','en');
     const formReply=await turn(formChoice,'the form','en');
     assert.match(formReply.message,/\[appointment request form\]\(\/termin\?lang=en#booking-form\)/);
-    assert.doesNotMatch(formReply.message,/first and last name|What is the reason/);
+    assert.doesNotMatch(formReply.message,/first and last name|To complete your appointment request/);
     assert.equal(formReply.ready,false);
     const german=newSession();
     const germanGuidance=await turn(german,'Wie kann ich einen Termin buchen?','de');
@@ -260,7 +260,7 @@ test('common German and English booking wording starts intake or offers both pat
       assert.match(result.message,language==='de'?/Formular für Terminanfragen.*hier im Chat/:/appointment request form.*here in chat/,phrase);
       assert.doesNotMatch(result.message,/^(?:Gerne|Of course)[,.!]/u,phrase);
       assert.doesNotMatch(result.message,/Vielen Dank, deinen praxis/i,phrase);
-      assert.doesNotMatch(result.message,/Was ist der Anlass|What is the reason/,phrase);
+      assert.doesNotMatch(result.message,/Terminanfrage vervollständigen|To complete your appointment request/,phrase);
       assert.equal(result.ready,false,phrase);
     }
     const methods={
@@ -274,7 +274,7 @@ test('common German and English booking wording starts intake or offers both pat
       assert.match(result.message,language==='de'?/\[Formular für Terminanfragen\]\(\/termin\?lang=de#booking-form\)/:/\[appointment request form\]\(\/termin\?lang=en#booking-form\)/,phrase);
       assert.doesNotMatch(result.message,/^(?:Gerne|Of course)[,.!]/u,phrase);
       assert.match(result.message,language==='de'?/hier im Chat/:/here in chat/,phrase);
-      assert.doesNotMatch(result.message,/Was ist der Anlass|What is the reason/);
+      assert.doesNotMatch(result.message,/Terminanfrage vervollständigen|To complete your appointment request/);
     }
     assert.equal(aiCalls,0);
   }finally{process.env=old;}
@@ -575,7 +575,7 @@ test('contact details can arrive together, missing fields are requested separate
     const noReason=newSession();await turn(noReason,'I want an appointment');await turn(noReason,'continue here');
     const contacts=await turn(noReason,'My name is Anna Novak, anna@example.test, +43 699 12682157');
     assert.equal(contacts.ready,false);
-    assert.match(contacts.message,/What is the reason for your appointment request/);
+    assert.match(contacts.message,/To complete your appointment request.*concern/s);
     let finish;await service.handle({method:'POST',headers:{},socket:{remoteAddress:'test'}},'/api/chat/finish',{token:noReason,confirmed:true},(status,data)=>finish={status,...data});
     assert.equal(finish.code,'invalid_request');
     const withReason=await turn(noReason,'I have headaches');
@@ -599,7 +599,7 @@ test('contacts supplied before the concern still lead directly to the final revi
       assert.match(first.message,/Formular für Terminanfragen/);
       assert.doesNotMatch(first.message,/Vor- und Nachnamen.*E-Mail-Adresse.*Telefonnummer/);
       const chosen=await turn(token,'im Chat');
-      assert.match(chosen.message,/Was ist der Anlass für Ihre Terminanfrage/);
+      assert.match(chosen.message,/Terminanfrage vervollständigen/);
       const review=await turn(token,'schulter schmerz');
       assert.equal(review.ready,true);
       assert.ok(review.summary.some(([,value])=>value==='Anna Novak'));
@@ -686,7 +686,7 @@ test('a refused contact detail is respected while supplied names and later detai
     const refused=await turn('no I want to be notified via email thanx');assert.equal(calls,beforeRefusal);assert.match(refused.message,/does need your full name, email address and phone number/);assert.match(refused.message,/unable to complete it here/);assert.match(refused.message,/Stubenbastei 12\/11, 1010 Wien/);assert.match(refused.message,/\+43 699 12682157/);assert.match(refused.message,/info@citypraxis.wien/);assert.doesNotMatch(refused.message,/phone number, including|contact you by email instead/i);
     const price=await turn('What is the price?');assert.match(price.message,/explain current prices/);assert.doesNotMatch(price.message,/phone number, including/);
     const beforePhone=calls;
-    const accepted=await turn('My number is +43 699/12682157');assert.equal(calls,beforePhone);assert.match(accepted.message,/Got it, thank you\./);assert.equal(accepted.ready,true);assert.match(accepted.message,/ready to review/);assert.deepEqual(accepted.summary.find(([key])=>key==='Phone'),['Phone','+4369912682157']);
+    const accepted=await turn('My number is +43 699/12682157');assert.equal(calls,beforePhone);assert.match(accepted.message,/Thanks for your phone number\./);assert.equal(accepted.ready,true);assert.match(accepted.message,/ready to review/);assert.deepEqual(accepted.summary.find(([key])=>key==='Phone'),['Phone','+4369912682157']);
     assert.doesNotMatch(`${named.message}\n${emailed.message}\n${accepted.message}`,/Perfect, thank you/);
     const another=newSession();await turn('I want an appointment',another);await turn('My shoulder hurts',another);await turn('Michael Black',another);
     const noEmail=await turn("I don't want to share my email",another);assert.match(noEmail.message,/does need your full name, email address and phone number/);assert.match(noEmail.message,/unable to complete it here/);assert.doesNotMatch(noEmail.message,/Which email address/);

@@ -175,7 +175,7 @@ regression('explicit information-only intent cannot be overridden by a model boo
   for(const language of ['en','de']){
     const f=fixture({language,interpret:()=>value({kind:'practice_question',booking_intent:'request',answer:language==='en'?'Our reception team arranges appointments by phone or email.':'Unser Sekretariat vereinbart Termine telefonisch oder per E-Mail.'})});
     const info=await f.turn(language==='en'?'I only want information: how does an appointment request work?':'Ich möchte nur Informationen: Wie funktioniert eine Terminanfrage?');
-    assert.equal(info.ready,false);assert.doesNotMatch(info.message,/reason for your appointment|Anlass für Ihre Terminanfrage|Vor- und Nachnamen/u);assert.equal(f.saved.length,0);
+    assert.equal(info.ready,false);assert.doesNotMatch(info.message,/To complete your appointment request|Terminanfrage vervollständigen|Vor- und Nachnamen/u);assert.equal(f.saved.length,0);
   }
 });
 
