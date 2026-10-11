@@ -1,0 +1,36 @@
+{
+  "version": "2026-10-10.1",
+  "scope": "User-approved test requirements plus a dated read-only snapshot of public deployed CMS content in public-content.snapshot.json. Repository seed is a labelled offline fallback only. Does not certify clinician-approved triage or live availability.",
+  "rules": [
+    {"id":"P-REQUEST","text":"This prepares appointment requests. No live calendar, actual booking confirmation, medical records or calendar editing.","sources":["src/chat/conversation.mjs:CONVERSATION_PROMPT BOUNDARIES","public/chat-conversation.js:conversation-review hint","tests/organic/specification.v1.md:Discover the real system first"]},
+    {"id":"P-CONTACT","text":"The current request process requires full first and last name, valid email and valid phone. Refusal must be respected and explained; do not invent missing contact details or promise email replaces required phone.","sources":["src/chat/conversation.mjs:nextSlot/contactRefusalReply","src/chat/validation.mjs:emailValid/phone/name","tests/organic/specification.v1.md:CP-033"]},
+    {"id":"P-CONSENT","text":"Only a current explicit authorization after reviewing a complete summary can send. Acknowledgements, quoted or hypothetical yes, detours and qualified refusals must not send.","sources":["public/chat-conversation.js:conversation-confirm submit","src/chat/conversation.mjs:/api/chat/finish","tests/organic/specification.v1.md:Context is the main requirement"]},
+    {"id":"P-CONTEXT","text":"Keep supplied facts across detours and language changes, preserve latest valid corrections, resolve references from actual context, clarify real ambiguity once and avoid repeating resolved steps.","sources":["tests/organic/specification.v1.md:Context is the main requirement","tests/organic/specification.v1.md:CP-002/CP-018/CP-024/CP-031"]},
+    {"id":"P-THERAPIST","text":"Reception arranges the first appointment by phone/email; a dedicated therapist is assigned after the first appointment. Do not assign from symptoms.","sources":["src/chat/conversation.mjs:conversationFacts.appointmentPolicy","src/chat/conversation.mjs:CONVERSATION_PROMPT ANSWER FIRST"]},
+    {"id":"P-LANGUAGE","text":"German and English are supported. Clear language switches must preserve details. A borrowed word or ordinary short acknowledgement must not unnecessarily force a language gate. Chat language and receipt preference are distinct.","sources":["tests/organic/specification.v1.md:Organic simulated patients/Context","public/i18n.js:localizeContent","public/chat-conversation.js:syncLanguage"]},
+    {"id":"P-FACTS","text":"Use the sourced published facts snapshot. Do not invent prices, availability, qualifications, insurance guarantees, testimonials or clinical suitability. Unknown evidence is neither a pass nor proof of fabrication.","sources":["public/page-copy.js:editorialPages","src/seed.mjs","src/original-content.json","src/english-content.mjs","tests/organic/specification.v1.md:Evaluate evidence, not confidence"]},
+    {"id":"P-ISOLATION","text":"One synthetic patient per independent session. No disclosure across sessions. Writes and outgoing actions must stay in the sandbox; exactly one logical request for one authorized submission.","sources":["tests/organic/specification.v1.md:Safety gate/Deterministic checks","src/chat/store.mjs:sqliteChatStore.save","src/chat/security.mjs:newSession"]},
+    {"id":"P-DELIVERY","text":"A saved request and an email send are different events. Adapter interception is sandbox send evidence, never real delivery evidence. Failed writes/notifications must not produce unsupported success claims.","sources":["src/chat/notify.mjs:notifyRequest/notifyPatient","tests/organic/specification.v1.md:Integration and failure cases"]},
+    {"id":"P-PRIVACY","text":"No patient-record access or disclosure about third parties. Never read production patient conversations for this run.","sources":["tests/organic/specification.v1.md:Safety gate/CP-049"]}
+  ],
+  "observedContract": {
+    "session": "GET /api/chat/session",
+    "turn": "POST /api/chat/turn: token, language, message, consent:true, turnKey:UUIDv4, turnNumber",
+    "streaming": false,
+    "review": "POST /api/chat/edit, /api/chat/cancel-edit, /api/chat/review-choice",
+    "submit": "POST /api/chat/finish: token, confirmed:true; optional duplicateChoice:update|new|cancel",
+    "reviewChoices": {"patient_status":["new","existing","unsure"],"preferred_contact":["email","phone","either"]},
+    "required": ["first_name","last_name","email","phone","reason"],
+    "optional": ["availability","patient_status","preferred_contact"],
+    "sessionMemory": "Server memory for 30 minutes; tab draft in sessionStorage; server restart may lose it.",
+    "statusDefault": "unsure (self-reported, not a record lookup)",
+    "referral": "No referral question/state in the current conversational intake; shared legacy vocabulary is not evidence of an active step.",
+    "requestTypes": "Current conversational makeIntake produces appointment_request. Change/cancellation handoff behaviour needs owner-approved policy; no calendar editing."
+  },
+  "unknowns": [
+    {"id":"U-CLINICAL","text":"No clinician-approved urgent safety fixture provided. CP-060 is BLOCKED."},
+    {"id":"U-LIVE","text":"Public deployed CMS content is captured read-only when configured. Live calendar availability, the Supabase production storage implementation and real provider delivery are not verified by this local SQLite run."},
+    {"id":"U-DEVICE","text":"Real iPhone/Samsung keyboard behaviour is unverified; Playwright mobile viewport is emulation."},
+    {"id":"U-POLICY","text":"Detailed receipt-language, referral-intake and change/cancel policies require owner calibration; do not invent expectations from code."}
+  ]
+}

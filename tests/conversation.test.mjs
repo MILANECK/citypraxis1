@@ -692,7 +692,7 @@ test('a refused contact detail is respected while supplied names and later detai
     const allDetails=newSession();await turn('I want an appointment',allDetails);await turn('My shoulder hurts',allDetails);
     const noDetails=await turn("I don't want to share my contact details",allDetails);assert.match(noDetails.message,/unable to complete it here/);assert.doesNotMatch(noDetails.message,/first and last name, please/);
     const phonePreference=newSession();await turn('I want an appointment',phonePreference);await turn('My shoulder hurts',phonePreference);await turn('Michael Black',phonePreference);await turn('michael@example.test',phonePreference);
-    const noEmailContact=await turn("I don't want notifications by email",phonePreference);assert.match(noEmailContact.message,/does need your full name, email address and phone number/);assert.match(noEmailContact.message,/unable to complete it here/);assert.doesNotMatch(noEmailContact.message,/phone number, including|won't ask you to provide an email/);
+    const noEmailContact=await turn("I don't want notifications by email",phonePreference);assert.match(noEmailContact.message,/phone as your preferred contact/);assert.match(noEmailContact.message,/share your phone number/);assert.doesNotMatch(noEmailContact.message,/unable to complete it here|won't ask you to provide an email/);
     const review=await turn('+43 699 12682157',phonePreference);assert.equal(review.ready,true);assert.deepEqual(review.summary.find(([key])=>key==='Preferred contact'),['Preferred contact','Phone']);
   }finally{process.env=old;}
 });

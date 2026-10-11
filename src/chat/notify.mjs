@@ -23,7 +23,7 @@ export function requestEmail(row){
   return {subject,text,html,...(row.email?{reply_to:row.email}:{})};
 }
 export function patientConfirmationEmail(row){
-  const en=row.intake?.language==='en';
+  const en=(row.intake?.receipt_language||row.intake?.language)==='en';
   const rows=requestRows(row,en?'en':'de').filter(([key])=>!['Source','Herkunft'].includes(key));
   const subject=en?'CityPraxis · We received your request':'Citypraxis · Wir haben Ihre Anfrage erhalten';
   const greeting=en?`Thank you for contacting CityPraxis, ${row.name}.`:`Vielen Dank für Ihre Anfrage bei der Citypraxis, ${row.name}.`;

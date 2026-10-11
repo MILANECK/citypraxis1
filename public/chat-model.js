@@ -8,6 +8,7 @@ export const choices={
   preferred_days:{monday:['Montag','Monday'],tuesday:['Dienstag','Tuesday'],wednesday:['Mittwoch','Wednesday'],thursday:['Donnerstag','Thursday'],friday:['Freitag','Friday'],flexible:['Flexibel','Flexible']},
   preferred_times:{morning:['Vormittag','Morning'],midday:['Mittags','Midday'],afternoon:['Nachmittag','Afternoon'],evening:['Abends','Evening'],flexible:['Flexibel','Flexible']},
   preferred_contact:{phone:['Telefon','Phone'],email:['E-Mail','Email'],either:['Beides passt','Either is fine']},
+  receipt_language:{de:['Deutsch','German'],en:['Englisch','English']},
   callback_time:{morning:['Vormittag','Morning'],afternoon:['Nachmittag','Afternoon'],opening_hours:['Während der Öffnungszeiten','During opening hours']}
 };
 export const label=(field,value,lang='de')=>choices[field]?.[value]?.[lang==='en'?1:0]||value||'—';
@@ -23,6 +24,7 @@ export function summaryRows(d,lang='de'){
     [en?'Request':'Anfrage',label('request_type',d.request_type,lang)],
     [en?'Email':'E-Mail',d.email],[en?'Phone':'Telefon',d.phone],
     [en?'Preferred contact':'Bevorzugter Kontakt',label('preferred_contact',d.preferred_contact,lang)],
+    [en?'Email copy language':'Sprache der E-Mail-Kopie',d.receipt_language&&label('receipt_language',d.receipt_language,lang)],
     [en?'Good time to call':'Rückrufzeit',d.preferred_contact!=='email'&&d.callback_time&&label('callback_time',d.callback_time,lang)],
     [en?'Previous therapist (self-reported)':'Bisherige Betreuung (eigene Angabe)',d.patient_status_claimed==='existing'&&d.previous_therapist],
     [en?'Preferred therapist':'Gewünschte Betreuung',d.preferred_therapist],

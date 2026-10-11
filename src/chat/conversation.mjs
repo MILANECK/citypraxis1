@@ -6,6 +6,9 @@ import {emailConfigured,notifyRequest,notifyPatient} from './notify.mjs';
 import {summaryRows} from '../../public/chat-model.js';
 import {chatPages,localizedPageUrl,relatedPageLinks,practiceStrengths} from './pages.mjs';
 import {matchingRecent,recentCutoff} from './recent-requests.mjs';
+import {structuredResponse} from './response.mjs';
+import {fullName,explicitFullName,nameSegment,selfReportedPatientStatus,receiptLanguage,contactPreference,requestedTreatment,existingAppointmentChange,fieldReference,rememberFields} from './conversation-details.mjs';
+import {retentionCopy,replaceLegacyRetention} from '../../public/privacy-retention.js';
 
 export const CONVERSATION_LIMIT=30;
 export const CONVERSATION_PROMPT=`You are CityPraxis's digital receptionist in Vienna. Speak as the practice's representative: use "I" for what you personally do in chat and "we/our team/our practice" for CityPraxis facts and actions. Your introduction already identifies you as digital. Do not repeat this identity in replies unless asked; never pretend to be a human clinician.
@@ -21,8 +24,11 @@ GENERAL PHYSICAL COMPLAINTS: If someone describes a vague or hard-to-name physic
 AVAILABILITY: If someone asks about free slots, current times or the next appointment, mention the calendar limitation only once: "I can't access the live calendar here, but I can help prepare an appointment request." Then say our reception team can contact them to arrange a suitable time. Never say that you can book or confirm a specific appointment. If the same message also mentions a physical concern, focus on the assessment and next step; do not repeat separate disclaimers about diagnosis, calendar access and slot confirmation. This enquiry alone is not consent to start collecting personal details. The application appends one clear invitation to get started; do not ask a second booking question.
 If a visitor declines a contact method or declines to provide a contact detail, respect that choice. Full name, email and phone are required for the current appointment request process. Explain this requirement politely. Never promise that another contact channel replaces a required detail. Do not repeat a declined request; answer other CityPraxis questions normally. The application tracks the refusal and suppresses its follow-up question until the visitor supplies the missing detail.
 For a greeting, greet back and ask how you can help; a greeting is not off-topic. When asked how to make an appointment request, explain that the visitor can use the online form or prepare the request here in chat, and select the booking page. Asking how does not mean they chose to start the chat intake. For a direct appointment request without a stated reason, the application offers the form or assisted chat before collecting details. After the visitor chooses chat, the application requests missing contact details and then the reason if still unknown. Never say you have booked or can guarantee an appointment.
-BOOKING CHOICE: When awaitingBookingChoice is true, classify the visitor's CURRENT reply to the pending form-or-chat offer in booking_choice. Understand meaning and conversational context rather than requiring exact words: direct confirmations, polite or indirect requests, preferences, short fragments, paraphrases, typos, and German/English wording can all select an option. Use chat for a clear wish to continue here or prepare the request with you (e.g. "I'd rather stay here", "please walk me through it", "let's do it together", "Vorbereiten", "Dann lieber mit Ihnen"); set booking_intent request even when the reason is unknown. Supplying relevant intake details in response to this offer also chooses chat when the visitor has already requested an appointment; a symptom-only enquiry asking for information is unspecified. Use form for a clear wish to use the website form (e.g. "I'll fill it in myself", "Lieber den Link"); set booking_intent defer. Use decline for a clear wish to stop or postpone BOTH options; set booking_intent defer. Scope negation to the option it refers to: "No form, please; let's do it here" selects chat, while "not in chat; send me the form" selects form. A question about an option without choosing it, an uncertain answer, or an unrelated acknowledgement is unspecified; never treat "maybe" as consent. If the preference is genuinely ambiguous, set needs_clarification true and ask one brief question about that choice. Do not repeat the offer or ask intake questions after a clear choice; the application handles the next step. If awaitingBookingChoice is false, booking_choice must be unspecified.
+BOOKING CHOICE: When awaitingBookingChoice is true, classify the visitor's CURRENT reply to the pending form-or-chat offer in booking_choice. When bookingChannelContext is true, also recognize an explicit later change between form and chat, even after a form link was given; do not repeat the original offer after a clear change. A bare acknowledgement after leaving chat is unspecified and does not restart intake. Understand meaning and conversational context rather than requiring exact words: direct confirmations, polite or indirect requests, preferences, short fragments, paraphrases, typos, and German/English wording can all select an option. Use chat for a clear wish to continue here or prepare the request with you (e.g. "I'd rather stay here", "please walk me through it", "let's do it together", "Vorbereiten", "Dann lieber mit Ihnen"); set booking_intent request even when the reason is unknown. Supplying relevant intake details in response to this offer also chooses chat when the visitor has already requested an appointment; a symptom-only enquiry asking for information is unspecified. Use form for a clear wish to use the website form (e.g. "I'll fill it in myself", "Lieber den Link"); set booking_intent defer. Use decline for a clear wish to stop or postpone BOTH options; set booking_intent defer. Scope negation to the option it refers to: "No form, please; let's do it here" selects chat, while "not in chat; send me the form" selects form. A question about an option without choosing it, an uncertain answer, or an unrelated acknowledgement is unspecified; never treat "maybe" as consent. If the preference is genuinely ambiguous, set needs_clarification true and ask one brief question about that choice. Do not repeat the offer or ask intake questions after a clear choice; the application handles the next step. Even after intake starts, a clear request to switch to the form uses form; a general question mentioning a form does not choose it. When neither booking context flag is true, booking_choice must be unspecified.
+WHOLE MESSAGE: Extract any explicitly supplied reason and availability from the entire current message regardless of currentStage. A phone number, contact preference or receipt-language preference can share a message with a treatment request and preferred time; process all of them. Keep receipt language separate from chat language. Do not include intake questions for already supplied fields in answer; the application generates the next missing-field question from its saved state.
 For a standalone, relevant compliment about CityPraxis, its team, services, or this chat, use kind compliment and do not add any question or appointment prompt. The application replies only "Thank you." (German: "Danke."). If a message combines a compliment with a question or request, address the question or request instead of treating it as a standalone compliment.
+DETAILS AND FOLLOW-UPS: Preserve an explicitly requested therapy together with the visitor's concern in reason, even when fees or duration are also asked. A later addition or correction is newly supplied information. Extract availability only when the visitor states their own preferred time, never from a question about opening hours or current slots; use the latest correction. Do not store literal references such as "same as before" as availability. knownFields records validated contact fields already held by the application, although their values are masked; never deny that we received one just because it is outside the six recent messages. Receipt language and preferred contact are separate from chat language and required contact details. Never promise successful email delivery or a change to an existing appointment. For an existing appointment change/cancellation, direct the visitor to reception instead of starting a new appointment request.
+PUBLISHED ANSWERS: For treatment duration, inspect the matching publishedFacts.samplePrices.duration and distinguish first and follow-up visits; do not claim durations are unpublished when present. For reimbursement, explain the published historical date and lack of guaranteed current coverage before linking. For privacy, use requestRetention as the current published retention policy, including manual deletion and the distinction between drafts, submitted requests, mailboxes and provider logs. When a visitor asks how team qualifications or practice strengths help them, explain their practical value using published facts rather than repeating the same list. A price, privacy, appointment-process or other practice question deserves a direct answer before a link.
 The application appends ONE follow-up prompt. It invites booking when appropriate. For assisted chat chosen after a form-or-chat offer, it asks for missing full name, email and phone first, then the reason if still unknown. In other conversations, it uses already supplied details and asks only for what is missing. Do not ask intake questions or invite booking in answer. Do not duplicate a sentence or restate a question in other words. A short stage answer such as a name or "flexible" is appointment information. The supplied practice-local time and published hours can tell you whether the practice is currently closed. Do not promise exactly when staff will reply. Return the required JSON only.`;
 
 const responseSchema={type:'object',additionalProperties:false,properties:{kind:{type:'string',enum:['appointment','practice_question','off_topic','medical','emergency','compliment']},input_language:{type:'string',enum:['de','en','mixed','other','unclear']},answer:{type:'string'},related_pages:{type:'array',items:{type:'string'},maxItems:3},booking_intent:{type:'string',enum:['request','defer','unspecified']},booking_choice:{type:'string',enum:['chat','form','decline','unspecified']},needs_clarification:{type:'boolean'},reason:{type:['string','null']},availability:{type:['string','null']},first_name:{type:['string','null']},last_name:{type:['string','null']},patient_status:{type:['string','null'],enum:[null,'new','existing','unsure']}},required:['kind','input_language','answer','related_pages','booking_intent','booking_choice','needs_clarification','reason','availability','first_name','last_name','patient_status']};
@@ -68,7 +74,7 @@ const bookingChoicePatterns={
   en:{
     chat:[
       /^(?:in (?:the )?chat|here in (?:the )?chat)$/iu,
-      /^(?:(?:i (?:want|would like|prefer) to|i['’]d like to|please) )?(?:continue|proceed|keep going|prepare(?: (?:it|(?:my |the )?(?:appointment )?request))?)(?: (?:here|in (?:the )?chat|with you))?(?:,? please)?$/iu,
+      /^(?:(?:i (?:want|would like|prefer) to|i['’]d like to|please) )?(?:continue|proceed|keep going|prepare(?: (?:it|(?:my |the )?(?:appointment )?request))?)(?: (?:here(?: in (?:the )?chat)?|in (?:the )?chat|with you))?(?:,? please)?$/iu,
       /^(?:i (?:want|would like|prefer)|i['’]d like) (?:the )?chat(?:,? please)?$/iu,
       /^(?:do it|let['’]?s (?:do it|continue|prepare it))(?: here| in (?:the )?chat)?$/iu
     ],
@@ -76,19 +82,33 @@ const bookingChoicePatterns={
   },
   de:{
     chat:[
-      /^(?:(?:ich (?:möchte|moechte|will|würde gerne|wuerde gerne)(?: gerne?|lieber)?|bitte) )?(?:(?:die |meine )?(?:termin)?anfrage )?(?:(?:hier(?: im chat)?|im chat|mit ihnen) )?(?:weiter(?:machen)?|fortfahren|fortsetzen|vorbereiten)(?: (?:hier(?: im chat)?|im chat|mit ihnen))?(?: bitte)?$/iu,
+      /^(?:(?:ich (?:möchte|moechte|will|würde gerne|wuerde gerne)(?: gerne?|lieber)?|bitte) )?(?:(?:die |meine )?(?:termin)?anfrage )?(?:doch )?(?:(?:hier(?: im chat)?|im chat|mit ihnen) )?(?:weiter(?:machen)?|fortfahren|fortsetzen|vorbereiten)(?: (?:hier(?: im chat)?|im chat|mit ihnen))?(?: bitte)?$/iu,
       /^(?:ich (?:möchte|moechte|will|bevorzuge)(?: gerne?|lieber)? )?(?:hier(?: im chat)?|im chat)(?: bitte)?$/iu,
       /^(?:machen wir weiter|legen wir los)(?: hier| im chat)?$/iu
     ],
     form:[/^(?:(?:ich (?:möchte|moechte|will|bevorzuge)(?: gerne?|lieber)?|bitte) )?(?:das |ihr |online[ -])?(?:formular|onlineformular|terminformular)(?: (?:nutzen|verwenden|ausfüllen|ausfuellen))?(?: bitte)?$/iu]
   }
 };
-function bookingChoice(raw){
+function bookingChoice(raw,order=['form','chat']){
   const phrase=bookingPhrase(raw);
+  const ordinal=/^(?:(?:the|das|die|den) )?(first|second|erste|ersten|zweite|zweiten)(?: (?:one|option|möglichkeit))?(?: bitte| please)?$/iu.exec(phrase);
+  if(ordinal)return {kind:order[/^(?:first|erste)/iu.test(ordinal[1])?0:1],language:/erste|zweite/iu.test(ordinal[1])?'de':'en'};
   for(const language of ['de','en'])for(const kind of ['form','chat']){
     if(bookingChoicePatterns[language][kind].some(pattern=>pattern.test(phrase)))return {kind,language};
   }
   return clearAffirmation(phrase)||/^(?:here|chat)$/iu.test(phrase)?{kind:'chat',language:null}:null;
+}
+const formNoun='(?:form|forms|formular|online[ -]?formular|termin(?:anfrage)?formular|buchungsformular)';
+const formMention=new RegExp(`\\b${formNoun}\\b`,'iu');
+const negatedForm=new RegExp(`\\b(?:no|not|don['’]t|do not|kein\\w*|nicht|ohne)\\b.{0,25}\\b${formNoun}\\b`,'iu');
+const formRequest=new RegExp(`(?:\\b(?:send|give|prefer|want|would like|schicken|senden|geben|möchte|lieber|bitte)\\b.{0,70}\\b${formNoun}\\b|^\\s*(?:please )?use\\b.{0,30}\\b${formNoun}\\b|\\b${formNoun}\\b.{0,30}\\b(?:nutzen|verwenden|bitte|please)\\b)`,'iu');
+function requestedFormClauses(raw){
+  return raw.split(/[;.!?]|\b(?:but|aber|sondern)\b/iu).filter(clause=>formMention.test(clause)&&!negatedForm.test(clause)&&formRequest.test(clause));
+}
+function explicitFormChoice(raw){
+  // Handle an explicit change of channel before a required-detail refusal.
+  return requestedFormClauses(raw).some(clause=>!/^\s*(?:how|where|what|wie|wo|was|can i|could i|kann ich|könnte ich)\b/iu.test(clause)
+    &&!/\b(?:chat|here|hier)\b/iu.test(clause));
 }
 const bookingFormLink=lang=>`[${localized(lang,'Formular für Terminanfragen','appointment request form')}](${localizedPageUrl(chatPages().find(page=>page.id==='booking'),lang)})`;
 const bookingChoiceQuestion=lang=>localized(lang,'Möchten Sie hier im Chat weitermachen oder das Formular nutzen?','Would you prefer to continue here in chat or use the form?');
@@ -99,7 +119,11 @@ const bookingOptions=(lang,draft={})=>{
   return localized(lang,`Sie können Ihre Terminanfrage über unser ${bookingFormLink(lang)} senden oder sie hier im Chat mit mir vorbereiten. ${details}Was ist Ihnen lieber?`,`You can send an appointment request using our ${bookingFormLink(lang)} or prepare it with me here in chat. ${details}Which would you prefer?`);
 };
 const languagePrompt='Which language would you prefer for this chat: German or English? / Möchten Sie auf Deutsch oder Englisch weiterschreiben?';
-const selectedLanguage=raw=>/^(?:(?:de|deutsch|german|auf deutsch|in german)(?: bitte| please)?|(?:ich möchte|ich bevorzuge|i prefer|i would prefer|i'd prefer|let's use) (?:deutsch|german))[.!\s]*$/iu.test(raw)?'de':/^(?:(?:en|englisch|english|auf englisch|in english)(?: bitte| please)?|(?:ich möchte|ich bevorzuge|i prefer|i would prefer|i'd prefer|let's use) (?:englisch|english))[.!\s]*$/iu.test(raw)?'en':null;
+const selectedLanguage=raw=>{
+  const phrase=raw.trim().replace(/[.!?]+$/u,'').trim();
+  const command=/^(?:(?:doch|dann) (?:lieber )?|(?:can we|could we|let['’]s|please) (?:continue|switch|write|speak)(?: (?:in|to))? |(?:ich möchte|ich bevorzuge|i prefer|i would prefer|i['’]d prefer|let['’]s use) |(?:bitte )?(?:auf|in) )?(de|deutsch|german|en|englisch|english)(?: (?:bitte|please|pls|wieder|again|weiter))*$/iu.exec(phrase);
+  return command?/^(?:de|deutsch|german)$/iu.test(command[1])?'de':'en':null;
+};
 const fixedMessageLanguage=raw=>/^(?:hallo|guten (?:tag|morgen|abend)|servus|grüß gott|ich möchte|ich brauche|ich hätte gerne|kann ich|bitte einen? termin|bitte eine terminanfrage|(?:erst)?termin(?:anfrage)?\s+(?:(?:bitte|jetzt)\s+)?(?:buchen|machen|stellen|vorbereiten)|wie\s+(?:kann|soll|möchte|buche|vereinbare|stelle))\b/iu.test(raw)?'de':/^(?:hello|hi|hey|good (?:morning|afternoon|evening)|i want|i need|i(?:'d| would) like|can i (?:book|make|request)|please (?:book|make))\b/iu.test(raw)?'en':null;
 function clearMessageLanguage(raw){
   const words=raw.toLocaleLowerCase().normalize('NFD').replace(/\p{M}/gu,'').replace(/ß/gu,'ss').match(/[a-z]+/gu)||[];
@@ -132,7 +156,7 @@ const earlierConcern=messages=>messages.filter(item=>item.role==='visitor').map(
 const priceLink=lang=>`/preise?lang=${lang}`;
 function pageFollowUp(raw,messages,lang){
   const last=messages.at(-1)?.role==='assistant'?messages.at(-1).text:'';
-  const asksForPage=/(?:\b(?:where|wo)\b.{0,45}\b(?:find|see|price|prices|preis|kosten|finde|sehen)\b|\b(?:link|website|webseite)\b.{0,45}\b(?:price|prices|preis|kosten)\b)/iu.test(raw);
+  const asksForPage=/^(?:where can i (?:find|see) (?:the|your) prices?|(?:please )?(?:send|give)(?: me)? (?:the |your |a )?(?:price|prices|pricing) (?:page|link)|wo (?:finde|sehe) ich (?:die|ihre) preise|(?:bitte )?(?:den|einen) (?:preis|preise)[ -]?link(?: bitte)?)[.!?\s]*$/iu.test(raw.trim());
   const shortFollowUp=/^(?:where|where exactly|wo|wo genau|can you (?:send|give) me (?:the|a) link|send (?:me )?(?:the|a) link|link please|können sie mir den link schicken|schicken sie mir den link)[?.!\s]*$/iu.test(raw.trim());
   const links=[...last.matchAll(/\[[^\]\n]{1,100}\]\(\/(?:kontakt|preise|ablauf-wahltherapie|ueber-uns|leistungen|schwerpunkte|team|termin|datenschutz|impressum)(?:[/?#][^\s)]*)?\)/gu)].map(match=>match[0]);
   if(shortFollowUp&&links.length&&links.some(link=>!link.includes('](/preise?'))){
@@ -179,20 +203,23 @@ export function composeReply(answer,followUp='',links=''){
 }
 const contactEmail=raw=>/[^\s@]+@[^\s@]+\.[a-z]{2,63}/i.exec(raw)?.[0]?.replace(/[.,;!?]+$/,'');
 function introductionFullName(raw){
-  const introduction=/(?:^|[^\p{L}\p{M}])(?:i['’]m|i am)\s+([\p{L}\p{M}.'’\-]+)\s+([\p{L}\p{M}.'’\-]+)(?=\s*(?:[,;.!?]|\band\b|$))/iu.exec(raw)
-    ||/(?:^|[^\p{L}\p{M}])Im\s+([\p{L}\p{M}.'’\-]+)\s+([\p{Lu}][\p{L}\p{M}.'’\-]*)(?=\s*[,;.!?]\s*(?:I\b|my\b|we\b))/u.exec(raw);
-  if(!introduction||/^(?:a|an|the|in|on|at|from|not|so|very|having|feeling|experiencing|suffering|looking|trying|hoping|wondering|seeking|needing|ready|interested|happy|sad|worried|concerned|sick|unwell)$/iu.test(introduction[1]))return null;
-  try{return {first_name:name(introduction[1]),last_name:name(introduction[2])};}catch{return null;}
+  const introduction=/(?:^|[^\p{L}\p{M}])(?:i['’]m|i am|ich bin)\s+([^,;!?\n]{2,150})/iu.exec(raw)
+    ||/(?:^|[^\p{L}\p{M}])Im\s+([\p{L}\p{M}.'’\-]+\s+[\p{Lu}][^,;!?\n]{1,100})(?=[,;.!?]\s*(?:I\b|my\b|we\b))/u.exec(raw);
+  const candidate=introduction?.[1]?nameSegment(introduction[1]):null;
+  if(!candidate||/^(?:a|an|the|in|on|at|from|not|so|very|having|feeling|experiencing|suffering|looking|trying|hoping|wondering|seeking|needing|ready|interested|happy|sad|worried|concerned|sick|unwell|new|existing|ein\w*|der|die|das|bei|nicht|noch|schon|bereits|neu\w*|mir|patient\w*|krank|unsicher|auf|wegen)\b/iu.test(candidate))return null;
+  return fullName(candidate);
 }
 function absorbContact(raw,d,stage){
   const foundEmail=contactEmail(raw);if(foundEmail&&emailValid(foundEmail))d.email=foundEmail.toLowerCase();
-  for(const match of raw.matchAll(/(?:\+\d|\b0)[\d ()/.-]{6,}\d/g)){try{d.phone=phone(match[0]);break;}catch{}}
+  // Numbers inside an email address are identity data, never a phone candidate.
+  const phoneText=raw.replace(/[^\s@]+@[^\s@]+\.[a-z]{2,63}/giu,' ');
+  for(const match of phoneText.matchAll(/(?:\+\d|\b0)[\d ()/.-]{6,}\d/g)){try{d.phone=phone(match[0]);break;}catch{}}
   if(stage==='phone'&&!d.phone){
     const local=/^(?:\d[\d ()/.-]{5,}\d|(?:my (?:phone|number) is|meine telefonnummer ist)\s+\d[\d ()/.-]{5,}\d)$/iu.test(raw.trim());
     if(local){try{d.phone=phone(raw.replace(/^(?:my (?:phone|number) is|meine telefonnummer ist)\s+/iu,''));}catch{}}
   }
-  const explicit=/(?:my name is|ich heiße|ich heisse|mein name ist|(?:^|[,;\n])\s*(?:full name|name|vor-\s*und\s+nachname)\s*[:=])\s*([\p{L}\p{M}.'’\-]+)\s+([\p{L}\p{M}.'’\-]+)/iu.exec(raw);
-  if(explicit){try{d.first_name=name(explicit[1]);d.last_name=name(explicit[2]);}catch{}}
+  const explicit=explicitFullName(raw);
+  if(explicit)Object.assign(d,explicit);
   else{const introduction=introductionFullName(raw);if(introduction)Object.assign(d,introduction);}
   if((!d.first_name||!d.last_name)&&(foundEmail||d.phone)){
     const leading=standaloneFullName(raw.split(/[,;\n]/u,1)[0]);
@@ -208,18 +235,16 @@ function absorbAIIntake(ai,raw,draft,stage,proactiveAvailability){
   }
   if(!draft.reason&&typeof ai.reason==='string'&&ai.reason.trim())draft.reason=text(ai.reason,500);
   if(!draft.reason)draft.reason=headacheConcern(raw);
-  if(!draft.availability&&typeof ai.availability==='string'&&ai.availability.trim())draft.availability=text(ai.availability,200);
+  if(draft.reason&&typeof ai.reason==='string'&&groundedReason(raw,ai.reason)&&ai.reason!==draft.reason){
+    const correction=/\b(?:actually|instead|correction|not .{0,30}but|eigentlich|stattdessen|korrektur|nicht .{0,30}sondern)\b/iu.test(raw);
+    const addition=/\b(?:also|as well|too|add|auch|zusätzlich|zusaetzlich|außerdem)\b/iu.test(raw);
+    if(correction)draft.reason=text(ai.reason,500);
+    else if(addition&&!draft.reason.toLocaleLowerCase().includes(ai.reason.toLocaleLowerCase()))draft.reason=[draft.reason,ai.reason].join('; ').slice(0,500);
+  }
+  if(typeof ai.availability==='string'&&ai.availability.trim()&&!raw.includes('?')&&groundedReason(raw,ai.availability))draft.availability=text(ai.availability,200);
 }
 function standaloneFullName(raw){
-  const clean=raw.trim().replace(/[.!]+$/u,'').trim();
-  const prefix=/^(?:my name is|ich heiße|ich heisse|mein name ist)\s+/iu;
-  const explicit=prefix.test(clean),parts=clean.replace(prefix,'').split(/\s+/u);
-  if(parts.length<2||parts.length>4||(!explicit&&/^(?:thank|thanks|danke|vielen|yes|no|not|please|hello|hi|hey|ich|i|my|can|could|what|where|when|why|how|wie|was|wann|wo|warum|kann|guten|good|okay|ok)$/iu.test(parts[0])))return null;
-  if(parts.some(part=>!/^[\p{L}\p{M}][\p{L}\p{M}.'’\-]*$/u.test(part)))return null;
-  if(!explicit&&parts.length>2&&parts.some(part=>part[0]!==part[0].toLocaleUpperCase()))return null;
-  let surnameStart=parts.length-1;
-  while(surnameStart>1&&/^(?:von|van|de|del|der|den|da|di|du|la|le|zu|zur)$/iu.test(parts[surnameStart-1]))surnameStart--;
-  try{return {first_name:name(parts.slice(0,surnameStart).join(' ')),last_name:name(parts.slice(surnameStart).join(' '))};}catch{return null;}
+  return fullName(raw);
 }
 function bundledFullName(raw){
   if(!contactEmail(raw)&&!/(?:\+\d|\b0)[\d ()/.-]{6,}\d/u.test(raw))return null;
@@ -234,15 +259,38 @@ function openingGivenName(raw){
   try{return {value:name(candidate),language:explicit?/^ich|^mein/iu.test(explicit[1])?'de':'en':null};}catch{return null;}
 }
 const acceptedStage=(draft,stage)=>stage==='name'?Boolean(draft.first_name&&draft.last_name):stage==='email'?Boolean(draft.email):stage==='phone'?Boolean(draft.phone):false;
-const contactAttempt=(raw,stage)=>stage==='name'?!raw.includes('?')&&raw.length<=100:stage==='email'?raw.includes('@'):stage==='phone'?/\d{3,}/u.test(raw):false;
+const contactAttempt=(raw,stage)=>stage==='name'?!raw.includes('?')&&raw.length<=100:stage==='email'?raw.includes('@'):stage==='phone'?/^(?:(?:my (?:phone|number) is|meine telefonnummer ist)\s+)?\+?\d(?:[\d ()/.-]*\d)?[.!?\s]*$/iu.test(raw.trim()):false;
+function contactOnly(raw,stage){
+  if(stage==='email')return emailValid(raw.trim());
+  if(stage!=='phone')return false;
+  const candidate=raw.trim().replace(/^(?:(?:my (?:phone(?: number)?|number) is|meine telefonnummer ist)\s+|(?:phone|telephone|telefon|telefonnummer)\s*:\s*)/iu,'').replace(/[.!?]+$/u,'').trim();
+  try{phone(candidate);return true;}catch{return false;}
+}
 const retryContact=(stage,lang)=>({name:localized(lang,'Bitte nennen Sie mir Ihren Vor- und Nachnamen.','Please send your first and last name.'),email:localized(lang,'Bitte geben Sie eine gültige E-Mail-Adresse ein.','Please enter a valid email address.'),phone:localized(lang,'Bitte geben Sie eine gültige Telefonnummer mit Vorwahl ein.','Please enter a valid phone number, including the country code.')})[stage]||'';
 function reasksAcceptedContact(answer,stage){
-  const field={name:/\b(?:name|surname|nachname|vorname|namen)\b/iu,email:/\b(?:e-?mail(?:\s+address)?|mailadresse)\b/iu,phone:/\b(?:phone|number|telefonnummer|rufnummer|handynummer)\b/iu}[stage];
+  const field={name:/\b(?:name|surname|nachnamen?|vornamen?|namen)\b/iu,email:/\b(?:e-?mail(?:\s+address)?|mailadresse)\b/iu,phone:/\b(?:phone|number|telefonnummer|rufnummer|handynummer)\b/iu}[stage];
   return Boolean(field&&answer.split(/(?<=[.!?])\s+/u).some(sentence=>field.test(sentence)&&/(?:\?|\b(?:please|provide|share|send|give|repeat|bitte|nennen|geben|schicken|wiederholen)\b)/iu.test(sentence)));
+}
+function withoutCollectedQuestions(answer,draft){
+  if(!draft.bookingApproved)return answer;
+  const supplied={name:Boolean(draft.first_name&&draft.last_name),email:Boolean(draft.email),phone:Boolean(draft.phone)};
+  return answer.split(/(?<=[.!?])\s+/u).filter(sentence=>{
+    const asksOwnDetail=/\b(?:your|ihren?|ihre|ihrer|Sie mir)\b/iu.test(sentence);
+    if(asksOwnDetail&&Object.entries(supplied).some(([field,known])=>known&&reasksAcceptedContact(sentence,field)))return false;
+    if(draft.reason&&/\?|\b(?:please|bitte)\b/iu.test(sentence)&&/\b(?:reason for your appointment|describe your (?:concern|symptoms)|Anlass.{0,25}Terminanfrage|beschreiben.{0,20}(?:Anliegen|Beschwerden))\b/iu.test(sentence))return false;
+    return true;
+  }).join(' ');
+}
+function withoutReceiptLanguageAcknowledgement(answer){
+  // The application confirms the validated preference once; keep other answers.
+  return answer.split(/(?<=[.!?])\s+/u).filter(sentence=>!(/\b(?:receipt|email copy|e-mail-kopie|mail-kopie)\b/iu.test(sentence)
+    &&/\b(?:English|German|Englisch|Deutsch)\b/iu.test(sentence)
+    &&/\b(?:will|should|noted|notiert|soll|erhalten|versendet)\b/iu.test(sentence)
+    &&!sentence.includes('?'))).join(' ');
 }
 function makeIntake(state,lang){
   const d=state.draft;
-  return {version:2,conversation_version:2,kind:'digital_reception',language:lang,first_name:d.first_name,last_name:d.last_name,email:d.email,phone:d.phone,request_type:'appointment_request',patient_status_claimed:d.patient_status||'unsure',preferred_contact:d.preferred_contact||'either',description:d.reason,availability_notes:d.availability,consent:true,review_confirmed:true,consent_version:'digital-reception-ai-2026-09',summary_source:'ai',initial_message_raw:state.messages.find(m=>m.role==='visitor')?.text||'',transcript:state.messages.map(m=>({role:m.role,text:m.text}))};
+  return {version:2,conversation_version:2,kind:'digital_reception',language:lang,...(d.receipt_language?{receipt_language:d.receipt_language}:{}),first_name:d.first_name,last_name:d.last_name,email:d.email,phone:d.phone,request_type:'appointment_request',patient_status_claimed:d.patient_status||'unsure',preferred_contact:d.preferred_contact||'either',description:d.reason,availability_notes:d.availability,consent:true,review_confirmed:true,consent_version:'digital-reception-ai-2026-09',summary_source:'ai',initial_message_raw:state.messages.find(m=>m.role==='visitor')?.text||'',transcript:state.messages.map(m=>({role:m.role,text:m.text}))};
 }
 const plain=(value,max=2500)=>String(value||'').replace(/<[^>]*>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim().slice(0,max);
 export function practiceHoursStatus(settings={},date=new Date()){
@@ -256,6 +304,8 @@ export function practiceHoursStatus(settings={},date=new Date()){
 }
 function declinesContact(raw,stage){
   if(!['name','email','phone'].includes(stage))return false;
+  // A preference for notifications is distinct from refusing a required detail.
+  if(contactPreference(raw)&&!/^(?:no|nein)\b|\b(?:share|provide|give|send|angeben|geben|nennen)\b/iu.test(raw))return false;
   const bareNo=/^(?:no|nein|rather not|lieber nicht)[.!?\s]*$/iu.test(raw);
   const target=stage==='phone'?/(?:phone|telephone|number|anruf|telefonnummer|handynummer)/iu:stage==='email'?/(?:email|e-?mail|mailadresse)/iu:/(?:name|identity|identität)/iu;
   const refusal=/\b(?:don't|do not|won't|will not|can't|cannot|prefer not|rather not|not comfortable|refuse|möchte nicht|will nicht|kann nicht|lieber nicht|keine)\b/iu.test(raw);
@@ -264,11 +314,6 @@ function declinesContact(raw,stage){
   const other=stage==='phone'?/(?:email|e-?mail)/iu:stage==='email'?/(?:phone|telephone|call|telefon)/iu:null;
   const alternative=stage==='phone'?/\b(?:email|e-?mail)\s+only\b|\b(?:only|just|prefer|rather|want(?: to be notified)?)\b.{0,35}\b(?:by|via|through|per)?\s*(?:email|e-?mail)\b|\b(?:nur|lieber)\s+(?:per\s+)?e-?mail\b/iu.test(raw):stage==='email'?/\b(?:phone|telephone|call)\s+only\b|\b(?:only|just|prefer|rather|want)\b.{0,35}\b(?:by|via|per)?\s*(?:phone|telephone|call)\b|\b(?:nur|lieber)\s+(?:per\s+)?telefon(?:isch)?\b/iu.test(raw):false;
   return bareNo||(refusal&&(target.test(raw)||pronoun||allContacts||other?.test(raw)))||alternative;
-}
-function contactPreference(raw){
-  if(/\b(?:don't|do not|won't|will not|keine|nicht)\b.{0,45}\b(?:notif\w*|contact\w*|benachrichtig\w*|kontakt\w*)\b.{0,25}(?:e-?mail)/iu.test(raw))return 'phone';
-  if(/\b(?:want|prefer|möchte|lieber)\b.{0,45}\b(?:notif\w*|contact\w*|benachrichtig\w*|kontakt\w*)\b.{0,25}(?:e-?mail)|\b(?:e-?mail)\s+only\b/iu.test(raw))return 'email';
-  return null;
 }
 const briefAcknowledgement=answer=>/^(?:(?:perfect|great|okay|ok|got it|sure|of course|perfekt|gut|verstanden)[,.!\s]*)?(?:(?:thank you|thanks|danke|vielen dank)[,.!\s]*)?$/iu.test(answer.trim());
 function contactAcknowledgement(stage,lang){
@@ -320,19 +365,26 @@ export function conversationFacts(content={}){
     specialisms:copy(content?.symptoms,['id','title','titleEn','intro','introEn','body','bodyEn']),
     team:copy(publishedTeam,['id','title','role','roleEn','qualifications','qualificationsEn','specialties','specialtiesEn','methods','methodsEn','career','careerEn','body','bodyEn'],1800),
     publishedTeamCounts:{profiles:publishedTeam.length,physiotherapists:publishedTeam.filter(person=>/\b(?:Physiotherapeut(?:in)?|Physiotherapist)\b/iu.test(`${person.role||''} ${person.roleEn||''}`)).length},
-    samplePrices:(content?.prices||[]).filter(x=>x.amount!==null&&x.amount!==''&&Number.isFinite(Number(x.amount))).slice(0,60).map(x=>({category:x.category,service:x.title,duration:x.duration,euro:Number(x.amount),details:x.details})),
+    samplePrices:(content?.prices||[]).filter(x=>x.amount!==null&&x.amount!==''&&Number.isFinite(Number(x.amount))).slice(0,60).map(x=>({category:x.category,service:x.title,...(x.titleEn?{serviceEn:x.titleEn}:{}),duration:x.duration,...(x.durationEn?{durationEn:x.durationEn}:{}),euro:Number(x.amount),details:x.details,...(x.detailsEn?{detailsEn:x.detailsEn}:{})})),
     promotions:copy((content?.prices||[]).filter(x=>x.amount===''||x.amount==null),['title','titleEn','duration','durationEn','details','detailsEn']),
     reimbursements:copy(content?.reimbursements,['title','titleEn','oegkk','bvaeb','kfa','svs','asOf']),
     reimbursementNotice:'Published reimbursement table is historical (default 04/2023), not treatment prices. Quote its date if giving a figure and ask the visitor to confirm current coverage with their insurer. Never guarantee reimbursement.',
     faqs:copy(content?.faqs,['title','titleEn','body','bodyEn']),
-    informationPages:copy(content?.pages,['id','title','titleEn','intro','introEn','body','bodyEn'],10000),
+    informationPages:copy((content?.pages||[]).map(page=>{
+      if(page.id!=='datenschutz')return page;
+      const localizedBody=(body,language)=>{const updated=replaceLegacyRetention(body,language);return updated.needsAppend?`${updated.body}\n\n${retentionCopy(language)}`:updated.body;};
+      return {...page,body:localizedBody(page.body,'de'),bodyEn:localizedBody(page.bodyEn,'en')};
+    }),['id','title','titleEn','intro','introEn','body','bodyEn'],10000),
+    requestRetention:plain(retentionCopy('de'),5000),requestRetentionEn:plain(retentionCopy('en'),5000),
     practiceStrengths:Object.fromEntries(Object.entries(strengths).map(([key,value])=>[key,Array.isArray(value)?value.slice(0,40).map(item=>plain(item,650)):plain(value,200)])),
     receptionPrivacy:'Digital receptionist uses OpenAI to process messages, saved concern and availability, and up to six recent messages with published practice facts. Recognized email and phone numbers are masked, not guaranteed anonymous. store:false is requested; provider security retention can still apply. Draft: browser tab and server memory up to 30 minutes; a server restart may end it. Only after visitor review and explicit submission are summary and transcript saved in Supabase. Reviewed request details are emailed through Resend to reception; the full transcript stays in Admin. An ordinary appointment form is available instead. No diagnosis, calendar access or appointment confirmation. Privacy information: /datenschutz#digitaler-empfang.',
     sitePages:chatPages(content)
   };
 }
 
-const minimize=raw=>raw.replace(/[^\s@]+@[^\s@]+\.[a-z]{2,63}/gi,'[email provided]').replace(/(?:\+?\d[\d ()-]{6,}\d)/g,'[phone provided]');
+const minimize=raw=>raw.replace(/[^\s@]+@[^\s@]+\.[a-z]{2,63}/gi,'[email provided]').replace(/(?:\+?\d[\d ()/.-]{6,}\d)/g,match=>{
+  try{phone(match);return '[phone provided]';}catch{return match;}
+});
 function languageFacts(value,lang){
   if(Array.isArray(value))return value.map(item=>languageFacts(item,lang));
   if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).filter(key=>!key.endsWith('En')).map(key=>[key,languageFacts(lang==='en'&&value[key+'En']?value[key+'En']:value[key],lang)]));
@@ -342,13 +394,11 @@ async function aiTurn(raw,lang,d,facts,fetcher,history=[],onUsage=()=>{},forcedL
   const minimized=minimize(raw);
   facts={...facts,sitePages:facts.sitePages||chatPages()};
   const schema={...responseSchema,properties:{...responseSchema.properties,related_pages:{...responseSchema.properties.related_pages,items:{type:'string',enum:facts.sitePages.map(page=>page.id)}}}};
-  const input={language:lang,forcedLanguage,currentStage:d._stage||nextSlot(d),awaitingBookingChoice:d._bookingChoice===true,knownDetails:{reason:d.reason?minimize(d.reason):null,availability:d.availability?minimize(d.availability):null,bookingApproved:d.bookingApproved===true},knownFields:Object.keys(d).filter(k=>!k.startsWith('_')&&Boolean(d[k])),publishedFacts:languageFacts(facts,lang),practiceNow:practiceHoursStatus(facts.openingHours),recentConversation:history.slice(-6).map(m=>({role:m.role,text:minimize(m.text)})),visitorMessage:minimized};
+  const input={language:lang,forcedLanguage,currentStage:d._stage||nextSlot(d),awaitingBookingChoice:d._bookingChoice===true,bookingChannelContext:d._bookingChannelContext===true,knownDetails:{reason:d.reason?minimize(d.reason):null,availability:d.availability?minimize(d.availability):null,bookingApproved:d.bookingApproved===true,receiptLanguage:d.receipt_language||null,preferredContact:d.preferred_contact||null},knownFields:Object.keys(d).filter(k=>!k.startsWith('_')&&Boolean(d[k])),publishedFacts:languageFacts(facts,lang),practiceNow:practiceHoursStatus(facts.openingHours),recentConversation:history.slice(-6).map(m=>({role:m.role,text:minimize(m.text)})),visitorMessage:minimized};
   const result=await fetcher('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,'Content-Type':'application/json'},signal:AbortSignal.timeout(12000),body:JSON.stringify({model:process.env.CHAT_CONVERSATION_MODEL||'gpt-6-luna',reasoning:{effort:'none'},store:false,max_output_tokens:650,instructions:CONVERSATION_PROMPT,input:JSON.stringify(input),text:{format:{type:'json_schema',name:'citypraxis_reception_turn',strict:true,schema}}})});
   if(!result.ok)throw new ChatError('ai_unavailable',503);
-  const payload=await result.json();onUsage(payload);if(payload.status!=='completed')throw new ChatError('ai_unavailable',503);
-  const blocks=payload.output?.flatMap(item=>item.content||[])||[];
-  if(blocks.some(b=>b.type==='refusal'))throw new ChatError('ai_unavailable',503);
-  let value;try{value=JSON.parse(blocks.filter(b=>b.type==='output_text').map(b=>b.text).join(''));}catch{throw new ChatError('ai_unavailable',503);}
+  const payload=await result.json();onUsage(payload);
+  const value=structuredResponse(payload);
   if(!Array.isArray(value?.related_pages)||value.related_pages.length>3||value.related_pages.some(id=>!facts.sitePages.some(page=>page.id===id)))throw new ChatError('ai_unavailable',503);
   if(!value||!responseSchema.properties.kind.enum.includes(value.kind)||!responseSchema.properties.input_language.enum.includes(value.input_language??'unclear')||typeof value.answer!=='string'||value.answer.length>1200||!['request','defer','unspecified'].includes(value.booking_intent)||!responseSchema.properties.booking_choice.enum.includes(value.booking_choice??'unspecified')||typeof value.needs_clarification!=='boolean'||['reason','availability','first_name','last_name'].some(k=>value[k]!==null&&(typeof value[k]!=='string'||value[k].length>650))||![null,'new','existing','unsure'].includes(value.patient_status))throw new ChatError('ai_unavailable',503);
   return value;
@@ -371,8 +421,8 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       if(path==='/api/chat/review-choice'){
         if(s.submitted)throw new ChatError('already_submitted',409);
         if(s.turns>=CONVERSATION_LIMIT)throw new ChatError('conversation_limit',429);
-        if(nextSlot(s.draft)!=='review')throw new ChatError('invalid_request');
-        const allowed={patient_status:['new','existing','unsure'],preferred_contact:['email','phone','either']};
+        if(nextSlot(s.draft)!=='review'||s.editSnapshot)throw new ChatError('invalid_request');
+        const allowed={patient_status:['new','existing','unsure'],preferred_contact:['email','phone','either'],receipt_language:['de','en']};
         if(!Object.hasOwn(allowed,body.field)||!allowed[body.field].includes(body.value))throw new ChatError('invalid_request');
         s.draft[body.field]=body.value;
         s.duplicateCandidateId=null;
@@ -382,11 +432,11 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       if(path==='/api/chat/edit'){
         if(s.submitted)throw new ChatError('already_submitted',409);
         if(s.turns>=CONVERSATION_LIMIT)throw new ChatError('conversation_limit',429);
-        if(nextSlot(s.draft)!=='review'||!['reason','name','email','phone','availability'].includes(body.field))throw new ChatError('invalid_request');
+        if(nextSlot(s.draft)!=='review'||s.editSnapshot||!['reason','name','email','phone','availability'].includes(body.field))throw new ChatError('invalid_request');
         s.editSnapshot={field:body.field,draft:{...s.draft}};
         s.duplicateCandidateId=null;
         if(body.field==='name'){delete s.draft.first_name;delete s.draft.last_name;}else delete s.draft[body.field];
-        s.editing=body.field==='availability'?'availability':null;
+        s.editing=body.field;
         s.lastTurn=null;const message=question(body.field,lang);s.messages.push({role:'assistant',text:message});json(200,{message,ready:false,turnsRemaining:CONVERSATION_LIMIT-s.turns,language:lang});return true;
       }
       if(path==='/api/chat/cancel-edit'){
@@ -397,10 +447,10 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         json(200,{ready:true,summary:summaryRows(makeIntake(s,lang),lang),turnsRemaining:CONVERSATION_LIMIT-s.turns,language:lang});return true;
       }
       if(path==='/api/chat/finish'){
-        if(s.submitted){json(200,{id:s.submitted,received:true,duplicate:true});return true;}
+        if(s.submitted){json(200,{...s.finishResponse,id:s.submitted,received:true,duplicate:true});return true;}
         if(s.cancelled){json(200,{cancelled:true,language:lang});return true;}
         if(body.confirmed!==true)throw new ChatError('consent_required');
-        if(nextSlot(s.draft)!=='review')throw new ChatError('invalid_request');
+        if(nextSlot(s.draft)!=='review'||s.editSnapshot)throw new ChatError('invalid_request');
         const intake=makeIntake(s,lang);
         const contact={email:intake.email,phone:intake.phone};
         const recent=matchingRecent(await store.recent(recentCutoff()),contact);
@@ -427,7 +477,8 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         if(result.created){await notifyRequest(result.row,store,fetcher);patientReceipt=await notifyPatient(result.row,fetcher);}
         let officeOpen=null;
         try{officeOpen=practiceHoursStatus((await getFacts()).openingHours).open;}catch{}
-        json(result.created?201:200,{id:result.row.id,received:true,duplicate:!result.created,updated:choice==='update',additional:choice==='new',officeOpen,patientReceipt,language:lang});return true;
+        s.finishResponse={id:result.row.id,received:true,duplicate:!result.created,updated:choice==='update',additional:choice==='new',officeOpen,patientReceipt,language:lang};
+        json(result.created?201:200,s.finishResponse);return true;
       }
       if(s.submitted)throw new ChatError('already_submitted',409);
       if(typeof body.turnKey!=='string'||! /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(body.turnKey))throw new ChatError('invalid_request');
@@ -435,12 +486,17 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       if(s.turns>=CONVERSATION_LIMIT)throw new ChatError('conversation_limit',429);
       if(!process.env.OPENAI_API_KEY||process.env.CHAT_AI_ENABLED!=='true')throw new ChatError('ai_unavailable',503);
       const raw=text(body.message,650,{required:true});
-      let forcedLanguage=clearMessageLanguage(raw)||(s.languageResolved?s.language:null);
+      let forcedLanguage=receiptLanguage(raw)&&s.languageResolved?s.language:clearMessageLanguage(raw)||(s.languageResolved?s.language:null);
       usage?.conversation(token.id);
       const signal=safetySignal(raw);
       if(signal==='emergency'){lang=emergencyLanguage(raw,lang);s.language=lang;json(200,{emergency:true,message:localized(lang,'Dieser Chat ist kein Notfalldienst. Bitte rufen Sie in Österreich 144 oder 112 an.','This chat is not an emergency service. In Austria, please call 144 or 112.'),language:lang});return true;}
       const booking=bookingMessage(raw);
-      const methodChoice=s.bookingChoicePrompted?bookingChoice(raw):null;
+      const directChoice=bookingChoice(raw,s.bookingChoiceOrder);
+      const bookingChannelContext=Boolean(s.bookingChoicePrompted||s.draft.contactFirst||s.draft.bookingApproved||s.draft.bookingDeclined);
+      let methodChoice=null;
+      if(explicitFormChoice(raw))methodChoice={kind:'form',language:directChoice?.language||clearMessageLanguage(raw)||(/\b(?:formular|online[ -]?formular|termin(?:anfrage)?formular|buchungsformular)\b/iu.test(raw)?'de':'en')};
+      else if(s.bookingChoicePrompted)methodChoice=directChoice;
+      else if(directChoice?.kind==='form'||directChoice?.kind==='chat'&&bookingChannelContext&&!shortAffirmation(raw))methodChoice={...directChoice,language:forcedLanguage||directChoice.language};
       const rememberedReason=s.editing==='reason'?null:s.draft.reason||earlierConcern(s.messages);
       const stage=s.editing||nextSlot({...s.draft,reason:rememberedReason}),proactiveAvailability=stage==='proceed'&&availabilityEnquiry(raw)&&!explicitBookingDecline(raw);s.turns++;limit(`conversation-session:${token.id}`,CONVERSATION_LIMIT);
       if(stage==='email'&&new Set([...raw.matchAll(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,63}\b/giu)].map(match=>match[0].toLowerCase())).size>1){
@@ -449,20 +505,22 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         const response={message,ready:false,summary:null,turnsRemaining:CONVERSATION_LIMIT-s.turns,limitReached:s.turns>=CONVERSATION_LIMIT,language:lang};
         s.lastTurn={key:body.turnKey,raw,response};json(200,response);return true;
       }
-      if(s.awaitingLanguage){
+      if(s.awaitingLanguage||selectedLanguage(raw)){
+        const wasAwaitingLanguage=s.awaitingLanguage;
         const chosen=selectedLanguage(raw);
         if(chosen){
           s.language=chosen;lang=chosen;s.languageResolved=true;s.awaitingLanguage=false;
           if(s.pendingLanguage){s.draft=s.pendingLanguage.draft;s.pendingClarification=s.pendingLanguage.clarification||null;s.pendingLanguage=null;}
-          const slot=nextSlot(s.draft);
+          const slot=s.editing||nextSlot(s.draft),ready=slot==='review';
           const hasContext=Boolean(s.draft.reason||s.draft.bookingApproved||s.draft.first_name||s.draft.email||s.draft.phone||s.draft.availability);
           const message=s.pendingClarification?clarificationMessage(lang,s.pendingClarification.booking):s.draft.bookingDeclined
             ?localized(lang,'Gerne, wir schreiben auf Deutsch weiter. Ich beantworte gern Ihre Fragen zur Praxis.','Of course, we can continue in English. I’m happy to answer your questions about the practice.')
-            :hasContext?contactSlots.has(slot)&&!s.contactPrompted?contactQuestion(s.draft,lang):question(slot,lang):localized(lang,'Gerne, wir schreiben auf Deutsch weiter. Bitte wiederholen Sie Ihre Frage.','Of course, we can continue in English. Please repeat your question.');
+            :s.bookingChoicePrompted?bookingChoiceQuestion(lang):ready?localized(lang,'Wir schreiben auf Deutsch weiter. Bitte prüfen Sie Ihre Anfrage unten.','We can continue in English. Please review your request below.'):hasContext?contactSlots.has(slot)&&!s.contactPrompted?contactQuestion(s.draft,lang):question(slot,lang):wasAwaitingLanguage?localized(lang,'Gerne, wir schreiben auf Deutsch weiter. Bitte wiederholen Sie Ihre Frage.','Of course, we can continue in English. Please repeat your question.'):localized(lang,'Gerne, wir schreiben auf Deutsch weiter. Wie kann ich Ihnen helfen?','Of course, we can continue in English. How can I help you?');
+          if(s.bookingChoicePrompted)s.bookingChoiceOrder=['chat','form'];
           if(hasContext&&contactSlots.has(slot)&&!s.draft.bookingDeclined)s.contactPrompted=true;
           s.awaitingBookingConfirmation=false;
           s.messages.push({role:'visitor',text:raw},{role:'assistant',text:message});
-          const response={message,ready:false,summary:null,clarification:s.pendingClarification?.booking?'booking':null,turnsRemaining:CONVERSATION_LIMIT-s.turns,limitReached:s.turns>=CONVERSATION_LIMIT,language:lang};
+          const response={message,ready,summary:ready?summaryRows(makeIntake(s,lang),lang):null,clarification:s.pendingClarification?.booking?'booking':null,turnsRemaining:CONVERSATION_LIMIT-s.turns,limitReached:s.turns>=CONVERSATION_LIMIT&&!ready,language:lang};
           s.lastTurn={key:body.turnKey,raw,response};json(200,response);return true;
         }
         // A rewritten sentence is a new message, not another language-selection answer.
@@ -475,7 +533,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
           s.pendingClarification=null;
           if(pending.reason&&!s.draft.reason)s.draft.reason=pending.reason;
           if(pending.availability&&!s.draft.availability)s.draft.availability=pending.availability;
-          s.draft.contactFirst=true;s.draft.bookingDeclined=false;s.bookingChoicePrompted=true;
+          s.draft.contactFirst=true;s.draft.bookingDeclined=false;s.bookingChoicePrompted=true;s.bookingChoiceOrder=['form','chat'];
           const message=bookingOptions(lang,s.draft);
           s.messages.push({role:'visitor',text:raw},{role:'assistant',text:message});
           const response={message,ready:false,summary:null,turnsRemaining:CONVERSATION_LIMIT-s.turns,limitReached:s.turns>=CONVERSATION_LIMIT,language:lang};
@@ -495,6 +553,11 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const draft={...s.draft};
       if(rememberedReason&&!draft.reason)draft.reason=rememberedReason;
       absorbContact(raw,draft,stage);
+      const patientStatus=selfReportedPatientStatus(raw);if(patientStatus)draft.patient_status=patientStatus;
+      const preferredContact=contactPreference(raw);if(preferredContact)draft.preferred_contact=preferredContact;
+      const requestedReceiptLanguage=receiptLanguage(raw);if(requestedReceiptLanguage)draft.receipt_language=requestedReceiptLanguage;
+      const reference=fieldReference(raw,stage,draft,s.fieldHistory,s.editSnapshot);
+      if(reference?.value)draft[reference.field]=reference.value;
       const submittedName=stage==='name'?(standaloneFullName(raw)||bundledFullName(raw)):null;
       if(submittedName)Object.assign(draft,submittedName);
       const earlyName=stage==='reason'&&s.messages.length<=2&&!s.bookingChoicePrompted?openingGivenName(raw):null;
@@ -505,16 +568,27 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       const staleAffirmation=stage==='proceed'&&s.draft.bookingDeclined&&!wasAwaitingBookingConfirmation&&shortAffirmation(raw);
       const ambiguousAfterClarification=stage==='proceed'&&s.draft.bookingDeclined&&wasAwaitingBookingConfirmation&&shortAffirmation(raw)&&!clearAffirmation(raw);
       const confirmedAfterClarification=stage==='proceed'&&s.draft.bookingDeclined&&wasAwaitingBookingConfirmation&&clearAffirmation(raw);
-      const declined=declinesContact(raw,stage)&&!draft[stage==='name'?'first_name':stage];
+      const formCorrection=requestedFormClauses(raw).length>0;
+      const declined=!formCorrection&&methodChoice?.kind!=='form'&&declinesContact(raw,stage)&&!draft[stage==='name'?'first_name':stage];
       const simpleGreeting=/^(?:hello|hi|hey|good morning|good afternoon|good evening|hallo|guten tag|guten morgen|guten abend|servus|grüß gott)[.!\s]*$/iu.test(raw);
       const directPageLink=pageFollowUp(raw,s.messages,lang);
       const simpleAppointment=booking?.kind==='request'||stage==='reason'&&/^(?:(?:i want|i need|i(?:'d| would) like|can i (?:book|make|request)|please (?:book|make)) (?:an? )?(?:appointment|booking)(?: (?:please|at (?:citypraxis|your (?:practice|praxis))))?|(?:ich möchte|ich brauche|ich hätte gerne|kann ich|bitte) (?:einen? )?(?:termin|ersttermin)(?: (?:bitte|vereinbaren|buchen))?)[.!\s]*$/iu.test(raw);
       const wasChoosingBooking=s.bookingChoicePrompted===true;
-      const continueInChat=wasChoosingBooking&&(methodChoice?.kind==='chat'||booking?.kind==='request');
-      const chooseForm=wasChoosingBooking&&methodChoice?.kind==='form';
+      const continueInChat=methodChoice?.kind==='chat'||wasChoosingBooking&&booking?.kind==='request';
+      const chooseForm=methodChoice?.kind==='form';
       // Keep the offer pending through practice questions until a choice or refusal resolves it.
       s.bookingChoicePrompted=wasChoosingBooking&&!continueInChat&&!chooseForm&&!explicitBookingDecline(raw);
-      if(declined){
+      if(chooseForm){
+        kind='practice_question';suppressFollowUp=true;
+        draft.bookingApproved=false;draft.bookingDeclined=true;s.bookingChoicePrompted=false;
+        answer=localized(lang,`Hier ist unser ${bookingFormLink(lang)}.`,`Here is our ${bookingFormLink(lang)}.`);
+      }else if(existingAppointmentChange(raw)){
+        facts=await getFacts();kind='practice_question';suppressFollowUp=true;
+        answer=localized(lang,`Für eine Änderung oder Absage Ihres bestehenden Termins wenden Sie sich bitte direkt an unser Empfangsteam${facts.phone?` unter ${facts.phone}`:''}${facts.email?` oder ${facts.email}`:''}. Das Team klärt die Änderung mit Ihnen.`,`To change or cancel your existing appointment, please contact our reception team directly${facts.phone?` at ${facts.phone}`:''}${facts.email?` or ${facts.email}`:''}. They can arrange the change with you.`);
+      }else if(reference){
+        if(reference.value)answer=localized(lang,'Ich verwende wieder Ihre zuvor genannte Angabe.','I’ll use the detail you provided earlier.');
+        else{clarificationRequested=true;answer=reference.field==='availability'?question('availability',lang):question(reference.field,lang);}
+      }else if(declined){
         draft.refusedContact=stage;
         draft.preferred_contact=contactPreference(raw)||draft.preferred_contact;
         let facts={};try{facts=await getFacts();}catch{}
@@ -526,15 +600,11 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       }else if(earlyName){
         if(earlyName.language){lang=earlyName.language;s.language=lang;}
         kind='greeting';answer=localized(lang,`Hallo, ${earlyName.value}! Wie kann ich Ihnen helfen?`,`Hello, ${earlyName.value}! How can I help you?`);
-      }else if(chooseForm){
-        kind='practice_question';suppressFollowUp=true;
-        draft.bookingApproved=false;draft.bookingDeclined=true;
-        answer=localized(lang,`Hier ist unser ${bookingFormLink(lang)}.`,`Here is our ${bookingFormLink(lang)}.`);
       }else if(continueInChat){
         draft.bookingApproved=true;draft.bookingDeclined=false;draft.contactFirst=true;
         answer=localized(lang,'Ich bereite Ihre Terminanfrage hier im Chat vor.','I can prepare your appointment request here in chat.');
       }else if(!draft.bookingApproved&&(booking?.kind==='method'||simpleAppointment&&!draft.reason)){
-        kind='practice_question';s.bookingChoicePrompted=true;suppressFollowUp=true;
+        kind='practice_question';s.bookingChoicePrompted=true;s.bookingChoiceOrder=['form','chat'];suppressFollowUp=true;
         draft.contactFirst=true;draft.bookingDeclined=false;
         answer=bookingOptions(lang,draft);
       }else if(simpleAppointment){
@@ -553,22 +623,23 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       }else if(stage==='proceed'&&(clearAffirmation(raw)||/^(?:let'?s (?:do it|make an appointment)|bitte)[.!\s]*$/iu.test(raw))){
         draft.bookingApproved=true;draft.bookingDeclined=false;
         answer=localized(lang,'Perfekt, danke.','Perfect, thank you.');
-      }else if(stage==='availability'){
+      }else if(stage==='availability'&&!raw.includes('?')){
         draft.availability=text(raw,200,{required:true});
         s.editing=null;
       }else if(submittedName){
         // A complete name at the name step does not need model interpretation.
       }else if(stage==='name'&&openingGivenName(raw)){
         answer=retryContact('name',lang);
-      }else if(stage==='phone'&&draft.phone&&!raw.includes('?')){
-        // A valid number is sufficient even when the visitor writes "my phone is …".
-      }else if(!((stage==='email'&&emailValid(raw))||(stage==='phone'&&draft.phone))){
+      }else if(stage==='phone'&&draft.phone&&contactOnly(raw,stage)){
+        // Skip interpretation only when the entire message is the contact value.
+      }else if(!contactOnly(raw,stage)){
         limit('conversation-ai-day',Math.max(1,Math.min(2000,Number(process.env.CHAT_AI_DAILY_LIMIT)||200)),86400000);
-        try{facts=await getFacts();ai=await aiTurn(raw,lang,{...draft,_stage:stage,_bookingChoice:wasChoosingBooking},facts,fetcher,s.messages,payload=>usage?.response(token.id,payload,process.env.CHAT_CONVERSATION_MODEL||'gpt-6-luna'),forcedLanguage);}catch(error){if(error instanceof ChatError)throw error;throw new ChatError('ai_unavailable',503);}
+        try{facts=await getFacts();ai=await aiTurn(raw,lang,{...draft,_stage:stage,_bookingChoice:wasChoosingBooking,_bookingChannelContext:bookingChannelContext},facts,fetcher,s.messages,payload=>usage?.response(token.id,payload,process.env.CHAT_CONVERSATION_MODEL||'gpt-6-luna'),forcedLanguage);}catch(error){if(error instanceof ChatError)throw error;throw new ChatError('ai_unavailable',503);}
         kind=ai.kind;answer=ai.answer.trim();
         if(kind==='emergency'){if(['de','en'].includes(ai.input_language)){lang=ai.input_language;s.language=lang;}json(200,{emergency:true,message:localized(lang,'Dieser Chat ist kein Notfalldienst. Bitte rufen Sie in Österreich 144 oder 112 an.','This chat is not an emergency service. In Austria, please call 144 or 112.'),language:lang});return true;}
         const clearBooking=explicitBookingAcceptance(raw);
-        const resolvedBookingChoice=wasChoosingBooking&&['chat','form','decline'].includes(ai.booking_choice);
+        const canResolveBookingChoice=wasChoosingBooking||bookingChannelContext&&!shortAffirmation(raw);
+        const resolvedBookingChoice=canResolveBookingChoice&&['chat','form','decline'].includes(ai.booking_choice);
         const ambiguous=ai.needs_clarification&&!contactSlots.has(stage)||['reason','proceed'].includes(stage)&&!draft.bookingApproved&&ai.kind==='appointment'&&ai.booking_intent==='request'&&bookingCue(raw)&&!clearBooking&&!proactiveAvailability&&!resolvedBookingChoice;
         const interpretation={booking:!wasChoosingBooking&&bookingCue(raw)&&(ai.booking_intent==='request'||/\b(?:need|want|möchte|mochte|brauche)\b/iu.test(raw)),reason:groundedReason(raw,ai.reason),availability:typeof ai.availability==='string'&&raw.toLocaleLowerCase().includes(ai.availability.toLocaleLowerCase())?text(ai.availability,200):null};
         if(['mixed','other'].includes(ai.input_language)&&!forcedLanguage){
@@ -585,7 +656,11 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         if(['de','en'].includes(ai.input_language)&&!forcedLanguage){lang=ai.input_language;s.language=lang;s.languageResolved=true;}
         if(ambiguous){
           s.pendingClarification=interpretation;
+          // An unclear booking intention does not invalidate independent,
+          // explicitly supplied and locally validated contact/status details.
+          for(const field of ['first_name','last_name','email','phone','patient_status'])if(draft[field])s.draft[field]=draft[field];
           const message=wasChoosingBooking?bookingChoiceQuestion(lang):clarificationMessage(lang,interpretation.booking);
+          if(wasChoosingBooking)s.bookingChoiceOrder=['chat','form'];
           s.messages.push({role:'visitor',text:raw},{role:'assistant',text:message});
           const response={message,ready:false,summary:null,clarification:interpretation.booking?'booking':null,turnsRemaining:CONVERSATION_LIMIT-s.turns,limitReached:s.turns>=CONVERSATION_LIMIT,language:lang};
           s.lastTurn={key:body.turnKey,raw,response};json(200,response);return true;
@@ -594,7 +669,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
           ai.booking_intent='unspecified';answer=localized(lang,'Nur zur Sicherheit: Möchten Sie jetzt eine neue Terminanfrage vorbereiten?','Just to confirm: would you like to start a new appointment request now?');
           clarificationRequested=true;s.awaitingBookingConfirmation=true;
         }
-        const semanticChoice=wasChoosingBooking?ai.booking_choice:null;
+        const semanticChoice=wasChoosingBooking||ai.booking_choice==='form'||ai.booking_choice==='chat'&&bookingChannelContext&&!shortAffirmation(raw)?ai.booking_choice:null;
         if(semanticChoice==='chat')ai.booking_intent='request';
         else if(semanticChoice==='form'||semanticChoice==='decline')ai.booking_intent='defer';
         else if(wasChoosingBooking&&!clearBooking){
@@ -620,7 +695,7 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
           kind=kind==='medical'?'medical':'appointment';
           if(!answer)answer=localized(lang,'Ich bereite Ihre Terminanfrage hier im Chat vor.','I can prepare your appointment request here in chat.');
         }else if(stage==='reason'&&kind==='appointment'&&(ai.booking_intent==='request'||clearBooking)){
-          if(!draft.reason){draft.bookingApproved=false;draft.bookingDeclined=false;draft.contactFirst=true;kind='practice_question';s.bookingChoicePrompted=true;suppressFollowUp=true;answer=bookingOptions(lang,draft);}
+          if(!draft.reason){draft.bookingApproved=false;draft.bookingDeclined=false;draft.contactFirst=true;kind='practice_question';s.bookingChoicePrompted=true;s.bookingChoiceOrder=['form','chat'];suppressFollowUp=true;answer=bookingOptions(lang,draft);}
         }
       }
       if(acceptedStage(draft,stage)&&['off_topic','compliment'].includes(kind)){kind='appointment';answer='';}
@@ -628,6 +703,14 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
       if(kind==='medical')answer=politeMedicalBoundary(answer||localized(lang,'Eine Physiotherapeutin oder ein Physiotherapeut aus unserem Team kann Ihr Anliegen persönlich beurteilen und die nächsten Schritte empfehlen.','One of our physiotherapists can assess this in person and recommend next steps.'),lang);
       if(kind==='off_topic')answer=localized(lang,'Ich beantworte gern Ihre Fragen zur Citypraxis, zu unseren Behandlungen, unserem Team oder zu Terminen. Wie kann ich Ihnen helfen?','I’m happy to answer questions about CityPraxis, our treatments, our team, or appointments. How can I help you?');
       if(kind==='compliment')answer=localized(lang,'Danke.','Thank you.');
+      if(requestedReceiptLanguage){
+        const receiptAck=localized(lang,`Wenn eine E-Mail-Kopie versendet wird, erhalten Sie diese auf ${requestedReceiptLanguage==='en'?'Englisch':'Deutsch'}. Wir können hier weiter auf ${lang==='en'?'Englisch':'Deutsch'} schreiben.`,`If an email copy is sent, it will be in ${requestedReceiptLanguage==='en'?'English':'German'}. We can continue chatting in ${lang==='en'?'English':'German'}.`);
+        answer=withoutReceiptLanguageAcknowledgement(answer);
+        answer=briefAcknowledgement(answer)?receiptAck:[receiptAck,answer].filter(Boolean).join(' ');
+      }else if(preferredContact){
+        const preferenceAck=localized(lang,`Ich habe ${preferredContact==='email'?'E-Mail':'Telefon'} als bevorzugten Kontakt vermerkt.`,`I’ve noted ${preferredContact==='email'?'email':'phone'} as your preferred contact.`);
+        answer=briefAcknowledgement(answer)?preferenceAck:[preferenceAck,answer].filter(Boolean).join(' ');
+      }
       if(!declined&&draft.refusedContact&&draft[draft.refusedContact==='name'?'first_name':draft.refusedContact])delete draft.refusedContact;
       if(!declined&&['appointment','practice_question','medical'].includes(kind)){
         const suppliedName=draft.first_name&&draft.last_name&&(!s.draft.first_name||!s.draft.last_name);
@@ -636,14 +719,20 @@ export function createConversationService({store,getFacts=async()=>({}),fetcher=
         }else if(briefAcknowledgement(answer)&&['email','phone','availability'].includes(stage))answer=contactAcknowledgement(stage,lang);
         else if(!answer&&['email','phone','availability'].includes(stage))answer=contactAcknowledgement(stage,lang);
       }
-      if(acceptedStage(draft,stage)&&reasksAcceptedContact(answer,stage))answer=stage==='name'?namedAcknowledgement(draft,lang):contactAcknowledgement(stage,lang);
-      if(['appointment','practice_question','medical'].includes(kind)||acceptedStage(draft,stage))s.draft=draft;
+      answer=withoutCollectedQuestions(answer,draft);
+      if(!answer&&acceptedStage(draft,stage))answer=stage==='name'?namedAcknowledgement(draft,lang):contactAcknowledgement(stage,lang);
+      const treatment=requestedTreatment(raw);
+      if(treatment&&!draft.reason?.toLocaleLowerCase().includes(treatment.toLocaleLowerCase()))draft.reason=[draft.reason,treatment].filter(Boolean).join('; ').slice(0,500);
+      if(['appointment','practice_question','medical'].includes(kind)||acceptedStage(draft,stage)){
+        rememberFields(s,s.draft,draft);s.draft=draft;
+      }
       if(s.draft.bookingApproved||s.draft.bookingDeclined)s.bookingChoicePrompted=false;
-      if(s.editSnapshot&&nextSlot(s.draft)==='review'){s.editSnapshot=null;s.editing=null;}
+      if(s.editSnapshot&&nextSlot(s.draft)==='review'&&(s.editSnapshot.field==='name'?Boolean(s.draft.first_name&&s.draft.last_name):Boolean(s.draft[s.editSnapshot.field]))){s.editSnapshot=null;s.editing=null;}
       if(!answer&&kind==='appointment')answer=localized(lang,'Perfekt, vielen Dank.','Perfect, thank you.');
       if(lang==='de')answer=polishGermanReply(answer,s.messages);
-      const slot=nextSlot(s.draft),ready=slot==='review';
-      const retry=stage===slot&&['name','email','phone'].includes(stage)&&!declined&&(contactAttempt(raw,stage)||briefAcknowledgement(answer)||/\b(?:thank|thanks|danke|got it|erhalten|notiert)\b/iu.test(answer));
+      const slot=s.editing||nextSlot(s.draft),ready=slot==='review';
+      const attemptedContact=contactAttempt(raw,stage)&&(stage!=='name'||!ai||ai.kind==='appointment');
+      const retry=stage===slot&&['name','email','phone'].includes(stage)&&!declined&&!suppressFollowUp&&!reference&&!preferredContact&&(stage!=='phone'||!contactEmail(raw))&&(attemptedContact||briefAcknowledgement(answer));
       if(retry)answer=retryContact(stage,lang);
       let followUp=clarificationRequested||suppressFollowUp?'':retry||['greeting','off_topic','compliment'].includes(kind)?'':ready?localized(lang,'Vielen Dank. Ihre Anfrage ist vorbereitet. Bitte prüfen Sie die Angaben unten. Nach dem Absenden meldet sich unser Sekretariat zur Terminvereinbarung.','Your request is ready to review below. Once you send it, our reception team will contact you to arrange an appointment. Thank you!'):s.draft.bookingDeclined||s.draft.refusedContact===slot?'':!s.draft.bookingApproved&&!s.draft.reason?'':slot==='proceed'&&s.bookingPrompted&&!proactiveAvailability?'':question(slot,lang);
       if(followUp&&contactSlots.has(slot)&&!s.contactPrompted&&!s.editSnapshot){followUp=contactQuestion(s.draft,lang);s.contactPrompted=true;}

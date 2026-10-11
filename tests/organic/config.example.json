@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "simulatorModel": "gpt-6-luna",
+  "judgeModel": "gpt-6.1-sol",
+  "budgetUsd": 1,
+  "maxRequests": 140,
+  "maxTotalTokens": 900000,
+  "maxRequestBytes": 120000,
+  "maxMinutes": 15,
+  "reportReserveSeconds": 60,
+  "maxPatientTurns": 14,
+  "parallel": 1,
+  "browserChannel": "chrome",
+  "publicFactsUrl": "https://citypraxis-wien.onrender.com/api/content",
+  "pricingSource": "https://developers.openai.com/api/docs/pricing",
+  "pricingCheckedAt": "2026-10-10",
+  "ratesPerMillion": {
+    "gpt-6-luna": {"input": 0.1, "cached": 0.01, "cacheWrite": 0.125, "output": 0.5, "boundInput": 0.2, "boundWrite": 0.25, "boundOutput": 0.75},
+    "gpt-6.1-sol": {"input": 2, "cached": 0.1, "cacheWrite": 2.5, "output": 10, "boundInput": 4, "boundWrite": 5, "boundOutput": 15}
+  }
+}
