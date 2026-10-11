@@ -20,3 +20,12 @@ test('contact references do not bypass current UI affordances or send authorizat
 test('fixed phone refusal remains enforced even with public email references',()=>{
  assert.equal(valid(message('info@citypraxis.wien '+p.phone),v,p,['info@citypraxis.wien']),false);
 });
+
+test('duplicate controls require the real offered choice and submission authorization',()=>{
+ const offered={availableActions:[{action:'duplicate',values:['update','new','cancel']}]};
+ assert.equal(valid({action:'duplicate',value:'new'},offered,p),false);
+ assert.equal(valid({action:'duplicate',value:'cancel'},offered,p),true);
+ assert.equal(valid({action:'duplicate',value:'new'},offered,{...p,wantsSubmit:true,refusePhone:false}),true);
+ assert.equal(valid({action:'duplicate',value:'other'},offered,{...p,wantsSubmit:true,refusePhone:false}),false);
+ assert.equal(valid({action:'duplicate',value:'new'},v,{...p,wantsSubmit:true,refusePhone:false}),false);
+});

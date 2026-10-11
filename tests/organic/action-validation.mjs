@@ -12,5 +12,6 @@ export function validPatientAction(a,v,p,publicEmails=[]){
  if(a.action==='edit'&&!option.fields.includes(a.field))return false;
  if(a.action==='choice'&&!option.fields[a.field]?.includes(a.value))return false;
  if(a.action==='submit'&&(!p.wantsSubmit||p.refusePhone))return false;
+ if(a.action==='duplicate'&&(!option.values.includes(a.value)||a.value!=='cancel'&&(!p.wantsSubmit||p.refusePhone)))return false;
  return true;
 }

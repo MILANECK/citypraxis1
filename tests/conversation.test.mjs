@@ -164,7 +164,8 @@ test('invalid and conflicting contact details stay in validation rather than gue
   try{
     await turn('I want an appointment');await turn('continue here');await turn('Anna Novak');
     const invalid=await turn('anna@');
-    assert.equal(invalid.message,'Please enter a valid email address.');
+    assert.equal(invalid.ready,false);
+    assert.match(invalid.message,/start of the email address.*domain/u);
     const conflict=await turn('anna@example.test or anna@other.test');
     assert.match(conflict.message,/Which one should we use/i);
     assert.equal(conflict.ready,false);
@@ -659,7 +660,7 @@ test('contact intake advances only after a detail is saved and never thanks for 
     const completed=await turn('+43 699 12682157?');
     assert.equal(completed.ready,true);
     assert.deepEqual(completed.summary.find(([key])=>key==='Phone'),['Phone','+4369912682157']);
-    const local=newSession();await turn('I want an appointment',local);await turn('Shoulder pain',local);await turn('yes please',local);await turn('Anna Kovač',local);await turn('anna@example.test',local);
+    const local=newSession();await turn('I want an appointment',local);await turn('Shoulder pain',local);await turn('I want to continue here in chat',local);await turn('Anna Kovač',local);await turn('anna@example.test',local);
     const localNumber=await turn('699 12682157',local);
     assert.equal(localNumber.ready,true);
     assert.deepEqual(localNumber.summary.find(([key])=>key==='Phone'),['Phone','+4369912682157']);

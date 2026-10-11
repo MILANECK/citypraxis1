@@ -28,7 +28,7 @@ test('recent chatbot requests offer update, additional appointment or cancellati
     const token=newSession();
     await turn(token,'I want an appointment');
     await turn(token,reason);
-    await turn(token,'yes');
+    await turn(token,'I want to continue here in chat');
     await turn(token,name);
     await turn(token,email);
     assert.equal((await turn(token,phone)).ready,true);

@@ -8,7 +8,7 @@ export function fullName(raw,{explicit=false}={}){
   explicit ||= namePrefix.test(clean);
   const parts=clean.replace(namePrefix,'').split(/\s+/u);
   if(parts.length<2||parts.length>6)return null;
-  if(/^(?:thank|thanks|danke|vielen|yes|no|not|please|hello|hi|hey|ich|i|my|can|could|what|where|when|why|how|wie|was|wann|wo|warum|kann|guten|good|okay|ok|email|phone|telefon|flexible|flexibel|same|previous|auf|in)$/iu.test(parts[0]))return null;
+  if(/^(?:thank|thanks|danke|vielen|yes|no|not|please|hello|hi|hey|ich|i|my|can|could|what|where|when|why|how|wie|was|wann|wo|warum|kann|guten|good|okay|ok|email|e-mail|mail|phone|telefon|flexible|flexibel|same|previous|auf|in)$/iu.test(parts[0]))return null;
   if(parts.some(part=>!/^[\p{L}\p{M}][\p{L}\p{M}.'’\-]*$/u.test(part)||/^(?:and|und|because|since|want|need|have|am|bin|möchte|habe|bitte|please)$/iu.test(part)))return null;
   if(!explicit&&parts.length>2&&parts.some(part=>!particles.test(part)&&!titles.test(part)&&part[0]!==part[0].toLocaleUpperCase()))return null;
   let surnameStart=parts.length-1;
@@ -35,6 +35,8 @@ export function nameSegment(raw){
 }
 export function selfReportedPatientStatus(raw){
   if(/^\s*(?:if|wenn|suppose|angenommen)\b/iu.test(raw))return null;
+  // A common transposition in an explicit self-report is not a guessed status.
+  raw=raw.replace(/\b(my|mein(?:e|en|er)?)\s+frist\s+(visit|appointment|Besuch|Termin)\b/giu,'$1 first $2');
   if(/\b(?:(?:es|das|dies|dieses) (?:ist|wäre|waere) mein erste[rsn]? (?:besuch|termin)|ich (?:komme|bin) (?:hier |bei ihnen )?zum ersten mal)\b/iu.test(raw))return 'new';
   if(/(?:^|[,;])\s*(?:first visit|new patient|erstbesuch|ersttermin|zum ersten mal)(?=\s*[,;.]|\s*$)/iu.test(raw)||/\bbin (?:no|noch) (?:ned|net|nicht) bei euch (?:gwesn|gewesen)\b/iu.test(raw))return 'new';
   if(/\b(?:i(?:'m| am) not sure|ich bin (?:mir )?nicht sicher)\b.{0,70}\b(?:patient|treated|been here|behandlung|bei ihnen)\b/iu.test(raw))return 'unsure';
@@ -43,18 +45,20 @@ export function selfReportedPatientStatus(raw){
   return null;
 }
 export function receiptLanguage(raw){
-  const preference=/\b(?:email|e-mail|mail|receipt|copy|confirmation|bestätigung|bestaetigung|kopie)\b[^.;!?]{0,65}?\b(?:in|auf)\s+(english|german|englisch|deutsch)\b/iu.exec(raw)
+  const preference=/\b(?:email|e-mail|mail|receipt|copy|confirmation|bestätigung|bestaetigung|kopie)\b[^.;!?]{0,65}?\b(?:in|to|auf)\s+(english|german|englisch|deutsch)\b/iu.exec(raw)
     ||/\b(english|german|englische?|deutsche?)\b.{0,20}(?:mail|receipt|copy|bestätigung|kopie)/iu.exec(raw);
   if(!preference||/\b(?:not|nicht|keine?)\b.{0,15}\b(?:english|german|englisch|deutsch)/iu.test(preference[0]))return null;
   return /^(?:english|englisch)/iu.test(preference[1])?'en':'de';
 }
 export function contactPreference(raw){
+  const changed=/\b(?:change|switch|ändern|umstellen)\b.{0,70}\b(?:to|auf)\s+(?:contact by |per |by )?(e-?mail|phone|telephone|Telefon)\b/iu.exec(raw);
+  if(changed&&!/\b(?:don't|don’t|do not|nicht)\b/iu.test(changed[0]))return /^e-?mail$/iu.test(changed[1])?'email':'phone';
   const method=/(?:\b(?:e-?mail)\s+only\b|\b(?:only|prefer|rather|lieber|nur)\b.{0,45}\be-?mail\b)|\b(?:contact|notify|notified|reach|kontaktieren|benachrichtig\w*|erreichen)\b.{0,30}\b(?:by|via|per)?\s*e-?mail\b/iu.test(raw)?'email':/\b(?:prefer|rather|lieber|nur)\b.{0,45}\b(?:phone|telephone|call|telefon\w*|anruf)\b|\b(?:contact|notify|notified|reach|kontaktieren|benachrichtig\w*|erreichen)\b.{0,30}\b(?:by|via|per)?\s*(?:phone|telephone|call|telefon\w*)\b/iu.test(raw)?'phone':null;
   if(/\b(?:don't|do not|won't|will not|keine|nicht)\b.{0,45}\b(?:notif\w*|contact\w*|benachrichtig\w*|kontakt\w*)\b.{0,25}(?:e-?mail)/iu.test(raw))return 'phone';
   return method;
 }
 export function requestedTreatment(raw){
-  if(!/\b(?:i(?:['’]d| would)? (?:like|want|need|request|am looking for)|i['’]m looking for|ich (?:möchte|moechte|will|brauche|hätte gerne|haette gerne|suche)|bitte (?:um )?eine?)\b/iu.test(raw))return null;
+  if(!/\b(?:i(?:['’]d| would)? (?:like|want|need|request|am looking for)|i['’]m looking for|(?:she|he|the patient) (?:needs|wants|requests)|ich (?:möchte|moechte|will|brauche|hätte gerne|haette gerne|suche)|(?:sie|er|die Patientin|der Patient) (?:braucht|möchte|wünscht)|bitte (?:um )?eine?)\b/iu.test(raw))return null;
   if(/\b(?:not|don't|do not|kein\w*|nicht|instead of|statt)\b.{0,25}\b(?:physio\w*|osteopath\w*|massage|speech|logop\w*)/iu.test(raw))return null;
   return /\b(?:physiotherap\w*|physio|osteopath\w*|(?:therapeutic |heil)?massage|speech(?: and language)? therapy|logopädie|logopaedie)\b/iu.exec(raw)?.[0]||null;
 }

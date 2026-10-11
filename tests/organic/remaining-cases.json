@@ -1,0 +1,268 @@
+[
+  {
+    "id": "RR-01-DE",
+    "family": "availability-instructions",
+    "language": "de",
+    "wantsSubmit": true,
+    "goal": "Prepare an appointment request for physiotherapy for back discomfort, first visit, with your fixed name/email/phone. Follow actual questions and choose chat. At review edit availability. Say exactly: Meine Telefonnummer und mein gewünschter Tag müssten geändert werden. Do not let that instruction be saved as availability. When asked, supply replacement phone +12025550199 and Thursday after 17:00 (Donnerstag nach 17 Uhr). Read the actual summary. Submit only if the phone was changed and the availability is a concrete Thursday preference, with all other data preserved. Stop rather than manually rescuing a failed edit instruction. The weekday is correctly recorded inside the Availability note row (for example Thursday after 17:00); a separate preferred-day row is not required."
+  },
+  {
+    "id": "RR-01-EN",
+    "family": "availability-instructions",
+    "language": "en",
+    "wantsSubmit": true,
+    "goal": "Prepare an appointment request for physiotherapy for back discomfort, first visit, using your fixed name/email/phone. At actual review edit availability. Say exactly: I need to change my phone number and my preferred day. When the bot asks, provide replacement phone +12025550199 and Thursday after 17:00. Submit only if the summary has both corrected values. Stop if the bot stores your instruction as availability or ignores one of the changes; do not rescue it through more edit buttons. The weekday is correctly recorded inside the Availability note row (for example Thursday after 17:00); a separate preferred-day row is not required."
+  },
+  {
+    "id": "RR-02-DE",
+    "family": "dictation-correction",
+    "language": "de",
+    "wantsSubmit": true,
+    "goal": "Prepare an appointment request with your fixed contact data and physiotherapy for back discomfort. At review edit availability. Say exactly: am Dienstag ach nein Donnerstag meinte ich nach fünf. Read the reply and summary: the retracted Tuesday must not remain as your preferred day. If the bot specifically asks whether five means 17:00, confirm it naturally. Submit only if Thursday after 17:00 is the operative preference. Do not retype the full corrected value if it merely copies your dictation. Judge the operative weekday/time by meaning; wording such as I mean after 17:00 on Thursday is correct when the retracted Tuesday is absent. Do not reject semantically correct phrasing merely because its order differs."
+  },
+  {
+    "id": "RR-02-EN",
+    "family": "dictation-correction",
+    "language": "en",
+    "wantsSubmit": true,
+    "goal": "Prepare an appointment request with your fixed contact data and physiotherapy for back discomfort. At review edit availability. Say exactly: Tuesday no sorry Thursday after five. If the bot asks whether five means 17:00, confirm naturally. Read the summary; it should use Thursday after 17:00 without Tuesday or the correction instruction. Submit only if correct; do not retype the full corrected value to rescue a failed interpretation. Judge the operative weekday/time by meaning; wording such as I mean after 17:00 on Thursday is correct when the retracted Tuesday is absent. Do not reject semantically correct phrasing merely because its order differs."
+  },
+  {
+    "id": "RR-03-DE",
+    "family": "fragmented-email",
+    "language": "de",
+    "wantsSubmit": true,
+    "goal": "Prepare a physiotherapy appointment request. Choose chat and give your fixed full name. When email is requested, say exactly: mail ist. In your NEXT message supply only the local part of your persona email including @, with no domain. In your next message supply only organic.example.test. These are your deliberate fragmented messages; read each actual reply before sending the next fragment. The bot must combine the two unambiguous email fragments and must not replace your name with mail ist. Supply remaining details when asked. Submit only if name and combined email are correct, without retyping a full address to rescue it."
+  },
+  {
+    "id": "RR-03-EN",
+    "family": "fragmented-email",
+    "language": "en",
+    "wantsSubmit": true,
+    "goal": "Prepare a physiotherapy appointment request. Choose chat and give your fixed full name. When email is requested, say exactly: my email is. In your NEXT message supply only the local part of your persona email including @, with no domain. In your next message supply only organic.example.test. Read the actual replies each time. The bot should combine the fragments, preserving your actual name. Supply remaining details when asked. Submit only with the correct combined email; do not rescue it by repeating the full address."
+  },
+  {
+    "id": "RR-04-DE",
+    "family": "proxy-identity",
+    "language": "de",
+    "wantsSubmit": true,
+    "goal": "Prepare an appointment request. Initially give your own full name from the persona as sender when contact details are requested. Then say: Die Anfrage ist für meine Mutter. Die Patientin heißt Mara Fiktiva, die E-Mail und Telefonnummer gehören mir. Your persona email/phone are yours as sender. Give them when asked and request physiotherapy for your mother's back discomfort. Check that the actual summary identifies Mara Fiktiva as patient, retains your sender identity and ownership of the contacts, and never addresses you as Mara. Submit only if all that is visible. Do not repair a wrong patient name manually."
+  },
+  {
+    "id": "RR-04-EN",
+    "family": "proxy-identity",
+    "language": "en",
+    "wantsSubmit": true,
+    "goal": "Prepare an appointment request. Initially give your own fixed full name as sender when asked. Then say: This request is for my mother; the patient is Mara Fiktiva and the email and phone are mine. Give your own persona email and phone when asked. Request physiotherapy for her back discomfort. Check the actual summary identifies Mara Fiktiva as patient and preserves your sender identity and contact ownership. The bot must not address you as Mara. Submit only if correct; do not manually repair a mistaken patient name."
+  },
+  {
+    "id": "RR-05-DE",
+    "family": "pause-resume",
+    "language": "de",
+    "wantsSubmit": true,
+    "goal": "Prepare a physiotherapy request, giving name and email when asked. When the bot asks for phone, say exactly: Einen Moment bitte, ich brauche eine Pause. Bitte noch nichts senden. Read the reply: it should acknowledge and wait without repeating the phone question immediately. Then say: Okay, wir können weitermachen. Follow the real reply and give your phone. Submit the correct summary only after you have resumed."
+  },
+  {
+    "id": "RR-05-EN",
+    "family": "pause-resume",
+    "language": "en",
+    "wantsSubmit": true,
+    "goal": "Prepare a physiotherapy request, giving name and email. When phone is requested say exactly: Please pause for a moment. Don't send anything yet. Read the reply: it should acknowledge and wait without immediately asking another intake question. Then say: I'm ready to continue now. Give the phone after the real resumed reply. Submit only the correct review after resuming."
+  },
+  {
+    "id": "RR-06-DE",
+    "family": "selective-deletion",
+    "language": "de",
+    "wantsSubmit": false,
+    "goal": "Prepare a physiotherapy request using your fixed contacts and Friday after 17:00 availability. At review select availability edit and say: Freitag vergessen, den Rest behalten; noch nicht senden. The optional Friday note should be removed while all other details remain. Read the actual summary/reply and stop without submitting. Do not accept the literal deletion instruction as availability and do not re-enter flexible to rescue it."
+  },
+  {
+    "id": "RR-06-EN",
+    "family": "selective-deletion",
+    "language": "en",
+    "wantsSubmit": false,
+    "goal": "Prepare a physiotherapy request using your fixed contacts and Friday after 17:00 availability. At review select availability edit and say exactly: forget Friday, keep the rest; don’t send yet. The Friday availability note should disappear and all other details should remain. Read the reply/summary then stop without sending. Do not rescue a literal copied deletion instruction by providing a different availability."
+  },
+  {
+    "id": "RR-07-DE",
+    "family": "day-time-edits",
+    "language": "de",
+    "wantsSubmit": true,
+    "goal": "Prepare a physiotherapy request with Thursday after 17 Uhr as availability. At review edit availability and say: gleicher Tag, aber nach 18 statt 17 Uhr. Check it keeps Thursday and changes to after 18:00. Then edit availability once more and say: Freitag statt Donnerstag, die Uhrzeit bleibt gleich. Check Friday after 18:00, no rejected day or unresolved reference. Submit only if correct; stop if the bot copies the relative instruction literally."
+  },
+  {
+    "id": "RR-07-EN",
+    "family": "day-time-edits",
+    "language": "en",
+    "wantsSubmit": true,
+    "goal": "Prepare a physiotherapy request with Thursday after 17:00 availability. At review edit availability and say: same day, but after 18:00 instead of 17:00. Check it keeps Thursday and changes to after 18:00. Then edit once more and say: Friday instead of Thursday, keep the same time. Check Friday after 18:00 without rejected day or unresolved references. Submit only if correct; do not manually restate the complete preference."
+  },
+  {
+    "id": "RR-08-DE",
+    "family": "missing-fields-detour",
+    "language": "de",
+    "wantsSubmit": true,
+    "goal": "Prepare a request and choose chat. Give name/email and request physiotherapy for back discomfort, but do not give phone yet. When phone is requested ask: Welche Behandlungen bieten Sie an? Read the real answer, then say exactly: okay thanks; und was braucht ihr noch? The bot should continue in German and identify the missing phone without asking to rephrase or restarting channel choice. Then supply phone and submit the correct summary."
+  },
+  {
+    "id": "RR-08-EN",
+    "family": "missing-fields-detour",
+    "language": "en",
+    "wantsSubmit": true,
+    "goal": "Prepare a request and choose chat. Give name/email and ask for physiotherapy for back discomfort, without phone yet. When phone is requested ask: What treatments do you offer? Read the real answer and then say exactly: okay danke; what else do you need from me? It should continue in English and identify missing phone without requiring a rephrase or repeating form/chat choice. Give phone and submit the correct summary."
+  },
+  {
+    "id": "RR-09-DE",
+    "family": "information-only-process",
+    "language": "de",
+    "wantsSubmit": false,
+    "goal": "Only gather information, never start intake or give contacts. Start with: Ich möchte nur Informationen: Wie funktioniert eine Terminanfrage und was passiert danach? Read the answer. Ask: Wie kontaktiert mich der Empfang danach und wer legt den Termin fest? Then ask: Welche Behandlungen bieten Sie allgemein an? Stop after those factual answers. The bot should answer directly rather than ask for your name or require starting a request."
+  },
+  {
+    "id": "RR-09-EN",
+    "family": "information-only-process",
+    "language": "en",
+    "wantsSubmit": false,
+    "goal": "Only gather information; never start intake or supply contacts. Start: I only want information: how does an appointment request work and what happens afterwards? Read the reply. Ask: How does reception contact me afterwards and who sets the appointment date? Then ask: What treatments do you offer in general? Stop after the factual answers. It should answer without asking your name or requiring you to start a request."
+  },
+  {
+    "id": "RR-10-DE",
+    "family": "published-fact-scope",
+    "language": "de",
+    "wantsSubmit": false,
+    "goal": "Only ask factual questions, never supply patient data. Ask how long the team's first physiotherapy appointment lasts and its price. After reading the reply ask whether late cancellation and moving an appointment have the same fee and whether that policy is published. Then ask whether the April 2023 reimbursement table is separate from treatment prices and whether it guarantees today's insurance reimbursement. The bot must answer from published facts and distinguish unspecified policies from known facts. Stop after the answers."
+  },
+  {
+    "id": "RR-10-EN",
+    "family": "published-fact-scope",
+    "language": "en",
+    "wantsSubmit": false,
+    "goal": "Only ask factual questions. Start: How long is the first physiotherapy appointment with the team and what does it cost? After reading the reply ask: Is the late cancellation fee also charged for rescheduling, and is that policy published? Then ask: Is the April 2023 reimbursement table separate from treatment prices, and does it guarantee my insurer's reimbursement today? No intake or contacts. Stop after factual answers which distinguish known prices from unspecified rescheduling policy."
+  },
+  {
+    "id": "RR-11-DE",
+    "family": "privacy-and-strengths",
+    "language": "de",
+    "wantsSubmit": false,
+    "goal": "Only gather information, no contacts or request. Ask: Warum ist Citypraxis die richtige Wahl, was sind Ihre Stärken? Read the positive fact-based answer. Then ask: Werden meine Kontaktdaten vor dem KI-Aufruf maskiert und bleibt der gespeicherte Antrag trotzdem vollständig? Read it and ask: Wann werden eingesendete Anfragen gelöscht, ist das automatisch? Read the answer and stop. No individual medical recommendation, no Saturday-hours dispute."
+  },
+  {
+    "id": "RR-11-EN",
+    "family": "privacy-and-strengths",
+    "language": "en",
+    "wantsSubmit": false,
+    "goal": "Only gather information. Start: What makes Citypraxis special and why should I choose you rather than another practice? Read it. Ask: Are contact details masked before sending them to the AI, and does the saved request still contain my actual contacts? Read it. Ask: When are submitted requests deleted and is deletion automatic? Stop after the factual answers. No patient data, no individual medical recommendation, no Saturday-hours dispute."
+  },
+  {
+    "id": "RR-12-DE",
+    "family": "ambiguous-channel",
+    "language": "de",
+    "wantsSubmit": false,
+    "goal": "Start with Ich möchte einen Termin. When the actual bot offers the form and chat as two alternatives, answer only ja. It should clarify which alternative you mean, without silently starting contact collection. After its real clarification choose Ich möchte hier im Chat weitermachen. Read the next question, then decide to use the form instead and say Bitte schicken Sie mir das Formular, ich will die Angaben selbst ausfüllen. Stop with the form link and no contact collection or submission."
+  },
+  {
+    "id": "RR-12-EN",
+    "family": "ambiguous-channel",
+    "language": "en",
+    "wantsSubmit": false,
+    "goal": "Start with I would like an appointment. When it offers website form and chat as two alternatives, answer only yes. It should clarify which alternative rather than start contacts. After the actual clarification choose I want to continue here in chat. Read the next question, then choose the form instead: Please send me the form, I want to fill it in myself. Stop once it gives the form link, without contacts or submission."
+  },
+  {
+    "id": "RR-13-DE",
+    "family": "partial-summary",
+    "language": "de",
+    "wantsSubmit": true,
+    "goal": "Bereiten Sie eine Erstterminanfrage für Physiotherapie wegen Rückenbeschwerden vor. Name und E-Mail angeben, Telefonnummer noch nicht. Donnerstag nach 17 Uhr nennen. Vor der Telefonnummer fragen: Bitte zuerst zusammenfassen, nicht senden. Prüfen Sie, dass Name, E-Mail, Anliegen, Therapie und Verfügbarkeit genannt werden und die Telefonnummer als fehlend erkennbar bleibt. Dann bewusst weitermachen und Telefonnummer geben; erst nach vollständiger Prüfung absenden."
+  },
+  {
+    "id": "RR-14-DE",
+    "family": "ambiguous-cancellation",
+    "language": "de",
+    "wantsSubmit": false,
+    "goal": "Beginnen Sie mit Ich habe schon einen Termin und möchte noch eine neue Anfrage hier vorbereiten. Nach der echten Antwort sagen Sie das bitte absagen. Der Bot soll klären, ob die neue Anfrage oder der bestehende Termin gemeint ist. Dann klarstellen: Ich meine meinen bestehenden Termin absagen. Empfangskontakt erwarten, keine neue Anfrage oder behauptete Terminabsage. Dann beenden. Your ambiguous probe must be used verbatim once (cancel that please / das bitte absagen); do not replace it with a specific cancellation before that clarification is tested."
+  },
+  {
+    "id": "RR-15-DE",
+    "family": "team-benefit-follow-up",
+    "language": "de",
+    "wantsSubmit": false,
+    "goal": "Nur Informationen sammeln. Fragen Sie, warum das Citypraxis-Team eine gute Wahl ist, über eine Liste der Behandlungen hinaus. Nach der echten Antwort nachfragen, welchen praktischen Nutzen eine genannte Qualifikation oder Spezialausbildung für die Arbeitsweise bietet. Erwarten Sie belegbare Erklärung, keine gleiche Therapieliste, Ergebnisgarantie oder Therapeutenzuweisung. Danach beenden."
+  },
+  {
+    "id": "RR-16-DE",
+    "family": "existing-appointment-handoff",
+    "language": "de",
+    "wantsSubmit": false,
+    "goal": "Fragen Sie Ich möchte meinen bestehenden Termin verschieben. Nach der Weiterleitung fragen Sie, ob der Chatbot den Termin schon geändert hat. Erwarten Sie ehrliche Erklärung ohne Kalenderänderung und Empfangskontakt, keine neue Terminanfrage. Beenden."
+  },
+  {
+    "id": "RR-17-DE",
+    "family": "imperfect-bundled-intake",
+    "language": "de",
+    "wantsSubmit": true,
+    "goal": "Termin anfragen und nach dem echten Angebot Chat wählen. Wenn nach Angaben gefragt wird, eine Nachricht mit Ihrem festen Namen, E-Mail und Telefon senden, dazu: das ist mein erster Besuch, ich möchte Physiotherapie für meinen Rücken und next week preferably nach 17 Uhr. Wenn der Bot einen Sprachwechsel benötigt, Deutsch wählen, ohne die Angaben zu wiederholen. Prüfen, dass Erstbesuch, Therapiewunsch und Zeit erhalten sind. Nur korrekt absenden, Fehler nicht manuell retten."
+  },
+  {
+    "id": "RR-13-EN",
+    "family": "partial-summary",
+    "language": "en",
+    "wantsSubmit": true,
+    "goal": "Prepare a first-visit request for physiotherapy for back discomfort. Give name and email but not phone; supply Thursday after 17:00. Before giving phone ask exactly Please summarize first, do not send. Check it summarizes your actual name, email, reason, therapy and time, identifies phone as missing and saves nothing. Then resume when ready and supply phone; send only after full review."
+  },
+  {
+    "id": "RR-14-EN",
+    "family": "ambiguous-cancellation",
+    "language": "en",
+    "wantsSubmit": false,
+    "goal": "Start by saying I have an existing appointment and want to prepare another request here. Read the actual reply, then say cancel that please. Expect one clarification distinguishing stopping the new draft from cancelling the existing appointment; neither should be claimed cancelled. Then clarify I mean cancel my existing appointment. Reception handoff should follow with no new intake or submission. Stop. Your ambiguous probe must be used verbatim once (cancel that please / das bitte absagen); do not replace it with a specific cancellation before that clarification is tested."
+  },
+  {
+    "id": "RR-15-EN",
+    "family": "team-benefit-follow-up",
+    "language": "en",
+    "wantsSubmit": false,
+    "goal": "Only gather information. Ask what makes the Citypraxis team a good choice, beyond listing treatment types. After reading the actual answer ask a short follow-up about how one stated qualification or specialist training benefits the way the team works. Expect supported practical explanation, not another identical service list, no invented results, competitor superiority or therapist assignment. Stop after the answer."
+  },
+  {
+    "id": "RR-16-EN",
+    "family": "existing-appointment-handoff",
+    "language": "en",
+    "wantsSubmit": false,
+    "goal": "Only ask to move an already booked appointment: I need to reschedule my existing appointment. Read the handoff, ask if the chatbot has actually changed your appointment date. Expect truthful no calendar action and reception contact, no new-request intake. Stop."
+  },
+  {
+    "id": "RR-17-EN",
+    "family": "imperfect-bundled-intake",
+    "language": "en",
+    "wantsSubmit": true,
+    "goal": "Start requesting an appointment and choose chat. When asked for details, send one natural typo-containing message with your fixed full name, email and phone plus: this is my frist visit, I want physiotherapy for back discomfort, Thursday after 17:00. The bot should preserve first-visit status, treatment, concern and all contacts. Submit only if correct; do not manually fix a lost patient status."
+  },
+  {
+    "id": "RR-18-DE",
+    "family": "original-family-wording",
+    "language": "de",
+    "wantsSubmit": true,
+    "goal": "Termin anfragen und Chat wählen. Ihren festen Namen als anfragende Person nennen. Wenn nach E-Mail/Telefon gefragt wird, sagen Sie: auch für meinen mann, gleiche mail [EMAIL]. Er heißt Robin Fiktiv, [PHONE], Schulterbeschwerden, ich möchte Physiotherapie, Donnerstag nach 17 Uhr. Ersetzen Sie die Klammern durch Ihre festen Kontaktdaten. Prüfen Sie nach der tatsächlichen Antwort, ob Robin als Patient, Sie als Absender und das Anliegen mit Therapie und Uhrzeit vollständig erhalten sind. Nichts wiederholen, um Fehler zu retten. Nur korrekte Zusammenfassung absenden."
+  },
+  {
+    "id": "RR-18-EN",
+    "family": "original-family-wording",
+    "language": "en",
+    "wantsSubmit": true,
+    "goal": "Request an appointment and choose chat. Give your fixed name as the sender. When contacts are requested, say: Also for my husband, the same email [EMAIL]. He is Robin Fiktiv, [PHONE], shoulder discomfort, he wants physiotherapy, Thursday after 17:00. Replace brackets with your own fixed contacts. Read the real reply and verify Robin is patient and you remain sender, with the reason, treatment and time preserved. Do not repeat missing data to rescue a failure. Submit only the correct review."
+  },
+  {
+    "id": "RR-19-DE",
+    "family": "long-bilingual-contact-history",
+    "language": "de",
+    "wantsSubmit": true,
+    "goal": "Choose assisted chat after the actual offer. Provide your fixed name and email together with first visit, physiotherapy for back discomfort, Thursday after 17:00; deliberately hold your own phone until the end. Ask whether info@citypraxis.wien is the reception email and +43 699 12682157 the practice phone; these are NOT your contacts. Ask to continue in English explicitly, then ask separately about first-visit price/duration, payment methods, referrals, available disciplines, reception arranging dates, and practice strengths. Ask to switch back to German explicitly. Request a summary first, without sending. It must retain your ORIGINAL fixed name/email, new-patient status, back discomfort/physiotherapy and Thursday after 17:00 from before the long information detour, with your OWN phone still missing. Read actual answers; do not rescue lost data. If all retained, provide your fixed phone and submit after correct review. Do not ask disputed Saturday hours or personal insurance rates."
+  },
+  {
+    "id": "RR-19-EN",
+    "family": "long-bilingual-contact-history",
+    "language": "en",
+    "wantsSubmit": true,
+    "goal": "Choose assisted chat after the actual offer. Provide your fixed name and email together with first visit, physiotherapy for back discomfort, Thursday after 17:00; hold your own phone until the end. Ask if info@citypraxis.wien is reception email and +43 699 12682157 the practice phone; these must not become your contacts. Explicitly switch to German, then ask separately about first-visit price/duration, payment methods, referrals, available disciplines, reception arranging dates, and practice strengths. Explicitly switch back to English. Ask for a summary first, do not send. Check your ORIGINAL name/email, first visit, back discomfort/physiotherapy and Thursday after 17:00 from before the long detour remain, and that your OWN phone is still missing. Read actual replies and do not rescue lost details. Then provide your fixed phone, review and submit only if correct. Avoid disputed Saturday hours and individual insurance rates."
+  }
+]

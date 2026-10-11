@@ -102,6 +102,7 @@ export function patientActionSchema(visible){
   const branches=[branch('stop')];
   for(const option of visible.availableActions){
     if(['message','submit'].includes(option.action))branches.push(branch(option.action));
+    if(option.action==='duplicate')branches.push(branch('duplicate',[''],option.values));
     if(option.action==='edit'&&option.fields.length)branches.push(branch('edit',option.fields));
     if(option.action==='choice')for(const [field,values] of Object.entries(option.fields))branches.push(branch('choice',[field],values));
   }

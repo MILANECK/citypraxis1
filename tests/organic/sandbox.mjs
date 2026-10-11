@@ -107,6 +107,7 @@ export class EndpointAdapter{
     if(action.action==='edit'){if(!this.current.ready)throw new HarnessStop('simulator_edit_without_review');return this.request('/api/chat/edit',{...body,field:action.field});}
     if(action.action==='choice'){if(!this.current.ready)throw new HarnessStop('simulator_choice_without_review');return this.request('/api/chat/review-choice',{...body,field:action.field,value:action.value});}
     if(action.action==='submit'){if(!this.current.ready)throw new HarnessStop('simulator_submit_without_review');return this.request('/api/chat/finish',{...body,confirmed:true});}
+    if(action.action==='duplicate'){if(!this.current.requiresChoice||!['update','new','cancel'].includes(action.value))throw new HarnessStop('simulator_duplicate_without_choice');return this.request('/api/chat/finish',{...body,confirmed:true,duplicateChoice:action.value});}
     throw new HarnessStop('invalid_adapter_action');
   }
   visible(){

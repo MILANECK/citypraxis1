@@ -19,7 +19,10 @@ export const needsLocation=d=>needsDiscipline(d)&&['physiotherapy','osteopathy',
 export const needsReferral=d=>d.request_type==='referral_question'||(needsDiscipline(d)&&d.discipline==='physiotherapy');
 export function summaryRows(d,lang='de'){
   const en=lang==='en',rows=[
-    [en?'Name':'Name',[d.first_name,d.last_name].filter(Boolean).join(' ')],
+    [d.request_for?(en?'Patient name':'Name der Patientin / des Patienten'):'Name',[d.first_name,d.last_name].filter(Boolean).join(' ')],
+    [en?'Request sent by':'Anfrage von',d.contact_name],
+    [en?'Request for (self-reported)':'Anfrage für (eigene Angabe)',d.request_for],
+    [en?'Contact details belong to':'Kontaktdaten gehören',d.contact_details_owner==='sender'?(en?'The person sending this request':'Der anfragenden Person'):''],
     [en?'Patient status (self-reported)':'Patientenstatus (eigene Angabe)',label('patient_status_claimed',d.patient_status_claimed,lang)],
     [en?'Request':'Anfrage',label('request_type',d.request_type,lang)],
     [en?'Email':'E-Mail',d.email],[en?'Phone':'Telefon',d.phone],

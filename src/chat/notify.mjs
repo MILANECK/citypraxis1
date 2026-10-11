@@ -26,7 +26,8 @@ export function patientConfirmationEmail(row){
   const en=(row.intake?.receipt_language||row.intake?.language)==='en';
   const rows=requestRows(row,en?'en':'de').filter(([key])=>!['Source','Herkunft'].includes(key));
   const subject=en?'CityPraxis · We received your request':'Citypraxis · Wir haben Ihre Anfrage erhalten';
-  const greeting=en?`Thank you for contacting CityPraxis, ${row.name}.`:`Vielen Dank für Ihre Anfrage bei der Citypraxis, ${row.name}.`;
+  const addressee=row.intake?.contact_name||row.name;
+  const greeting=en?`Thank you for contacting CityPraxis, ${addressee}.`:`Vielen Dank für Ihre Anfrage bei der Citypraxis, ${addressee}.`;
   const note=en?'We have received the details below. This is not an appointment confirmation. Our reception team will contact you by phone or email as soon as possible to arrange the next step.':'Wir haben Ihre unten aufgeführten Angaben erhalten. Dies ist noch keine Terminbestätigung. Unser Sekretariat meldet sich so bald wie möglich telefonisch oder per E-Mail, um den nächsten Schritt zu vereinbaren.';
   const closing=en?'Thank you for contacting us.':'Vielen Dank, dass Sie sich an uns gewandt haben.';
   const text=[greeting,'',note,'',...rows.map(([key,value])=>`${key}: ${value}`),'',closing].join('\n');

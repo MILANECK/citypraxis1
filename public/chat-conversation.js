@@ -1,4 +1,4 @@
-import {choices} from '/chat-model.js';
+import {choices} from '/chat-model.js?v=conversation-repairs-3';
 import {formatChatMessage} from '/chat-links.js?v=practice-strengths-1';
 const siteLang=window.I18n?.language==='en'?'en':'de';
 let lang=siteLang,en=lang==='en';
@@ -145,7 +145,7 @@ async function revealReply(){
   if(review){review.hidden=false;scrollEnd();}
 }
 function summary(){
-  const fieldFor=key=>({'Name':'name','Patient status (self-reported)':'patient_status','Patientenstatus (eigene Angabe)':'patient_status','Email':'email','E-Mail':'email','Phone':'phone','Telefon':'phone','Preferred contact':'preferred_contact','Bevorzugter Kontakt':'preferred_contact','Email copy language':'receipt_language','Sprache der E-Mail-Kopie':'receipt_language','Your short description':'reason','Ihre kurze Beschreibung':'reason','Availability note':'availability','Hinweis zur Verfügbarkeit':'availability'})[key];
+  const fieldFor=key=>({'Name':'name','Patient name':'name','Name der Patientin / des Patienten':'name','Patient status (self-reported)':'patient_status','Patientenstatus (eigene Angabe)':'patient_status','Email':'email','E-Mail':'email','Phone':'phone','Telefon':'phone','Preferred contact':'preferred_contact','Bevorzugter Kontakt':'preferred_contact','Email copy language':'receipt_language','Sprache der E-Mail-Kopie':'receipt_language','Your short description':'reason','Ihre kurze Beschreibung':'reason','Availability note':'availability','Hinweis zur Verfügbarkeit':'availability'})[key];
   const choiceFields={patient_status:{model:'patient_status_claimed',values:['existing','new','unsure']},preferred_contact:{model:'preferred_contact',values:['email','phone','either']},receipt_language:{model:'receipt_language',values:['de','en']}};
   const rows=(state.summary||[]).filter(([key])=>!['Source','Herkunft'].includes(key));
   if(!rows.some(([key])=>fieldFor(key)==='availability'))rows.push([t('Hinweis zur Verfügbarkeit','Availability note'),t('Keine Angabe','Not specified')]);
